@@ -58,7 +58,11 @@
           "buildTarget": "pac-shield:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": "development",
+      "dependsOn": ["pac-shield-api:serve"],
+      "options": {
+        "proxyConfig": "apps/pac-shield/proxy.conf.json"
+      }
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",
