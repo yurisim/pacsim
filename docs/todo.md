@@ -11,7 +11,7 @@ This phase is about making key decisions and preparing your development environm
 
 - [ ] **Step 2: Define the Technology Stack**
     - [ ] **Frontend (Angular):**
-        - [ ] **Angular Version:** Latest stable version (e.g., Angular 16+).
+        - [X] **Angular Version:** Latest stable version (e.g., Angular 16+).
         - [ ] **UI Component Library:** **Angular Material**. This will provide high-quality, pre-built components (buttons, dialogs, tables) to accelerate UI development.
         - [ ] **State Management:** **NgRx**. This is crucial. A game like this has a complex, shared state. NgRx provides a robust, predictable way to manage this state, handle actions, and update the UI reactively.
         - [ ] **Mapping/Hex Grid:** **Leaflet.js** with a hex grid plugin. Leaflet is a powerful, lightweight mapping library perfect for creating the main game board.
