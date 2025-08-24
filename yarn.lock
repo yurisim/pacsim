@@ -305,6 +305,14 @@
   optionalDependencies:
     lmdb "3.4.1"
 
+"@angular/cdk@^20.2.0":
+  version "20.2.0"
+  resolved "https://registry.yarnpkg.com/@angular/cdk/-/cdk-20.2.0.tgz#e63d3fe844735fa3d2d7e5d560e02f6ae5ae5378"
+  integrity sha512-BZkhRMr3nEOHHCzEgKZM537G4aq0VAwoejhYn7oIvY0UU+arHKz+U7Gc44KH5GaAgVLojtJtkFXsArifzYUwzw==
+  dependencies:
+    parse5 "^8.0.0"
+    tslib "^2.3.0"
+
 "@angular/cli@~20.1.0":
   version "20.1.6"
   resolved "https://registry.yarnpkg.com/@angular/cli/-/cli-20.1.6.tgz#7a1200972a1b9b25597e3399ffb6a89bbdbb1096"
@@ -376,6 +384,13 @@
   version "20.1.8"
   resolved "https://registry.yarnpkg.com/@angular/language-service/-/language-service-20.1.8.tgz#51d8ad28207eb5ae80aa037931c9dfd622147146"
   integrity sha512-HM41S7iRIN5oE4QX/6JMdZIqNrngWxG2JWlPDmikPEH4iAMi8J0922LplFXbTdWzAFA6+ryVDjp84etx1aaZaA==
+
+"@angular/material@^20.2.0":
+  version "20.2.0"
+  resolved "https://registry.yarnpkg.com/@angular/material/-/material-20.2.0.tgz#2e4a057d3229a60b89265edb7c6ece195477281e"
+  integrity sha512-lwkV1VP7PkC/dhPRXLeYaNtPaIAOjI8/zfpkPnmxJuGA7t7hkngtTxmY+6gElDAtfnle9ZJulW4KndKGr3ng/g==
+  dependencies:
+    tslib "^2.3.0"
 
 "@angular/platform-browser-dynamic@~20.1.0":
   version "20.1.8"
@@ -3155,7 +3170,7 @@
     tslib "^2.3.0"
     webpack "^5.101.3"
 
-"@nx/nest@^21.4.1":
+"@nx/nest@21.4.1":
   version "21.4.1"
   resolved "https://registry.yarnpkg.com/@nx/nest/-/nest-21.4.1.tgz#1bf105b857be8e2453e8ddae7cb61e30518c0569"
   integrity sha512-KoYBvCxL+FP1gaMuadkug8s6CRjn4AwzAtzD7XIFUFTXYzQcnyzRRDmWC0F5G/knIVzrlidaU9+lVIq2olMbXg==
@@ -9584,6 +9599,13 @@ parse5@^7.0.0, parse5@^7.2.1:
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/parse5/-/parse5-7.3.0.tgz#d7e224fa72399c7a175099f45fc2ad024b05ec05"
   integrity sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==
+  dependencies:
+    entities "^6.0.0"
+
+parse5@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/parse5/-/parse5-8.0.0.tgz#aceb267f6b15f9b6e6ba9e35bfdd481fc2167b12"
+  integrity sha512-9m4m5GSgXjL4AjumKzq1Fgfp3Z8rsvjRNbnkVwfu2ImRqE5D0LnY2QfDen18FSY9C573YU5XxSapdHZTZ2WolA==
   dependencies:
     entities "^6.0.0"
 
