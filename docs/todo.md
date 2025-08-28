@@ -16,13 +16,18 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [x] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
     - [ ] **Define the Prisma Schema (`schema.prisma`):**
       - [ ] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
-      - [ ] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`).
+      - [ ] Add `roomCode` field to the `Game` model.
+      - [ ] Refine the `Player` model to represent a session-based identity.
+      - [ ] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
+      - [ ] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
       - [ ] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
     - [ ] **Create Database Service:**
       - [ ] Implement a service to connect to the MongoDB database.
       - [ ] Generate the Prisma Client.
     - [ ] **API Scaffolding:**
       - [ ] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
+      - [ ] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
+      - [ ] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
       - [ ] Set up basic routing structure.
     - [ ] **WebSocket Server Setup:**
       - [ ] Integrate Socket.IO with the NestJS server using a Gateway.
@@ -84,6 +89,12 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [ ] Use CSS classes (`.task-complete`, `.task-incomplete`) to style the task slots based on the FOS's `Completed_Tasks` array.
     - [ ] **Implement `ScoreboardComponent`:**
       - [ ] A simple component that subscribes to team-specific `missionPoints` and `demoralizationPoints` from the NgRx store and displays them.
+    - [ ] **Implement `CSpOCBoardComponent`:**
+      - [ ] Create a UI to render the orbital tracks (LEO, MEO, GEO).
+      - [ ] Subscribe to `satelliteInstances` from the NgRx store and render `GameTokenComponent`s for each satellite on its correct orbit/position.
+    - [ ] **Implement `MedcomDashboardComponent`:**
+      - [ ] Create a UI to display the status of the four main hospitals.
+      - [ ] Implement a `HospitalStatusComponent` to show bed space, completed tasks, and patient counts for a single hospital.
 
 ---
 
@@ -122,6 +133,7 @@ _This is where the game comes to life. The goal is to enable players to perform 
       - [ ] Clicking these buttons dispatches actions (`[ATO] Approve PPR Request`) to the backend.
 
 3.  **FOS Management:**
+
     - [ ] **RFI Logic:**
       - [ ] In the `FosDashboardComponent`, make the RFI slots clickable.
       - [ ] Clicking an RFI dispatches a `[FOS] Request RFI` action.
@@ -130,6 +142,22 @@ _This is where the game comes to life. The goal is to enable players to perform 
       - [ ] Implement drag-and-drop functionality to move personnel tokens onto the task slots.
       - [ ] When a valid set of tokens is dropped on a task, a "Complete Task" button appears.
       - [ ] Clicking it dispatches a `[FOS] Complete Task Request`, which is validated and broadcasted by the backend.
+
+4.  **CSpOC Gameplay Implementation:**
+
+    - [ ] **Satellite Movement Logic (Backend):** Implement the end-of-turn logic to advance all LEO/MEO satellites one position along their tracks.
+    - [ ] **"Look" Action:**
+      - [ ] Allow CSpOC players to dispatch a `[CSpOC] Satellite Look Request` action.
+      - [ ] Backend logic should determine what is visible based on satellite type, orbit (single hex vs. honeycomb), and fidelity (one-pass vs. two-pass identification).
+      - [ ] Broadcast the revealed information to the CSpOC player.
+
+5.  **MEDCOM Gameplay Implementation:**
+    - [ ] **Casualty Generation (Backend):** When a PLA strike on a FOS is successful, the `EndTurnService` must calculate casualties based on personnel present and create new `Patient` documents in the database.
+    - [ ] **MEDEVAC Flights:**
+      - [ ] The `FlightPlannerDialogComponent` must be updated to include a "MEDEVAC" configuration.
+      - [ ] When planning a MEDEVAC, the UI must allow the player to select casualties at a FOS to load onto the aircraft.
+      - [ ] The backend must validate that the MEDCOM player has the required commodity tokens (bandages, IV, etc.) to perform the flight.
+    - [ ] **Patient Triage & Treatment (Backend):** The `EndTurnService` must check hospital status. If the required tasks are complete, it should "cure" patients based on their casualty type and the turn they arrived (e.g., green patients cured in 1 turn).
 
 ---
 
@@ -163,14 +191,21 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
     - [ ] The result should be displayed to all players via a notification/toast and a log entry.
 
 4.  **Scoring and End-of-Turn Automation:**
+
     - [ ] Create an `EndTurnService` on the backend.
     - [ ] This service will be triggered by a GM action.
     - [ ] It will iterate through all teams and FOSs to:
       - [ ] Calculate and apply the Logistics Commodities Tax.
       - [ ] Calculate and award Demoralization Points.
       - [ ] Calculate and award Mission Points for sorties and completed assessments.
+      - [ ] Implement Resource Point (RP) Logic by checking Task #13 and incrementing RPs.
+      - [ ] Implement Risk Token Adjudication logic for any actions flagged with it.
       - [ ] Advance the `gameTurn` counter.
     - [ ] All state changes are broadcast to the relevant game room.
+
+5.  **MFR Logic Implementation:**
+    - [ ] Create API endpoints for submitting MFRs.
+    - [ ] Create a section in the GM Interface for approving/denying MFRs.
 
 ---
 
