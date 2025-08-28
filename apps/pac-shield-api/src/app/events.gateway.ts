@@ -29,10 +29,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinGame')
-  handleJoinGame(
-    @MessageBody('gameId') gameId: string,
-    client: Socket,
-  ): void {
+  handleJoinGame(@MessageBody('gameId') gameId: string, client: Socket): void {
     client.join(gameId);
     this.logger.log(`Client ${client.id} joined room: ${gameId}`);
     // Optionally, send a confirmation to the client who just joined
@@ -40,9 +37,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('gameEvent')
-  handleGameEvent(@MessageBody() payload: { gameId: string; eventName: string; data: unknown }): void {
-    this.logger.log(`Received event '${payload.eventName}' for room ${payload.gameId}`);
+  handleGameEvent(
+    @MessageBody() payload: { gameId: string; eventName: string; data: unknown }
+  ): void {
+    this.logger.log(
+      `Received event '${payload.eventName}' for room ${payload.gameId}`
+    );
     // Broadcast the event to all clients in the specific game room, except the sender
-    this.server.to(payload.gameId).emit('gameEvent', { eventName: payload.eventName, data: payload.data });
+    this.server
+      .to(payload.gameId)
+      .emit('gameEvent', { eventName: payload.eventName, data: payload.data });
   }
 }
