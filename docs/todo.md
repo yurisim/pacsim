@@ -46,10 +46,10 @@ _This phase is about making key decisions, establishing the technical groundwork
       - [ ] `ApiService`: For handling all HTTP requests to the backend.
       - [ ] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
         - [ ] Implement robust reconnection logic (e.g., exponential backoff) to handle unstable network conditions.
-      - [ ] `AuthService`: For handling user login, logout, and JWT storage.
+      - [ ] `AuthService`: For handling game joining via room code and managing the session JWT.
 
 4.  **Initial UI Scaffolding:**
-    - [ ] Set up Angular routing for a `/login` page and a `/game/:id` page.
+    - [ ] Set up Angular routing for a `/join` page (for entering a room code) and a `/game/:id` page.
     - [ ] Implement a basic `AppComponent` with a toolbar and a router outlet.
     - [ ] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
 
@@ -137,14 +137,14 @@ _This is where the game comes to life. The goal is to enable players to perform 
 
 _This phase transforms the single-player prototype into a fully-fledged, multi-user experience. The goal is to refine the experience for different player roles and implement the more complex game rules._
 
-1.  **User Authentication & Authorization:**
+1.  **Session Authentication & Authorization:**
 
-    - [ ] Implement the `LoginComponent` with a form to submit username/password.
-    - [ ] The `AuthService` sends credentials to the `/api/auth/login` endpoint.
-    - [ ] The backend validates credentials, generates a JWT containing `userId` and `role` (e.g., "CFACC", "MOB_KADENA"), and returns it.
-    - [ ] The frontend stores the JWT in `localStorage`.
-    - [ ] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API requests.
-    - [ ] Implement Angular Route Guards (`AuthGuard`, `RoleGuard`) to protect routes.
+    - [ ] Implement a `JoinGameComponent` with a form to submit a room code.
+    - [ ] The `AuthService` sends the room code to an `/api/game/join` endpoint.
+    - [ ] The backend validates the room code, checks for an available slot, and generates a session-specific JWT containing the `gameId` and assigned `role`.
+    - [ ] The frontend stores the session JWT in `localStorage`.
+    - [ ] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API and WebSocket requests.
+    - [ ] Implement Angular Route Guards (`SessionAuthGuard`, `RoleGuard`) to protect game routes.
 
 2.  **Role-Specific UI (Conditional Rendering):**
 
