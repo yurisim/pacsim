@@ -2,7 +2,9 @@
   "name": "@pacsim/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "daemon": "npx nx daemon --start"
+  },
   "private": true,
   "dependencies": {
     "@angular/cdk": "^20.2.0",
@@ -63,6 +65,7 @@
     "jest-util": "^30.0.2",
     "nx": "21.4.1",
     "prettier": "^2.6.2",
+    "prisma": "^6.15.0",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
