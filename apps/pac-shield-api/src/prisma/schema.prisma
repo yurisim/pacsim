@@ -1,15 +1,499 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+// =============================================
+//               CORE GAME MODEL
+// =============================================
+
+model Game {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  name               String    @unique
+  roomCode           String    @unique
+  turn               Int       @default(1)
+  day                Int       @default(1)
+  executionBlock     Int       @default(1)
+  phase              GamePhase @default(CRISIS)
+  victoryConditionMP Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  teams      Team[]
+  gameBoard  GameBoard?
+  atoLines   ATOLine[]
+  satellites SatelliteInstance[]
+  hospitals  Hospital[]
+  eventLog   GameEvent[]
+}
+
+model GameBoard {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  gameId String @unique @db.ObjectId
+  game   Game   @relation(fields: [gameId], references: [id])
+
+  politicalAccess   PoliticalAccess[]
+  threatTokens      ThreatToken[]
+  activeEventCard   String?
+  activeRiskCard    String?
+  enrouteUSTRANSCOM EnrouteUSTRANSCOM[]
+}
+
+model PoliticalAccess {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  boardId    String       @db.ObjectId
+  board      GameBoard    @relation(fields: [boardId], references: [id])
+  country    Country
+  access     AccessStatus
+  overflight AccessStatus
+}
+
+model EnrouteUSTRANSCOM {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  gameBoardId String    @db.ObjectId
+  gameBoard   GameBoard @relation(fields: [gameBoardId], references: [id])
+
+  assetType   AssetType
+  quantity    Int
+  arrivalTurn Int
+}
+
+// =============================================
+//             TEAMS AND PLAYERS
+// =============================================
+
+model Team {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  gameId String @db.ObjectId
+  game   Game   @relation(fields: [gameId], references: [id])
+
+  type                 TeamType
+  name                 String
+  missionPoints        Int      @default(0)
+  demoralizationPoints Int      @default(0)
+  resourcePoints       Int      @default(0)
+  riskTokensAvailable  Int      @default(2)
+
+  players           Player[]
+  controlledFOS     ForwardOperatingSite[]
+  aircraftInstances AircraftInstance[]
+  assetInstances    AssetInstance[]
+  commoditiesAtMOB  CommodityStock[]
+  mfrs              MFR[]
+}
+
+model Player {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId String @unique
+  name      String
+  role      String
+  teamId    String @db.ObjectId
+  team      Team   @relation(fields: [teamId], references: [id])
+}
+
+// =============================================
+//           LOCATIONS & AIRFIELDS
+// =============================================
+
+model ForwardOperatingSite {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  fosIdNumber     Int
+  teamId          String @db.ObjectId
+  team            Team   @relation(fields: [teamId], references: [id])
+  turnEstablished Int
+
+  answeredRFIs    AnsweredRFI[]
+  isFullyAssessed Boolean @default(false)
+
+  runwayStatus             RunwayStatus @default(OPERATIONAL)
+  parkingRampMOG           MOGLevel
+  parkingRampCondition     Float        @default(100.0)
+  consecutiveStrikes       Int          @default(0)
+  hasMobileArrestingSystem Boolean      @default(false)
+  hasRunwayLighting        Boolean      @default(false)
+  hasExpandedRamp          Boolean      @default(false)
+  isHardened               Boolean      @default(false)
+
+  completedTasks         AirfieldTask[]
+  stationedAircraft      AircraftInstance[] @relation("StationedAircraft")
+  stationedAssets        AssetInstance[]    @relation("StationedAssets")
+  commodities            CommodityStock[]
+  isPlaJammingWithin2Hex Boolean            @default(false)
+
+  @@unique([teamId, fosIdNumber])
+}
+
+model CommodityStock {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  type      CommodityType
+  quantity  Int
+
+  forwardOperatingSiteId String? @db.ObjectId
+  forwardOperatingSite   ForwardOperatingSite? @relation(fields: [forwardOperatingSiteId], references: [id])
+
+  teamId String? @db.ObjectId
+  team   Team?   @relation(fields: [teamId], references: [id])
+}
+
+model AnsweredRFI {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  fosId String @db.ObjectId
+  fos   ForwardOperatingSite @relation(fields: [fosId], references: [id])
+
+  rfiKey   String
+  rfiValue String
+
+  @@unique([fosId, rfiKey])
+}
+
+// =============================================
+//            AIRCRAFT & ASSETS
+// =============================================
+
+model AircraftInstance {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  callSign   String         @unique
+  type       AircraftType
+  strength   Int
+  rangeHexes Int
+  status     AircraftStatus @default(FMC)
+
+  locationType  LocationType
+  locationFosId String?               @db.ObjectId
+  locationFos   ForwardOperatingSite? @relation("StationedAircraft", fields: [locationFosId], references: [id])
+  locationHex   String?
+
+  teamId                String          @db.ObjectId
+  team                  Team            @relation(fields: [teamId], references: [id])
+  payloadAssets         AssetInstance[] @relation("AircraftPayload")
+  payloadPersonnelCount Int             @default(0)
+  currentATOId          String?         @db.ObjectId
+}
+
+model AssetInstance {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  type            AssetType
+  palletPositions Int
+  mraCategory     MRACategory?
+
+  locationType          LocationType
+  locationFosId         String?               @db.ObjectId
+  locationFos           ForwardOperatingSite? @relation("StationedAssets", fields: [locationFosId], references: [id])
+  inTransitOnAircraftId String?               @db.ObjectId
+  inTransitOnAircraft   AircraftInstance?     @relation("AircraftPayload", fields: [inTransitOnAircraftId], references: [id])
+
+  teamId String @db.ObjectId
+  team   Team   @relation(fields: [teamId], references: [id])
+}
+
+// =============================================
+//            ACTIONS & RECORDS
+// =============================================
+
+model ATOLine {
+  id                   String                @id @default(auto()) @map("_id") @db.ObjectId
+  gameId               String                @db.ObjectId
+  game                 Game                  @relation(fields: [gameId], references: [id])
+  turn                 Int
+  aircraftCallSign     String
+  startLocation        String
+  enRouteDestination   String?
+  finalDestination     String
+  alternateDestination String?
+  intention            FlightIntention
+  riskTokenUsed        Boolean               @default(false)
+  configuration        AircraftConfiguration
+  pprStatus            PPRStatus             @default(PENDING)
+  executionResult      String?
+}
+
+model ThreatToken {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  boardId     String     @db.ObjectId
+  board       GameBoard  @relation(fields: [boardId], references: [id])
+  type        ThreatType
+  strength    Int
+  locationHex String
+}
+
+model MFR {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  teamId        String    @db.ObjectId
+  team          Team      @relation(fields: [teamId], references: [id])
+  request       String
+  status        MFRStatus @default(PENDING)
+  turnSubmitted Int
+}
+
+model GameEvent {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  gameId      String   @db.ObjectId
+  game        Game     @relation(fields: [gameId], references: [id])
+  timestamp   DateTime @default(now())
+  turn        Int
+  description String
+}
+
+// =============================================
+//             CSPOC & MEDCOM MODELS
+// =============================================
+
+model SatelliteInstance {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  gameId      String        @db.ObjectId
+  game        Game          @relation(fields: [gameId], references: [id])
+  type        SatelliteType
+  orbit       OrbitType
+  position    String
+  hasFuelChit Boolean       @default(true)
+}
+
+model Hospital {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  gameId         String         @db.ObjectId
+  game           Game           @relation(fields: [gameId], references: [id])
+  locationName   String
+  completedTasks HospitalTask[]
+  bedspace       Bedspace[]
+  patients       Patient[]
+}
+
+model Patient {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  hospitalId   String       @db.ObjectId
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  casualtyType CasualtyType
+  turnArrived  Int
+}
+
+model Bedspace {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  hospitalId   String       @db.ObjectId
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  casualtyType CasualtyType
+  capacity     Int
+
+  @@unique([hospitalId, casualtyType])
+}
+
+// =============================================
+//                 ENUMERATIONS
+// =============================================
+
+enum GamePhase {
+  CRISIS
+  CONFLICT
+}
+
+enum TeamType {
+  CAOC
+  CSPOC
+  MOB
+  MEDCOM
+  GM
+}
+
+enum AccessStatus {
+  FULL_ACCESS
+  OVERFLIGHT_ONLY
+  NO_ACCESS
+}
+
+enum RunwayStatus {
+  OPERATIONAL
+  C17_C130_ONLY
+  C130_ONLY
+  NON_OPERATIONAL
+  DESTROYED
+}
+
+enum MOGLevel {
+  ONE_C130_TWO_FIGHTERS
+  TWO_C17_SEVEN_FIGHTERS
+  SIX_C17_FORTYTWO_FIGHTERS
+}
+
+enum AircraftType {
+  F16
+  F22
+  C17
+  C130
+  C5
+}
+
+enum AircraftStatus {
+  FMC
+  NMC
+  DESTROYED
+}
+
+enum LocationType {
+  MOB
+  FOS
+  IN_TRANSIT
+}
+
+enum FlightIntention {
+  LAND
+  EN_ROUTE
+}
+
+enum AircraftConfiguration {
+  CARGO_ONLY
+  PERSONNEL_ONLY
+  MIXED
+  MEDEVAC
+}
+
+enum MRACategory {
+  MISSION_GENERATION
+  COMMAND_CONTROL
+  BOS_INTEGRATOR
+}
+
+enum AssetType {
+  // Personnel
+  REFUELING
+  AIRFIELD_OPS
+  AIR_TRAFFIC_CONTROL
+  WEATHER
+  ASSESSMENT_TEAM
+  OPS_INTEL
+  COMMUNICATION
+  MAINTENANCE
+  PORT
+  SUPPLY_LOGISTICS
+  FORCE_PROTECTION
+  ENGINEERING_AIRFIELD_REPAIR
+  CONTRACTING
+  MEDICAL
+  CRASH_FIRE_RESCUE
+  COMMAND_POST
+  // Equipment
+  FORKLIFT
+  FUEL_TRUCK
+  GENERATOR
+  FIRE_TRUCK
+  HMMWV
+  MAINTENANCE_EQUIP
+  MISSILE_DEFENSE_TRUCK
+  MOBILE_ARRESTING_SYSTEM
+  RUNWAY_TAXI_LIGHTING
+  RAPID_REPAIR_EQUIPMENT
+  RADIO
+  SATELLITE_DISH
+  TENT
+  TRUCK
+}
+
+enum CommodityType {
+  FUEL
+  WATER
+  FOOD
+  AMMO
+  MISSILES
+  BOMBS
+  BANDAGES
+  PHARMACEUTICALS
+  IV_FLUID
+  OXYGEN
+}
+
+enum AirfieldTask {
+  BED_DOWN_SANITATION
+  POWER
+  COMMAND_CONTROL
+  CONTRACTS
+  RAMP_SECURITY
+  PERIMETER_SECURITY
+  MISSILE_DEFENSE
+  BASE_HARDENING
+  AIRFIELD_OPERATIONS
+  MOBILITY_SUPPORT
+  INTEGRATED_COMBAT_TURNS
+  SPECIALIZED_FUELING
+  HOST_NATION_RELATIONSHIPS
+  HEALTH_WELFARE
+  BASE_RECOVERY
+  LOGISTICS_SUPPORT
+}
+
+enum ThreatType {
+  GROUND_TARGET_10
+  FOURTH_GEN_FIGHTER_12
+  FIFTH_GEN_FIGHTER_20
+  AA_JAMMING
+  SATELLITE_JAMMING
+}
+
+enum Country {
+  JAPAN
+  PHILIPPINES
+  INDONESIA
+  BRUNEI
+  SINGAPORE
+  MALAYSIA
+  THAILAND
+  CAMBODIA
+  VIETNAM
+  LAOS
+  INDIA
+}
+
+enum MFRStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum PPRStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum SatelliteType {
+  MISSILE_WARNING
+  SDA
+  COMM
+  ISR
+  WEATHER
+  ORBITAL_WARFARE
+  GPS
+}
+
+enum OrbitType {
+  LEO
+  MEO
+  GEO
+}
+
+enum CasualtyType {
+  MINIMAL
+  IMMEDIATE
+  DELAYED
+  EXPECTANT
+}
+
+enum HospitalTask {
+  BLOOD_SUPPORT
+  BATTLEFIELD_SURGERY
+  TRIAGE_TEAM
+  FLIGHT_SURGEON
+  FLIGHT_NURSE
+  MEDICAL_SERVICE_CORP
+  AEROMEDICAL_SUPPLY
+  DELAYED_BEDSPACE
+  MEDIC_RESPONSE
+  MINIMAL_CARE
+  MINIMAL_BEDSPACE
+  MORTUARY_AFFAIRS
+  MORTUARY_SERVICES
+  MEDICAL_LOGISTICS
+  WAR_RESERVE_MATERIAL
 }
