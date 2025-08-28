@@ -13,7 +13,7 @@ _This phase is about making key decisions, establishing the technical groundwork
 2.  **Backend Setup (Node.js/NestJS/Prisma/MongoDB):**
 
     - [x] Initialize a Node.js project (`npm init`).
-    - [ ] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
+    - [x] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
     - [ ] **Define the Prisma Schema (`schema.prisma`):**
       - [ ] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
       - [ ] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`).
@@ -32,7 +32,8 @@ _This phase is about making key decisions, establishing the technical groundwork
 3.  **Frontend Setup (Angular/NgRx/Angular Material):**
 
     - [ ] Initialize a new Angular project using the CLI (`ng new`).
-    - [ ] Install core dependencies: `@angular/material`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`, `socket.io-client`.
+    - [ ] Install core dependencies: `@angular/material`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
+    - [ ] Install `socket.io-client` for WebSocket communication.
     - [ ] **Establish Project Structure:**
       - [ ] Create folders for `/core`, `/features`, `/shared`.
       - [ ] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
@@ -44,6 +45,7 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [ ] **Create Core Services:**
       - [ ] `ApiService`: For handling all HTTP requests to the backend.
       - [ ] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
+        - [ ] Implement robust reconnection logic (e.g., exponential backoff) to handle unstable network conditions.
       - [ ] `AuthService`: For handling user login, logout, and JWT storage.
 
 4.  **Initial UI Scaffolding:**
@@ -102,7 +104,7 @@ _This is where the game comes to life. The goal is to enable players to perform 
       - [ ] The WebSocket server receives the `[Asset] Move` action.
       - [ ] It performs final server-side validation.
       - [ ] It updates the asset's location in the MongoDB database.
-      - [ ] It broadcasts a `[Asset] Move Success ({ assetId, newLocation })` action to ALL connected clients.
+      - [ ] It broadcasts a `[Asset] Move Success ({ assetId, newLocation })` action to the specific game room.
     - [ ] **Frontend Update:**
       - [ ] The `WebSocketService` on all clients receives the `Move Success` event and dispatches it to their local NgRx store.
       - [ ] The reducer updates the state, and the UI reactively moves the token on everyone's screen.
@@ -168,7 +170,7 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
       - [ ] Calculate and award Demoralization Points.
       - [ ] Calculate and award Mission Points for sorties and completed assessments.
       - [ ] Advance the `gameTurn` counter.
-    - [ ] All state changes are broadcast to clients.
+    - [ ] All state changes are broadcast to the relevant game room.
 
 ---
 

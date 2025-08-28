@@ -19,11 +19,14 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-socket.io": "^11.1.6",
     "@nestjs/swagger": "^11.2.0",
+    "@nestjs/websockets": "^11.1.6",
     "@prisma/client": "^6.15.0",
     "axios": "^1.6.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.1",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
@@ -55,6 +58,7 @@
     "@swc/helpers": "~0.5.11",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
+    "@types/socket.io-client": "^3.0.0",
     "@typescript-eslint/utils": "^8.29.0",
     "angular-eslint": "^20.0.0",
     "eslint": "^9.8.0",

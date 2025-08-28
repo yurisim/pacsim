@@ -1,4 +1,21 @@
 
 <h1>Welcome {{ title }}</h1>
 
+<div style="padding: 20px; font-family: sans-serif;">
+  <h2>WebSocket Ping-Pong Test</h2>
+  
+  <div style="margin-bottom: 15px;">
+    <input [(ngModel)]="pingMessage" placeholder="Enter message to send" style="padding: 8px; width: 300px;" />
+    <button (click)="sendPing()" style="padding: 8px 12px; margin-left: 10px;">Send Ping</button>
+  </div>
+  
+  <h3>Server Responses (Pong):</h3>
+  <div style="border: 1px solid #ccc; background-color: #f5f5f5; padding: 10px; min-height: 100px; max-height: 300px; overflow-y: auto;">
+    <div *ngIf="pongMessages.length === 0" style="color: #888;">Waiting for server messages...</div>
+    <div *ngFor="let msg of pongMessages" style="margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+      {{ msg }}
+    </div>
+  </div>
+</div>
+
 <router-outlet></router-outlet>
