@@ -216,8 +216,6 @@ Commodities counters represent items that are consumed by accomplishing certain 
 
 - **2.2.3.1. NOTE:** MOBs will receive four fuel, ammo, missile, and bomb tokens via sealift at the beginning of each OPS MCE Block. This resupply simulates sustainment via sealift. Additional supplies must be delivered via military airlift. AEWs will coordinate airlift sustainment with the CFACC.
 
-[Image of Commodities Counters: Fuel (2 PP), Bomb (1 PP), Missile (1 PP), Ammo (1 PP), and others.]
-
 #### 2.2.4. Aircraft Counters
 
 ##### 2.2.4.1. Fighter and Other Combat Operations Aircraft

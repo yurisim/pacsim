@@ -108,7 +108,7 @@ model ForwardOperatingSite {
   turnEstablished Int
 
   answeredRFIs    AnsweredRFI[]
-  isFullyAssessed Boolean @default(false)
+  isFullyAssessed Boolean       @default(false)
 
   runwayStatus             RunwayStatus @default(OPERATIONAL)
   parkingRampMOG           MOGLevel
@@ -129,11 +129,11 @@ model ForwardOperatingSite {
 }
 
 model CommodityStock {
-  id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  type      CommodityType
-  quantity  Int
+  id       String        @id @default(auto()) @map("_id") @db.ObjectId
+  type     CommodityType
+  quantity Int
 
-  forwardOperatingSiteId String? @db.ObjectId
+  forwardOperatingSiteId String?               @db.ObjectId
   forwardOperatingSite   ForwardOperatingSite? @relation(fields: [forwardOperatingSiteId], references: [id])
 
   teamId String? @db.ObjectId
@@ -141,8 +141,8 @@ model CommodityStock {
 }
 
 model AnsweredRFI {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  fosId String @db.ObjectId
+  id    String               @id @default(auto()) @map("_id") @db.ObjectId
+  fosId String               @db.ObjectId
   fos   ForwardOperatingSite @relation(fields: [fosId], references: [id])
 
   rfiKey   String
@@ -357,51 +357,91 @@ enum MRACategory {
 }
 
 enum AssetType {
-  // Personnel
+  // === Personnel ===
+  // Mission Generation Team (Page 10)
   REFUELING
   AIRFIELD_OPS
   AIR_TRAFFIC_CONTROL
   WEATHER
   ASSESSMENT_TEAM
-  OPS_INTEL
-  COMMUNICATION
   MAINTENANCE
   PORT
+
+  // Command and Control Team (Page 11)
+  OPS_INTEL
+  COMMUNICATION
+  COMMAND_POST
+
+  // Base Operating Support-Integrator (BOS-I) Team (Page 11)
   SUPPLY_LOGISTICS
   FORCE_PROTECTION
   ENGINEERING_AIRFIELD_REPAIR
   CONTRACTING
   MEDICAL
   CRASH_FIRE_RESCUE
-  COMMAND_POST
-  // Equipment
-  FORKLIFT
-  FUEL_TRUCK
-  GENERATOR
-  FIRE_TRUCK
-  HMMWV
+  POWER_GENERATION
+  MISSILE_DEFENSE
+
+  // MEDCOM Personnel (Page 38)
+  MEDCOM_PERSONNEL
+
+  // === Equipment ===
+  // General Equipment (Page 9, 10, 11)
   MAINTENANCE_EQUIP
-  MISSILE_DEFENSE_TRUCK
-  MOBILE_ARRESTING_SYSTEM
-  RUNWAY_TAXI_LIGHTING
-  RAPID_REPAIR_EQUIPMENT
-  RADIO
-  SATELLITE_DISH
-  TENT
-  TRUCK
+  FORKLIFT // 3 PP
+  FUEL_TRUCK // 6 PP
+  HMMWV // 2 PP
+  MOBILE_ARRESTING_SYSTEM // 4 PP
+  RUNWAY_TAXI_LIGHTING // 1 PP
+  FIRE_TRUCK // 6 PP
+  GENERATOR // 1 PP
+  RAPID_REPAIR_EQUIPMENT // 4 PP
+  SATELLITE_DISH // 1 PP
+  RADIO // 0 PP
+  TRUCK // 2 PP (This seems to be a generic name for HMMWV)
+  TENT // 2 PP
+  CONTRACTS // 0 PP
+
+  // MEDCOM Specific Equipment (Page 38)
+  AMBULANCE // 4 PP
+  BEDS // 10 PP
+  REFRIGERATION // 6 PP
+  SURGERY_SUITE // 3 PP
+  FLIGHT_TRAINING_KIT // 3 PP
+  ADVANCED_AIRWAY_KIT // 1 PP
+  ADVANCED_TRAUMA_KIT // 1 PP
+  PATIENT_MONITOR_SYSTEM // 1 PP
+  MEDCOM_COMMUNICATION // 2 PP
+  HELICOPTER // 8 PP
+  MEDICAL_TRUCK // 6 PP
+  MEDICAL_EQUIPMENT // 6 PP
+  STRETCHER // 2 PP
+  MORTUARY_EQUIPMENT // 10 PP
 }
 
 enum CommodityType {
-  FUEL
-  WATER
-  FOOD
-  AMMO
-  MISSILES
-  BOMBS
-  BANDAGES
-  PHARMACEUTICALS
-  IV_FLUID
-  OXYGEN
+  // General Commodities (Page 9)
+  FUEL // 2 PP
+  WATER // 1 PP
+  FOOD // 1 PP
+  AMMO // 1 PP
+  MISSILES // 2 PP
+  BOMBS // 2 PP
+
+  // MEDCOM Commodities (Pages 38, 39, 40)
+  BANDAGES // 1 PP (Assumed, required for MEDEVAC)
+  BADGES // 1 PP
+  PHARMACEUTICALS // 1 PP
+  IV_FLUID // 1 PP
+  OXYGEN // 1 PP
+  BLOOD_SUPPLY // 6 PP
+  SURGICAL_PPE // 1 PP
+  SUPPORT_PPE // 1 PP
+  BURN_KIT // 2 PP
+  LINEN_CONTRACT // 1 PP
+  AIRWAY_KIT // 2 PP
+
+  RMO_CAPES // 1 PP
 }
 
 enum AirfieldTask {
