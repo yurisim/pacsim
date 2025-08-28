@@ -1,158 +1,206 @@
-- [ ] ### **Phase 0: Planning, Architecture, and Project Setup (The Foundation)**
+# **Project Roadmap: Digital Operation Pacific Shield**
 
-This phase is about making key decisions and preparing your development environment before writing any game-specific code.
+## **Phase 0: Foundation & Architecture (Sprint 0)**
 
-- [x] **Step 1: Deep Dive Requirements Analysis**
-    - [X] **Deconstruct the Game:** Read the User Guide thoroughly and extract all game entities, rules, and interactions. Create a design document.
-        - [X] **Entities:** Teams (CAOC, CSpOC, MOBs, MEDCOM), Aircraft (F-16, F-22, C-17, etc.), Personnel Counters, Equipment Counters, Commodities, FOSs, Satellites, PLA Tokens, Risk Tokens.
-        - [X] **State Variables:** Mission Points, Demoralization Points, Turn Number, Game Phase (Crisis/Conflict), Political Access Status, Airfield Status (MOG, Runway Condition), Commodity Levels, Asset Locations (Hex ID or Airfield).
-        - [X] **Actions:** Plan flights (ATO), Move assets, Request RFIs, Complete Airfield Tasks, Launch Sorties, Attack PLA forces, Use Risk Tokens, Place Satellites.
-        - [X] **Rules:** Movement range, combat adjudication (dice rolls), point calculations, logistics tax, FOS setup prerequisites.
+_This phase is about making key decisions, establishing the technical groundwork, defining data structures, and preparing the development environment before writing any game-specific code._
 
-- [ ] **Step 2: Define the Technology Stack**
-    - [ ] **Frontend (Angular):**
-        - [X] **Angular Version:** Latest stable version (e.g., Angular 16+).
-        - [ ] **UI Component Library:** **Angular Material**. This will provide high-quality, pre-built components (buttons, dialogs, tables) to accelerate UI development.
-        - [ ] **State Management:** **NgRx**. This is crucial. A game like this has a complex, shared state. NgRx provides a robust, predictable way to manage this state, handle actions, and update the UI reactively.
-        - [ ] **Mapping/Hex Grid:** **Leaflet.js** with a hex grid plugin. Leaflet is a powerful, lightweight mapping library perfect for creating the main game board.
-        - [ ] **Drag & Drop:** Angular CDK's Drag and Drop module for moving tokens and planning loadouts.
-    - [ ] **Backend (The Server):**
-        - [ ] **Runtime:** **Node.js** with **Express.js**. This is a common, powerful, and fast combination for building APIs and real-time servers.
-        - [ ] **Real-time Communication:** **WebSockets (via Socket.IO)**. This is non-negotiable for a multiplayer game. It allows the server to push updates to all clients instantly (e.g., when one player moves a piece, everyone else sees it move).
-        - [ ] **Database:** **MongoDB**. A NoSQL database is ideal for storing flexible game state objects (e.g., a game session document containing all piece locations, player resources, etc.).
-    - [ ] **Authentication:** JWT (JSON Web Tokens) for managing user sessions and roles.
+1.  **Project Initialization & Version Control:**
 
-- [ ] **Step 3: Project Setup**
-    - [ ] 1.  **Initialize Git Repository:** Create a new repository on GitHub/GitLab.
-    - [ ] 2.  **Setup Backend:** Create a Node.js/Express project. Install `socket.io`, `mongoose` (for MongoDB), `jsonwebtoken`, and `express`. Define initial API endpoints and WebSocket event listeners.
-    - [ ] 3.  **Setup Frontend:** Use the Angular CLI (`ng new operation-pacific-shield`).
-    - [ ] 4.  **Install Frontend Dependencies:** `npm install @angular/material @ngrx/store @ngrx/effects leaflet socket.io-client`.
-    - [ ] 5.  **Define Project Structure:** Create a clear folder structure in your Angular project:
-        - [ ] `/components`: Reusable UI components (e.g., `game-token`, `ato-table`).
-        - [ ] `/services`: Logic services (e.g., `game-logic.service`, `api.service`, `websocket.service`).
-        - [ ] `/store`: All NgRx files (actions, reducers, effects, selectors).
-        - [ ] `/models`: TypeScript interfaces for all game entities (`aircraft.model.ts`, `fos.model.ts`).
+    - [x] Initialize a monorepo using Git to house both the frontend and backend projects.
+    - [x] Establish main, develop, and feature branching strategies.
+    - [x] Configure repository on GitHub/GitLab.
 
----
+2.  **Backend Setup (Node.js/NestJS/Prisma/MongoDB):**
 
-- [ ] ### **Phase 1: Building the Core Visual Interface (The "Board")**
+    - [x] Initialize a Node.js project (`npm init`).
+    - [ ] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
+    - [ ] **Define the Prisma Schema (`schema.prisma`):**
+      - [ ] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
+      - [ ] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`).
+      - [ ] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
+    - [ ] **Create Database Service:**
+      - [ ] Implement a service to connect to the MongoDB database.
+      - [ ] Generate the Prisma Client.
+    - [ ] **API Scaffolding:**
+      - [ ] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
+      - [ ] Set up basic routing structure.
+    - [ ] **WebSocket Server Setup:**
+      - [ ] Integrate Socket.IO with the NestJS server using a Gateway.
+      - [ ] Define initial WebSocket namespaces (e.g., `/game`).
+      - [ ] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
 
-Focus on creating the static visual elements of the game. At this stage, things don't need to be fully interactive yet.
+3.  **Frontend Setup (Angular/NgRx/Angular Material):**
 
-- [ ] **Step 1: The Main Game Board Component (`GameBoardComponent`)**
-    - [ ] Integrate Leaflet.js to render a map.
-    - [ ] Use a plugin or custom logic to draw the hex grid overlay. Make each hex identifiable (e.g., by ID `307`, `408`).
-    - [ ] Add click listeners to the hexes to log their ID to the console for now.
-    - [ ] Visually represent the DF-26 threat ring.
+    - [ ] Initialize a new Angular project using the CLI (`ng new`).
+    - [ ] Install core dependencies: `@angular/material`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`, `socket.io-client`.
+    - [ ] **Establish Project Structure:**
+      - [ ] Create folders for `/core`, `/features`, `/shared`.
+      - [ ] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
+    - [ ] **Define TypeScript Models:**
+      - [ ] Create a TypeScript interface/class for every entity in the Prisma schema (`game.model.ts`, `team.model.ts`, etc.). This ensures type safety between frontend and backend.
+    - [ ] **Set up NgRx Store:**
+      - [ ] Define the root `AppState` interface.
+      - [ ] Create an initial `game` feature slice with placeholder actions, reducers, and selectors.
+    - [ ] **Create Core Services:**
+      - [ ] `ApiService`: For handling all HTTP requests to the backend.
+      - [ ] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
+      - [ ] `AuthService`: For handling user login, logout, and JWT storage.
 
-- [ ] **Step 2: Asset and Token Components (`GameTokenComponent`)**
-    - [ ] Create a generic component that can display any game piece (aircraft, personnel, etc.).
-    - [ ] It should accept an `Input()` object defining its type, image, strength, team color, etc.
-    - [ ] Render these tokens on the game board at specific hex coordinates. Start with hardcoded positions.
-
-- [ ] **Step 3: Player Dashboards and Sidebars**
-    - [ ] Create components for the different UI sections:
-        - [ ] `MobBoardComponent`: Visually replicate the "Main Operating Base" board for holding on-station personnel and commodities.
-        - [ ] `FosBoardComponent`: Replicate the "Airfield Board" for a single FOS, showing RFI answers and task completion slots.
-        - [ ] `ScoreboardComponent`: Display the Mission Points for each team.
-        - [ ] `AtoPlannerComponent`: A simple table to represent the Air Tasking Order.
-
-- [ ] **Step 4: Data Modeling**
-    - [ ] Create all the TypeScript interfaces (`.model.ts` files) for your game entities defined in Phase 0. This provides strong typing and code completion.
-    - [ ] Create a `GameDataService` to hold static "database" information, like the stats for an F-16 (range, strength) or the pallet position cost of a Fire Truck.
+4.  **Initial UI Scaffolding:**
+    - [ ] Set up Angular routing for a `/login` page and a `/game/:id` page.
+    - [ ] Implement a basic `AppComponent` with a toolbar and a router outlet.
+    - [ ] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
 
 ---
 
-- [ ] ### **Phase 2: Implementing Core Game Logic and Automation (The "Rules Engine")**
+## **Phase 1: Visualizing the Game State (Read-Only)**
 
-This is where the game comes to life. You'll wire up the UI to the game's rules and state.
+_Focus on creating the static visual elements of the game. At this stage, things don't need to be fully interactive yet. The goal is to render the entire game board and all its pieces based on data from the backend._
 
-- [ ] **Step 1: Set up NgRx State Management**
-    - [ ] Define the structure of your global `AppState`. This will be a single large object holding everything: `turn`, `phase`, `teams`, `assets`, `airfields`, etc.
-    - [ ] Create your first set of Actions: `[Game] Load Game`, `[Asset] Move Asset`, `[FOS] Complete Task`.
-    - [ ] Create Reducers to handle how the state changes when an action is dispatched. For example, the reducer for `Move Asset` will update the location of that asset in the state tree.
-    - [ ] Use Selectors to allow components to subscribe to specific pieces of the state (e.g., a component can select just the list of commodities for Kadena).
+1.  **Game Board Rendering:**
 
-- [ ] **Step 2: Implement the Turn Structure**
-    - [ ] On the backend, create a "Game Engine" service. This will manage the game loop:
-        - [ ] Advance turn number.
-        - [ ] Manage phases (Planning -> Execution -> Hotwash).
-        - [ ] Trigger timed events.
-        - [ ] This engine will be the ultimate source of truth.
+    - [ ] **Implement `GameBoardComponent`:**
+      - [ ] Integrate Leaflet.js to display a static map image.
+      - [ ] Implement or integrate a hex grid overlay library. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
+      - [ ] Write a function to render the DF-26 threat ring and country borders.
+    - [ ] **Create a `GameTokenComponent`:**
+      - [ ] A generic component that takes an `asset` object as input.
+      - [ ] Uses `ngSwitch` to render the correct image, text (strength), and team color based on the asset's type.
+    - [ ] **Integrate Backend Data:**
+      - [ ] Create a `[Game] Load Game` NgRx effect that fetches the full game state from the backend API when a player loads the game page.
+      - [ ] Create NgRx selectors to get all aircraft, ground units, and threat tokens from the state.
+      - [ ] In `GameBoardComponent`, subscribe to these selectors and use `ngFor` to render a `GameTokenComponent` for each asset at its correct hex/airfield location.
 
-- [ ] **Step 3: Automate Rules and Adjudication**
-    - [ ] Create several Angular services that contain the game's logic:
-        - [ ] `MovementService`: Contains functions like `isValidMove(asset, startHex, endHex)` which checks range, overflight rights, etc.
-        - [ ] `CombatService`: Contains a function `adjudicateCombat(attacker, defender)` which performs the dice rolls, applies modifiers, and returns the result.
-        - [ ] `ScoringService`: Listens for specific NgRx actions (like `[Fighter] Launch Sortie Success`) and calculates the resulting MP changes.
-
-- [ ] **Step 4: Make It Interactive**
-    - [ ] Use the Angular CDK to make your `GameTokenComponent` draggable.
-    - [ ] When a token is dropped on a new hex, dispatch an NgRx `[Asset] Move Asset` action with the payload (`assetId`, `targetHexId`).
-    - [ ] The action is processed by the reducer, the state updates, and thanks to the reactive nature of NgRx selectors, the token's position updates on the screen for everyone.
-
----
-
-- [ ] ### **Phase 3: Multiplayer and Role-Based Views (The "Players")**
-
-This phase transforms the single-player prototype into a fully-fledged, multi-user experience.
-
-- [ ] **Step 1: Implement Real-Time Communication**
-    - [ ] Create a `WebSocketService` in Angular that connects to your Socket.IO server.
-    - [ ] When a player performs an action (e.g., moves a piece), the NgRx Effect for that action sends the action data to the backend via WebSocket.
-    - [ ] The backend validates the action, updates its master state in MongoDB, and then **broadcasts** the validated action to *all* connected clients.
-    - [ ] The `WebSocketService` in each client's browser listens for these broadcasted actions and dispatches them to their local NgRx store, ensuring all screens are perfectly synchronized.
-
-- [ ] **Step 2: User Authentication and Roles**
-    - [ ] Build a simple login page.
-    - [ ] Upon login, the backend returns a JWT containing the user's role (e.g., `role: "CFACC"` or `role: "Kadena_MC"`).
-    - [ ] Store this JWT in the browser's local storage.
-
-- [ ] **Step 3: Role-Based UI and Data Scoping**
-    - [ ] Use **Angular Route Guards** to control access to different pages/views based on the user's role.
-    - [ ] Modify your UI components to show/hide elements based on role. For example:
-        - [ ] **MOB Commander:** Can only see their own `MobBoardComponent` and plan their own ATO lines.
-        - [ ] **CFACC:** Sees a read-only view of all MOB ATOs and has buttons to "Approve PPR." They see the master `MissionDashboardComponent`.
-        - [ ] **Game Master (GM):** Has special UI controls to manually change game state, trigger Event Cards, and override rules for adjudication.
-    - [ ] The backend API and WebSockets should also enforce these rules. A request from the Kadena player to move an Andersen AFB asset should be rejected by the server.
+2.  **Dashboard and Side Panel Rendering:**
+    - [ ] **Implement `MobDashboardComponent`:**
+      - [ ] Create static UI layouts for the MOB board (On-Station Personnel, Commodities, etc.).
+      - [ ] Use NgRx selectors to get the specific MOB's inventory.
+      - [ ] Use `ngFor` and the `GameTokenComponent` to display all assets currently located at the MOB.
+    - [ ] **Implement `FosDashboardComponent`:**
+      - [ ] Create a UI that visually represents the FOS board (RFI answers, 16 task slots).
+      - [ ] Use selectors to get the state of a specific FOS.
+      - [ ] Use CSS classes (`.task-complete`, `.task-incomplete`) to style the task slots based on the FOS's `Completed_Tasks` array.
+    - [ ] **Implement `ScoreboardComponent`:**
+      - [ ] A simple component that subscribes to team-specific `missionPoints` and `demoralizationPoints` from the NgRx store and displays them.
 
 ---
 
-- [ ] ### **Phase 4: Digitizing the Spreadsheet and Advanced Features (The "Polish")**
+## **Phase 2: Core Gameplay Mechanics & Interaction**
 
-This phase focuses on recreating the rich data displays from the guide's OPS Execution Spreadsheet and improving usability.
+_This is where the game comes to life. The goal is to enable players to perform the most common actions and see the state update in real-time._
 
-- [ ] **Step 1: Build Interactive Data Tables**
-    - [ ] Recreate the tables from the User Guide (pp. 51-72) using the Angular Material Table component.
-        - [ ] `MissionDashboardComponent`: This will be the main view for the CFACC. It will contain child components for Political Assessment, Aircraft Apportionment, Airfield Capacity, etc. All data is fed directly from the NgRx store.
-        - [ ] `TeamTabComponent`: A view for MOB commanders that consolidates their FOS status, commodities, and fighters assigned.
-        - [ ] **Dynamic Updating:** These tables should update in real-time as the game state changes, without needing a page refresh.
+1.  **Asset Movement:**
 
-- [ ] **Step 2: Implement Load Planning**
-    - [ ] Create a `LoadPlannerComponent` that opens in a dialog window.
-    - [ ] It should show an aircraft's capacity (personnel/pallets) and allow the user to add/remove assets.
-    - [ ] The UI should provide immediate feedback if the user exceeds the aircraft's capacity.
+    - [ ] Integrate the Angular CDK Drag and Drop module into `GameTokenComponent`.
+    - [ ] When a token is dropped onto a valid target (a hex or another board area):
+      - [ ] The component dispatches an NgRx action, e.g., `[Asset] Move Request ({ assetId, targetLocation })`.
+    - [ ] **Create `AssetEffects` in NgRx:**
+      - [ ] The effect listens for `Move Request`.
+      - [ ] It calls a `GameLogicService` to validate the move (checking range, political access, etc.).
+      - [ ] If valid, it sends the action to the backend via the `WebSocketService`.
+    - [ ] **Backend Logic:**
+      - [ ] The WebSocket server receives the `[Asset] Move` action.
+      - [ ] It performs final server-side validation.
+      - [ ] It updates the asset's location in the MongoDB database.
+      - [ ] It broadcasts a `[Asset] Move Success ({ assetId, newLocation })` action to ALL connected clients.
+    - [ ] **Frontend Update:**
+      - [ ] The `WebSocketService` on all clients receives the `Move Success` event and dispatches it to their local NgRx store.
+      - [ ] The reducer updates the state, and the UI reactively moves the token on everyone's screen.
 
-- [ ] **Step 3: Game Persistence and Sessions**
-    - [ ] The backend should save the entire game state to MongoDB at the end of each turn.
-    - [ ] Implement a "game lobby" where a GM can start a new game or resume a previously saved one.
+2.  **Air Tasking Order (ATO) Implementation:**
 
-- [ ] **Step 4: User Experience Enhancements**
-    - [ ] **Notifications:** Use a "toaster" notification service (like `ngx-toastr`) to provide feedback on actions ("Flight plan for AW01 approved.").
-    - [ ] **Game Log:** Create a component that displays a running history of all major actions taken in the game.
-    - [ ] **Tooltips and Help:** Add tooltips to explain complex UI elements or game rules directly on the interface.
+    - [ ] Create an interactive `AtoTableComponent` using Angular Material Table.
+    - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
+    - [ ] **For MOB Players:**
+      - [ ] Add a "New Flight Plan" button that opens a dialog (`FlightPlannerDialogComponent`).
+      - [ ] The dialog should contain forms (dropdowns, inputs) to select aircraft, start/end locations, and intent.
+      - [ ] On submit, dispatch a `[ATO] Create Line Request` action, which is sent to the backend.
+    - [ ] **For CAOC Players:**
+      - [ ] The table should display "Approve PPR" / "Deny PPR" buttons for each pending ATO line.
+      - [ ] Clicking these buttons dispatches actions (`[ATO] Approve PPR Request`) to the backend.
+
+3.  **FOS Management:**
+    - [ ] **RFI Logic:**
+      - [ ] In the `FosDashboardComponent`, make the RFI slots clickable.
+      - [ ] Clicking an RFI dispatches a `[FOS] Request RFI` action.
+      - [ ] The backend processes this, simulates the dice roll, updates the `RFI_Answers` in the database for that FOS, and broadcasts the result.
+    - [ ] **Task Completion:**
+      - [ ] Implement drag-and-drop functionality to move personnel tokens onto the task slots.
+      - [ ] When a valid set of tokens is dropped on a task, a "Complete Task" button appears.
+      - [ ] Clicking it dispatches a `[FOS] Complete Task Request`, which is validated and broadcasted by the backend.
 
 ---
 
-- [ ] ### **Phase 5: Deployment and Maintenance**
+## **Phase 3: Role-Based Views & Advanced Game Rules**
 
-- [ ] **Step 1: Containerization**
-    - [ ] Use **Docker** to create containers for your Angular frontend, your Node.js backend, and your MongoDB database. This makes deployment consistent and reliable.
+_This phase transforms the single-player prototype into a fully-fledged, multi-user experience. The goal is to refine the experience for different player roles and implement the more complex game rules._
 
-- [ ] **Step 2: Cloud Deployment**
-    - [ ] Deploy your containers to a cloud provider like AWS (using ECS/ECR), Google Cloud (Cloud Run), or DigitalOcean.
+1.  **User Authentication & Authorization:**
 
-- [ ] **Step 3: Continuous Integration/Continuous Deployment (CI/CD)**
-    - [ ] Set up a pipeline using GitHub Actions or Jenkins to automatically test and deploy new versions of the application when you push changes to your Git repository.
+    - [ ] Implement the `LoginComponent` with a form to submit username/password.
+    - [ ] The `AuthService` sends credentials to the `/api/auth/login` endpoint.
+    - [ ] The backend validates credentials, generates a JWT containing `userId` and `role` (e.g., "CFACC", "MOB_KADENA"), and returns it.
+    - [ ] The frontend stores the JWT in `localStorage`.
+    - [ ] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API requests.
+    - [ ] Implement Angular Route Guards (`AuthGuard`, `RoleGuard`) to protect routes.
 
-By following this detailed, phased plan, you can systematically tackle the complexity of digitizing Operation Pacific Shield, resulting in a robust, interactive, and engaging web-based simulation.
+2.  **Role-Specific UI (Conditional Rendering):**
+
+    - [ ] In your components, use `*ngIf` based on the current user's role to show/hide UI elements.
+      - `*ngIf="user.role === 'CFACC'"` on the "Approve PPR" button.
+      - `*ngIf="user.teamId === currentMob.id"` to prevent players from interacting with other teams' dashboards.
+    - [ ] The backend must re-validate every single action against the user's role and team ownership. **Never trust the client.**
+
+3.  **Combat Adjudication (Conflict Phase):**
+
+    - [ ] Add logic to the `GameLogicService` and backend to check if `gamePhase === 'CONFLICT'`.
+    - [ ] When a fighter is moved onto a hex with an enemy token, open a `CombatDialogComponent`.
+    - [ ] The dialog shows the attacker and defender. The player clicks "Engage."
+    - [ ] This triggers a `[Combat] Adjudicate Request` action.
+    - [ ] The backend performs the dice rolls, determines the outcome, updates/deletes the database documents for the involved units, and broadcasts the result.
+    - [ ] The result should be displayed to all players via a notification/toast and a log entry.
+
+4.  **Scoring and End-of-Turn Automation:**
+    - [ ] Create an `EndTurnService` on the backend.
+    - [ ] This service will be triggered by a GM action.
+    - [ ] It will iterate through all teams and FOSs to:
+      - [ ] Calculate and apply the Logistics Commodities Tax.
+      - [ ] Calculate and award Demoralization Points.
+      - [ ] Calculate and award Mission Points for sorties and completed assessments.
+      - [ ] Advance the `gameTurn` counter.
+    - [ ] All state changes are broadcast to clients.
+
+---
+
+## **Phase 4: Polish, Deployment, and Maintenance**
+
+_This phase focuses on finalizing the user experience, recreating rich data displays, and making the application production-ready._
+
+1.  **UI/UX Enhancements:**
+
+    - [ ] Implement a `GameLogComponent` that displays a running text log of all major events.
+    - [ ] Add a notification/toast service (`ngx-toastr`) for immediate feedback on actions.
+    - [ ] Add tooltips (using Angular Material Tooltips) to explain complex UI elements.
+    - [ ] Refine all CSS for a clean, professional look.
+
+2.  **Game Master (GM) Interface:**
+
+    - [ ] Create a special GM dashboard, protected by a `RoleGuard`.
+    - [ ] The GM dashboard should allow for:
+      - [ ] Manually editing any game state variable (e.g., player points, asset locations).
+      - [ ] Triggering Event/Risk cards.
+      - [ ] Advancing the game turn.
+      - [ ] Creating/starting/ending game sessions.
+
+3.  **Containerization & Deployment:**
+
+    - [ ] Create a `Dockerfile` for the Angular application (multi-stage build for optimization).
+    - [ ] Create a `Dockerfile` for the Node.js backend.
+    - [ ] Create a `docker-compose.yml` file to orchestrate the frontend, backend, and a MongoDB container for local development.
+    - [ ] Set up a CI/CD pipeline (e.g., GitHub Actions) to automatically build and test the code on every push.
+    - [ ] Deploy the containers to a cloud service (e.g., AWS, Google Cloud, DigitalOcean).
+
+4.  **Testing and Bug Fixing:**
+    - [ ] Conduct thorough end-to-end testing of all game mechanics.
+    - [ ] Perform user acceptance testing (UAT) with a group of test players.
+    - [ ] Track and resolve bugs found during testing.
