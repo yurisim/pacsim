@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGameDto, Game } from '@pac-shield/types';
-import { TeamType } from 'node_modules/.prisma/client';
+import { TeamType } from '.prisma/client';
 
 @Injectable()
 export class GameService {
@@ -22,7 +22,6 @@ export class GameService {
       },
     });
 
-    // Create default teams
     const teamTypes = Object.values(TeamType);
     for (const type of teamTypes) {
       await this.prisma.team.create({
