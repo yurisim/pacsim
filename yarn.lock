@@ -1432,6 +1432,19 @@
   resolved "https://registry.yarnpkg.com/@borewit/text-codec/-/text-codec-0.1.1.tgz#7e7f27092473d5eabcffef693a849f2cc48431da"
   integrity sha512-5L/uBxmjaCIX5h8Z+uu+kA9BQLkc/Wl06UGR5ajNRxu+/XjonB5i8JpgFMrPj3LXTCPA0pv8yxUvbUi+QthGGA==
 
+"@brakebein/prisma-generator-nestjs-dto@^1.28.1":
+  version "1.28.1"
+  resolved "https://registry.yarnpkg.com/@brakebein/prisma-generator-nestjs-dto/-/prisma-generator-nestjs-dto-1.28.1.tgz#2077a4c537b1ccab582886f290a653d576685c08"
+  integrity sha512-CRxFNIUyL/EEoKh2YmrGw2W+1wZeNlJRw6UOUGwCCvLRdw0adkpbhZBhpRk5N9reUa4EHLO+8qwDAlV69DIaeQ==
+  dependencies:
+    "@prisma/generator-helper" "^6.0.0"
+    case "^1.6.3"
+    chalk "^4.1.2"
+    make-dir "^3.1.0"
+    prettier "^3.0.0"
+    slash "^3.0.0"
+    type-fest "^4.37.0"
+
 "@bufbuild/protobuf@^2.5.0":
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-2.7.0.tgz#8944a4575abdc222839f93e90c861a67f1981787"
@@ -3536,6 +3549,11 @@
   resolved "https://registry.yarnpkg.com/@prisma/debug/-/debug-6.15.0.tgz#8595f8ae91eadd20d926398449b8602c74e36bbf"
   integrity sha512-y7cSeLuQmyt+A3hstAs6tsuAiVXSnw9T55ra77z0nbNkA8Lcq9rNcQg6PI00by/+WnE/aMRJ/W7sZWn2cgIy1g==
 
+"@prisma/dmmf@6.15.0":
+  version "6.15.0"
+  resolved "https://registry.yarnpkg.com/@prisma/dmmf/-/dmmf-6.15.0.tgz#0e44ad6a0242c5fac93aa6b7d8d7d2e312f722bb"
+  integrity sha512-HAUnWmxjtx8sJevhNhimSfAgho5JR6+H51DpQMZd1C5m1m4jOYkNIZ6oAdujls+Yo9iObfix4sUcvHmQY2HFQQ==
+
 "@prisma/engines-version@6.15.0-5.85179d7826409ee107a6ba334b5e305ae3fba9fb":
   version "6.15.0-5.85179d7826409ee107a6ba334b5e305ae3fba9fb"
   resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-6.15.0-5.85179d7826409ee107a6ba334b5e305ae3fba9fb.tgz#718b17890287447360107bef3675487d8cb0ae15"
@@ -3559,6 +3577,20 @@
     "@prisma/debug" "6.15.0"
     "@prisma/engines-version" "6.15.0-5.85179d7826409ee107a6ba334b5e305ae3fba9fb"
     "@prisma/get-platform" "6.15.0"
+
+"@prisma/generator-helper@^6.0.0":
+  version "6.15.0"
+  resolved "https://registry.yarnpkg.com/@prisma/generator-helper/-/generator-helper-6.15.0.tgz#558a11bf02e62d3956554921d472aeaceaaad922"
+  integrity sha512-QHwXmVo52tcbbqT72He+3iEjNFQmf26Pxt/FrA9rvM/AmpTeSVdwFWf7tJVk1p0CH/mL8hmgHMzzt6wjy3Aa3A==
+  dependencies:
+    "@prisma/debug" "6.15.0"
+    "@prisma/dmmf" "6.15.0"
+    "@prisma/generator" "6.15.0"
+
+"@prisma/generator@6.15.0":
+  version "6.15.0"
+  resolved "https://registry.yarnpkg.com/@prisma/generator/-/generator-6.15.0.tgz#06885dba251570b04fba774886d88ea92a303e79"
+  integrity sha512-STY+e1wHAwl6rvnsmGG6/6ckVG9oRsYVP7W80N9dHSRxx2Wq1A9TxQBWRE8pep2Rq9hSoXNxJV0xcYwzC9K7Vg==
 
 "@prisma/get-platform@6.15.0":
   version "6.15.0"
@@ -5492,6 +5524,11 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001520, caniuse-lite@^1.0.30001702, can
   version "1.0.30001737"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001737.tgz#8292bb7591932ff09e9a765f12fdf5629a241ccc"
   integrity sha512-BiloLiXtQNrY5UyF0+1nSJLXUENuhka2pzy2Fx5pGxqavdrxSCW4U6Pn/PoG3Efspi2frRbHpBV2XsrPE6EDlw==
+
+case@^1.6.3:
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/case/-/case-1.6.3.tgz#0a4386e3e9825351ca2e6216c60467ff5f1ea1c9"
+  integrity sha512-mzDSXIPaFwVDvZAHqZ9VlbyF4yyXRuX6IvB06WvPYkqJVO24kX1PPhv9bfpKNFZyxYFmmgo03HUiD8iklmJYRQ==
 
 chalk@3.0.0:
   version "3.0.0"
@@ -8959,6 +8996,13 @@ make-dir@^2.1.0:
     pify "^4.0.1"
     semver "^5.6.0"
 
+make-dir@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-3.1.0.tgz#415e967046b3a7f1d185277d84aa58203726a13f"
+  integrity sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==
+  dependencies:
+    semver "^6.0.0"
+
 make-dir@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-4.0.0.tgz#c3c2307a771277cd9638305f915c29ae741b614e"
@@ -10364,6 +10408,11 @@ prettier@^2.6.2:
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
   integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
 
+prettier@^3.0.0:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.6.2.tgz#ccda02a1003ebbb2bfda6f83a074978f608b9393"
+  integrity sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==
+
 pretty-format@30.0.5, pretty-format@^30.0.0:
   version "30.0.5"
   resolved "https://registry.yarnpkg.com/pretty-format/-/pretty-format-30.0.5.tgz#e001649d472800396c1209684483e18a4d250360"
@@ -11044,7 +11093,7 @@ semver@^5.6.0:
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.2.tgz#48d55db737c3287cd4835e17fa13feace1c41ef8"
   integrity sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==
 
-semver@^6.3.1:
+semver@^6.0.0, semver@^6.3.1:
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.1.tgz#556d2ef8689146e46dcea4bfdd095f3434dffcb4"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
@@ -11964,7 +12013,7 @@ type-fest@^0.21.3:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.21.3.tgz#d260a24b0198436e133fa26a524a6d65fa3b2e37"
   integrity sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==
 
-type-fest@^4.41.0:
+type-fest@^4.37.0, type-fest@^4.41.0:
   version "4.41.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.41.0.tgz#6ae1c8e5731273c2bf1f58ad39cbae2c91a46c58"
   integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
