@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { GameService } from './game.service';
-import { CreateGameDto } from '@pac-shield/types';
+import { CreateGameDto, JoinGameDto } from '@pac-shield/types';
 
 @Controller('game')
 export class GameController {
@@ -9,6 +9,11 @@ export class GameController {
   @Post('create')
     async createGame(@Body() createGameDto: CreateGameDto) {
     return this.gameService.createGame(createGameDto);
+  }
+
+  @Post('join')
+  async joinGame(@Body() joinGameDto: JoinGameDto) {
+    return this.gameService.joinGame(joinGameDto);
   }
 }
 
