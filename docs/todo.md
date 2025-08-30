@@ -19,14 +19,14 @@ _This phase is about making key decisions, establishing the technical groundwork
       - [X] Add `roomCode` field to the `Game` model.
       - [X] Refine the `Player` model to represent a session-based identity.
       - [X] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
-      - [x] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
-      - [x] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
-    - [x] **Create Database Service:**
-      - [x] Implement a service to connect to the MongoDB database.
-      - [x] Generate the Prisma Client.
+      - [X] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
+      - [X] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
+    - [X] **Create Database Service:**
+      - [X] Implement a service to connect to the MongoDB database.
+      - [X] Generate the Prisma Client.
     - [ ] **API Scaffolding:**
       - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
-      - [ ] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
+      - [X] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
       - [ ] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
       - [ ] Set up basic routing structure.
     - [ ] **WebSocket Server Setup:**
