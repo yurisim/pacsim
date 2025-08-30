@@ -1,17 +1,16 @@
-version: "3.9"
-
 services:
-  mongo:
-    image: mongo:7
-    container_name: pacsim-mongo
+  postgres:
+    image: postgres:17
+    container_name: pacsim-postgres
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - '5432:5432'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: adminpass
+      POSTGRES_DB: ops
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adminpass
     volumes:
-      - mongo_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  mongo_data:
+  postgres_data:
