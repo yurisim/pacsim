@@ -34,10 +34,10 @@ _This phase is about making key decisions, establishing the technical groundwork
       - [x] Define initial WebSocket namespaces (e.g., `/game`).
       - [x] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
 
-3.  **Frontend Setup (Angular/NgRx/Angular Material):**
+3.  **Frontend Setup (Angular/NgRx/PrimeNG):**
 
     - [ ] Initialize a new Angular project using the CLI (`ng new`).
-    - [ ] Install core dependencies: `@angular/material`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
+      - [ ] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
     - [ ] Install `socket.io-client` for WebSocket communication.
     - [ ] **Establish Project Structure:**
       - [ ] Create folders for `/core`, `/features`, `/shared`.
@@ -104,7 +104,8 @@ _This is where the game comes to life. The goal is to enable players to perform 
 
 1.  **Asset Movement:**
 
-    - [ ] Integrate the Angular CDK Drag and Drop module into `GameTokenComponent`.
+        - [ ] Integrate PrimeNG Drag and Drop directives into `GameTokenComponent`.
+
     - [ ] When a token is dropped onto a valid target (a hex or another board area):
       - [ ] The component dispatches an NgRx action, e.g., `[Asset] Move Request ({ assetId, targetLocation })`.
     - [ ] **Create `AssetEffects` in NgRx:**
@@ -122,7 +123,8 @@ _This is where the game comes to life. The goal is to enable players to perform 
 
 2.  **Air Tasking Order (ATO) Implementation:**
 
-    - [ ] Create an interactive `AtoTableComponent` using Angular Material Table.
+        - [ ] Create an interactive `AtoTableComponent` using PrimeNG Table.
+
     - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
     - [ ] **For MOB Players:**
       - [ ] Add a "New Flight Plan" button that opens a dialog (`FlightPlannerDialogComponent`).
@@ -217,7 +219,7 @@ _This phase focuses on finalizing the user experience, recreating rich data disp
 
     - [ ] Implement a `GameLogComponent` that displays a running text log of all major events.
     - [ ] Add a notification/toast service (`ngx-toastr`) for immediate feedback on actions.
-    - [ ] Add tooltips (using Angular Material Tooltips) to explain complex UI elements.
+    - [ ] Add tooltips (using PrimeNG Tooltips) to explain complex UI elements.
     - [ ] Refine all CSS for a clean, professional look.
 
 2.  **Game Master (GM) Interface:**
