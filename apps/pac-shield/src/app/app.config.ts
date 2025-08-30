@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  isDevMode,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
@@ -8,9 +9,14 @@ import { provideRouter } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
 import Material from '@primeuix/themes/material';
+import { provideStore } from '@ngrx/store';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { gameReducer } from './core/store/game/game.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideStore({ game: gameReducer }),
+    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideAnimationsAsync(),

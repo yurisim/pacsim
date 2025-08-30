@@ -42,11 +42,11 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [X] **Establish Project Structure:**
       - [X] Create folders for `/core`, `/features`, `/shared`.
       - [X] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
-    - [ ] **Define TypeScript Models:**
-      - [ ] Create a TypeScript interface/class for every entity in the Prisma schema (`game.model.ts`, `team.model.ts`, etc.). This ensures type safety between frontend and backend.
-    - [ ] **Set up NgRx Store:**
-      - [ ] Define the root `AppState` interface.
-      - [ ] Create an initial `game` feature slice with placeholder actions, reducers, and selectors.
+    - [X] **Define TypeScript Models:**
+      - [X] Create a TypeScript interface/class for every entity in the Prisma schema (`game.model.ts`, `team.model.ts`, etc.). This ensures type safety between frontend and backend.
+    - [X] **Set up NgRx Store:**
+      - [X] Define the root `AppState` interface.
+      - [X] Create an initial `game` feature slice with placeholder actions, reducers, and selectors.
     - [ ] **Create Core Services:**
       - [ ] `ApiService`: For handling all HTTP requests to the backend.
       - [ ] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
