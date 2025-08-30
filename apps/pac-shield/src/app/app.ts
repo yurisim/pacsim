@@ -3,9 +3,10 @@ import { RouterModule } from '@angular/router';
 import { WebSocketService } from './shared/services/websocket.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
-  imports: [RouterModule, CommonModule, FormsModule],
+  imports: [RouterModule, CommonModule, FormsModule, ButtonModule],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',

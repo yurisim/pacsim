@@ -3529,6 +3529,32 @@
   dependencies:
     playwright "1.55.0"
 
+"@primeuix/styled@^0.7.1", "@primeuix/styled@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@primeuix/styled/-/styled-0.7.2.tgz#36cfe3e743559ef5c31b0e87083fb05a26993ec6"
+  integrity sha512-tIJ6byZezTYZ9YUICNSidQHOIQOQL3zeUgjwiX0JnBTK3+WCvy4DyCBcrJ94RtiX0WGFZSYNvaGaFkTo4jU8FQ==
+  dependencies:
+    "@primeuix/utils" "^0.6.1"
+
+"@primeuix/styles@^1.2.2":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@primeuix/styles/-/styles-1.2.3.tgz#d7b80cf9a05503deaf8b11db6fd74c0155a8ea3f"
+  integrity sha512-+KwmQsLTYgVAqFADmO252btz40lstPML6r4QMNjxz4gLNCKVW3kPR0/aCouQx6/21+boXG1P68tu8Zk3FAKr2w==
+  dependencies:
+    "@primeuix/styled" "^0.7.2"
+
+"@primeuix/themes@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@primeuix/themes/-/themes-1.2.3.tgz#b03fd00613a0749953311fde21630a9317753d81"
+  integrity sha512-GLAU2h6lhgln2w10EQalUQlgwbgQ0xZoIOLMNGfIvqU4O09L282P7rwKCKQksvAGAFt1GoO/Q1NgBSxnttr7iA==
+  dependencies:
+    "@primeuix/styled" "^0.7.2"
+
+"@primeuix/utils@^0.6.0", "@primeuix/utils@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@primeuix/utils/-/utils-0.6.1.tgz#34af8e05aa9a142bf3c290381b5e104dc15e52b5"
+  integrity sha512-tQL/ZOPgCdD+NTimlUmhyD0ey8J1XmpZE4hDHM+/fnuBicVVmlKOd5HpS748LcOVRUKbWjmEPdHX4hi5XZoC1Q==
+
 "@prisma/client@^6.15.0":
   version "6.15.0"
   resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.15.0.tgz#c4166aa8492878c842e63c515853d7a4125e6168"
@@ -10421,6 +10447,16 @@ pretty-format@30.0.5, pretty-format@^30.0.0:
     "@jest/schemas" "30.0.5"
     ansi-styles "^5.2.0"
     react-is "^18.3.1"
+
+primeng@^20.0.1:
+  version "20.0.1"
+  resolved "https://registry.yarnpkg.com/primeng/-/primeng-20.0.1.tgz#653a9c6a03279610aa8b2292885e648daae143a2"
+  integrity sha512-TDt0e8/fwVCRghXPzDiuZK679/d0jYU7sZN3/Xm2YWsGLe0W2uewLuaxzCj1HYT4RsIFwIYtumJooWq13SNPaA==
+  dependencies:
+    "@primeuix/styled" "^0.7.1"
+    "@primeuix/styles" "^1.2.2"
+    "@primeuix/utils" "^0.6.0"
+    tslib "^2.3.0"
 
 prisma@^6.15.0:
   version "6.15.0"
