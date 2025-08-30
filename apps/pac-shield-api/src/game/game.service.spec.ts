@@ -36,7 +36,6 @@ describe('GameService', () => {
     it('should return the game with teams if the room code is valid', async () => {
       const connectGameDto: ConnectGameDto = {
         roomCode: 'VALID',
-        playerName: 'Player1',
       };
       const mockGame = { id: 1, roomCode: 'VALID', teams: [] };
       prisma.game.findUnique.mockResolvedValue(mockGame);
@@ -69,6 +68,5 @@ describe('GameService', () => {
         expect(roomCode).toMatch(/^[A-Z0-9]{6}$/);
       });
     });
-
   });
 });
