@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,7 +13,7 @@ datasource db {
 // =============================================
 
 model Game {
-  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                 Int       @id @default(autoincrement())
   name               String    @unique
   roomCode           String    @unique
   turn               Int       @default(1)
@@ -33,9 +33,9 @@ model Game {
 }
 
 model GameBoard {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  gameId String @unique @db.ObjectId
-  game   Game   @relation(fields: [gameId], references: [id])
+  id     Int  @id @default(autoincrement())
+  gameId Int  @unique
+  game   Game @relation(fields: [gameId], references: [id])
 
   politicalAccess   PoliticalAccess[]
   threatTokens      ThreatToken[]
@@ -45,8 +45,8 @@ model GameBoard {
 }
 
 model PoliticalAccess {
-  id         String       @id @default(auto()) @map("_id") @db.ObjectId
-  boardId    String       @db.ObjectId
+  id         Int          @id @default(autoincrement())
+  boardId    Int
   board      GameBoard    @relation(fields: [boardId], references: [id])
   country    Country
   access     AccessStatus
@@ -54,8 +54,8 @@ model PoliticalAccess {
 }
 
 model EnrouteUSTRANSCOM {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  gameBoardId String    @db.ObjectId
+  id          Int       @id @default(autoincrement())
+  gameBoardId Int
   gameBoard   GameBoard @relation(fields: [gameBoardId], references: [id])
 
   assetType   AssetType
@@ -68,9 +68,9 @@ model EnrouteUSTRANSCOM {
 // =============================================
 
 model Team {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  gameId String @db.ObjectId
-  game   Game   @relation(fields: [gameId], references: [id])
+  id     Int  @id @default(autoincrement())
+  gameId Int
+  game   Game @relation(fields: [gameId], references: [id])
 
   type                 TeamType
   name                 String
@@ -88,11 +88,11 @@ model Team {
 }
 
 model Player {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  id        Int    @id @default(autoincrement())
   sessionId String @unique
   name      String
   role      String
-  teamId    String @db.ObjectId
+  teamId    Int
   team      Team   @relation(fields: [teamId], references: [id])
 }
 
@@ -101,9 +101,9 @@ model Player {
 // =============================================
 
 model ForwardOperatingSite {
-  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  id              Int    @id @default(autoincrement())
   fosIdNumber     Int
-  teamId          String @db.ObjectId
+  teamId          Int
   team            Team   @relation(fields: [teamId], references: [id])
   turnEstablished Int
 
@@ -129,20 +129,20 @@ model ForwardOperatingSite {
 }
 
 model CommodityStock {
-  id       String        @id @default(auto()) @map("_id") @db.ObjectId
+  id       Int           @id @default(autoincrement())
   type     CommodityType
   quantity Int
 
-  forwardOperatingSiteId String?               @db.ObjectId
+  forwardOperatingSiteId Int?
   forwardOperatingSite   ForwardOperatingSite? @relation(fields: [forwardOperatingSiteId], references: [id])
 
-  teamId String? @db.ObjectId
+  teamId Int?
   team   Team?   @relation(fields: [teamId], references: [id])
 }
 
 model AnsweredRFI {
-  id    String               @id @default(auto()) @map("_id") @db.ObjectId
-  fosId String               @db.ObjectId
+  id    Int                  @id @default(autoincrement())
+  fosId Int
   fos   ForwardOperatingSite @relation(fields: [fosId], references: [id])
 
   rfiKey   String
@@ -156,7 +156,7 @@ model AnsweredRFI {
 // =============================================
 
 model AircraftInstance {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  id         Int            @id @default(autoincrement())
   callSign   String         @unique
   type       AircraftType
   strength   Int
@@ -164,30 +164,30 @@ model AircraftInstance {
   status     AircraftStatus @default(FMC)
 
   locationType  LocationType
-  locationFosId String?               @db.ObjectId
+  locationFosId Int?
   locationFos   ForwardOperatingSite? @relation("StationedAircraft", fields: [locationFosId], references: [id])
   locationHex   String?
 
-  teamId                String          @db.ObjectId
+  teamId                Int
   team                  Team            @relation(fields: [teamId], references: [id])
   payloadAssets         AssetInstance[] @relation("AircraftPayload")
   payloadPersonnelCount Int             @default(0)
-  currentATOId          String?         @db.ObjectId
+  currentATOId          Int?
 }
 
 model AssetInstance {
-  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  id              Int          @id @default(autoincrement())
   type            AssetType
   palletPositions Int
   mraCategory     MRACategory?
 
   locationType          LocationType
-  locationFosId         String?               @db.ObjectId
+  locationFosId         Int?
   locationFos           ForwardOperatingSite? @relation("StationedAssets", fields: [locationFosId], references: [id])
-  inTransitOnAircraftId String?               @db.ObjectId
+  inTransitOnAircraftId Int?
   inTransitOnAircraft   AircraftInstance?     @relation("AircraftPayload", fields: [inTransitOnAircraftId], references: [id])
 
-  teamId String @db.ObjectId
+  teamId Int
   team   Team   @relation(fields: [teamId], references: [id])
 }
 
@@ -196,8 +196,8 @@ model AssetInstance {
 // =============================================
 
 model ATOLine {
-  id                   String                @id @default(auto()) @map("_id") @db.ObjectId
-  gameId               String                @db.ObjectId
+  id                   Int                   @id @default(autoincrement())
+  gameId               Int
   game                 Game                  @relation(fields: [gameId], references: [id])
   turn                 Int
   aircraftCallSign     String
@@ -213,8 +213,8 @@ model ATOLine {
 }
 
 model ThreatToken {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  boardId     String     @db.ObjectId
+  id          Int        @id @default(autoincrement())
+  boardId     Int
   board       GameBoard  @relation(fields: [boardId], references: [id])
   type        ThreatType
   strength    Int
@@ -222,8 +222,8 @@ model ThreatToken {
 }
 
 model MFR {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  teamId        String    @db.ObjectId
+  id            Int       @id @default(autoincrement())
+  teamId        Int
   team          Team      @relation(fields: [teamId], references: [id])
   request       String
   status        MFRStatus @default(PENDING)
@@ -231,8 +231,8 @@ model MFR {
 }
 
 model GameEvent {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  gameId      String   @db.ObjectId
+  id          Int      @id @default(autoincrement())
+  gameId      Int
   game        Game     @relation(fields: [gameId], references: [id])
   timestamp   DateTime @default(now())
   turn        Int
@@ -244,8 +244,8 @@ model GameEvent {
 // =============================================
 
 model SatelliteInstance {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  gameId      String        @db.ObjectId
+  id          Int           @id @default(autoincrement())
+  gameId      Int
   game        Game          @relation(fields: [gameId], references: [id])
   type        SatelliteType
   orbit       OrbitType
@@ -254,8 +254,8 @@ model SatelliteInstance {
 }
 
 model Hospital {
-  id             String         @id @default(auto()) @map("_id") @db.ObjectId
-  gameId         String         @db.ObjectId
+  id             Int            @id @default(autoincrement())
+  gameId         Int
   game           Game           @relation(fields: [gameId], references: [id])
   locationName   String
   completedTasks HospitalTask[]
@@ -264,16 +264,16 @@ model Hospital {
 }
 
 model Patient {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
-  hospitalId   String       @db.ObjectId
+  id           Int          @id @default(autoincrement())
+  hospitalId   Int
   hospital     Hospital     @relation(fields: [hospitalId], references: [id])
   casualtyType CasualtyType
   turnArrived  Int
 }
 
 model Bedspace {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
-  hospitalId   String       @db.ObjectId
+  id           Int          @id @default(autoincrement())
+  hospitalId   Int
   hospital     Hospital     @relation(fields: [hospitalId], references: [id])
   casualtyType CasualtyType
   capacity     Int
