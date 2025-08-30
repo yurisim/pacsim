@@ -2,8 +2,14 @@
   "recommendations": [
     "nrwl.angular-console",
     "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
     "firsttris.vscode-jest-runner",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "angular.ng-template",
+    "ms-azuretools.vscode-docker",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
+    "prisma.prisma",
+    "bradlc.vscode-tailwindcss",
+    "gruntfuggly.todo-tree"
   ]
 }
