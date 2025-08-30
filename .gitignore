@@ -46,3 +46,4 @@ Thumbs.db
 .angular
 
 libs/types/src/**
+apps/pac-shield/src/app/shared/models/generated/**

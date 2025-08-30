@@ -22,6 +22,24 @@ generator nestjsDto {
   prettier                        = true
 }
 
+generator angularDto {
+  provider                        = "prisma-generator-nestjs-dto"
+  output                          = "../../../../apps/pac-shield/src/app/shared/models/generated"
+  exportRelationModifierClasses = true
+  outputToNestJsResourceStructure = true
+  flatResourceStructure           = true
+  generateFileTypes               = "all"
+  reExport                        = true
+  noDependencies                  = true
+  createDtoPrefix                 = "Create"
+  updateDtoPrefix                 = "Update"
+  dtoSuffix                       = "Dto"
+  entityPrefix                    = ""
+  entitySuffix                    = ""
+  prettier                        = true
+  outputType                      = "interface"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

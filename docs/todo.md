@@ -39,9 +39,9 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [X] Initialize a new Angular project using the CLI (`ng new`).
     - [X] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
     - [X] Install `socket.io-client` for WebSocket communication.
-    - [ ] **Establish Project Structure:**
-      - [ ] Create folders for `/core`, `/features`, `/shared`.
-      - [ ] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
+    - [X] **Establish Project Structure:**
+      - [X] Create folders for `/core`, `/features`, `/shared`.
+      - [X] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
     - [ ] **Define TypeScript Models:**
       - [ ] Create a TypeScript interface/class for every entity in the Prisma schema (`game.model.ts`, `team.model.ts`, etc.). This ensures type safety between frontend and backend.
     - [ ] **Set up NgRx Store:**
