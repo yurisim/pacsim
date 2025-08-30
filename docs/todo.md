@@ -233,7 +233,7 @@ _This phase focuses on finalizing the user experience, recreating rich data disp
 
     - [ ] Create a `Dockerfile` for the Angular application (multi-stage build for optimization).
     - [ ] Create a `Dockerfile` for the Node.js backend.
-    - [ ] Create a `docker-compose.yml` file to orchestrate the frontend, backend, and a MongoDB container for local development.
+    - [ ] Create a `docker-compose.yml` file to orchestrate the frontend, backend, and a PostgreSQL container for local development.
     - [ ] Set up a CI/CD pipeline (e.g., GitHub Actions) to automatically build and test the code on every push.
     - [ ] Deploy the containers to a cloud service (e.g., AWS, Google Cloud, DigitalOcean).
 
