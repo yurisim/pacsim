@@ -12,6 +12,14 @@
         "passWithNoTests": true
       },
       "dependsOn": ["pac-shield-api:build", "pac-shield-api:serve"]
+    },
+    "e2e-dev": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "options": {
+        "jestConfig": "apps/pac-shield-api-e2e/jest.config.ts",
+        "passWithNoTests": true
+      }
     }
   }
 }
