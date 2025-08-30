@@ -13,6 +13,20 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pacsim_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: adminpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,6 +46,7 @@ jobs:
           cache: 'yarn'
 
       - run: yarn install --frozen-lockfile
+      - run: npx prisma migrate deploy --schema apps/pac-shield-api/src/prisma/schema.prisma
       - run: npx prisma generate --schema apps/pac-shield-api/src/prisma/schema.prisma
       - run: yarn playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
@@ -40,6 +55,8 @@ jobs:
       # - run: yarn nx-cloud record -- echo Hello World
       # When you enable task distribution, run the e2e-ci task instead of e2e
       - run: yarn nx affected -t lint test build e2e
+        env:
+          DATABASE_URL: postgresql://postgres:adminpass@localhost:5432/pacsim_test
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
       - run: yarn nx fix-ci
         if: always()
