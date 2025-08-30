@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "wallaby": {
+      "command": "powershell.exe",
+      "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"]
+    }
+  }
+}
