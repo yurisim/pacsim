@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService} from '../prisma/prisma.service';
-import { CreateGameDto, Game, Team } from '@pac-shield/types';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateGameDto, Game } from '@pac-shield/types';
 import { TeamType } from 'node_modules/.prisma/client';
 
 @Injectable()
@@ -8,7 +8,7 @@ export class GameService {
   constructor(private prisma: PrismaService) {}
 
   async createGame(createGameDto: CreateGameDto): Promise<Game> {
-    const { name, victoryConditionMP } = createGameDto;
+    const { victoryConditionMP } = createGameDto;
     let roomCode: string;
 
     do {
@@ -17,7 +17,6 @@ export class GameService {
 
     const game = await this.prisma.game.create({
       data: {
-        name,
         roomCode,
         victoryConditionMP,
       },

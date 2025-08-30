@@ -33,7 +33,6 @@ datasource db {
 
 model Game {
   id                 Int       @id @default(autoincrement())
-  name               String    @unique
   /// @DtoCreateOptional
   roomCode           String    @unique
   turn               Int       @default(1)
