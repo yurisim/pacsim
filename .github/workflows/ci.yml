@@ -54,7 +54,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
-      - run: npx prisma migrate deploy --schema apps/pac-shield-api/src/prisma/schema.prisma
+      - run: npx prisma db push --schema apps/pac-shield-api/src/prisma/schema.prisma --accept-data-loss
         env:
           DATABASE_URL: postgresql://postgres:adminpass@localhost:5432/pacsim
       - run: npx prisma generate --schema apps/pac-shield-api/src/prisma/schema.prisma
