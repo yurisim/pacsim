@@ -13,4 +13,23 @@ describe('Game Controller E2E', () => {
       expect(res.data.roomCode).toHaveLength(6);
     });
   });
+
+  describe('POST /api/game/join', () => {
+    it('should allow a player to join an existing game', async () => {
+      // 1. Create a game to get a room code
+      const createRes = await axios.post(`/api/game/create`, {
+        victoryConditionMP: 100,
+      });
+      const { id, roomCode } = createRes.data;
+      expect(createRes.status).toBe(201);
+
+      // 2. Join the game using the room code
+      const joinRes = await axios.post(`/api/game/join`, { roomCode });
+
+      // 3. Verify the response
+      expect(joinRes.status).toBe(201);
+      expect(joinRes.data.id).toBe(id);
+      expect(joinRes.data.roomCode).toBe(roomCode);
+    });
+  });
 });

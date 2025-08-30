@@ -27,7 +27,7 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [ ] **API Scaffolding:**
       - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
       - [X] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
-      - [ ] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
+      - [X] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
       - [ ] Set up basic routing structure.
     - [ ] **WebSocket Server Setup:**
       - [ ] Integrate Socket.IO with the NestJS server using a Gateway.
