@@ -11,7 +11,8 @@ export class AppService {
 
   async checkDbConnection(): Promise<{ status: string; message: string }> {
     try {
-      await this.prisma.$runCommandRaw({ ping: 1 });
+      // Perform a simple query to check PostgreSQL connection
+      await this.prisma.$queryRaw`SELECT 1`;
       return { status: 'ok', message: 'Database connection is healthy' };
     } catch (error) {
       return { status: 'error', message: 'Database connection failed' };
