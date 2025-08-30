@@ -1,0 +1,18 @@
+<div class="join-container">
+  <p-card header="Join Game" styleClass="p-card-shadow">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="roomCode">Room Code</label>
+        <input id="roomCode" type="text" pInputText [(ngModel)]="roomCode" />
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Join" icon="pi pi-arrow-right" (onClick)="joinGame()" [loading]="isLoading"></p-button>
+      @if (errorMessage) {
+        <div class="p-error error-message">
+          {{ errorMessage }}
+        </div>
+      }
+    </ng-template>
+  </p-card>
+</div>
