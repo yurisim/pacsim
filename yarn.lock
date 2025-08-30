@@ -2968,6 +2968,27 @@
     object-hash "3.0.0"
     tslib "2.8.1"
 
+"@ngrx/effects@^20.0.1":
+  version "20.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-20.0.1.tgz#324716a792c5048f71153da471f8eeaa0a5a43f9"
+  integrity sha512-bUwAPxwk9ly9FAalECLsjEFrIrrEK5iE95idv1TCekMwShqWuw1XzhqVqcmonbCFEiAGBDgyvDYwJxGi0W6UPw==
+  dependencies:
+    tslib "^2.0.0"
+
+"@ngrx/store-devtools@^20.0.1":
+  version "20.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/store-devtools/-/store-devtools-20.0.1.tgz#282fad69a95c48a4e9e466abd0beec5d90414f95"
+  integrity sha512-csP579rdeiz0WF5kOmUSX+6PWb4Q/zw6ejYzktJHcQvauWcVU2rPsBCxbyaK6eRJl/ZgzJrTmmGDRnySIglE1A==
+  dependencies:
+    tslib "^2.0.0"
+
+"@ngrx/store@^20.0.1":
+  version "20.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-20.0.1.tgz#614a7dcc357f18fc2ed05e0cec91d7d4cffded29"
+  integrity sha512-SWIHKe9lBoNf4rOklaWbCRAz8ie1Duf1iL4SMe6BipqhdUfJ/pEbcz3xMQUIlv1CciHhRgMJFTzFrDxamYHknQ==
+  dependencies:
+    tslib "^2.0.0"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -4334,6 +4355,11 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
+"@types/geojson@*":
+  version "7946.0.16"
+  resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.16.tgz#8ebe53d69efada7044454e3305c19017d97ced2a"
+  integrity sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==
+
 "@types/http-errors@*":
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/@types/http-errors/-/http-errors-2.0.5.tgz#5b749ab2b16ba113423feb1a64a95dcd30398472"
@@ -4386,6 +4412,13 @@
   version "7.0.15"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
+
+"@types/leaflet@^1.9.20":
+  version "1.9.20"
+  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-1.9.20.tgz#a7feef4b0a4b36335dfc98456e76c0a86ab8462c"
+  integrity sha512-rooalPMlk61LCaLOvBF2VIf9M47HgMQqi5xQ9QRi7c8PkdIe0WrIi5IxXUXQjAdL0c+vcQ01mYWbthzmp9GHWw==
+  dependencies:
+    "@types/geojson" "*"
 
 "@types/mime@^1":
   version "1.3.5"
@@ -8811,6 +8844,11 @@ launch-editor@^2.6.1:
   dependencies:
     picocolors "^1.1.1"
     shell-quote "^1.8.3"
+
+leaflet@^1.9.4:
+  version "1.9.4"
+  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.9.4.tgz#23fae724e282fa25745aff82ca4d394748db7d8d"
+  integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
 
 less-loader@^11.1.0:
   version "11.1.4"

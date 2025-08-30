@@ -6,39 +6,39 @@ _This phase is about making key decisions, establishing the technical groundwork
 
 1.  **Project Initialization & Version Control:**
 
-    - [x] Initialize a monorepo using Git to house both the frontend and backend projects.
-    - [x] Establish main, develop, and feature branching strategies.
-    - [x] Configure repository on GitHub/GitLab.
+    - [X] Initialize a monorepo using Git to house both the frontend and backend projects.
+    - [X] Establish main, develop, and feature branching strategies.
+    - [X] Configure repository on GitHub/GitLab.
 
 2.  **Backend Setup (Node.js/NestJS/Prisma/MongoDB):**
 
-    - [x] Initialize a Node.js project (`npm init`).
-    - [x] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
-    - [x] **Define the Prisma Schema (`schema.prisma`):**
-      - [x] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
-      - [x] Add `roomCode` field to the `Game` model.
-      - [x] Refine the `Player` model to represent a session-based identity.
-      - [x] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
-      - [x] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
-      - [x] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
-    - [x] **Create Database Service:**
-      - [x] Implement a service to connect to the MongoDB database.
-      - [x] Generate the Prisma Client.
-    - [x] **API Scaffolding:**
-      - [x] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
-      - [x] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
-      - [x] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
-      - [x] Set up basic routing structure.
-    - [x] **WebSocket Server Setup:**
-      - [x] Integrate Socket.IO with the NestJS server using a Gateway.
-      - [x] Define initial WebSocket namespaces (e.g., `/game`).
-      - [x] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
+    - [X] Initialize a Node.js project (`npm init`).
+    - [X] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
+    - [X] **Define the Prisma Schema (`schema.prisma`):**
+      - [X] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
+      - [X] Add `roomCode` field to the `Game` model.
+      - [X] Refine the `Player` model to represent a session-based identity.
+      - [X] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
+      - [X] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
+      - [X] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
+    - [X] **Create Database Service:**
+      - [X] Implement a service to connect to the MongoDB database.
+      - [X] Generate the Prisma Client.
+    - [X] **API Scaffolding:**
+      - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
+      - [X] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
+      - [X] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
+      - [X] Set up basic routing structure.
+    - [X] **WebSocket Server Setup:**
+      - [X] Integrate Socket.IO with the NestJS server using a Gateway.
+      - [X] Define initial WebSocket namespaces (e.g., `/game`).
+      - [X] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
 
 3.  **Frontend Setup (Angular/NgRx/PrimeNG):**
 
-    - [ ] Initialize a new Angular project using the CLI (`ng new`).
-      - [ ] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
-    - [ ] Install `socket.io-client` for WebSocket communication.
+    - [X] Initialize a new Angular project using the CLI (`ng new`).
+    - [X] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
+    - [X] Install `socket.io-client` for WebSocket communication.
     - [ ] **Establish Project Structure:**
       - [ ] Create folders for `/core`, `/features`, `/shared`.
       - [ ] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.

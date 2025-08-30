@@ -8,11 +8,15 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/pac-shield",
         "browser": "apps/pac-shield/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": [
+          "zone.js"
+        ],
         "tsConfig": "apps/pac-shield/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -21,7 +25,9 @@
             "input": "apps/pac-shield/public"
           }
         ],
-        "styles": ["apps/pac-shield/src/styles.scss"]
+        "styles": [
+          "apps/pac-shield/src/styles.scss"
+        ]
       },
       "configurations": {
         "production": {
@@ -59,7 +65,6 @@
         }
       },
       "defaultConfiguration": "development",
-      "dependsOn": ["pac-shield-api:serve"],
       "options": {
         "proxyConfig": "apps/pac-shield/proxy.conf.json"
       }
@@ -75,7 +80,9 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "apps/pac-shield/jest.config.ts",
         "tsConfig": "apps/pac-shield/tsconfig.spec.json"
