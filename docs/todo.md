@@ -24,11 +24,11 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [X] **Create Database Service:**
       - [X] Implement a service to connect to the MongoDB database.
       - [X] Generate the Prisma Client.
-    - [ ] **API Scaffolding:**
+    - [X] **API Scaffolding:**
       - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
       - [X] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
       - [X] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
-      - [ ] Set up basic routing structure.
+      - [X] Set up basic routing structure.
     - [ ] **WebSocket Server Setup:**
       - [ ] Integrate Socket.IO with the NestJS server using a Gateway.
       - [ ] Define initial WebSocket namespaces (e.g., `/game`).
