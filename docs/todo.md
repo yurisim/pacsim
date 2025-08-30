@@ -47,16 +47,16 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [X] **Set up NgRx Store:**
       - [X] Define the root `AppState` interface.
       - [X] Create an initial `game` feature slice with placeholder actions, reducers, and selectors.
-    - [ ] **Create Core Services:**
-      - [ ] `ApiService`: For handling all HTTP requests to the backend.
-      - [ ] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
-        - [ ] Implement robust reconnection logic (e.g., exponential backoff) to handle unstable network conditions.
-      - [ ] `AuthService`: For handling game joining via room code and managing the session JWT.
+    - [X] **Create Core Services:**
+      - [X] `ApiService`: For handling all HTTP requests to the backend.
+      - [X] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
+        - [X] Implement robust reconnection logic (e.g., exponential backoff) to handle unstable network conditions.
+      - [X] `AuthService`: For handling game joining via room code and managing the session JWT.
 
 4.  **Initial UI Scaffolding:**
-    - [ ] Set up Angular routing for a `/join` page (for entering a room code) and a `/game/:id` page.
-    - [ ] Implement a basic `AppComponent` with a toolbar and a router outlet.
-    - [ ] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
+    - [X] Set up Angular routing for a `/join` page (for entering a room code) and a `/game/:id` page.
+    - [X] Implement a basic `AppComponent` with a toolbar and a router outlet.
+    - [X] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
 
 ---
 
