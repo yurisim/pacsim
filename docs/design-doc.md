@@ -42,7 +42,7 @@ This schema defines all the collections (models), data types, relationships, and
 
 - **Joining a Game:** A player sends a `roomCode` to the backend. The backend validates it, creates a new `Player` document with a unique `sessionId` and an assigned role, and returns a session-specific JWT.
 - **Planning an Airlift Mission (MOB):** The player selects assets. A new `ATOLine` is created. The `inTransitOnAircraftId` field is updated for each loaded `AssetInstance`.
-- **Adjudicating Combat (GM/System):** The system fetches the `AircraftInstance` and `ThreatToken`, reads their `strength`, applies modifiers, resolves the outcome, and updates the database.
+- **Adjudicating Combat (GM/System):** The system fetches the `AircraftInstance` and `ThreatToken` rows, reads their `strength`, applies modifiers, resolves the outcome, and updates the database.
 - **Calculating Logistics Tax (End of Day):** A server-side job queries all occupied `ForwardOperatingSite`s, calculates personnel counts, and decrements commodities from the `commodities` JSON object.
 
 ## 6. Future Considerations
