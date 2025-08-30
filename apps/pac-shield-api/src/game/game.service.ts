@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Game, TeamType } from '../../node_modules/.prisma/client';
-import { CreateGameDto } from './dto/create-game.dto';
+import { CreateGameDto } from '../../node_modules/.prisma/dto';
 
 @Injectable()
 export class GameService {

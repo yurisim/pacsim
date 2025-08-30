@@ -1,5 +1,0 @@
----
-description: It is imperative to always create a plan and a todo list before execution. Make a test at the appropriate level (api, e2e, frontend, etc.) that can evaluate reproducibly whether or not your implemention is good. Do not make mock tests, instead value E2E testing.
-globs:
-alwaysApply: true
----
