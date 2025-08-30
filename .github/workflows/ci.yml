@@ -46,7 +46,17 @@ jobs:
           cache: 'yarn'
 
       - run: yarn install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - run: npx prisma migrate deploy --schema apps/pac-shield-api/src/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:adminpass@localhost:5432/pacsim_test
       - run: npx prisma generate --schema apps/pac-shield-api/src/prisma/schema.prisma
       - run: yarn playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
