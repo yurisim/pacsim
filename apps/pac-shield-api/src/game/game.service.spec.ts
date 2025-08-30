@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameService } from './game.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { JoinGameDto } from '@pac-shield/types';
+import { ConnectGameDto } from '@pac-shield/types';
 
 describe('GameService', () => {
   let service: GameService;
@@ -34,14 +34,14 @@ describe('GameService', () => {
 
   describe('joinGame', () => {
     it('should return the game with teams if the room code is valid', async () => {
-      const joinGameDto: JoinGameDto = {
+      const connectGameDto: ConnectGameDto = {
         roomCode: 'VALID',
         playerName: 'Player1',
       };
       const mockGame = { id: 1, roomCode: 'VALID', teams: [] };
       prisma.game.findUnique.mockResolvedValue(mockGame);
 
-      const result = await service.joinGame(joinGameDto);
+      const result = await service.joinGame(connectGameDto);
 
       expect(prisma.game.findUnique).toHaveBeenCalledWith({
         where: { roomCode: 'VALID' },
@@ -51,13 +51,12 @@ describe('GameService', () => {
     });
 
     it('should throw NotFoundException if the room code is invalid', async () => {
-      const joinGameDto: JoinGameDto = {
+      const connectGameDto: ConnectGameDto = {
         roomCode: 'INVALID',
-        playerName: 'Player1',
       };
       prisma.game.findUnique.mockResolvedValue(null);
 
-      await expect(service.joinGame(joinGameDto)).rejects.toThrow(
+      await expect(service.joinGame(connectGameDto)).rejects.toThrow(
         NotFoundException
       );
     });
@@ -70,6 +69,6 @@ describe('GameService', () => {
         expect(roomCode).toMatch(/^[A-Z0-9]{6}$/);
       });
     });
-    
+
   });
 });
