@@ -6,7 +6,7 @@ _This phase is about making key decisions, establishing the technical groundwork
 
 1.  **Project Initialization & Version Control:**
 
-    - [xX] Initialize a monorepo using Git to house both the frontend and backend projects.
+    - [X] Initialize a monorepo using Git to house both the frontend and backend projects.
     - [X] Establish main, develop, and feature branching strategies.
     - [X] Configure repository on GitHub/GitLab.
 
@@ -14,18 +14,18 @@ _This phase is about making key decisions, establishing the technical groundwork
 
     - [X] Initialize a Node.js project (`npm init`).
     - [X] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
-    - [ ] **Define the Prisma Schema (`schema.prisma`):**
+    - [X] **Define the Prisma Schema (`schema.prisma`):**
       - [X] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
       - [X] Add `roomCode` field to the `Game` model.
       - [X] Refine the `Player` model to represent a session-based identity.
       - [X] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
-      - [ ] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
-      - [ ] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
-    - [ ] **Create Database Service:**
-      - [ ] Implement a service to connect to the MongoDB database.
-      - [ ] Generate the Prisma Client.
+      - [x] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
+      - [x] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
+    - [x] **Create Database Service:**
+      - [x] Implement a service to connect to the MongoDB database.
+      - [x] Generate the Prisma Client.
     - [ ] **API Scaffolding:**
-      - [ ] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
+      - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
       - [ ] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
       - [ ] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
       - [ ] Set up basic routing structure.
