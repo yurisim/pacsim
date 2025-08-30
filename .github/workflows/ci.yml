@@ -32,6 +32,7 @@ jobs:
           cache: 'yarn'
 
       - run: yarn install --frozen-lockfile
+      - run: npx prisma generate --schema apps/pac-shield-api/src/prisma/schema.prisma
       - run: yarn playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
 
