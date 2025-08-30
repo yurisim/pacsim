@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateGameDto, Game, JoinGameDto } from '@pac-shield/types';
+import { CreateGameDto, Game, ConnectGameDto } from '@pac-shield/types';
 import { TeamType } from '.prisma/client';
 
 @Injectable()
@@ -36,11 +36,14 @@ export class GameService {
     return game;
   }
 
-  async joinGame(joinGameDto: JoinGameDto): Promise<Game> {
-    const { roomCode } = joinGameDto;
+  async joinGame(connectGameDto: ConnectGameDto): Promise<Game> {
+    const { roomCode } = connectGameDto;
 
     const game = await this.prisma.game.findUnique({
       where: { roomCode },
+      include: {
+        teams: true,
+      },
     });
 
     if (!game) {

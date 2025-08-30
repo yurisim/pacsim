@@ -33,15 +33,20 @@ describe('GameService', () => {
   });
 
   describe('joinGame', () => {
-    it('should return the game if the room code is valid', async () => {
+    it('should return the game with teams if the room code is valid', async () => {
       const joinGameDto: JoinGameDto = {
         roomCode: 'VALID',
         playerName: 'Player1',
       };
-      const mockGame = { id: 1, roomCode: 'VALID' };
+      const mockGame = { id: 1, roomCode: 'VALID', teams: [] };
       prisma.game.findUnique.mockResolvedValue(mockGame);
 
       const result = await service.joinGame(joinGameDto);
+
+      expect(prisma.game.findUnique).toHaveBeenCalledWith({
+        where: { roomCode: 'VALID' },
+        include: { teams: true },
+      });
       expect(result).toEqual(mockGame);
     });
 
