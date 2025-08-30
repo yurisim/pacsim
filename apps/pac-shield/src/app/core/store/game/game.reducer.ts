@@ -4,7 +4,7 @@ import * as GameActions from './game.actions';
 
 export const gameReducer = createReducer(
   initialGameState,
-  on(GameActions.loadGame, (state) => ({
+  on(GameActions.loadGameByRoomCode, GameActions.loadGameById, (state) => ({
     ...state,
     loading: true,
     error: null,
