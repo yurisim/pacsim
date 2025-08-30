@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameController } from './game.controller';
 import { GameService } from './game.service';
+import { CreateGameDto } from './dto/create-game.dto';
 
 describe('GameController', () => {
   let controller: GameController;
@@ -13,7 +14,9 @@ describe('GameController', () => {
         {
           provide: GameService,
           useValue: {
-            createGame: jest.fn().mockResolvedValue({ id: '1', name: 'Test', roomCode: 'ABC123' }),
+            createGame: jest
+              .fn()
+              .mockResolvedValue({ id: '1', name: 'Test', roomCode: 'ABC123' }),
           },
         },
       ],
@@ -25,10 +28,13 @@ describe('GameController', () => {
 
   describe('createGame', () => {
     it('should create a new game', async () => {
-      const result = await controller.createGame({ name: 'Test' });
+      const createGameDto: CreateGameDto = {
+        name: 'Test',
+        victoryConditionMP: 100,
+      };
+      const result = await controller.createGame(createGameDto);
       expect(result).toEqual({ id: '1', name: 'Test', roomCode: 'ABC123' });
-      expect(service.createGame).toHaveBeenCalledWith('Test');
+      expect(service.createGame).toHaveBeenCalledWith(createGameDto);
     });
   });
 });
-
