@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Game, TeamType } from '../generated/prisma';
+import { Game, TeamType } from '../../node_modules/.prisma/client';
+import { CreateGameDto } from './dto/create-game.dto';
 
 @Injectable()
 export class GameService {
   constructor(private prisma: PrismaService) {}
 
-  async createGame(name: string): Promise<Game> {
+  async createGame(createGameDto: CreateGameDto): Promise<Game> {
+    const { name, victoryConditionMP } = createGameDto;
     let roomCode: string;
 
     do {
@@ -17,7 +19,7 @@ export class GameService {
       data: {
         name,
         roomCode,
-        victoryConditionMP: 100, // Default value, adjust as needed
+        victoryConditionMP,
       },
     });
 

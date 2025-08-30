@@ -1,13 +1,14 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { GameService } from './game.service';
+import { CreateGameDto } from './dto/create-game.dto';
 
 @Controller('game')
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Post('create')
-  async createGame(@Body() body: { name: string }) {
-    return this.gameService.createGame(body.name);
+  async createGame(@Body() createGameDto: CreateGameDto) {
+    return this.gameService.createGame(createGameDto);
   }
 }
 
