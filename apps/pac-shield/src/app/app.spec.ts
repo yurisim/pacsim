@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideMockStore } from '@ngrx/store/testing';
+import { ToolbarModule } from 'primeng/toolbar';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, HttpClientTestingModule, ToolbarModule],
+      providers: [provideMockStore({})],
     }).compileComponents();
   });
 
@@ -12,8 +16,9 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Welcome pac-shield'
+    expect(compiled.querySelector('h1.app-title')?.textContent).toContain(
+      'pac-shield'
     );
   });
 });
+
