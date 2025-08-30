@@ -1,16 +1,17 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../node_modules/.prisma/client"
+  output   = "../../../../node_modules/.prisma/client"
 }
 
 generator nestjsDto {
   provider                        = "prisma-generator-nestjs-dto"
-  output                          = "../../node_modules/.prisma/dto"
+  output                          = "../../../../libs/types/src"
   exportRelationModifierClasses = true
   outputToNestJsResourceStructure = true
   flatResourceStructure           = true
   classValidatorIsOptional        = true
   classValidation                 = true
+  generateFileTypes               = "all"
   reExport                        = true
   definiteAssignmentAssertion     = true
   createDtoPrefix                 = "Create"
@@ -33,6 +34,7 @@ datasource db {
 model Game {
   id                 Int       @id @default(autoincrement())
   name               String    @unique
+  /// @DtoCreateOptional
   roomCode           String    @unique
   turn               Int       @default(1)
   day                Int       @default(1)
