@@ -6,7 +6,7 @@ generator client {
 generator nestjsDto {
   provider                        = "prisma-generator-nestjs-dto"
   output                          = "../app/generated"
-  exportRelationModifierClasses = true
+  exportRelationModifierClasses   = true
   outputToNestJsResourceStructure = true
   flatResourceStructure           = true
   classValidatorIsOptional        = true
@@ -25,7 +25,7 @@ generator nestjsDto {
 generator angularDto {
   provider                        = "prisma-generator-nestjs-dto"
   output                          = "../../../pac-shield/src/app/generated"
-  exportRelationModifierClasses = true
+  exportRelationModifierClasses   = true
   outputToNestJsResourceStructure = true
   flatResourceStructure           = true
   generateFileTypes               = "all"
@@ -138,10 +138,10 @@ model Player {
 // =============================================
 
 model ForwardOperatingSite {
-  id              Int    @id @default(autoincrement())
+  id              Int  @id @default(autoincrement())
   fosIdNumber     Int
   teamId          Int
-  team            Team   @relation(fields: [teamId], references: [id])
+  team            Team @relation(fields: [teamId], references: [id])
   turnEstablished Int
 
   answeredRFIs    AnsweredRFI[]
@@ -174,7 +174,7 @@ model CommodityStock {
   forwardOperatingSite   ForwardOperatingSite? @relation(fields: [forwardOperatingSiteId], references: [id])
 
   teamId Int?
-  team   Team?   @relation(fields: [teamId], references: [id])
+  team   Team? @relation(fields: [teamId], references: [id])
 }
 
 model AnsweredRFI {
@@ -225,7 +225,7 @@ model AssetInstance {
   inTransitOnAircraft   AircraftInstance?     @relation("AircraftPayload", fields: [inTransitOnAircraftId], references: [id])
 
   teamId Int
-  team   Team   @relation(fields: [teamId], references: [id])
+  team   Team @relation(fields: [teamId], references: [id])
 }
 
 // =============================================

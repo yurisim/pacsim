@@ -20,7 +20,7 @@ describe('Game Controller E2E', () => {
       const createRes = await axios.post(`/api/game/create`, {
         victoryConditionMP: 100,
       });
-      const { id, roomCode } = createRes.data;
+      const { roomCode } = createRes.data;
       expect(createRes.status).toBe(201);
 
       // 2. Join the game using the room code
@@ -28,8 +28,8 @@ describe('Game Controller E2E', () => {
 
       // 3. Verify the response
       expect(joinRes.status).toBe(201);
-      expect(joinRes.data.id).toBe(id);
-      expect(joinRes.data.roomCode).toBe(roomCode);
+      expect(typeof joinRes.data.token).toBe('string');
+      expect(joinRes.data.token).not.toBe('');
     });
   });
 });
