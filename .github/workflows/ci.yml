@@ -32,6 +32,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Fetch master branch
+        run: git fetch origin master:master
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         uses: nrwl/nx-set-shas@v3
       - uses: actions/setup-node@v4
