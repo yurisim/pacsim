@@ -49,11 +49,10 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim
 
-      - name: Start backend API
-        run: yarn nx serve pac-shield-api &
-
       - name: Run affected systems
-        run: npx nx affected -t lint test build e2e --verbose
+        run: |
+          npx nx serve pac-shield-api &
+          npx nx affected -t lint test build e2e --verbose
 
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim
