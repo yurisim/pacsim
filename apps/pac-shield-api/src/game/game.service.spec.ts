@@ -43,6 +43,29 @@ describe('GameService', () => {
     expect(service).toBeDefined();
   });
 
+  describe('getGameById', () => {
+    it('should return the game if the id is valid', async () => {
+      const mockGame = { id: 1, roomCode: 'VALID', teams: [] };
+      prisma.game.findUnique.mockResolvedValue(mockGame);
+
+      const result = await service.getGameById(1);
+
+      expect(prisma.game.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        include: { teams: true },
+      });
+      expect(result).toEqual(mockGame);
+    });
+
+    it('should throw NotFoundException if the id is invalid', async () => {
+      prisma.game.findUnique.mockResolvedValue(null);
+
+      await expect(service.getGameById(999)).rejects.toThrow(
+        NotFoundException
+      );
+    });
+  });
+
   describe('joinGame', () => {
     it('should return a token if the room code is valid', async () => {
       const connectGameDto: ConnectGameDto = {

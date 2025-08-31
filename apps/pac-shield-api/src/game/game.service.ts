@@ -40,6 +40,21 @@ export class GameService {
     return game;
   }
 
+  async getGameById(id: number): Promise<Game> {
+    const game = await this.prisma.game.findUnique({
+      where: { id },
+      include: {
+        teams: true,
+      },
+    });
+
+    if (!game) {
+      throw new NotFoundException(`Game with ID "${id}" not found`);
+    }
+
+    return game;
+  }
+
   async joinGame(connectGameDto: ConnectGameDto) {
     const { roomCode } = connectGameDto;
 
