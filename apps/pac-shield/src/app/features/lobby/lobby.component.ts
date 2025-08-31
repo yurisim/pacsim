@@ -12,7 +12,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
-import { EMPTY, Observable, switchMap } from 'rxjs';
+import { EMPTY, Observable } from 'rxjs';
 import { JoinTeamDialogComponent } from './join-team-dialog/join-team-dialog.component';
 import { WebSocketService } from '../../shared/services/websocket.service';
 

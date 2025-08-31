@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { AuthService } from '../../shared/services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -15,6 +17,8 @@ import { CommonModule } from '@angular/common';
     ButtonModule,
     InputTextModule,
     CardModule,
+    InputGroupModule,
+    InputGroupAddonModule,
     CommonModule,
   ],
   templateUrl: './join.component.html',
