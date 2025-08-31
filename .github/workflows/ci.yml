@@ -52,7 +52,7 @@ jobs:
       - name: Run affected systems
         run: |
           npx nx serve pac-shield-api &
-          npx nx affected -t lint test build e2e --verbose
+          npx nx affected -t lint test build e2e
 
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim

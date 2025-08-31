@@ -15,14 +15,14 @@ export class WebSocketService {
   public connectionStatus$ = this.connectionStatus.asObservable();
 
   constructor() {
-    const fibonacciDelays = [1000, 2000, 3000, 5000, 8000, 13000];
+    const fibonacciDelays = [1000, 2000, 3000, 5000, 8000, 13000, 21000];
     let attempt = 0;
 
     this.socket = io(environment.websocketUrl, {
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000, // Initial delay
-      reconnectionDelayMax: 13000, // Max delay
+      reconnectionDelayMax: 21000, // Max delay
       randomizationFactor: 0,
       autoConnect: false, // Connect manually
     });
