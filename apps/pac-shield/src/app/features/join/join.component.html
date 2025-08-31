@@ -25,12 +25,20 @@
     </div>
     <ng-template pTemplate="footer">
       <div class="flex flex-col items-center gap-2">
-        <p-button
-          label="Join"
-          icon="pi pi-arrow-right"
-          (onClick)="joinGame()"
-          [loading]="isLoading"
-        ></p-button>
+        <div class="flex gap-2 w-full justify-center">
+          <p-button
+            label="Back"
+            icon="pi pi-arrow-left"
+            (onClick)="router.navigate(['/'])"
+            [text]="true"
+          ></p-button>
+          <p-button
+            label="Join"
+            icon="pi pi-arrow-right"
+            (onClick)="joinGame()"
+            [loading]="isLoading"
+          ></p-button>
+        </div>
         @if (errorMessage) {
         <div class="p-error">
           {{ errorMessage }}

@@ -31,7 +31,7 @@ export class JoinComponent {
   errorMessage = '';
 
   private authService = inject(AuthService);
-  private router = inject(Router);
+  public router = inject(Router);
 
   joinGame(): void {
     if (!this.roomCode) {
