@@ -68,7 +68,14 @@ jobs:
       # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
       # - run: yarn nx-cloud record -- echo Hello World
       # When you enable task distribution, run the e2e-ci task instead of e2e
-      - run: yarn nx affected -t lint test build e2e
+      - name: Start backend API
+        run: yarn nx serve pac-shield-api &
+
+      - name: Wait for API to be ready
+        run: yarn wait-on http://localhost:3000/api
+
+      - name: Run affected E2E tests
+        run: yarn nx affected --target=e2e
         env:
           DATABASE_URL: postgresql://postgres:adminpass@localhost:5432/pacsim
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
