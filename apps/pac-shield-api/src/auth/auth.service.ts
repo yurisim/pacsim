@@ -5,8 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  async login(gameId: number, userId?: number) {
-    const payload = { gameId, sub: userId };
+  async login(gameId: number, playerId?: number) {
+    const payload = { gameId, sub: playerId, playerId };
     return {
       token: this.jwtService.sign(payload),
     };

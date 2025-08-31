@@ -16,11 +16,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger: Logger = new Logger('GameGateway');
 
   handleConnection(client: Socket) {
+    const { gameId } = client.handshake.query;
+    if (gameId) {
+      client.join(gameId);
+      this.logger.log(`Client ${client.id} joined room ${gameId}`);
+    }
     this.logger.log(`Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('playerJoined')
+  handlePlayerJoined(client: Socket, payload: { playerName: string }): void {
+    const room = client.rooms.values().next().value;
+    this.server.to(room).emit('playerJoined', payload);
   }
 
   @SubscribeMessage('action')

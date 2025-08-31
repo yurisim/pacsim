@@ -22,6 +22,7 @@ import { CommonModule } from '@angular/common';
 })
 export class JoinComponent {
   roomCode = '';
+  playerName = '';
   isLoading = false;
   errorMessage = '';
 
@@ -33,29 +34,28 @@ export class JoinComponent {
       this.errorMessage = 'Room code is required.';
       return;
     }
+    if (!this.playerName) {
+      this.errorMessage = 'Player name is required.';
+      return;
+    }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.joinGame(this.roomCode).subscribe({
+    this.authService.joinGame(this.roomCode, this.playerName).subscribe({
       next: () => {
-        // On success, the backend will return a JWT. The service handles storing it.
-        // We can then navigate to the game page.
-        // The specific game ID would typically come from the JWT payload or the join response.
-        // For now, we'll assume a static or derivable ID.
         const gameId = this.authService.getGameId();
         if (gameId) {
-          this.router.navigate(['/game', gameId]);
+          this.router.navigate(['/lobby', gameId]);
         } else {
           this.errorMessage =
-            'Failed to retrieve game details from session. Please try logging in again.';
-          this.isLoading = false; // Stop loading indicator on this error
+            'Failed to retrieve game details. Please try again.';
+          this.isLoading = false;
         }
       },
       error: (err) => {
         this.errorMessage =
-          err.error?.message ||
-          'Failed to join the game. Please check the room code and try again.';
+          err.error?.message || 'Failed to join the game. Please try again.';
         this.isLoading = false;
       },
     });

@@ -46,7 +46,7 @@ export class HomeComponent {
     this.apiService.post<Game>('game/create', createGameDto).subscribe({
       next: (game) => {
         this.roomCode = game.roomCode;
-        this.authService.joinGame(game.roomCode).subscribe({
+        this.authService.joinGame(game.roomCode, 'Game Master').subscribe({
           next: () => {
             const gameId = this.authService.getGameId();
             if (gameId) {
