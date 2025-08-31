@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
-import { Game, TeamType } from '.prisma/client';
-import { ConnectGameDto, CreateGameDto } from '../app/generated';
+import { TeamType } from '.prisma/client';
+import { CreateGameDto, Game, ConnectGameDto } from '../app/generated';
 
 @Injectable()
 export class GameService {
