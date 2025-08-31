@@ -59,7 +59,6 @@
         }
       },
       "defaultConfiguration": "development",
-      "dependsOn": ["pac-shield-api:serve"],
       "options": {
         "proxyConfig": "apps/pac-shield/proxy.conf.json"
       }
