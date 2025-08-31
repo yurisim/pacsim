@@ -5,7 +5,7 @@ generator client {
 
 generator nestjsDto {
   provider                        = "prisma-generator-nestjs-dto"
-  output                          = "../../../../libs/types/src"
+  output                          = "../app/generated"
   exportRelationModifierClasses = true
   outputToNestJsResourceStructure = true
   flatResourceStructure           = true
@@ -24,7 +24,7 @@ generator nestjsDto {
 
 generator angularDto {
   provider                        = "prisma-generator-nestjs-dto"
-  output                          = "../../../../apps/pac-shield/src/app/shared/models/generated"
+  output                          = "../../../pac-shield/src/app/generated"
   exportRelationModifierClasses = true
   outputToNestJsResourceStructure = true
   flatResourceStructure           = true
