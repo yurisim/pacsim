@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { GameService } from './game.service';
-import { CreateGameDto, ConnectGameDto } from '@pac-shield/types';
+import { CreateGameDto, ConnectGameDto } from '../app/generated';
 
 @Controller('game')
 export class GameController {
