@@ -9,7 +9,12 @@ export const appRoutes: Routes = [
   {
     path: 'game/:id',
     loadComponent: () =>
-      import('./features/game/game-board/game-board.component').then((m) => m.GameBoardComponent),
+      import('./features/game/game-board.component').then((m) => m.GameBoardComponent),
+  },
+  {
+    path: 'lobby/:gameId',
+    loadComponent: () =>
+      import('./features/lobby/lobby.component').then((m) => m.LobbyComponent),
   },
   {
     path: '',

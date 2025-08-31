@@ -50,7 +50,7 @@ export class HomeComponent {
           next: () => {
             const gameId = this.authService.getGameId();
             if (gameId) {
-              this.router.navigate(['/game', gameId]);
+              this.router.navigate(['/lobby', gameId]);
             } else {
               this.errorMessage =
                 'Game created, but failed to auto-join. Please join manually.';

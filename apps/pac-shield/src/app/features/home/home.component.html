@@ -14,27 +14,7 @@
       ></p-button>
     </div>
 
-    @if (roomCode) {
-    <div class="mt-8 text-left">
-      <label for="roomCode" class="block mb-2 font-bold"
-        >Your Room Code:</label
-      >
-      <div class="p-inputgroup">
-        <input
-          id="roomCode"
-          type="text"
-          pInputText
-          [value]="roomCode"
-          readonly
-        />
-        <p-button
-          icon="pi pi-copy"
-          styleClass="p-button-secondary"
-          (onClick)="copyRoomCode()"
-        ></p-button>
-      </div>
-    </div>
-    } @if (errorMessage) {
+    @if (errorMessage) {
     <div class="p-error mt-4">
       {{ errorMessage }}
     </div>

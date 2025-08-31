@@ -1,0 +1,49 @@
+<p-toast></p-toast>
+<div class="h-[calc(100vh-100px)]" *ngIf="game$ | async as game">
+  <div class="flex flex-col items-center justify-center p-8">
+    <h1 class="text-4xl font-bold mb-2">Game Lobby</h1>
+    <div class="flex flex-col items-center gap-2 mb-8">
+      <h2 class="text-2xl">Room Code</h2>
+      <div
+        class="flex items-center gap-2 cursor-pointer p-4 border-2 border-dashed rounded-lg"
+        (click)="copyRoomCode(game.roomCode)"
+        (keydown.enter)="copyRoomCode(game.roomCode)"
+        tabindex="0"
+        role="button"
+        title="Copy Room Code"
+      >
+        <p class="text-7xl font-mono tracking-widest">{{ game.roomCode }}</p>
+        <i class="pi pi-copy text-4xl"></i>
+      </div>
+      <p class="text-sm text-gray-500">Click to copy</p>
+    </div>
+
+    <p class="text-lg mb-8">
+      Game ID: <span class="font-mono">{{ game.id }}</span>
+    </p>
+
+    <div class="max-w-7xl mx-auto">
+      <div class="columns-1 md:columns-2 lg:columns-4 gap-8 space-y-8">
+        <div *ngFor="let team of game.teams" class="break-inside-avoid">
+          <p-card [header]="team.name" styleClass="p-card-shadow w-full">
+            <div class="flex flex-col gap-4">
+              <div
+                *ngFor="let player of team.players"
+                class="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <span>{{ player.name }}</span>
+                <span class="text-gray-500">{{ player.role }}</span>
+              </div>
+
+              <p-button
+                label="Join Team"
+                (onClick)="openJoinTeamDialog(team)"
+                styleClass="w-full"
+              ></p-button>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
