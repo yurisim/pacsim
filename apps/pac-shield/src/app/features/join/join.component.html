@@ -1,5 +1,5 @@
 <div class="flex justify-center items-center h-[calc(100vh-100px)]">
-  <p-card header="Join Game" styleClass="p-card-shadow w-[400px]">
+  <p-card header="Join Game" class="w-[400px] text-center">
     <div class="flex flex-col gap-4">
       <p-inputgroup>
         <p-inputgroup-addon>
@@ -19,22 +19,24 @@
         <input
           pInputText
           [(ngModel)]="playerName"
-          placeholder="Player Name"
+          placeholder="Last Name"
         />
       </p-inputgroup>
     </div>
     <ng-template pTemplate="footer">
-      <p-button
-        label="Join"
-        icon="pi pi-arrow-right"
-        (onClick)="joinGame()"
-        [loading]="isLoading"
-      ></p-button>
-      @if (errorMessage) {
-      <div class="p-error mt-4">
-        {{ errorMessage }}
+      <div class="flex flex-col items-center gap-2">
+        <p-button
+          label="Join"
+          icon="pi pi-arrow-right"
+          (onClick)="joinGame()"
+          [loading]="isLoading"
+        ></p-button>
+        @if (errorMessage) {
+        <div class="p-error">
+          {{ errorMessage }}
+        </div>
+        }
       </div>
-      }
     </ng-template>
   </p-card>
 </div>
