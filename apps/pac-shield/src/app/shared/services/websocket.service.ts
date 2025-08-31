@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { io, Socket } from 'socket.io-client';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AppState } from '../../core/store/app.state';
 
@@ -11,14 +11,34 @@ import { AppState } from '../../core/store/app.state';
 export class WebSocketService {
   private socket: Socket;
   private store = inject(Store<AppState>);
+  private connectionStatus = new BehaviorSubject<boolean>(false);
+  public connectionStatus$ = this.connectionStatus.asObservable();
 
   constructor() {
+    const fibonacciDelays = [1000, 2000, 3000, 5000, 8000, 13000, 21000];
+    let attempt = 0;
+
     this.socket = io(environment.websocketUrl, {
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000, // Initial delay
+      reconnectionDelayMax: 21000, // Max delay
+      randomizationFactor: 0,
       autoConnect: false, // Connect manually
+    });
+
+    this.socket.on('reconnect_attempt', () => {
+      const delay =
+        attempt < fibonacciDelays.length
+          ? fibonacciDelays[attempt]
+          : fibonacciDelays[fibonacciDelays.length - 1];
+      this.socket.io.opts.reconnectionDelay = delay;
+      this.socket.io.opts.reconnectionDelayMax = delay;
+      attempt++;
+    });
+
+    this.socket.on('connect', () => {
+      attempt = 0; // Reset on successful connection
     });
 
     this.setupConnectionListeners();
@@ -61,18 +81,21 @@ export class WebSocketService {
   private setupConnectionListeners(): void {
     this.socket.on('connect', () => {
       console.log('Successfully connected to WebSocket server.');
+      this.connectionStatus.next(true);
       // TODO: Dispatch a connection success action
       // this.store.dispatch(WebSocketActions.connectSuccess());
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log(`Disconnected from WebSocket: ${reason}`);
+      this.connectionStatus.next(false);
       // TODO: Dispatch a disconnect action
       // this.store.dispatch(WebSocketActions.disconnected({ reason }));
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('WebSocket connection error:', error);
+      this.connectionStatus.next(false);
       // TODO: Dispatch a connection failure action
       // this.store.dispatch(WebSocketActions.connectFailure({ error }));
     });

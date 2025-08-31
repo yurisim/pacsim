@@ -23,7 +23,7 @@ import { CreateGameDto, Game } from '../../generated';
     ToastModule,
   ],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'],
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
   private apiService = inject(ApiService);

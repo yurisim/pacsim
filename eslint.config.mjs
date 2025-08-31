@@ -26,6 +26,12 @@ export default [
     },
   },
   {
+    files: ['**/generated/**'],
+    rules: {
+      '@nx/enforce-module-boundaries': 'off',
+    },
+  },
+  {
     files: [
       '**/*.ts',
       '**/*.tsx',

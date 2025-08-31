@@ -1,26 +1,43 @@
 <p-toast></p-toast>
-<div class="home-container">
-  <p-card header="PACSIM" styleClass="p-card-shadow">
-    <div class="button-group">
-      <p-button label="Start New Game" (onClick)="createGame()" [loading]="isLoading"></p-button>
-      <p-button label="Join Game" styleClass="p-button-secondary" (onClick)="navigateToJoin()"></p-button>
+<div class="flex justify-center items-center h-[calc(100vh-100px)]">
+  <p-card header="PACSIM" styleClass="p-card-shadow w-[450px] text-center">
+    <div class="flex flex-col gap-4 mb-8">
+      <p-button
+        label="Start New Game"
+        (onClick)="createGame()"
+        [loading]="isLoading"
+      ></p-button>
+      <p-button
+        label="Join Game"
+        styleClass="p-button-secondary"
+        (onClick)="navigateToJoin()"
+      ></p-button>
     </div>
 
     @if (roomCode) {
-      <div class="room-code-display">
-        <label for="roomCode">Your Room Code:</label>
-        <div class="p-inputgroup">
-          <input id="roomCode" type="text" pInputText [value]="roomCode" readonly />
-          <p-button icon="pi pi-copy" styleClass="p-button-secondary" (onClick)="copyRoomCode()"></p-button>
-        </div>
+    <div class="mt-8 text-left">
+      <label for="roomCode" class="block mb-2 font-bold"
+        >Your Room Code:</label
+      >
+      <div class="p-inputgroup">
+        <input
+          id="roomCode"
+          type="text"
+          pInputText
+          [value]="roomCode"
+          readonly
+        />
+        <p-button
+          icon="pi pi-copy"
+          styleClass="p-button-secondary"
+          (onClick)="copyRoomCode()"
+        ></p-button>
       </div>
+    </div>
+    } @if (errorMessage) {
+    <div class="p-error mt-4">
+      {{ errorMessage }}
+    </div>
     }
-
-    @if (errorMessage) {
-      <div class="p-error error-message">
-        {{ errorMessage }}
-      </div>
-    }
-
   </p-card>
 </div>

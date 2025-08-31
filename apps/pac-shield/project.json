@@ -21,7 +21,10 @@
             "input": "apps/pac-shield/public"
           }
         ],
-        "styles": ["apps/pac-shield/src/styles.scss"]
+        "styles": [
+          "apps/pac-shield/src/styles.scss",
+          "node_modules/primeicons/primeicons.css"
+        ]
       },
       "configurations": {
         "production": {
@@ -59,7 +62,6 @@
         }
       },
       "defaultConfiguration": "development",
-      "dependsOn": ["pac-shield-api:serve"],
       "options": {
         "proxyConfig": "apps/pac-shield/proxy.conf.json"
       }
