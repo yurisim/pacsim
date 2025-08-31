@@ -7,6 +7,8 @@ export class AuthController {
 
   @Post('login')
   login() {
-    return this.authService.login();
+    // TODO: This is a placeholder. The front end does not call this endpoint directly.
+    // A DTO and request body would be needed for a real implementation.
+    return this.authService.login(-1);
   }
 }
