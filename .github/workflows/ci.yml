@@ -13,7 +13,7 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.44.0-jammy
+    container: mcr.microsoft.com/playwright:v1.55.0-noble
     services:
       postgres:
         image: postgres:17
@@ -52,8 +52,8 @@ jobs:
       - name: Start backend API
         run: yarn nx serve pac-shield-api &
 
-      - name: Run affected E2E tests
-        run: npx nx affected -t lint test build e2e --verbose
+      - name: Run affected systems
+        run: npx nx affected -t lint test build e2e
 
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim
