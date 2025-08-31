@@ -31,14 +31,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          filter: tree:0
           fetch-depth: 0
-
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v3
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'yarn'
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --frozen-lockfile --prefer-offline
 
       - run: npx prisma db push --schema apps/pac-shield-api/src/prisma/schema.prisma --accept-data-loss
         env:
@@ -48,12 +50,7 @@ jobs:
         run: yarn nx serve pac-shield-api &
 
       - name: Run affected E2E tests
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            yarn nx affected -t lint test build e2e --base=${{ github.event.pull_request.base.sha }} --head=${{ github.event.pull_request.head.sha }}
-          else
-            yarn nx affected -t lint test build e2e --base=HEAD~1
-          fi
+        run: yarn nx affected -t lint test build e2e
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
