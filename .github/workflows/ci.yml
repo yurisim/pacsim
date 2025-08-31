@@ -71,9 +71,6 @@ jobs:
       - name: Start backend API
         run: yarn nx serve pac-shield-api &
 
-      - name: Wait for API to be ready
-        run: yarn wait-on http://localhost:3000/api
-
       - name: Run affected E2E tests
         run: yarn nx affected --target=e2e
         env:
