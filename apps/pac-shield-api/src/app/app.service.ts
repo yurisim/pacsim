@@ -14,7 +14,7 @@ export class AppService {
       // Perform a simple query to check PostgreSQL connection
       await this.prisma.$queryRaw`SELECT 1`;
       return { status: 'ok', message: 'Database connection is healthy' };
-    } catch (error) {
+    } catch {
       return { status: 'error', message: 'Database connection failed' };
     }
   }
