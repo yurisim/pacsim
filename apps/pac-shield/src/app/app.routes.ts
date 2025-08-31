@@ -13,7 +13,7 @@ export const appRoutes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'join',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/home/home.component').then((m) => m.HomeComponent),
   },
 ];

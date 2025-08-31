@@ -16,7 +16,7 @@ export class AuthService {
   private readonly tokenKey = 'pac-shield-jwt';
 
   joinGame(roomCode: string) {
-    return this.apiService.post<{ token: string }>('auth/join', { roomCode }).pipe(
+    return this.apiService.post<{ token: string }>('game/join', { roomCode }).pipe(
       tap(({ token }) => {
         this.setToken(token);
       })

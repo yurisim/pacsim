@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Game } from '../../../shared/models/generated';
+import { Game } from '../../../generated';
 
 export const loadGameByRoomCode = createAction('[Game] Load Game by Room Code', props<{ roomCode: string }>());
 export const loadGameById = createAction('[Game] Load Game by ID', props<{ gameId: string }>());

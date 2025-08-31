@@ -1,4 +1,4 @@
-import { Game } from '../../../shared/models/generated';
+import { Game } from '../../../generated';
 
 export interface GameState {
   game: Game | null;
