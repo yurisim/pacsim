@@ -10,6 +10,33 @@ export class PlayerService {
     return this.prisma.player.create({ data: createPlayerDto });
   }
 
+  async createPlayerInGame(playerName: string, gameId: number) {
+    const game = await this.prisma.game.findUnique({
+      where: { id: gameId },
+      include: { teams: true },
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const team = game.teams[0];
+
+    return this.prisma.player.create({
+      data: {
+        name: playerName,
+        sessionId: `${playerName}-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 9)}`,
+        team: {
+          connect: {
+            id: team.id,
+          },
+        },
+      },
+    });
+  }
+
   findAll() {
     return this.prisma.player.findMany();
   }

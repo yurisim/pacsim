@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { GameService } from './game.service';
-import { CreateGameDto, ConnectGameDto } from '../app/generated';
+import { CreateGameDto } from '../app/generated';
+import { JoinGameDto } from './dto/join-game.dto';
 
 @Controller('game')
 export class GameController {
@@ -17,8 +18,8 @@ export class GameController {
   }
 
   @Post('join')
-  async joinGame(@Body() connectGameDto: ConnectGameDto) {
-    return this.gameService.joinGame(connectGameDto);
+  async joinGame(@Body() joinGameDto: JoinGameDto) {
+    return this.gameService.joinGame(joinGameDto);
   }
 }
 

@@ -15,12 +15,14 @@ export class AuthService {
   private apiService = inject(ApiService);
   private readonly tokenKey = 'pac-shield-jwt';
 
-  joinGame(roomCode: string) {
-    return this.apiService.post<{ token: string }>('game/join', { roomCode }).pipe(
-      tap(({ token }) => {
-        this.setToken(token);
-      })
-    );
+  joinGame(roomCode: string, playerName: string) {
+    return this.apiService
+      .post<{ token: string }>('game/join', { roomCode, playerName })
+      .pipe(
+        tap(({ token }) => {
+          this.setToken(token);
+        })
+      );
   }
 
   getToken(): string | null {

@@ -12,8 +12,9 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
-import { EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, switchMap } from 'rxjs';
 import { JoinTeamDialogComponent } from './join-team-dialog/join-team-dialog.component';
+import { WebSocketService } from '../../shared/services/websocket.service';
 
 enum PlayerRole {
   PLAYER = 'PLAYER',
@@ -46,6 +47,7 @@ export class LobbyComponent implements OnInit {
   private clipboard = inject(Clipboard);
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
+  private webSocketService = inject(WebSocketService);
 
   game$: Observable<Game> = EMPTY;
   playerRoles = Object.values(PlayerRole);
@@ -54,6 +56,10 @@ export class LobbyComponent implements OnInit {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
       this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+      this.webSocketService.connect(gameId);
+      this.webSocketService.listen('playerJoined').subscribe(() => {
+        this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+      });
     }
   }
 

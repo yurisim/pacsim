@@ -2,13 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { TeamType } from '.prisma/client';
-import { CreateGameDto, Game, ConnectGameDto } from '../app/generated';
+import { CreateGameDto, Game } from '../app/generated';
+import { GameGateway } from './game.gateway';
+import { JoinGameDto } from './dto/join-game.dto';
+import { PlayerService } from '../app/player/player.service';
 
 @Injectable()
 export class GameService {
   constructor(
     private prisma: PrismaService,
-    private authService: AuthService
+    private authService: AuthService,
+    private gameGateway: GameGateway,
+    private playerService: PlayerService
   ) {}
 
   async createGame(createGameDto: CreateGameDto): Promise<Game> {
@@ -59,14 +64,11 @@ export class GameService {
     return game;
   }
 
-  async joinGame(connectGameDto: ConnectGameDto) {
-    const { roomCode } = connectGameDto;
+  async joinGame(joinGameDto: JoinGameDto) {
+    const { roomCode, playerName } = joinGameDto;
 
     const game = await this.prisma.game.findUnique({
       where: { roomCode },
-      include: {
-        teams: true,
-      },
     });
 
     if (!game) {
@@ -75,7 +77,14 @@ export class GameService {
       );
     }
 
-    return this.authService.login(game.id);
+    const player = await this.playerService.createPlayerInGame(
+      playerName,
+      game.id
+    );
+
+    this.gameGateway.server.to(roomCode).emit('playerJoined', player);
+
+    return this.authService.login(game.id, player.id);
   }
 
   private generateRoomCode(): string {

@@ -24,17 +24,23 @@ describe('Game Controller E2E', () => {
       expect(createRes.status).toBe(201);
 
       // 2. Join the game using the room code
-      const joinRes = await axios.post(`/api/game/join`, { roomCode });
+      const joinRes = await axios.post(`/api/game/join`, {
+        roomCode,
+        playerName: 'Test Player',
+      });
 
       // 3. Verify the response
       expect(joinRes.status).toBe(201);
       expect(typeof joinRes.data.token).toBe('string');
       expect(joinRes.data.token).not.toBe('');
     });
-    
+
   it('should return 404 when joining with an invalid roomCode', async () => {
     try {
-      await axios.post(`/api/game/join`, { roomCode: 'INVALID' });
+      await axios.post(`/api/game/join`, {
+        roomCode: 'INVALID',
+        playerName: 'Test Player',
+      });
     } catch (error) {
       expect(error.response.status).toBe(404);
       expect(error.response.data.message).toBe('Game with room code "INVALID" not found');

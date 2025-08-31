@@ -4,8 +4,10 @@ import { RouterModule } from '@angular/router';
 import { ToolbarModule } from 'primeng/toolbar';
 import { WebSocketService } from './shared/services/websocket.service';
 
+import { ButtonModule } from 'primeng/button';
+
 @Component({
-  imports: [RouterModule, ToolbarModule, AsyncPipe, CommonModule],
+  imports: [RouterModule, ToolbarModule, AsyncPipe, CommonModule, ButtonModule],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',

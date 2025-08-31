@@ -4,17 +4,25 @@
     <h1 class="app-title">{{ title }}</h1>
   </div>
   <div class="p-toolbar-group-end">
-    @if (ws.connectionStatus$ | async) {
-      <div class="flex items-center text-green-500">
-        <i class="pi pi-wifi mr-2"></i>
-        <span>Connected</span>
-      </div>
-    } @else {
-      <div class="flex items-center text-red-500">
-        <i class="pi pi-times mr-2"></i>
-        <span>Disconnected</span>
-      </div>
-    }
+    <div class="flex items-center gap-4">
+      <p-button
+        label="Return to Home"
+        icon="pi pi-home"
+        styleClass="p-button-secondary"
+        routerLink="/"
+      ></p-button>
+      @if (ws.connectionStatus$ | async) {
+        <div class="flex items-center text-green-500">
+          <i class="pi pi-wifi mr-2"></i>
+          <span>Connected</span>
+        </div>
+      } @else {
+        <div class="flex items-center text-red-500">
+          <i class="pi pi-times mr-2"></i>
+          <span>Disconnected</span>
+        </div>
+      }
+    </div>
   </div>
 </p-toolbar>
 
