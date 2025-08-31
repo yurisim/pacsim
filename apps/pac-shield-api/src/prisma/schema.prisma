@@ -125,12 +125,12 @@ model Team {
 }
 
 model Player {
-  id        Int    @id @default(autoincrement())
-  sessionId String @unique
+  id        Int        @id @default(autoincrement())
+  sessionId String     @unique
   name      String
-  role      String
-  teamId    Int
-  team      Team   @relation(fields: [teamId], references: [id])
+  role      PlayerRole @default(PLAYER)
+  teamId    Int?
+  team      Team?      @relation(fields: [teamId], references: [id])
 }
 
 // =============================================
@@ -325,6 +325,13 @@ model Bedspace {
 enum GamePhase {
   CRISIS
   CONFLICT
+}
+
+enum PlayerRole {
+  PLAYER
+  COMMANDER
+  DEPUTY
+  STRATEGIST
 }
 
 enum TeamType {

@@ -44,7 +44,11 @@ export class GameService {
     const game = await this.prisma.game.findUnique({
       where: { id },
       include: {
-        teams: true,
+        teams: {
+          include: {
+            players: true,
+          },
+        },
       },
     });
 
