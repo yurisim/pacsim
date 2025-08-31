@@ -54,6 +54,7 @@ export class GameService {
             players: true,
           },
         },
+        players: true,
       },
     });
 

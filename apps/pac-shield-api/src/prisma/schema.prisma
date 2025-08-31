@@ -62,6 +62,7 @@ model Game {
   updatedAt          DateTime  @updatedAt
 
   teams      Team[]
+  players    Player[]
   gameBoard  GameBoard?
   atoLines   ATOLine[]
   satellites SatelliteInstance[]
@@ -131,6 +132,8 @@ model Player {
   role      PlayerRole @default(PLAYER)
   teamId    Int?
   team      Team?      @relation(fields: [teamId], references: [id])
+  gameId    Int?
+  game      Game?       @relation(fields: [gameId], references: [id])
 }
 
 // =============================================

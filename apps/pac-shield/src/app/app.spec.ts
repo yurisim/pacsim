@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { ToolbarModule } from 'primeng/toolbar';
 import { App } from './app';
@@ -7,8 +7,8 @@ import { App } from './app';
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App, HttpClientTestingModule, ToolbarModule],
-      providers: [provideMockStore({})],
+      imports: [App, ToolbarModule],
+      providers: [provideMockStore({}), provideHttpClientTesting()],
     }).compileComponents();
   });
 
@@ -16,4 +16,3 @@ describe('App', () => {
     expect(true).toBeTruthy();
   });
 });
-
