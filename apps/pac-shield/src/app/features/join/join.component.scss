@@ -1,14 +1,1 @@
-.join-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: calc(100vh - 100px); /* Adjust based on toolbar height */
-}
 
-:host ::ng-deep .p-card {
-  width: 400px;
-}
-
-.error-message {
-  margin-top: 1rem;
-}

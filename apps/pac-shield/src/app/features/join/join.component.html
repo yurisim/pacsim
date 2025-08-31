@@ -1,5 +1,5 @@
-<div class="join-container">
-  <p-card header="Join Game" styleClass="p-card-shadow">
+<div class="flex justify-center items-center h-[calc(100vh-100px)]">
+  <p-card header="Join Game" styleClass="p-card-shadow w-[400px]">
     <div class="p-fluid">
       <div class="p-field">
         <label for="roomCode">Room Code</label>
@@ -7,11 +7,16 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Join" icon="pi pi-arrow-right" (onClick)="joinGame()" [loading]="isLoading"></p-button>
+      <p-button
+        label="Join"
+        icon="pi pi-arrow-right"
+        (onClick)="joinGame()"
+        [loading]="isLoading"
+      ></p-button>
       @if (errorMessage) {
-        <div class="p-error error-message">
-          {{ errorMessage }}
-        </div>
+      <div class="p-error mt-4">
+        {{ errorMessage }}
+      </div>
       }
     </ng-template>
   </p-card>
