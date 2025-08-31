@@ -5,9 +5,10 @@ import { EventsGateway } from './events.gateway';
 import { PrismaModule } from '../prisma/prisma.module';
 import { GameModule } from '../game/game.module';
 import { AuthModule } from '../auth/auth.module';
+import { PlayerModule } from './player/player.module';
 
 @Module({
-  imports: [PrismaModule, GameModule, AuthModule],
+  imports: [PrismaModule, GameModule, AuthModule, PlayerModule],
   controllers: [AppController],
   providers: [AppService, EventsGateway],
 })
