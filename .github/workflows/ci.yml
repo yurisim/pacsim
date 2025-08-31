@@ -50,7 +50,7 @@ jobs:
         run: yarn nx serve pac-shield-api &
 
       - name: Run affected E2E tests
-        run: yarn nx affected -t lint test build e2e
+        run: yarn nx affected -t lint test build e2e --verbose
 
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim
