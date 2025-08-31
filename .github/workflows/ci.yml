@@ -31,7 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          filter: tree:0
           fetch-depth: 0
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         uses: nrwl/nx-set-shas@v3
@@ -50,7 +49,7 @@ jobs:
         run: yarn nx serve pac-shield-api &
 
       - name: Run affected E2E tests
-        run: yarn nx affected -t lint test build e2e --verbose
+        run: npx nx affected -t lint test build e2e --verbose
 
         env:
           DATABASE_URL: postgresql://postgres:adminpass@postgres:5432/pacsim
