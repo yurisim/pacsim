@@ -2,11 +2,13 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameService } from './game.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConnectGameDto } from '@pac-shield/types';
+import { AuthService } from '../auth/auth.service';
+import { ConnectGameDto } from '../app/generated';
 
 describe('GameService', () => {
   let service: GameService;
   let prisma: any;
+  let authService: any;
 
   beforeEach(async () => {
     const mockPrismaService = {
@@ -14,6 +16,10 @@ describe('GameService', () => {
         findUnique: jest.fn(),
       },
     };
+    const mockAuthService = {
+      login: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GameService,
@@ -21,11 +27,16 @@ describe('GameService', () => {
           provide: PrismaService,
           useValue: mockPrismaService,
         },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
       ],
     }).compile();
 
     service = module.get<GameService>(GameService);
     prisma = module.get<PrismaService>(PrismaService);
+    authService = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
@@ -33,12 +44,15 @@ describe('GameService', () => {
   });
 
   describe('joinGame', () => {
-    it('should return the game with teams if the room code is valid', async () => {
+    it('should return a token if the room code is valid', async () => {
       const connectGameDto: ConnectGameDto = {
         roomCode: 'VALID',
       };
       const mockGame = { id: 1, roomCode: 'VALID', teams: [] };
+      const mockToken = { token: 'mock-jwt' };
+
       prisma.game.findUnique.mockResolvedValue(mockGame);
+      authService.login.mockResolvedValue(mockToken);
 
       const result = await service.joinGame(connectGameDto);
 
@@ -46,7 +60,8 @@ describe('GameService', () => {
         where: { roomCode: 'VALID' },
         include: { teams: true },
       });
-      expect(result).toEqual(mockGame);
+      expect(authService.login).toHaveBeenCalledWith(mockGame.id);
+      expect(result).toEqual(mockToken);
     });
 
     it('should throw NotFoundException if the room code is invalid', async () => {
