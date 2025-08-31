@@ -6,15 +6,17 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
-import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
 import { EMPTY, Observable } from 'rxjs';
-import { JoinTeamDialogComponent } from './join-team-dialog/join-team-dialog.component';
-import { WebSocketService } from '../../shared/services/websocket.service';
 
 enum PlayerRole {
   PLAYER = 'PLAYER',
@@ -32,34 +34,37 @@ enum PlayerRole {
     ButtonModule,
     ClipboardModule,
     ToastModule,
-    DynamicDialogModule,
     InputTextModule,
     AutoCompleteModule,
     ReactiveFormsModule,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
-  providers: [MessageService, DialogService],
+  providers: [MessageService],
 })
 export class LobbyComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private clipboard = inject(Clipboard);
   private messageService = inject(MessageService);
-  private dialogService = inject(DialogService);
-  private webSocketService = inject(WebSocketService);
+  private formBuilder = inject(FormBuilder);
 
   game$: Observable<Game> = EMPTY;
   playerRoles = Object.values(PlayerRole);
+  playerForm: FormGroup;
+  isPlayerRegistered = false;
+
+  constructor() {
+    this.playerForm = this.formBuilder.group({
+      name: ['', Validators.required],
+      pin: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
+    });
+  }
 
   ngOnInit(): void {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
       this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-      this.webSocketService.connect(gameId);
-      this.webSocketService.listen('playerJoined').subscribe(() => {
-        this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-      });
     }
   }
 
@@ -72,33 +77,49 @@ export class LobbyComponent implements OnInit {
     });
   }
 
-  openJoinTeamDialog(team: Team): void {
-    const ref = this.dialogService.open(JoinTeamDialogComponent, {
-      header: `Join ${team.name}`,
-      width: '70%',
-      data: {
-        teamId: team.id,
-        roles: this.playerRoles,
-      },
-    });
+  registerPlayer(): void {
+    if (this.playerForm.valid) {
+      this.isPlayerRegistered = true;
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Registered',
+        detail: `Player ${this.playerForm.value.name} is registered.`,
+      });
+      this.playerForm.disable(); // Disable form after registration
+    }
+  }
 
-    ref.onClose.subscribe((playerData: Omit<Player, 'id' | 'team'>) => {
-      if (playerData) {
-        this.apiService
-          .post<Player>('player', {
-            ...playerData,
-            team: { connect: { id: team.id } },
-          })
-          .subscribe(() => {
-            // Refresh game data
-            this.ngOnInit();
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: `Joined ${team.name} as ${playerData.name}`,
-            });
-          });
-      }
-    });
+  joinTeam(team: Team): void {
+    if (!this.isPlayerRegistered) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Not Registered',
+        detail: 'Please register your player name and PIN before joining a team.',
+      });
+      return;
+    }
+
+    // Here you would typically also show a role selection dropdown or similar
+    // For now, we'll hardcode a role for simplicity.
+    const playerData = {
+      ...this.playerForm.value,
+      role: PlayerRole.PLAYER, // Default role
+      sessionId: sessionStorage.getItem('sessionId') ?? '',
+    };
+
+    this.apiService
+      .post<Player>('player', {
+        ...playerData,
+        team: { connect: { id: team.id } },
+      })
+      .subscribe(() => {
+        // Refresh game data
+        this.ngOnInit();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `Joined ${team.name} as ${playerData.name}`,
+        });
+      });
   }
 }
