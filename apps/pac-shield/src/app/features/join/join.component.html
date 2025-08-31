@@ -1,18 +1,9 @@
 <div class="flex justify-center items-center h-[calc(100vh-100px)]">
   <p-card header="Join Game" styleClass="p-card-shadow w-[400px]">
-    <div class="p-fluid">
+    <div class="p-fluid flex flex-col gap-4">
       <div class="p-field">
         <label for="roomCode">Room Code</label>
         <input id="roomCode" type="text" pInputText [(ngModel)]="roomCode" />
-      </div>
-      <div class="p-field">
-        <label for="playerName">Player Name</label>
-        <input
-          id="playerName"
-          type="text"
-          pInputText
-          [(ngModel)]="playerName"
-        />
       </div>
       <div class="p-field">
         <label for="playerName">Player Name</label>
