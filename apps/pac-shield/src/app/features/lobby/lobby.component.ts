@@ -3,7 +3,6 @@ import {
   computed,
   effect,
   inject,
-  OnDestroy,
   OnInit,
   signal,
   WritableSignal,
@@ -58,7 +57,7 @@ enum PlayerRole {
   styleUrls: ['./lobby.component.scss'],
   providers: [MessageService],
 })
-export class LobbyComponent implements OnInit, OnDestroy {
+export class LobbyComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private clipboard = inject(Clipboard);
@@ -98,7 +97,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
       this.gameCode = gameId;
-      this.webSocketService.connect(this.gameCode);
 
       this.webSocketService
         .listen<Player[]>('playerListUpdate')
@@ -121,9 +119,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.webSocketService.disconnect();
-  }
+
 
   copyRoomCode(roomCode: string): void {
     this.clipboard.copy(roomCode);

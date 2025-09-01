@@ -7,9 +7,19 @@ import { GameModule } from '../game/game.module';
 import { AuthModule } from '../auth/auth.module';
 import { PlayerModule } from './player/player.module';
 import { LobbyModule } from './lobby/lobby.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [PrismaModule, GameModule, AuthModule, PlayerModule, LobbyModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    PrismaModule,
+    GameModule,
+    AuthModule,
+    PlayerModule,
+    LobbyModule,
+  ],
   controllers: [AppController],
   providers: [AppService, EventsGateway],
 })

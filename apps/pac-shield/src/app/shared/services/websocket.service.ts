@@ -12,6 +12,7 @@ export class WebSocketService {
   private socket: Socket;
   private store = inject(Store<AppState>);
   private connectionStatus = new BehaviorSubject<boolean>(false);
+  private gameId: string | null = null;
   public connectionStatus$ = this.connectionStatus.asObservable();
 
   constructor() {
@@ -47,6 +48,7 @@ export class WebSocketService {
   connect(gameId: string): void {
     if (this.socket.connected) return;
 
+    this.gameId = gameId;
     this.socket.io.opts.query = { gameId };
     this.socket.connect();
   }
@@ -55,6 +57,7 @@ export class WebSocketService {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
+    this.gameId = null;
   }
 
   emit<T>(eventName: string, data: T): void {

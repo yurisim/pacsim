@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
+import { WebSocketService } from './websocket.service';
 import { Player } from '../../models/player.model';
 
 interface JwtPayload {
@@ -15,15 +16,18 @@ interface JwtPayload {
 })
 export class AuthService {
   private apiService = inject(ApiService);
+  private webSocketService = inject(WebSocketService);
   private readonly tokenKey = 'pac-shield-jwt';
   private readonly playerKey = 'pac-shield-player';
 
   joinGame(roomCode: string, playerName: string) {
+    this.webSocketService.connect(roomCode);
     return this.apiService
-      .post<{ token: string }>('game/join', { roomCode, playerName })
+      .post<{ token: string; player: Player }>('player/join', { roomCode, playerName })
       .pipe(
-        tap(({ token }) => {
+        tap(({ token, player }) => {
           this.setToken(token);
+          this.setPlayer(player);
           const playerId = this.getPlayerIdFromToken();
           if (playerId) {
             localStorage.setItem('playerId', playerId);
@@ -56,7 +60,10 @@ export class AuthService {
   }
 
   logout(): void {
+    this.webSocketService.disconnect();
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.playerKey);
+    localStorage.removeItem('playerId');
   }
 
   setToken(token: string): void {
