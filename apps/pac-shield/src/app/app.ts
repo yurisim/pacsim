@@ -14,7 +14,7 @@ import { ButtonModule } from 'primeng/button';
   standalone: true,
 })
 export class App implements OnInit {
-  protected title = 'pac-shield';
+  protected title = 'OPERATION: PACIFIC SHIELD';
   protected ws = inject(WebSocketService);
 
   ngOnInit(): void {
