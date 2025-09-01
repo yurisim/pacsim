@@ -86,13 +86,6 @@ export class PlayerSettingsDialogComponent implements OnInit {
   }
 
   saveSettings(): void {
-    console.log('🔍 Dialog saveSettings:', { 
-      name: this.name, 
-      role: this.role, 
-      roleType: typeof this.role,
-      roleValue: typeof this.role === 'object' ? this.role?.value : this.role,
-      isFormValid: this.isFormValid 
-    });
     if (this.isFormValid) {
       // Handle both object and string values from AutoComplete
       const roleValue = typeof this.role === 'object' ? this.role!.value : this.role as PlayerRole;
@@ -100,14 +93,15 @@ export class PlayerSettingsDialogComponent implements OnInit {
         name: this.name.trim(),
         role: roleValue,
       };
-      console.log('🚀 Emitting payload:', payload);
       this.save.emit(payload);
     }
   }
 
   cancelSettings(): void {
+    console.log('🚫 Dialog cancelSettings called');
     this.name = this.currentName();
     this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
+    console.log('🚫 Emitting cancelled event');
     this.cancelled.emit();
   }
 }
