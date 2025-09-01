@@ -11,7 +11,7 @@ describe('Player Controller - join with invalid room code', () => {
       fail('Request unexpectedly succeeded');
     } catch (error: any) {
       expect(error.response.status).toBe(404);
-      expect(error.response.data.message).toBe('Game not found');
+      expect(error.response.data.message).toBe('Invalid room code');
     }
   });
 });

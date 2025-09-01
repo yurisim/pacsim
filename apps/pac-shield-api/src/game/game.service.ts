@@ -73,9 +73,7 @@ export class GameService {
     });
 
     if (!game) {
-      throw new NotFoundException(
-        `Game with room code "${roomCode}" not found`
-      );
+      throw new NotFoundException('Invalid room code');
     }
 
     const player = await this.playerService.createPlayerInGame(

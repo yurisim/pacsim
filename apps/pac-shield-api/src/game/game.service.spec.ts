@@ -149,7 +149,7 @@ describe('GameService', () => {
       (prisma.game.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(service.joinGame(joinGameDto)).rejects.toThrow(
-        'Game with room code "ABCDEF" not found'
+        'Invalid room code'
       );
     });
   });

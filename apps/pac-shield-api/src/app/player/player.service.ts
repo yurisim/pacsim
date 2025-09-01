@@ -19,7 +19,7 @@ export class PlayerService {
     });
 
     if (!game) {
-      throw new NotFoundException('Game not found');
+      throw new NotFoundException('Invalid room code');
     }
 
     const player = await this.prisma.player.create({
