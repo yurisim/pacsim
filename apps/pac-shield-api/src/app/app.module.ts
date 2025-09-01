@@ -8,11 +8,24 @@ import { AuthModule } from '../auth/auth.module';
 import { PlayerModule } from './player/player.module';
 import { LobbyModule } from './lobby/lobby.module';
 import { ConfigModule } from '@nestjs/config';
+import { ClsModule } from 'nestjs-cls';
+import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: (req: any) => 
+          req.headers['x-request-id'] || req.headers.get?.('x-request-id') || 
+          `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+      },
     }),
     PrismaModule,
     GameModule,
@@ -21,6 +34,13 @@ import { ConfigModule } from '@nestjs/config';
     LobbyModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EventsGateway],
+  providers: [
+    AppService, 
+    EventsGateway,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
 export class AppModule {}
