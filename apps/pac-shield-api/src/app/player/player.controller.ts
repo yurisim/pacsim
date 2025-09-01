@@ -10,6 +10,7 @@ import {
 import { PlayerService } from './player.service';
 import { CreatePlayerDto, Player, UpdatePlayerDto } from '../generated';
 import { JoinGameDto } from '../../game/dto/join-game.dto';
+import { UpdatePlayerWithRoleDto } from './dto/update-player-with-role.dto';
 
 @Controller('player')
 export class PlayerController {
@@ -31,8 +32,8 @@ export class PlayerController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlayerDto: UpdatePlayerDto) {
-    return this.playerService.update(+id, updatePlayerDto);
+  update(@Param('id') id: string, @Body() updatePlayerDto: UpdatePlayerWithRoleDto) {
+    return this.playerService.updateWithRole(+id, updatePlayerDto);
   }
 
   @Patch(':id/name')
