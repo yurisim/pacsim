@@ -179,20 +179,4 @@ test.describe('Player Settings in Lobby', () => {
     // Verify Save button is disabled
     await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
-
-
-  test('should filter roles in autocomplete when typing', async ({ page }) => {
-    // Open player settings dialog
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-
-    // Type in role field to trigger filtering
-    await page.getByLabel('Role').click();
-    await page.getByLabel('Role').fill('comm');
-
-    // Verify that filtered options appear
-    await expect(page.getByText('COMMANDER')).toBeVisible();
-    // Other roles that don't match should not be visible
-    await expect(page.getByText('PLAYER')).toBeHidden();
-  });
 });

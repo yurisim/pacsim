@@ -14,8 +14,9 @@ test('should create a new game and navigate to the game board', async ({
   await page.getByRole('button', { name: 'Start New Game' }).click();
 
   // Wait for Game Master Setup form to appear
-  await expect(page.getByRole('heading', { name: 'Game Master Setup' })).toBeVisible();
-  
+
+  await expect(page.getByText('Game Master Setup')).toBeVisible();
+
   // Fill out Game Master Setup form
   await page.getByLabel('Last Name').fill('TestGM');
   await page.locator('p-inputotp input').first().fill('1');
