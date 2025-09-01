@@ -31,8 +31,8 @@ export class PlayerSettingsDialogComponent {
   currentName = input<string>('');
   currentRole = input<PlayerRole>('PLAYER');
   
-  onSave = output<PlayerSettings>();
-  onCancel = output<void>();
+  save = output<PlayerSettings>();
+  cancel = output<void>();
 
   name = '';
   role: PlayerRole = 'PLAYER';
@@ -69,19 +69,19 @@ export class PlayerSettingsDialogComponent {
     return this.name.trim().length > 0;
   }
 
-  save(): void {
+  saveSettings(): void {
     if (this.isFormValid) {
       const roleValue = typeof this.role === 'object' ? (this.role as any).value : this.role;
-      this.onSave.emit({
+      this.save.emit({
         name: this.name.trim(),
         role: roleValue,
       });
     }
   }
 
-  cancel(): void {
+  cancelSettings(): void {
     this.name = this.currentName();
     this.role = this.currentRole();
-    this.onCancel.emit();
+    this.cancel.emit();
   }
 }

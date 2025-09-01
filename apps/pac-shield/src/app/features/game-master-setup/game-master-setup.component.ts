@@ -26,7 +26,7 @@ export interface GameMasterInfo {
   styleUrls: ['./game-master-setup.component.scss'],
 })
 export class GameMasterSetupComponent {
-  onComplete = output<GameMasterInfo>();
+  complete = output<GameMasterInfo>();
   
   lastName = '';
   pin = '';
@@ -37,7 +37,7 @@ export class GameMasterSetupComponent {
 
   onSubmit(): void {
     if (this.isFormValid) {
-      this.onComplete.emit({
+      this.complete.emit({
         lastName: this.lastName.trim(),
         pin: this.pin,
       });
