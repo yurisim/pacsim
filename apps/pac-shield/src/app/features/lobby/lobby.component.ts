@@ -1,4 +1,13 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { CardModule } from 'primeng/card';
@@ -8,15 +17,19 @@ import { MessageService } from 'primeng/api';
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
 import { InputTextModule } from 'primeng/inputtext';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import {
   FormBuilder,
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormsModule,
 } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
-import { EMPTY, Observable } from 'rxjs';
+import { AuthService } from '../../shared/services/auth.service';
+import { WebSocketService } from '../../shared/services/websocket.service';
 
 enum PlayerRole {
   PLAYER = 'PLAYER',
@@ -36,36 +49,80 @@ enum PlayerRole {
     ToastModule,
     InputTextModule,
     AutoCompleteModule,
+    InputGroupModule,
+    InputGroupAddonModule,
     ReactiveFormsModule,
+    FormsModule,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
   providers: [MessageService],
 })
-export class LobbyComponent implements OnInit {
+export class LobbyComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private clipboard = inject(Clipboard);
   private messageService = inject(MessageService);
   private formBuilder = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private webSocketService = inject(WebSocketService);
 
-  game$: Observable<Game> = EMPTY;
+  game: WritableSignal<Game | null> = signal(null);
   playerRoles = Object.values(PlayerRole);
   playerForm: FormGroup;
   isPlayerRegistered = false;
+  gameCode = '';
+  players: Player[] = [];
+  newPlayerName = '';
+
+  currentPlayer = computed(() => {
+    const playerId = this.authService.getPlayerId();
+    return this.game()?.players?.find((p) => p.id === Number(playerId));
+  });
 
   constructor() {
     this.playerForm = this.formBuilder.group({
       name: ['', Validators.required],
       pin: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
     });
+
+    effect(() => {
+      const currentName = this.currentPlayer()?.name;
+      if (currentName) {
+        this.newPlayerName = currentName;
+      }
+    });
   }
 
   ngOnInit(): void {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
-      this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+      this.gameCode = gameId;
+      this.webSocketService.connect(this.gameCode);
+
+      this.webSocketService
+        .listen<Player[]>('playerListUpdate')
+        .subscribe((players) => {
+          this.game.update((game) => {
+            if (!game) return null;
+            const updatedGame = { ...game, players };
+            if (updatedGame.teams) {
+              updatedGame.teams.forEach((team) => {
+                team.players = players.filter((p) => p.teamId === team.id);
+              });
+            }
+            return updatedGame;
+          });
+        });
+
+      this.apiService
+        .get<Game>(`game/${gameId}`)
+        .subscribe((game) => this.game.set(game));
     }
+  }
+
+  ngOnDestroy(): void {
+    this.webSocketService.disconnect();
   }
 
   copyRoomCode(roomCode: string): void {
@@ -94,7 +151,8 @@ export class LobbyComponent implements OnInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Not Registered',
-        detail: 'Please register your player name and PIN before joining a team.',
+        detail:
+          'Please register your player name and PIN before joining a team.',
       });
       return;
     }
@@ -121,5 +179,38 @@ export class LobbyComponent implements OnInit {
           detail: `Joined ${team.name} as ${playerData.name}`,
         });
       });
+  }
+
+  changeName() {
+    const player = this.currentPlayer();
+    if (!player || !this.newPlayerName || this.newPlayerName === player.name)
+      return;
+
+    const playerId = this.authService.getPlayerId();
+    if (!playerId) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Not Authenticated',
+        detail: 'Please rejoin the game.',
+      });
+      return;
+    }
+
+    this.apiService.updatePlayerName(playerId, this.newPlayerName).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Name Updated',
+          detail: 'Your name has been changed',
+        });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Update Failed',
+          detail: err.error?.message || 'Failed to update name',
+        });
+      },
+    });
   }
 }

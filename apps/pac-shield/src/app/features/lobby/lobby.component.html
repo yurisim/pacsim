@@ -1,8 +1,9 @@
 <p-toast></p-toast>
-@if (game$ | async; as game) {
+@if (game(); as game) {
   <div class="h-[calc(100vh-100px)]">
     <div class="flex flex-col items-center justify-center p-8">
       <h1 class="text-4xl font-bold mb-2">Game Lobby</h1>
+
       <div class="flex flex-col items-center gap-2 mb-8">
         <h2 class="text-2xl">Room Code</h2>
         <div
@@ -22,6 +23,28 @@
       <p class="text-lg mb-8">
         Game ID: <span class="font-mono">{{ game.id }}</span>
       </p>
+
+      <div class="mb-6 p-4 border-round-md border-1 surface-border">
+        <h3>Change Your Name</h3>
+        <div class="flex gap-2 mt-3">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <i class="pi pi-user"></i>
+            </p-inputgroup-addon>
+            <input
+              pInputText
+              [(ngModel)]="newPlayerName"
+              placeholder="New name"
+              class="flex-grow-1"
+            />
+          </p-inputgroup>
+          <p-button
+            label="Update"
+            (onClick)="changeName()"
+            [disabled]="!newPlayerName || (currentPlayer() && newPlayerName === currentPlayer()?.name)"
+          ></p-button>
+        </div>
+      </div>
 
       <div class="max-w-7xl mx-auto">
         <div class="mb-8">
