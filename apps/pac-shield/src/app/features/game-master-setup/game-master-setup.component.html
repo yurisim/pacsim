@@ -1,0 +1,39 @@
+<div class="flex justify-center items-center h-[calc(100vh-100px)]">
+  <p-card header="Game Master Setup" class="w-[450px] text-center">
+    <div class="flex flex-col gap-6">
+      <div class="text-left">
+        <label for="lastName" class="block text-sm font-medium mb-2">
+          Last Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="lastName"
+          type="text"
+          [(ngModel)]="lastName"
+          placeholder="Enter your last name"
+          class="w-full"
+          maxlength="50"
+        />
+      </div>
+
+      <div class="text-left">
+        <label for="pin" class="block text-sm font-medium mb-2">
+          4-Digit PIN <span class="text-red-500">*</span>
+        </label>
+        <p-inputOtp
+          [(ngModel)]="pin"
+          [length]="4"
+          inputType="number"
+          class="flex justify-center"
+        ></p-inputOtp>
+      </div>
+
+      <p-button
+        label="Continue"
+        (onClick)="onSubmit()"
+        [disabled]="!isFormValid"
+        class="w-full"
+      ></p-button>
+    </div>
+  </p-card>
+</div>

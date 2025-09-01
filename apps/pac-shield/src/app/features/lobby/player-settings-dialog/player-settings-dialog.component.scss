@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+::ng-deep .p-dialog {
+  overflow: visible !important;
+}
+
+::ng-deep .p-dialog-content {
+  overflow: visible !important;
+}
+
+::ng-deep .p-autocomplete-panel {
+  z-index: 9999 !important;
+}
