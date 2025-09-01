@@ -63,9 +63,9 @@ export class JoinComponent {
       this.authService.joinGame(gameId, playerName).subscribe({
         next: (response: JoinResponse) => {
           this.isLoading = false;
-          this.authService.setToken(response.token);
-          this.authService.setPlayer(response.player);
-          this.router.navigate(['/lobby', gameId]);
+          // JWT is automatically stored by AuthService.joinGame method
+          const currentGameId = this.authService.getGameId();
+          this.router.navigate(['/lobby', currentGameId || gameId]);
         },
         error: (err: unknown) => {
           this.isLoading = false;

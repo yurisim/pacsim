@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../shared/services/api.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { CreateGameDto, Game } from '../../generated';
+import { GameMasterSetupComponent, GameMasterInfo } from '../game-master-setup/game-master-setup.component';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,7 @@ import { CreateGameDto, Game } from '../../generated';
     InputTextModule,
     ClipboardModule,
     ToastModule,
+    GameMasterSetupComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
@@ -35,6 +37,8 @@ export class HomeComponent {
   isLoading = false;
   roomCode: string | null = null;
   errorMessage: string | null = null;
+  showGameMasterSetup = false;
+  createdGame: Game | null = null;
 
   createGame(): void {
     this.isLoading = true;
@@ -45,30 +49,45 @@ export class HomeComponent {
 
     this.apiService.post<Game>('game/create', createGameDto).subscribe({
       next: (game) => {
+        this.createdGame = game;
         this.roomCode = game.roomCode;
-        this.authService.joinGame(game.roomCode, 'Game Master').subscribe({
-          next: () => {
-            const gameId = this.authService.getGameId();
-            if (gameId) {
-              this.router.navigate(['/lobby', gameId]);
-            } else {
-              this.errorMessage =
-                'Game created, but failed to auto-join. Please join manually.';
-              this.isLoading = false;
-            }
-          },
-          error: (joinError) => {
-            this.errorMessage =
-              joinError.error?.message ||
-              'Game created, but failed to auto-join.';
-            this.isLoading = false;
-          },
-        });
+        this.showGameMasterSetup = true;
+        this.isLoading = false;
       },
       error: (err) => {
         this.errorMessage =
           err.error?.message || 'Failed to create a new game.';
         this.isLoading = false;
+      },
+    });
+  }
+
+  onGameMasterSetupComplete(gameMasterInfo: GameMasterInfo): void {
+    if (!this.createdGame) return;
+
+    this.isLoading = true;
+    this.authService.createGameMaster(
+      this.createdGame.roomCode, 
+      gameMasterInfo.lastName,
+      gameMasterInfo.pin
+    ).subscribe({
+      next: () => {
+        const gameId = this.authService.getGameId();
+        if (gameId) {
+          this.router.navigate(['/lobby', gameId]);
+        } else {
+          this.errorMessage =
+            'Game created, but failed to register as game master. Please join manually.';
+          this.isLoading = false;
+          this.showGameMasterSetup = false;
+        }
+      },
+      error: (joinError) => {
+        this.errorMessage =
+          joinError.error?.message ||
+          'Game created, but failed to register as game master.';
+        this.isLoading = false;
+        this.showGameMasterSetup = false;
       },
     });
   }

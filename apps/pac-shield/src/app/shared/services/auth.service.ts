@@ -36,6 +36,27 @@ export class AuthService {
       );
   }
 
+  createGameMaster(roomCode: string, playerName: string, pin: string) {
+    this.webSocketService.connect(roomCode);
+    return this.apiService
+      .post<{ token: string; player: Player }>('player/join', { 
+        roomCode, 
+        playerName,
+        pin,
+        role: 'GM'
+      })
+      .pipe(
+        tap(({ token, player }) => {
+          this.setToken(token);
+          this.setPlayer(player);
+          const playerId = this.getPlayerIdFromToken();
+          if (playerId) {
+            localStorage.setItem('playerId', playerId);
+          }
+        })
+      );
+  }
+
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
@@ -92,5 +113,21 @@ export class AuthService {
   getPlayer(): Player | null {
     const playerJson = localStorage.getItem(this.playerKey);
     return playerJson ? JSON.parse(playerJson) : null;
+  }
+
+  isAuthenticated(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    
+    try {
+      const decodedToken = jwtDecode<JwtPayload>(token);
+      // Check if token is expired
+      const currentTime = Math.floor(Date.now() / 1000);
+      return (decodedToken as any).exp ? (decodedToken as any).exp > currentTime : true;
+    } catch (error) {
+      console.error('Failed to validate JWT:', error);
+      this.logout();
+      return false;
+    }
   }
 }
