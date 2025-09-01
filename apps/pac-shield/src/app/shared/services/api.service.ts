@@ -33,4 +33,8 @@ export class ApiService {
   updatePlayerName(playerId: string, newName: string): Observable<any> {
     return this.patch(`player/${playerId}/name`, { name: newName });
   }
+
+  updatePlayerNameAndRole(playerId: string, name: string, role: string): Observable<any> {
+    return this.patch(`player/${playerId}`, { name, role });
+  }
 }

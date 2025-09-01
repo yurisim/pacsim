@@ -1,87 +1,90 @@
 <p-toast></p-toast>
 @if (game(); as game) {
-  <div class="h-[calc(100vh-100px)]">
-    <div class="flex flex-col items-center justify-center p-8">
-      <h1 class="text-4xl font-bold mb-2">Game Lobby</h1>
+<div class="h-[calc(100vh-100px)]">
+  <div class="flex flex-col items-center justify-center p-8">
+    <h1 class="text-4xl font-bold mb-2">Game Lobby</h1>
 
-      <div class="flex flex-col items-center gap-2 mb-8">
-        <h2 class="text-2xl">Room Code</h2>
-        <div
-          class="flex items-center gap-2 cursor-pointer p-4 border-2 border-dashed rounded-lg"
-          (click)="copyRoomCode(game.roomCode)"
-          (keydown.enter)="copyRoomCode(game.roomCode)"
-          tabindex="0"
-          role="button"
-          title="Copy Room Code"
-        >
-          <p class="text-7xl font-mono tracking-widest">{{ game.roomCode }}</p>
-          <i class="pi pi-copy text-4xl"></i>
-        </div>
-        <p class="text-sm text-gray-500">Click to copy</p>
+    <div class="flex flex-col items-center gap-2 mb-8">
+      <h2 class="text-2xl">Room Code</h2>
+      <div
+        class="flex items-center gap-2 cursor-pointer p-4 border-2 border-dashed rounded-lg"
+        (click)="copyRoomCode(game.roomCode)"
+        (keydown.enter)="copyRoomCode(game.roomCode)"
+        tabindex="0"
+        role="button"
+        title="Copy Room Code"
+      >
+        <p class="text-7xl font-mono tracking-widest">{{ game.roomCode }}</p>
+        <i class="pi pi-copy text-4xl"></i>
       </div>
+      <p class="text-sm text-gray-500">Click to copy</p>
+    </div>
 
-      <p class="text-lg mb-8">
-        Game ID: <span class="font-mono">{{ game.id }}</span>
-      </p>
+    <p class="text-lg mb-8">
+      Game ID: <span class="font-mono">{{ game.id }}</span>
+    </p>
 
-      <div class="mb-6 p-4 border-round-md border-1 surface-border">
-        <h3>Change Your Name</h3>
-        <div class="flex gap-2 mt-3">
-          <p-inputgroup>
-            <p-inputgroup-addon>
-              <i class="pi pi-user"></i>
-            </p-inputgroup-addon>
-            <input
-              pInputText
-              [(ngModel)]="newPlayerName"
-              placeholder="New name"
-              class="flex-grow-1"
-            />
-          </p-inputgroup>
-          <p-button
-            label="Update"
-            (onClick)="changeName()"
-            [disabled]="!newPlayerName || (currentPlayer() && newPlayerName === currentPlayer()?.name)"
-          ></p-button>
-        </div>
+    <div class="mb-6 p-4 border-round-md border-1 surface-border">
+      <div class="flex gap-2 mt-3">
+        <p-button
+          label="Edit Name & Role"
+          icon="pi pi-user-edit"
+          (onClick)="openPlayerSettings()"
+        ></p-button>
       </div>
+      @if (currentPlayer()) {
+      <div class="mt-3 text-sm text-gray-600 text-center">
+        <strong>Name:</strong> {{ currentPlayer()?.name }} |
+        <strong>Role:</strong> {{ formatRoleDisplay(currentPlayer()?.role || '') }}
+      </div>
+      }
+    </div>
 
-      <div class="max-w-7xl mx-auto">
-        <div class="mb-8">
-          <h3 class="text-2xl font-bold mb-4">In Lobby</h3>
-          <div class="flex flex-wrap gap-4">
-            @for (player of game.players; track player.id) {
-              <div class="p-4 border rounded-lg">
-                <span>{{ player.name }}</span>
-              </div>
-            }
+    <div class="max-w-7xl mx-auto">
+      <div class="mb-8">
+        <h3 class="text-2xl font-bold mb-4">In Lobby</h3>
+        <div class="flex flex-wrap gap-4">
+          @for (player of game.players; track player.id) {
+          <div class="p-4 border rounded-lg text-center">
+            <div class="font-semibold">{{ player.name }}</div>
+            <div class="text-sm text-gray-500">{{ formatRoleDisplay(player.role) }}</div>
           </div>
-        </div>
-        <div class="columns-1 md:columns-2 lg:columns-4 gap-8 space-y-8">
-          @for (team of game.teams; track team.id) {
-            <div class="break-inside-avoid">
-              <p-card [header]="team.name" styleClass="p-card-shadow w-full">
-                <div class="flex flex-col gap-4">
-                  @for (player of team.players; track player.id) {
-                    <div
-                      class="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <span>{{ player.name }}</span>
-                      <span class="text-gray-500">{{ player.role }}</span>
-                    </div>
-                  }
-
-                  <p-button
-                    label="Join Team"
-                    (onClick)="joinTeam(team)"
-                    styleClass="w-full"
-                  ></p-button>
-                </div>
-              </p-card>
-            </div>
           }
         </div>
       </div>
+      <div class="columns-1 md:columns-2 lg:columns-4 gap-8 space-y-8">
+        @for (team of game.teams; track team.id) {
+        <div class="break-inside-avoid">
+          <p-card [header]="team.name" styleClass="p-card-shadow w-full">
+            <div class="flex flex-col gap-4">
+              @for (player of team.players; track player.id) {
+              <div
+                class="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <span>{{ player.name }}</span>
+                <span class="text-gray-500">{{ formatRoleDisplay(player.role) }}</span>
+              </div>
+              }
+
+              <p-button
+                label="Join Team"
+                (onClick)="joinTeam(team)"
+                styleClass="w-full"
+              ></p-button>
+            </div>
+          </p-card>
+        </div>
+        }
+      </div>
     </div>
   </div>
+</div>
+
+<app-player-settings-dialog
+  [visible]="showPlayerSettingsDialog"
+  [currentName]="currentPlayer()?.name || ''"
+  [currentRole]="currentPlayer()?.role || 'PLAYER'"
+  (onSave)="onPlayerSettingsSave($event)"
+  (onCancel)="onPlayerSettingsCancel()"
+></app-player-settings-dialog>
 }

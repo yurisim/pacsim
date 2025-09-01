@@ -29,13 +29,9 @@ import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
 import { AuthService } from '../../shared/services/auth.service';
 import { WebSocketService } from '../../shared/services/websocket.service';
+import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
+import { playerRole, PlayerRole } from '../../generated/enums';
 
-enum PlayerRole {
-  PLAYER = 'PLAYER',
-  COMMANDER = 'COMMANDER',
-  DEPUTY = 'DEPUTY',
-  STRATEGIST = 'STRATEGIST',
-}
 
 @Component({
   selector: 'app-lobby',
@@ -52,6 +48,7 @@ enum PlayerRole {
     InputGroupAddonModule,
     ReactiveFormsModule,
     FormsModule,
+    PlayerSettingsDialogComponent,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
@@ -67,12 +64,12 @@ export class LobbyComponent implements OnInit {
   private webSocketService = inject(WebSocketService);
 
   game: WritableSignal<Game | null> = signal(null);
-  playerRoles = Object.values(PlayerRole);
   playerForm: FormGroup;
   isPlayerRegistered = false;
   gameCode = '';
   players: Player[] = [];
   newPlayerName = '';
+  showPlayerSettingsDialog = false;
 
   currentPlayer = computed(() => {
     const playerId = this.authService.getPlayerId();
@@ -157,7 +154,7 @@ export class LobbyComponent implements OnInit {
     // For now, we'll hardcode a role for simplicity.
     const playerData = {
       ...this.playerForm.value,
-      role: PlayerRole.PLAYER, // Default role
+      role: 'PLAYER', // Default role
       sessionId: sessionStorage.getItem('sessionId') ?? '',
     };
 
@@ -208,5 +205,60 @@ export class LobbyComponent implements OnInit {
         });
       },
     });
+  }
+
+  openPlayerSettings(): void {
+    this.showPlayerSettingsDialog = true;
+  }
+
+  onPlayerSettingsSave(settings: PlayerSettings): void {
+    const playerId = this.authService.getPlayerId();
+    if (!playerId) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Not Authenticated',
+        detail: 'Please rejoin the game.',
+      });
+      return;
+    }
+
+    this.apiService.updatePlayerNameAndRole(playerId, settings.name, settings.role).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Settings Updated',
+          detail: 'Your name and role have been updated',
+        });
+        this.showPlayerSettingsDialog = false;
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Update Failed',
+          detail: err.error?.message || 'Failed to update settings',
+        });
+      },
+    });
+  }
+
+  onPlayerSettingsCancel(): void {
+    this.showPlayerSettingsDialog = false;
+  }
+
+  formatRoleDisplay(role: string): string {
+    switch (role) {
+      case 'GM':
+        return 'Game Master';
+      case 'PLAYER':
+        return 'Player';
+      case 'COMMANDER':
+        return 'Commander';
+      case 'DEPUTY':
+        return 'Deputy';
+      case 'STRATEGIST':
+        return 'Strategist';
+      default:
+        return role;
+    }
   }
 }
