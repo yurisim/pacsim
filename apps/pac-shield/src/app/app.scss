@@ -4,3 +4,13 @@
   letter-spacing: 0.05em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
+
+p-toolbar {
+  border: none !important;
+  outline: none !important;
+}
+
+:host ::ng-deep .p-toolbar {
+  border: none !important;
+  outline: none !important;
+}
