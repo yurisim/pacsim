@@ -1,4 +1,4 @@
-import { Component, input, output, OnInit } from '@angular/core';
+import { Component, input, output, OnInit, effect, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -43,9 +43,17 @@ export class PlayerSettingsDialogComponent implements OnInit {
     value: role
   }));
 
+  constructor() {
+    // Watch for dialog visibility changes and update form when opened
+    effect(() => {
+      if (this.visible()) {
+        this.name = this.currentName();
+        this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
+      }
+    });
+  }
+
   ngOnInit() {
-    this.name = this.currentName();
-    this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
     this.roleOptions = [...this.allRoleOptions];
   }
 
