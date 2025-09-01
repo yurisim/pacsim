@@ -1,16 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePlayerDto, UpdatePlayerDto, Player } from '../generated';
 import { JwtService } from '@nestjs/jwt';
 import { EventsGateway } from '../events.gateway';
 import { JoinGameDto } from '../../game/dto/join-game.dto';
+import { ClsService } from 'nestjs-cls';
+import { UpdatePlayerWithRoleDto } from './dto/update-player-with-role.dto';
 
 @Injectable()
 export class PlayerService {
+  private readonly logger = new Logger(PlayerService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly eventsGateway: EventsGateway,
+    private readonly cls: ClsService,
   ) {}
 
   async joinGame(joinGameDto: JoinGameDto): Promise<{ token: string; player: Player }> {
@@ -68,25 +73,77 @@ export class PlayerService {
     return this.prisma.player.findUnique({ where: { id } });
   }
 
-  update(id: number, updatePlayerDto: UpdatePlayerDto) {
+  async update(id: number, updatePlayerDto: UpdatePlayerDto) {
     return this.prisma.player.update({ where: { id }, data: updatePlayerDto });
   }
 
-  async updatePlayerName(id: number, newName: string) {
-    const updatedPlayer = await this.prisma.player.update({
-      where: { id },
-      data: { name: newName },
-      include: { game: true },
-    });
-
-    if (updatedPlayer.game) {
-      const players = await this.prisma.player.findMany({
-        where: { gameId: updatedPlayer.gameId },
-      });
-      this.eventsGateway.sendToLobby(updatedPlayer.game.roomCode, 'playerListUpdate', players);
+  async updateWithRole(id: number, updatePlayerDto: UpdatePlayerWithRoleDto) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Updating player ${id} with data: ${JSON.stringify(updatePlayerDto)}`);
+    
+    // Validate input
+    if (updatePlayerDto.name !== undefined) {
+      const trimmedName = updatePlayerDto.name?.trim();
+      if (!trimmedName || trimmedName.length === 0) {
+        throw new BadRequestException('Name cannot be empty');
+      }
+      updatePlayerDto.name = trimmedName;
     }
 
-    return updatedPlayer;
+    // Validate role if provided
+    if (updatePlayerDto.role !== undefined) {
+      const validRoles = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
+      if (!validRoles.includes(updatePlayerDto.role as string)) {
+        throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
+      }
+    }
+    
+    try {
+      const result = await this.prisma.player.update({ where: { id }, data: updatePlayerDto });
+      this.logger.log(`[${requestId}] Successfully updated player ${id}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to update player ${id}: ${error.message}`, error.stack);
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Player not found');
+      }
+      throw error;
+    }
+  }
+
+  async updatePlayerName(id: number, newName: string) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Updating player ${id} name to: ${newName}`);
+
+    // Validate name
+    const trimmedName = newName?.trim();
+    if (!trimmedName || trimmedName.length === 0) {
+      throw new BadRequestException('Name cannot be empty');
+    }
+
+    try {
+      const updatedPlayer = await this.prisma.player.update({
+        where: { id },
+        data: { name: trimmedName },
+        include: { game: true },
+      });
+
+      if (updatedPlayer.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: updatedPlayer.gameId },
+        });
+        this.eventsGateway.sendToLobby(updatedPlayer.game.roomCode, 'playerListUpdate', players);
+      }
+
+      this.logger.log(`[${requestId}] Successfully updated player ${id} name`);
+      return updatedPlayer;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to update player ${id} name: ${error.message}`, error.stack);
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Player not found');
+      }
+      throw error;
+    }
   }
 
   remove(id: number) {
