@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { PlayerService } from './player.service';
 import { CreatePlayerDto, Player, UpdatePlayerDto } from '../generated';
-import { JoinGameDto } from '../generated/join-game.dto';
+import { JoinGameDto } from '../../game/dto/join-game.dto';
 
 @Controller('player')
 export class PlayerController {
