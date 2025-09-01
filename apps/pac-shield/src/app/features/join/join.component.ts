@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Player } from '../../models/player.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -68,7 +69,11 @@ export class JoinComponent {
         },
         error: (err: unknown) => {
           this.isLoading = false;
-          this.errorMessage = (err as Error).message || 'Join failed';
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.errorMessage = 'Invalid room code';
+          } else {
+            this.errorMessage = (err as Error).message || 'Join failed';
+          }
           console.error('Join failed', err);
         }
       });
