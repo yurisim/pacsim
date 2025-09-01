@@ -6,9 +6,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { GameModule } from '../game/game.module';
 import { AuthModule } from '../auth/auth.module';
 import { PlayerModule } from './player/player.module';
+import { LobbyModule } from './lobby/lobby.module';
 
 @Module({
-  imports: [PrismaModule, GameModule, AuthModule, PlayerModule],
+  imports: [PrismaModule, GameModule, AuthModule, PlayerModule, LobbyModule],
   controllers: [AppController],
   providers: [AppService, EventsGateway],
 })

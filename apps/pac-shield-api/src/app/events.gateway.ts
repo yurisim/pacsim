@@ -36,6 +36,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('joinedRoom', `You have successfully joined game ${gameId}`);
   }
 
+  sendToLobby(lobbyId: string, event: string, data: any) {
+    this.server.to(lobbyId).emit(event, data);
+  }
+
   @SubscribeMessage('gameEvent')
   handleGameEvent(
     @MessageBody() payload: { gameId: string; eventName: string; data: unknown }
