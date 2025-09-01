@@ -30,6 +30,7 @@ export class PlayerService {
     const player = await this.prisma.player.create({
       data: {
         name: joinGameDto.playerName,
+        role: joinGameDto.role || 'PLAYER',
         sessionId: `${joinGameDto.playerName}-${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 9)}`,
