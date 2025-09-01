@@ -335,6 +335,7 @@ enum PlayerRole {
   COMMANDER
   DEPUTY
   STRATEGIST
+  GM
 }
 
 enum TeamType {
