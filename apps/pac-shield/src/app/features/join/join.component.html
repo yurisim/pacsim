@@ -1,50 +1,65 @@
 <div class="flex justify-center items-center h-[calc(100vh-100px)]">
   <p-card header="Join Game" class="w-[400px] text-center">
     <div class="flex flex-col gap-4">
-      <p-inputgroup>
-        <p-inputgroup-addon>
-          <i class="pi pi-key"></i>
-        </p-inputgroup-addon>
-        <input
-          pInputText
-          [(ngModel)]="roomCode"
-          placeholder="Room Code"
-        />
-      </p-inputgroup>
-
-      <p-inputgroup>
-        <p-inputgroup-addon>
-          <i class="pi pi-user"></i>
-        </p-inputgroup-addon>
-        <input
-          pInputText
-          [(ngModel)]="playerName"
-          placeholder="Last Name"
-        />
-      </p-inputgroup>
-    </div>
-    <ng-template pTemplate="footer">
-      <div class="flex flex-col items-center gap-2">
-        <div class="flex gap-2 w-full justify-center">
-          <p-button
-            label="Back"
-            icon="pi pi-arrow-left"
-            (onClick)="router.navigate(['/'])"
-            [text]="true"
-          ></p-button>
-          <p-button
-            label="Join"
-            icon="pi pi-arrow-right"
-            (onClick)="joinGame()"
-            [loading]="isLoading"
-          ></p-button>
+      <form [formGroup]="joinForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <i class="pi pi-key"></i>
+            </p-inputgroup-addon>
+            <input
+              type="text"
+              formControlName="gameId"
+              placeholder="Room Code"
+            />
+          </p-inputgroup>
+          <div *ngIf="joinForm.get('gameId')?.invalid && joinForm.get('gameId')?.touched" class="error">
+            Room code is required
+          </div>
         </div>
-        @if (errorMessage) {
-        <div class="p-error">
+
+        <div class="form-group">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <i class="pi pi-user"></i>
+            </p-inputgroup-addon>
+            <input
+              type="text"
+              formControlName="playerName"
+              placeholder="Player Name"
+            />
+          </p-inputgroup>
+          <div *ngIf="joinForm.get('playerName')?.invalid && joinForm.get('playerName')?.touched" class="error">
+            Player name is required
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="error">
           {{ errorMessage }}
         </div>
-        }
-      </div>
-    </ng-template>
+
+        <ng-template pTemplate="footer">
+          <div class="flex flex-col items-center gap-2">
+            <div class="flex gap-2 w-full justify-center">
+              <p-button
+                label="Back"
+                icon="pi pi-arrow-left"
+                (onClick)="router.navigate(['/'])"
+                [text]="true"
+              ></p-button>
+              <p-button
+                type="submit"
+                label="Join"
+                icon="pi pi-arrow-right"
+                [disabled]="joinForm.invalid || isLoading"
+              >
+                <span *ngIf="isLoading">Joining...</span>
+                <span *ngIf="!isLoading">Join Game</span>
+              </p-button>
+            </div>
+          </div>
+        </ng-template>
+      </form>
+    </div>
   </p-card>
 </div>
