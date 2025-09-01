@@ -80,7 +80,7 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.locator('[role="dialog"]')).not.toBeVisible();
 
     // Verify the updated name appears in the player settings section
-await expect(page.getByText('Updated Player Name')).toBeVisible();
+    await expect(page.getByText('Updated Player Name')).toBeVisible();
   });
 
   test('should allow changing player role through settings dialog', async ({

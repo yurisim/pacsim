@@ -74,7 +74,8 @@ describe('PlayerService', () => {
         data: {
           name: 'Trimmed Name',
           role: PlayerRole.PLAYER
-        }
+        },
+        include: { game: true }
       });
     });
 
@@ -132,7 +133,8 @@ describe('PlayerService', () => {
           data: {
             name: 'Test Player',
             role
-          }
+          },
+          include: { game: true }
         });
       }
     });
@@ -163,7 +165,8 @@ describe('PlayerService', () => {
         where: { id: 1 },
         data: {
           name: 'New Name'
-        }
+        },
+        include: { game: true }
       });
     });
 
@@ -180,7 +183,8 @@ describe('PlayerService', () => {
         where: { id: 1 },
         data: {
           role: PlayerRole.COMMANDER
-        }
+        },
+        include: { game: true }
       });
     });
   });

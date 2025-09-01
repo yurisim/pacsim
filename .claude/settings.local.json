@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "mcp__wallaby__wallaby_failingTests"
     ],
     "deny": [],
     "ask": []
