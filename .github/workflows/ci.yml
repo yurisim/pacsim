@@ -64,7 +64,3 @@ jobs:
         with:
           name: playwright-e2e-artifacts
           path: dist/.playwright/apps/pac-shield-e2e/test-output
-
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
-      - run: npx nx fix-ci
-        if: always()
