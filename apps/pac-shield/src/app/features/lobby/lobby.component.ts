@@ -12,7 +12,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
-import { EMPTY, Observable, switchMap, map } from 'rxjs';
+import { EMPTY, Observable, map } from 'rxjs';
 import { JoinTeamDialogComponent } from './join-team-dialog/join-team-dialog.component';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
 import { WebSocketService } from '../../shared/services/websocket.service';
@@ -62,7 +62,7 @@ export class LobbyComponent implements OnInit {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
       this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-      
+
       // Set up current player observable
       const playerId = this.authService.getPlayerId();
       if (playerId) {
@@ -70,7 +70,7 @@ export class LobbyComponent implements OnInit {
           map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
         );
       }
-      
+
       this.webSocketService.connect(gameId);
       this.webSocketService.listen('playerJoined').subscribe(() => {
         this.game$ = this.apiService.get<Game>(`game/${gameId}`);

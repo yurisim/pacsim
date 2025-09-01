@@ -1,4 +1,4 @@
-import { test, expect, request } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test('should create a new game and navigate to the game board', async ({
   page,
