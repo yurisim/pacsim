@@ -129,7 +129,9 @@ export class LobbyComponent implements OnInit {
   }
 
   onPlayerSettingsSave(settings: PlayerSettings): void {
+    console.log('📥 Lobby received settings:', settings);
     const playerId = this.authService.getPlayerId();
+    console.log('🆔 Player ID:', playerId);
     if (!playerId) {
       this.messageService.add({
         severity: 'error',
@@ -139,6 +141,7 @@ export class LobbyComponent implements OnInit {
       return;
     }
 
+    console.log('🌐 Making API call:', { playerId, name: settings.name, role: settings.role });
     this.apiService.updatePlayerNameAndRole(playerId, settings.name, settings.role).subscribe({
       next: () => {
         this.messageService.add({

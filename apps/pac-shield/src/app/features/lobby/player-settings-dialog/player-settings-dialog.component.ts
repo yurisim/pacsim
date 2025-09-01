@@ -35,7 +35,7 @@ export class PlayerSettingsDialogComponent implements OnInit {
   cancelled = output<void>();
 
   name = '';
-  role: { label: string; value: PlayerRole } | null = null;
+  role: { label: string; value: PlayerRole } | PlayerRole | null = null;
   roleOptions: { label: string; value: PlayerRole }[] = [];
 
   readonly allRoleOptions = playerRole.map(role => ({
@@ -82,15 +82,26 @@ export class PlayerSettingsDialogComponent implements OnInit {
   }
 
   get isFormValid(): boolean {
-    return this.name.trim().length > 0 && this.role !== null;
+    return this.name.trim().length > 0 && this.role !== null && this.role !== undefined;
   }
 
   saveSettings(): void {
+    console.log('🔍 Dialog saveSettings:', { 
+      name: this.name, 
+      role: this.role, 
+      roleType: typeof this.role,
+      roleValue: typeof this.role === 'object' ? this.role?.value : this.role,
+      isFormValid: this.isFormValid 
+    });
     if (this.isFormValid) {
-      this.save.emit({
+      // Handle both object and string values from AutoComplete
+      const roleValue = typeof this.role === 'object' ? this.role!.value : this.role as PlayerRole;
+      const payload = {
         name: this.name.trim(),
-        role: this.role!.value,
-      });
+        role: roleValue,
+      };
+      console.log('🚀 Emitting payload:', payload);
+      this.save.emit(payload);
     }
   }
 

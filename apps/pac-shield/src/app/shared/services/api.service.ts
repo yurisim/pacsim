@@ -35,6 +35,8 @@ export class ApiService {
   }
 
   updatePlayerNameAndRole(playerId: string, name: string, role: string): Observable<any> {
-    return this.patch(`player/${playerId}`, { name, role });
+    const body = { name, role };
+    console.log('🔧 API Service:', `PATCH /player/${playerId}`, body);
+    return this.patch(`player/${playerId}`, body);
   }
 }
