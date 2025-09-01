@@ -175,19 +175,6 @@ export class LobbyComponent implements OnInit {
   }
 
   formatRoleDisplay(role: string): string {
-    switch (role) {
-      case 'GM':
-        return 'Game Master';
-      case 'PLAYER':
-        return 'Player';
-      case 'COMMANDER':
-        return 'Commander';
-      case 'DEPUTY':
-        return 'Deputy';
-      case 'STRATEGIST':
-        return 'Strategist';
-      default:
-        return role;
-    }
+    return role || 'PLAYER';
   }
 }

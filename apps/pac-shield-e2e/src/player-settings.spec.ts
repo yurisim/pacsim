@@ -93,7 +93,7 @@ test.describe('Player Settings in Lobby', () => {
     // Select a different role from the autocomplete
     await page.getByRole('combobox', { name: 'Select a role' }).click();
     await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'Commander' }).click();
+    await page.getByRole('option', { name: 'COMMANDER' }).click();
     await page.getByRole('button', { name: 'Save' }).click();
 
     // Wait for dialog to close
@@ -101,7 +101,7 @@ test.describe('Player Settings in Lobby', () => {
 
     // Verify the updated role appears in the player settings section
 
-    await expect(page.getByText('Commander', { exact: true })).toBeVisible();
+    await expect(page.getByText('COMMANDER', { exact: true })).toBeVisible();
   });
 
   test('should allow changing both name and role simultaneously', async ({
@@ -120,7 +120,7 @@ test.describe('Player Settings in Lobby', () => {
     // Change role
     await page.getByRole('combobox', { name: 'Select a role' }).click();
     await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'Commander' }).click();
+    await page.getByRole('option', { name: 'COMMANDER' }).click();
     await page.getByRole('button', { name: 'Save' }).click();
 
     // Wait for dialog to close
@@ -150,7 +150,7 @@ test.describe('Player Settings in Lobby', () => {
     // Change role
     await page.getByRole('combobox', { name: 'Select a role' }).click();
     await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'Commander' }).click();
+    await page.getByRole('option', { name: 'COMMANDER' }).click();
 
     // Cancel changes
     await page.getByRole('button', { name: 'Cancel' }).click();
@@ -211,8 +211,8 @@ test.describe('Player Settings in Lobby', () => {
     await page.getByLabel('Role').fill('comm');
 
     // Verify that filtered options appear
-    await expect(page.getByText('Commander')).toBeVisible();
+    await expect(page.getByText('COMMANDER')).toBeVisible();
     // Other roles that don't match should not be visible
-    await expect(page.getByText('Player')).not.toBeVisible();
+    await expect(page.getByText('PLAYER')).not.toBeVisible();
   });
 });

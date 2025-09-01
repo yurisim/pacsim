@@ -67,21 +67,29 @@ export class PlayerSettingsDialogComponent implements OnInit {
   private formatRoleLabel(role: PlayerRole): string {
     switch (role) {
       case 'GM':
-        return 'Game Master';
+        return 'GM';
+      case 'PLAYER':
+        return 'PLAYER';
+      case 'COMMANDER':
+        return 'COMMANDER';
+      case 'DEPUTY':
+        return 'DEPUTY';
+      case 'STRATEGIST':
+        return 'STRATEGIST';
       default:
-        return role.charAt(0) + role.slice(1).toLowerCase().replace('_', ' ');
+        return role;
     }
   }
 
   get isFormValid(): boolean {
-    return this.name.trim().length > 0;
+    return this.name.trim().length > 0 && this.role !== null;
   }
 
   saveSettings(): void {
-    if (this.isFormValid && this.role) {
+    if (this.isFormValid) {
       this.save.emit({
         name: this.name.trim(),
-        role: this.role.value,
+        role: this.role!.value,
       });
     }
   }
