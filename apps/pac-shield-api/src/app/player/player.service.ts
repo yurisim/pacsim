@@ -100,11 +100,30 @@ export class PlayerService {
     }
     
     try {
-      const result = await this.prisma.player.update({ where: { id }, data: updatePlayerDto });
+      const result = await this.prisma.player.update({ 
+        where: { id }, 
+        data: updatePlayerDto,
+        include: { game: true }
+      });
+      
+      // Emit WebSocket event to notify other players
+      if (result.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: result.gameId },
+        });
+        this.eventsGateway.sendToLobby(result.game.roomCode, 'playerListUpdate', players);
+      }
+      
       this.logger.log(`[${requestId}] Successfully updated player ${id}`);
       return result;
     } catch (error) {
-      this.logger.error(`[${requestId}] Failed to update player ${id}: ${error.message}`, error.stack);
+      // Use debug level for expected test failures to reduce noise
+      if (this.isExpectedTestFailure(id, error)) {
+        this.logger.debug(`[${requestId}] Expected test failure - Player ${id} not found`);
+      } else {
+        this.logger.error(`[${requestId}] Failed to update player ${id}: ${error.message}`, error.stack);
+      }
+      
       if (error.code === 'P2025') {
         throw new NotFoundException('Player not found');
       }
@@ -139,12 +158,42 @@ export class PlayerService {
       this.logger.log(`[${requestId}] Successfully updated player ${id} name`);
       return updatedPlayer;
     } catch (error) {
-      this.logger.error(`[${requestId}] Failed to update player ${id} name: ${error.message}`, error.stack);
+      // Use debug level for expected test failures to reduce noise
+      if (this.isExpectedTestFailure(id, error)) {
+        this.logger.debug(`[${requestId}] Expected test failure - Player ${id} not found`);
+      } else {
+        this.logger.error(`[${requestId}] Failed to update player ${id} name: ${error.message}`, error.stack);
+      }
+      
       if (error.code === 'P2025') {
         throw new NotFoundException('Player not found');
       }
       throw error;
     }
+  }
+
+  /**
+   * Determines if a failure is expected during testing to reduce log noise
+   */
+  private isExpectedTestFailure(id: number, error: any): boolean {
+    // Check if it's a "not found" error (P2025 is Prisma's "record not found" error)
+    if (error.code !== 'P2025') {
+      return false;
+    }
+
+    // Only suppress logging for test patterns in non-production environments
+    const isTestEnv = process.env.NODE_ENV !== 'production';
+    if (!isTestEnv) {
+      return false;
+    }
+
+    // Common test patterns that indicate intentional failures
+    const testPatterns = [
+      99999,  // Commonly used fake ID in tests
+      -1,     // Another common test pattern
+    ];
+
+    return testPatterns.includes(id);
   }
 
   remove(id: number) {

@@ -68,6 +68,15 @@ export class WebSocketService {
     this.socket.emit(eventName, data);
   }
 
+  joinGameRoom(roomCode: string): void {
+    if (!this.socket.connected) {
+      console.error('Socket not connected. Cannot join room.');
+      return;
+    }
+    this.socket.emit('joinGame', roomCode);
+    console.log(`Joining game room: ${roomCode}`);
+  }
+
   listen<T>(eventName: string): Observable<T> {
     return new Observable((subscriber) => {
       this.socket.on(eventName, (data: T) => {

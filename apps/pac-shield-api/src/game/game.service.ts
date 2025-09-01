@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { TeamType } from '.prisma/client';
@@ -9,6 +9,8 @@ import { PlayerService } from '../app/player/player.service';
 
 @Injectable()
 export class GameService {
+  private readonly logger = new Logger(GameService.name);
+
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
@@ -20,9 +22,14 @@ export class GameService {
     const { victoryConditionMP } = createGameDto;
     let roomCode: string;
 
-    do {
-      roomCode = this.generateRoomCode();
-    } while (await this.prisma.game.findUnique({ where: { roomCode } }));
+    try {
+      do {
+        roomCode = this.generateRoomCode();
+      } while (await this.prisma.game.findUnique({ where: { roomCode } }));
+    } catch (error) {
+      this.logger.error('Database connection error while checking room code:', error);
+      throw new Error('Database connection failed. Please ensure the database is running and properly configured.');
+    }
 
     const game = await this.prisma.game.create({
       data: {

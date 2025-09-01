@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, input, output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -26,18 +26,18 @@ export interface PlayerSettings {
   templateUrl: './player-settings-dialog.component.html',
   styleUrls: ['./player-settings-dialog.component.scss'],
 })
-export class PlayerSettingsDialogComponent {
+export class PlayerSettingsDialogComponent implements OnInit {
   visible = input<boolean>(false);
   currentName = input<string>('');
   currentRole = input<PlayerRole>('PLAYER');
-  
+
   save = output<PlayerSettings>();
-  cancel = output<void>();
+  cancelled = output<void>();
 
   name = '';
-  role: PlayerRole = 'PLAYER';
+  role: { label: string; value: PlayerRole } | null = null;
   roleOptions: { label: string; value: PlayerRole }[] = [];
-  
+
   readonly allRoleOptions = playerRole.map(role => ({
     label: this.formatRoleLabel(role),
     value: role
@@ -45,7 +45,7 @@ export class PlayerSettingsDialogComponent {
 
   ngOnInit() {
     this.name = this.currentName();
-    this.role = this.currentRole();
+    this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
     this.roleOptions = [...this.allRoleOptions];
   }
 
@@ -70,18 +70,17 @@ export class PlayerSettingsDialogComponent {
   }
 
   saveSettings(): void {
-    if (this.isFormValid) {
-      const roleValue = typeof this.role === 'object' ? (this.role as any).value : this.role;
+    if (this.isFormValid && this.role) {
       this.save.emit({
         name: this.name.trim(),
-        role: roleValue,
+        role: this.role.value,
       });
     }
   }
 
   cancelSettings(): void {
     this.name = this.currentName();
-    this.role = this.currentRole();
-    this.cancel.emit();
+    this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
+    this.cancelled.emit();
   }
 }

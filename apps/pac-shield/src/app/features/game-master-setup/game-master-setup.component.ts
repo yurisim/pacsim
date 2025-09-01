@@ -1,4 +1,4 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -27,7 +27,7 @@ export interface GameMasterInfo {
 })
 export class GameMasterSetupComponent {
   complete = output<GameMasterInfo>();
-  
+
   lastName = '';
   pin = '';
 

@@ -5,6 +5,7 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -29,7 +30,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinGame')
-  handleJoinGame(@MessageBody('gameId') gameId: string, client: Socket): void {
+  handleJoinGame(@MessageBody() gameId: string, @ConnectedSocket() client: Socket): void {
     client.join(gameId);
     this.logger.log(`Client ${client.id} joined room: ${gameId}`);
     // Optionally, send a confirmation to the client who just joined
