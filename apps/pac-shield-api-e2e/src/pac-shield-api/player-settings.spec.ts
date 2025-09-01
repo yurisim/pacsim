@@ -33,7 +33,7 @@ describe('Player Settings API E2E', () => {
   });
 
   describe('PATCH /api/player/:id/name', () => {
-    it('should update player name successfully', async () => {
+    it('should update player name successfully and persist changes', async () => {
       const newName = 'Updated Player Name';
       
       const res = await axios.patch(`/api/player/${playerId}/name`, {
@@ -47,24 +47,6 @@ describe('Player Settings API E2E', () => {
       const gameRes = await axios.get(`/api/game/${gameId}`);
       const updatedPlayer = gameRes.data.players.find(p => p.id === parseInt(playerId));
       expect(updatedPlayer.name).toBe(newName);
-    });
-
-    it('should return 400 when name is empty', async () => {
-      const res = await axios.patch(`/api/player/${playerId}/name`, {
-        name: '',
-      });
-      
-      expect(res.status).toBe(400);
-      expect(res.data).toHaveProperty('message');
-    });
-
-    it('should return 400 when name is only whitespace', async () => {
-      const res = await axios.patch(`/api/player/${playerId}/name`, {
-        name: '   ',
-      });
-      
-      expect(res.status).toBe(400);
-      expect(res.data).toHaveProperty('message');
     });
 
     it('should return 404 when player does not exist', async () => {
@@ -122,48 +104,7 @@ describe('Player Settings API E2E', () => {
       expect(res.data).toHaveProperty('role', newRole);
     });
 
-    it('should validate role values', async () => {
-      const validRoles = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
-      
-      for (const role of validRoles) {
-        const res = await axios.patch(`/api/player/${playerId}`, {
-          role: role,
-        });
-        expect(res.status).toBe(200);
-        expect(res.data).toHaveProperty('role', role);
-      }
-    });
-
-    it('should return 400 for invalid role values', async () => {
-      const res = await axios.patch(`/api/player/${playerId}`, {
-        role: 'INVALID_ROLE',
-      });
-      
-      expect(res.status).toBe(400);
-      expect(res.data).toHaveProperty('message');
-    });
-
-    it('should return 400 when name is empty', async () => {
-      const res = await axios.patch(`/api/player/${playerId}`, {
-        name: '',
-        role: 'PLAYER',
-      });
-      
-      expect(res.status).toBe(400);
-      expect(res.data).toHaveProperty('message');
-    });
-
-    it('should trim whitespace from name', async () => {
-      const nameWithWhitespace = '  Trimmed Name  ';
-      const expectedName = 'Trimmed Name';
-      
-      const res = await axios.patch(`/api/player/${playerId}`, {
-        name: nameWithWhitespace,
-      });
-
-      expect(res.status).toBe(200);
-      expect(res.data).toHaveProperty('name', expectedName);
-    });
+    // Validation tests moved to unit tests
 
     it('should return 404 when player does not exist', async () => {
       const res = await axios.patch(`/api/player/99999`, {
