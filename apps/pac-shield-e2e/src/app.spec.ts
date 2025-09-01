@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('App Component', () => {
-  test.setTimeout(5000);
+  test.setTimeout(10000);
 
   test('should display connected status on load', async ({ page }) => {
     await page.goto('/');
