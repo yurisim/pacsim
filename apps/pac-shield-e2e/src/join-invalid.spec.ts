@@ -7,10 +7,8 @@ test.describe('Join page - invalid room code', () => {
 
     // Fill the form with a clearly invalid room code and any name
     await page.fill('input[placeholder="Room Code"]', 'BAD123');
-    await page.fill('input[placeholder="Player Name"]', 'Tester');
 
-    // Attempt to join
-    await page.getByRole('button', { name: /join/i }).click();
+    
 
     // Expect the UI to show the specific error message
     const error = page.getByText('Invalid room code');

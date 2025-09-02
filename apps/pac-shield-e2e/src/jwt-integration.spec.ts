@@ -9,15 +9,16 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Create a game
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    await page.getByRole('textbox', { name: 'Last Name *' }).click();
-    await page
-      .getByRole('textbox', { name: 'Last Name *' })
-      .fill(userName);
-    await page.getByRole('textbox').nth(1).click();
-    await page.getByRole('textbox').nth(1).fill('1');
-    await page.getByRole('textbox').nth(2).fill('2');
-    await page.getByRole('textbox').nth(3).fill('3');
-    await page.getByRole('textbox').nth(4).fill('4');
+    
+    // Wait for Game Master Setup form to appear
+    await expect(page.getByText('Game Master Setup')).toBeVisible();
+    
+    // Fill out Game Master Setup form
+    await page.getByLabel('Last Name').fill(userName);
+    await page.locator('p-inputotp input').first().fill('1');
+    await page.locator('p-inputotp input').nth(1).fill('2');
+    await page.locator('p-inputotp input').nth(2).fill('3');
+    await page.locator('p-inputotp input').nth(3).fill('4');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for game creation and extract the room code from the display
@@ -49,18 +50,22 @@ test.describe('JWT Integration and Continue Game Flow', () => {
   test('should handle JWT expiration gracefully', async ({ page }) => {
     // Start with valid session
     await page.goto('/');
-    await page.getByRole('button', { name: /create game/i }).click();
-    await page.fill('input[placeholder="Victory Condition MP"]', '100');
-    await page.getByRole('button', { name: /create/i }).click();
-
-    await page
-      .getByRole('button', { name: /settings/i })
-      .first()
-      .click();
-    await page.fill('input[placeholder="Enter your name"]', 'ExpiredUser');
-    await page.fill('input[type="password"]', '1234');
-    await page.getByRole('button', { name: /join as game master/i }).click();
-    await expect(page.getByText('ExpiredUser')).toBeVisible();
+    await page.getByRole('button', { name: 'Start New Game' }).click();
+    
+    // Wait for Game Master Setup form to appear
+    await expect(page.getByText('Game Master Setup')).toBeVisible();
+    
+    // Fill out Game Master Setup form
+    await page.getByLabel('Last Name').fill('ExpiredUser');
+    await page.locator('p-inputotp input').first().fill('1');
+    await page.locator('p-inputotp input').nth(1).fill('2');
+    await page.locator('p-inputotp input').nth(2).fill('3');
+    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    
+    // Wait for lobby
+    await expect(page).toHaveURL(/\/lobby\//);
+    await expect(page.getByText('ExpiredUser')).toHaveCount(2);
 
     // Simulate JWT expiration by corrupting the token
     await page.evaluate(() => {
@@ -71,10 +76,10 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     // Continue option should not appear
-    await expect(page.getByText('Welcome back, ExpiredUser!')).toBeHidden();
+    await expect(page.getByText('Welcome back, ExpiredUser!')).not.toBeVisible();
     await expect(
       page.getByRole('button', { name: /continue game/i })
-    ).toBeHidden();
+    ).not.toBeVisible();
 
     // Should show regular join form
     await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
@@ -85,16 +90,27 @@ test.describe('JWT Integration and Continue Game Flow', () => {
   }) => {
     // Create game
     await page.goto('/');
-    await page.getByRole('button', { name: /create game/i }).click();
-    await page.fill('input[placeholder="Victory Condition MP"]', '100');
-    await page.getByRole('button', { name: /create/i }).click();
-
-    const lobbyUrl = page.url();
-    const roomCode = lobbyUrl.split('/lobby/')[1];
+    await page.getByRole('button', { name: 'Start New Game' }).click();
+    
+    // Wait for Game Master Setup form to appear
+    await expect(page.getByText('Game Master Setup')).toBeVisible();
+    
+    // Fill out Game Master Setup form
+    await page.getByLabel('Last Name').fill('ConflictTestGM');
+    await page.locator('p-inputotp input').first().fill('1');
+    await page.locator('p-inputotp input').nth(1).fill('2');
+    await page.locator('p-inputotp input').nth(2).fill('3');
+    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    
+    // Wait for lobby and extract room code
+    await expect(page).toHaveURL(/\/lobby\//);
+    await expect(page.locator('.text-7xl')).toBeVisible();
+    const roomCode = await page.locator('.text-7xl').textContent();
 
     // Join first time with PIN
     await page.goto('/join');
-    await page.fill('input[placeholder="Room Code"]', roomCode);
+    await page.fill('input[placeholder="Room Code"]', roomCode!);
     await expect(page.locator('.pi-check')).toBeVisible(); // Wait for validation
     await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
@@ -125,27 +141,30 @@ test.describe('JWT Integration and Continue Game Flow', () => {
   test('should handle "I\'m a new person" flow', async ({ page }) => {
     // Create game
     await page.goto('/');
-    await page.getByRole('button', { name: /create game/i }).click();
-    await page.fill('input[placeholder="Victory Condition MP"]', '100');
-    await page.getByRole('button', { name: /create/i }).click();
-
-    const roomCode = page.url().split('/lobby/')[1];
-
-    // First, create a player by joining as GM
-    await page
-      .getByRole('button', { name: /settings/i })
-      .first()
-      .click();
-    await page.fill('input[placeholder="Enter your name"]', 'OriginalUser');
-    await page.fill('input[type="password"]', '1234');
-    await page.getByRole('button', { name: /join as game master/i }).click();
-    await expect(page.getByText('OriginalUser')).toBeVisible();
+    await page.getByRole('button', { name: 'Start New Game' }).click();
+    
+    // Wait for Game Master Setup form to appear
+    await expect(page.getByText('Game Master Setup')).toBeVisible();
+    
+    // Fill out Game Master Setup form
+    await page.getByLabel('Last Name').fill('OriginalUser');
+    await page.locator('p-inputotp input').first().fill('1');
+    await page.locator('p-inputotp input').nth(1).fill('2');
+    await page.locator('p-inputotp input').nth(2).fill('3');
+    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    
+    // Wait for lobby and extract room code
+    await expect(page).toHaveURL(/\/lobby\//);
+    await expect(page.locator('.text-7xl')).toBeVisible();
+    const roomCode = await page.locator('.text-7xl').textContent();
+    await expect(page.getByText('OriginalUser')).toHaveCount(2);
 
     // Clear session and try to join with same name
     await page.evaluate(() => localStorage.clear());
     await page.goto('/join');
 
-    await page.fill('input[placeholder="Room Code"]', roomCode);
+    await page.fill('input[placeholder="Room Code"]', roomCode!);
     await expect(page.locator('.pi-check')).toBeVisible();
     await page.fill('input[placeholder="Player Name"]', 'OriginalUser');
     await page.getByRole('button', { name: /join/i }).click();
@@ -173,7 +192,8 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await alert.accept();
 
     // Should be in lobby now
-    await expect(page).toHaveURL(`/lobby/${roomCode}`);
+    await expect(page).toHaveURL(/\/lobby\//);
+    await expect(page.locator('.text-7xl')).toContainText(roomCode!);
 
     // Should see the new player (may have same name but different ID)
     await expect(page.getByText('OriginalUser')).toBeVisible();
@@ -207,7 +227,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByText('Invalid room code')).toBeVisible();
 
     // Player name field should not appear
-    await expect(page.locator('input[placeholder="Player Name"]')).toBeHidden();
+    await expect(page.locator('input[placeholder="Player Name"]')).not.toBeVisible();
 
     // Join button should be disabled
     const joinButton = page.getByRole('button', { name: /join/i });
@@ -219,11 +239,23 @@ test.describe('JWT Integration and Continue Game Flow', () => {
   }) => {
     // Create a valid game first
     await page.goto('/');
-    await page.getByRole('button', { name: /create game/i }).click();
-    await page.fill('input[placeholder="Victory Condition MP"]', '100');
-    await page.getByRole('button', { name: /create/i }).click();
-
-    const roomCode = page.url().split('/lobby/')[1];
+    await page.getByRole('button', { name: 'Start New Game' }).click();
+    
+    // Wait for Game Master Setup form to appear
+    await expect(page.getByText('Game Master Setup')).toBeVisible();
+    
+    // Fill out Game Master Setup form
+    await page.getByLabel('Last Name').fill('StateTestGM');
+    await page.locator('p-inputotp input').first().fill('1');
+    await page.locator('p-inputotp input').nth(1).fill('2');
+    await page.locator('p-inputotp input').nth(2).fill('3');
+    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    
+    // Wait for lobby and extract room code
+    await expect(page).toHaveURL(/\/lobby\//);
+    await expect(page.locator('.text-7xl')).toBeVisible();
+    const roomCode = await page.locator('.text-7xl').textContent();
 
     await page.goto('/join');
 
@@ -234,7 +266,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(joinButton).toBeDisabled();
 
     // Start typing valid room code
-    await roomInput.fill(roomCode);
+    await roomInput.fill(roomCode!);
 
     // Should show "Validating..." state
     await expect(joinButton).toContainText('Validating...');
@@ -261,11 +293,23 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Create a game to get valid room code
     await page.goto('/');
-    await page.getByRole('button', { name: /create game/i }).click();
-    await page.fill('input[placeholder="Victory Condition MP"]', '100');
-    await page.getByRole('button', { name: /create/i }).click();
-
-    const roomCode = page.url().split('/lobby/')[1];
+    await page.getByRole('button', { name: 'Start New Game' }).click();
+    
+    // Wait for Game Master Setup form to appear
+    await expect(page.getByText('Game Master Setup')).toBeVisible();
+    
+    // Fill out Game Master Setup form
+    await page.getByLabel('Last Name').fill('FormTestGM');
+    await page.locator('p-inputotp input').first().fill('1');
+    await page.locator('p-inputotp input').nth(1).fill('2');
+    await page.locator('p-inputotp input').nth(2).fill('3');
+    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    
+    // Wait for lobby and extract room code
+    await expect(page).toHaveURL(/\/lobby\//);
+    await expect(page.locator('.text-7xl')).toBeVisible();
+    const roomCode = await page.locator('.text-7xl').textContent();
 
     // Go back to join and test form preservation
     await page.goto('/join');
@@ -273,14 +317,14 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Fill room code gradually and verify form state preservation
     const roomInput = page.locator('input[placeholder="Room Code"]');
 
-    await roomInput.fill(roomCode.substring(0, 3));
-    await expect(roomInput).toHaveValue(roomCode.substring(0, 3));
+    await roomInput.fill(roomCode!.substring(0, 3));
+    await expect(roomInput).toHaveValue(roomCode!.substring(0, 3));
 
-    await roomInput.fill(roomCode);
+    await roomInput.fill(roomCode!);
 
     // After validation, room code should still be there
     await expect(page.locator('.pi-check')).toBeVisible();
-    await expect(roomInput).toHaveValue(roomCode);
+    await expect(roomInput).toHaveValue(roomCode!);
 
     // Player name field appears and can be filled
     const nameInput = page.locator('input[placeholder="Player Name"]');
@@ -288,7 +332,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await nameInput.fill('FormStateUser');
 
     // Both fields should retain their values
-    await expect(roomInput).toHaveValue(roomCode);
+    await expect(roomInput).toHaveValue(roomCode!);
     await expect(nameInput).toHaveValue('FormStateUser');
   });
 });
