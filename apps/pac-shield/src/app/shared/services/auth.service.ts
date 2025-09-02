@@ -36,6 +36,26 @@ export class AuthService {
       );
   }
 
+  joinGameWithPin(roomCode: string, playerName: string, pin: string) {
+    this.webSocketService.connect(roomCode);
+    return this.apiService
+      .post<{ token: string; player: Player }>('player/join', { roomCode, playerName, pin })
+      .pipe(
+        tap(({ token, player }) => {
+          this.setToken(token);
+          this.setPlayer(player);
+          const playerId = this.getPlayerIdFromToken();
+          if (playerId) {
+            localStorage.setItem('playerId', playerId);
+          }
+        })
+      );
+  }
+
+  validateRoomCode(roomCode: string) {
+    return this.apiService.get<{ valid: boolean; gameId?: number }>(`game/validate/${roomCode}`);
+  }
+
   createGameMaster(roomCode: string, playerName: string, pin: string) {
     this.webSocketService.connect(roomCode);
     return this.apiService

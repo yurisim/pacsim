@@ -17,6 +17,11 @@ export class GameController {
     return this.gameService.getGameById(+id);
   }
 
+  @Get('validate/:roomCode')
+  async validateRoomCode(@Param('roomCode') roomCode: string) {
+    return this.gameService.validateRoomCode(roomCode);
+  }
+
   @Post('join')
   async joinGame(@Body() joinGameDto: JoinGameDto) {
     return this.gameService.joinGame(joinGameDto);

@@ -72,6 +72,18 @@ export class GameService {
     return game;
   }
 
+  async validateRoomCode(roomCode: string): Promise<{ valid: boolean; gameId?: number }> {
+    const game = await this.prisma.game.findUnique({
+      where: { roomCode },
+      select: { id: true }
+    });
+
+    return {
+      valid: !!game,
+      gameId: game?.id
+    };
+  }
+
   async joinGame(joinGameDto: JoinGameDto) {
     const { roomCode, playerName } = joinGameDto;
 

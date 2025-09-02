@@ -1,24 +1,76 @@
 <div class="flex justify-center items-center h-[calc(100vh-100px)]">
-  <p-card header="Join Game" class="w-[400px] text-center">
+  <!-- Initial Join Form -->
+  <p-card *ngIf="!showNameConflict" header="Join Game" [class]="shouldShowContinueOption() ? 'w-[450px] text-center' : 'w-[400px] text-center'">
+    <!-- Continue Game Option for JWT Users -->
+    <div *ngIf="shouldShowContinueOption()" class="mb-6">
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <p-avatar 
+            [label]="currentPlayer?.name?.charAt(0)" 
+            shape="circle" 
+            styleClass="bg-blue-500 text-white"
+          ></p-avatar>
+          <div class="text-left">
+            <div class="font-semibold text-blue-900 dark:text-blue-100">
+              Welcome back, {{ currentPlayer?.name }}!
+            </div>
+            <div class="text-sm text-blue-700 dark:text-blue-300">
+              Continue your game session
+            </div>
+          </div>
+        </div>
+        <p-button 
+          label="Continue Game" 
+          icon="pi pi-arrow-right" 
+          (onClick)="onContinueGame()"
+          class="w-full"
+          styleClass="p-button-lg"
+        ></p-button>
+      </div>
+      
+      <div class="flex items-center my-4">
+        <div class="flex-1 border-t border-gray-300"></div>
+        <span class="px-3 text-gray-500 text-sm">or join a different game</span>
+        <div class="flex-1 border-t border-gray-300"></div>
+      </div>
+    </div>
+    
     <div [formGroup]="joinForm" class="flex flex-col gap-4">
       <p-inputgroup>
         <p-inputgroup-addon>
           <i class="pi pi-key"></i>
         </p-inputgroup-addon>
-        <input pInputText formControlName="gameId" placeholder="Room Code" />
+        <input 
+          pInputText 
+          formControlName="gameId" 
+          placeholder="Room Code" 
+          (input)="onRoomCodeChange()"
+          class="uppercase"
+        />
+        <p-inputgroup-addon *ngIf="isValidatingRoom">
+          <i class="pi pi-spin pi-spinner"></i>
+        </p-inputgroup-addon>
+        <p-inputgroup-addon *ngIf="roomValidated && isRoomValid && !isValidatingRoom">
+          <i class="pi pi-check text-green-500"></i>
+        </p-inputgroup-addon>
+        <p-inputgroup-addon *ngIf="roomValidated && !isRoomValid && !isValidatingRoom">
+          <i class="pi pi-times text-red-500"></i>
+        </p-inputgroup-addon>
       </p-inputgroup>
       <div *ngIf="joinForm.get('gameId')?.invalid && joinForm.get('gameId')?.touched" class="error">
         Room code is required
       </div>
 
-      <p-inputgroup>
-        <p-inputgroup-addon>
-          <i class="pi pi-user"></i>
-        </p-inputgroup-addon>
-        <input pInputText formControlName="playerName" placeholder="Player Name" (keydown.enter)="onSubmit()" />
-      </p-inputgroup>
-      <div *ngIf="joinForm.get('playerName')?.invalid && joinForm.get('playerName')?.touched" class="error">
-        Player name is required
+      <div *ngIf="shouldShowPlayerName()">
+        <p-inputgroup>
+          <p-inputgroup-addon>
+            <i class="pi pi-user"></i>
+          </p-inputgroup-addon>
+          <input pInputText formControlName="playerName" placeholder="Player Name" (keydown.enter)="onSubmit()" />
+        </p-inputgroup>
+        <div *ngIf="joinForm.get('playerName')?.invalid && joinForm.get('playerName')?.touched" class="error">
+          Player name is required
+        </div>
       </div>
 
       <div *ngIf="errorMessage" class="error">
@@ -38,11 +90,72 @@
           label="Join"
           icon="pi pi-arrow-right"
           (onClick)="onSubmit()"
-          [disabled]="joinForm.invalid || isLoading"
+          [disabled]="isJoinButtonDisabled()"
           class="justify-center"
         >
           <span *ngIf="isLoading">Joining...</span>
+          <span *ngIf="isValidatingRoom">Validating...</span>
         </p-button>
+      </div>
+    </ng-template>
+  </p-card>
+
+  <!-- Name Conflict Resolution -->
+  <p-card *ngIf="showNameConflict" header="Player Name Already Exists" class="w-[450px] text-center">
+    <div class="flex flex-col gap-4">
+      <p class="text-gray-600">
+        A player named "{{ playerName }}" already exists in this game.
+      </p>
+      
+      <div class="flex flex-col gap-3">
+        <div>
+          <h4 class="font-semibold mb-2">Option 1: I'm the same person</h4>
+          <p class="text-sm text-gray-600 mb-3">Enter your PIN to continue as this player:</p>
+          
+          <div [formGroup]="pinForm" class="flex flex-col items-center gap-2">
+            <p-inputOtp formControlName="pin" [length]="4" [integerOnly]="true"></p-inputOtp>
+            <div *ngIf="pinForm.get('pin')?.invalid && pinForm.get('pin')?.touched" class="error">
+              PIN is required
+            </div>
+          </div>
+          
+          <p-button
+            label="Verify PIN"
+            icon="pi pi-check"
+            (onClick)="onVerifyPin()"
+            [disabled]="isVerifyButtonDisabled()"
+            class="w-full mt-2"
+          ></p-button>
+        </div>
+
+        <div class="border-t pt-3">
+          <h4 class="font-semibold mb-2">Option 2: I'm a new person</h4>
+          <p class="text-sm text-gray-600 mb-3">Create a new player with the same name:</p>
+          
+          <p-button
+            label="I'm a New Person"
+            icon="pi pi-user-plus"
+            (onClick)="onNewPerson()"
+            [disabled]="isLoading"
+            styleClass="p-button-secondary w-full"
+          ></p-button>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="error">
+        {{ errorMessage }}
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex gap-2 mt-4 justify-center">
+        <p-button
+          label="Back"
+          icon="pi pi-arrow-left"
+          (onClick)="onBackToJoin()"
+          styleClass="p-button-secondary justify-center"
+          [disabled]="isLoading"
+        ></p-button>
       </div>
     </ng-template>
   </p-card>

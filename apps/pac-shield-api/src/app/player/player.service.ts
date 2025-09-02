@@ -27,10 +27,52 @@ export class PlayerService {
       throw new NotFoundException('Invalid room code');
     }
 
+    // Check if a player with this name already exists in the game
+    const existingPlayer = await this.prisma.player.findFirst({
+      where: {
+        gameId: game.id,
+        name: joinGameDto.playerName,
+      },
+    });
+
+    if (existingPlayer) {
+      // If no PIN provided, throw name conflict error
+      if (!joinGameDto.pin) {
+        throw new BadRequestException({
+          message: 'A player with this name already exists. Please provide your PIN or choose "I\'m a new person".',
+          code: 'NAME_CONFLICT',
+          existingPlayer: true,
+        });
+      }
+
+      // If PIN provided, verify it
+      if (!existingPlayer.pin) {
+        throw new BadRequestException({
+          message: 'This player name exists but has no PIN set. Please choose "I\'m a new person" to create a new player.',
+          code: 'NO_PIN_SET',
+        });
+      }
+
+      if (existingPlayer.pin !== joinGameDto.pin) {
+        throw new BadRequestException({
+          message: 'Invalid PIN for this player name.',
+          code: 'INVALID_PIN',
+        });
+      }
+
+      // PIN is correct, return existing player's token
+      const payload = { gameId: game.id, playerId: existingPlayer.id };
+      const token = this.jwtService.sign(payload);
+
+      return { token, player: existingPlayer };
+    }
+
+    // Create new player
     const player = await this.prisma.player.create({
       data: {
         name: joinGameDto.playerName,
         role: joinGameDto.role || 'PLAYER',
+        pin: joinGameDto.pin || null,
         sessionId: `${joinGameDto.playerName}-${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 9)}`,

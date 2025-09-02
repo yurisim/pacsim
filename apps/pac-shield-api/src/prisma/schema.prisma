@@ -130,6 +130,7 @@ model Player {
   sessionId String     @unique
   name      String
   role      PlayerRole @default(PLAYER)
+  pin       String?
   teamId    Int?
   team      Team?      @relation(fields: [teamId], references: [id])
   gameId    Int?

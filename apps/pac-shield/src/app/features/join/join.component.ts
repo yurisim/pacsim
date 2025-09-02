@@ -10,6 +10,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { InputOtpModule } from 'primeng/inputotp';
+import { AvatarModule } from 'primeng/avatar';
 import { CommonModule } from '@angular/common';
 
 interface JoinResponse {
@@ -28,6 +30,8 @@ interface JoinResponse {
     CardModule,
     InputGroupModule,
     InputGroupAddonModule,
+    InputOtpModule,
+    AvatarModule,
     CommonModule,
   ],
   templateUrl: './join.component.html',
@@ -39,6 +43,14 @@ export class JoinComponent {
   errorMessage: string | null = null;
   roomCode = '';
   playerName = '';
+  showNameConflict = false;
+  pinForm: FormGroup;
+  isValidatingRoom = false;
+  isRoomValid = false;
+  roomValidated = false;
+  hasValidJWT = false;
+  currentPlayer: Player | null = null;
+  currentGameId: string | null = null;
 
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
@@ -49,10 +61,61 @@ export class JoinComponent {
       gameId: ['', Validators.required],
       playerName: ['', Validators.required]
     });
+    
+    this.pinForm = this.fb.group({
+      pin: ['', Validators.required]
+    });
+    
+    // Check if user has a valid JWT and populate name
+    this.initializeFromJWT();
+  }
+  
+  private initializeFromJWT() {
+    if (this.authService.isAuthenticated()) {
+      this.hasValidJWT = true;
+      this.currentPlayer = this.authService.getPlayer();
+      this.currentGameId = this.authService.getGameId();
+      
+      if (this.currentPlayer && this.currentPlayer.name) {
+        this.joinForm.patchValue({ playerName: this.currentPlayer.name });
+      }
+    }
+  }
+
+  onRoomCodeChange() {
+    const gameId = this.joinForm.get('gameId')?.value;
+    if (gameId && gameId.length >= 4) {
+      this.validateRoomCode(gameId);
+    } else {
+      this.isRoomValid = false;
+      this.roomValidated = false;
+    }
+  }
+  
+  private validateRoomCode(roomCode: string) {
+    this.isValidatingRoom = true;
+    this.errorMessage = null;
+    
+    this.authService.validateRoomCode(roomCode).subscribe({
+      next: (response) => {
+        this.isValidatingRoom = false;
+        this.isRoomValid = response.valid;
+        this.roomValidated = true;
+        if (!response.valid) {
+          this.errorMessage = 'Invalid room code';
+        }
+      },
+      error: () => {
+        this.isValidatingRoom = false;
+        this.isRoomValid = false;
+        this.roomValidated = true;
+        this.errorMessage = 'Error validating room code';
+      }
+    });
   }
 
   onSubmit() {
-    if (this.joinForm.valid) {
+    if (this.joinForm.valid && this.isRoomValid) {
       this.isLoading = true;
       this.errorMessage = null;
 
@@ -69,8 +132,15 @@ export class JoinComponent {
         },
         error: (err: unknown) => {
           this.isLoading = false;
-          if (err instanceof HttpErrorResponse && err.status === 404) {
-            this.errorMessage = 'Invalid room code';
+          if (err instanceof HttpErrorResponse) {
+            if (err.status === 404) {
+              this.errorMessage = 'Invalid room code';
+            } else if (err.status === 400 && err.error?.code === 'NAME_CONFLICT') {
+              this.showNameConflict = true;
+              this.errorMessage = null;
+            } else {
+              this.errorMessage = err.error?.message || 'Join failed';
+            }
           } else {
             this.errorMessage = (err as Error).message || 'Join failed';
           }
@@ -78,5 +148,91 @@ export class JoinComponent {
         }
       });
     }
+  }
+
+  onVerifyPin() {
+    if (this.pinForm.valid && this.pinForm.value.pin?.length === 4) {
+      this.isLoading = true;
+      this.errorMessage = null;
+
+      const { pin } = this.pinForm.value;
+
+      this.authService.joinGameWithPin(this.roomCode, this.playerName, pin).subscribe({
+        next: (response: JoinResponse) => {
+          this.isLoading = false;
+          const currentGameId = this.authService.getGameId();
+          this.router.navigate(['/lobby', currentGameId || this.roomCode]);
+        },
+        error: (err: unknown) => {
+          this.isLoading = false;
+          if (err instanceof HttpErrorResponse) {
+            if (err.error?.code === 'INVALID_PIN') {
+              this.errorMessage = 'The PIN you entered is incorrect. Please try again.';
+            } else {
+              this.errorMessage = err.error?.message || 'PIN verification failed';
+            }
+          } else {
+            this.errorMessage = (err as Error).message || 'PIN verification failed';
+          }
+          console.error('PIN verification failed', err);
+        }
+      });
+    } else {
+      this.errorMessage = 'Please enter all 4 digits of your PIN';
+    }
+  }
+
+  onNewPerson() {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    // Generate a random PIN for the new person
+    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+
+    this.authService.joinGameWithPin(this.roomCode, this.playerName, newPin).subscribe({
+      next: (response: JoinResponse) => {
+        this.isLoading = false;
+        alert(`Your PIN is: ${newPin}. Please remember it for future logins.`);
+        const currentGameId = this.authService.getGameId();
+        this.router.navigate(['/lobby', currentGameId || this.roomCode]);
+      },
+      error: (err: unknown) => {
+        this.isLoading = false;
+        if (err instanceof HttpErrorResponse) {
+          this.errorMessage = err.error?.message || 'Failed to create new player';
+        } else {
+          this.errorMessage = (err as Error).message || 'Failed to create new player';
+        }
+        console.error('New player creation failed', err);
+      }
+    });
+  }
+
+  onBackToJoin() {
+    this.showNameConflict = false;
+    this.errorMessage = null;
+    this.pinForm.reset();
+  }
+  
+  isVerifyButtonDisabled(): boolean {
+    return this.pinForm.invalid || !this.pinForm.value.pin || this.pinForm.value.pin.length !== 4 || this.isLoading;
+  }
+  
+  isJoinButtonDisabled(): boolean {
+    return this.joinForm.invalid || !this.isRoomValid || this.isLoading || this.isValidatingRoom;
+  }
+  
+  shouldShowPlayerName(): boolean {
+    return this.isRoomValid && this.roomValidated;
+  }
+  
+  onContinueGame() {
+    if (this.hasValidJWT && this.currentGameId) {
+      this.router.navigate(['/lobby', this.currentGameId]);
+    }
+  }
+  
+  shouldShowContinueOption(): boolean {
+    return this.hasValidJWT && !!this.currentPlayer && !!this.currentGameId;
   }
 }
