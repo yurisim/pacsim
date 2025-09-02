@@ -56,11 +56,15 @@ export class AuthService {
     return this.apiService.get<{ valid: boolean; gameId?: number }>(`game/validate/${roomCode}`);
   }
 
+  checkPlayerNameAvailability(roomCode: string, playerName: string) {
+    return this.apiService.post<{ isAvailable: boolean }>('player/check-name-availability', { roomCode, playerName });
+  }
+
   createGameMaster(roomCode: string, playerName: string, pin: string) {
     this.webSocketService.connect(roomCode);
     return this.apiService
-      .post<{ token: string; player: Player }>('player/join', { 
-        roomCode, 
+      .post<{ token: string; player: Player }>('player/join', {
+        roomCode,
         playerName,
         pin,
         role: 'GM'
@@ -138,7 +142,7 @@ export class AuthService {
   isAuthenticated(): boolean {
     const token = this.getToken();
     if (!token) return false;
-    
+
     try {
       const decodedToken = jwtDecode<JwtPayload>(token);
       // Check if token is expired

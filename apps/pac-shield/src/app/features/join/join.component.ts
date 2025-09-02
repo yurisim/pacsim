@@ -45,10 +45,14 @@ export class JoinComponent {
   playerName = '';
   showNameConflict = false;
   pinForm: FormGroup;
+  newPersonForm: FormGroup;
   isValidatingRoom = false;
   isRoomValid = false;
   roomValidated = false;
   hasValidJWT = false;
+  isNewPersonFlow = false;
+  isCheckingName = false;
+  isNameAvailable = false;
   currentPlayer: Player | null = null;
   currentGameId: string | null = null;
 
@@ -59,23 +63,27 @@ export class JoinComponent {
   constructor() {
     this.joinForm = this.fb.group({
       gameId: ['', Validators.required],
-      playerName: ['', Validators.required]
+      playerName: ['', Validators.required],
     });
-    
+
     this.pinForm = this.fb.group({
-      pin: ['', Validators.required]
+      pin: ['', Validators.required],
     });
-    
+
+    this.newPersonForm = this.fb.group({
+      newPlayerName: ['', Validators.required],
+    });
+
     // Check if user has a valid JWT and populate name
     this.initializeFromJWT();
   }
-  
+
   private initializeFromJWT() {
     if (this.authService.isAuthenticated()) {
       this.hasValidJWT = true;
       this.currentPlayer = this.authService.getPlayer();
       this.currentGameId = this.authService.getGameId();
-      
+
       if (this.currentPlayer && this.currentPlayer.name) {
         this.joinForm.patchValue({ playerName: this.currentPlayer.name });
       }
@@ -91,11 +99,11 @@ export class JoinComponent {
       this.roomValidated = false;
     }
   }
-  
+
   private validateRoomCode(roomCode: string) {
     this.isValidatingRoom = true;
     this.errorMessage = null;
-    
+
     this.authService.validateRoomCode(roomCode).subscribe({
       next: (response) => {
         this.isValidatingRoom = false;
@@ -183,55 +191,84 @@ export class JoinComponent {
   }
 
   onNewPerson() {
-    this.isLoading = true;
+    this.isNewPersonFlow = true;
     this.errorMessage = null;
+  }
 
-    // Generate a random PIN for the new person
-    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+  onCheckNameAvailability() {
+    if (this.newPersonForm.valid) {
+      this.isCheckingName = true;
+      this.errorMessage = null;
+      const newPlayerName = this.newPersonForm.value.newPlayerName;
+      this.authService.checkPlayerNameAvailability(this.roomCode, newPlayerName).subscribe({
+        next: ({ isAvailable }) => {
+          this.isCheckingName = false;
+          this.isNameAvailable = isAvailable;
+          if (!isAvailable) {
+            this.errorMessage = 'This name is already taken. Please choose another one.';
+          }
+        },
+        error: () => {
+          this.isCheckingName = false;
+          this.errorMessage = 'Error checking name availability.';
+        },
+      });
+    }
+  }
 
-    this.authService.joinGameWithPin(this.roomCode, this.playerName, newPin).subscribe({
-      next: (response: JoinResponse) => {
-        this.isLoading = false;
-        alert(`Your PIN is: ${newPin}. Please remember it for future logins.`);
-        const currentGameId = this.authService.getGameId();
-        this.router.navigate(['/lobby', currentGameId || this.roomCode]);
-      },
-      error: (err: unknown) => {
-        this.isLoading = false;
-        if (err instanceof HttpErrorResponse) {
-          this.errorMessage = err.error?.message || 'Failed to create new player';
-        } else {
-          this.errorMessage = (err as Error).message || 'Failed to create new player';
-        }
-        console.error('New player creation failed', err);
-      }
-    });
+  onCreateNewPlayer() {
+    if (this.newPersonForm.valid && this.isNameAvailable) {
+      this.isLoading = true;
+      this.errorMessage = null;
+      const newPlayerName = this.newPersonForm.value.newPlayerName;
+      const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+
+      this.authService.joinGameWithPin(this.roomCode, newPlayerName, newPin).subscribe({
+        next: (response: JoinResponse) => {
+          this.isLoading = false;
+          alert(`Your PIN is: ${newPin}\nPlease remember it for future logins`);
+          const currentGameId = this.authService.getGameId();
+          this.router.navigate(['/lobby', currentGameId || this.roomCode]);
+        },
+        error: (err: unknown) => {
+          this.isLoading = false;
+          if (err instanceof HttpErrorResponse) {
+            this.errorMessage = err.error?.message || 'Failed to create new player';
+          } else {
+            this.errorMessage = (err as Error).message || 'Failed to create new player';
+          }
+          console.error('New player creation failed', err);
+        },
+      });
+    }
   }
 
   onBackToJoin() {
     this.showNameConflict = false;
+    this.isNewPersonFlow = false;
     this.errorMessage = null;
     this.pinForm.reset();
+    this.newPersonForm.reset();
   }
-  
+
   isVerifyButtonDisabled(): boolean {
     return this.pinForm.invalid || !this.pinForm.value.pin || this.pinForm.value.pin.length !== 4 || this.isLoading;
   }
-  
+
   isJoinButtonDisabled(): boolean {
     return this.joinForm.invalid || !this.isRoomValid || this.isLoading || this.isValidatingRoom;
   }
-  
+
   shouldShowPlayerName(): boolean {
     return this.isRoomValid && this.roomValidated;
   }
-  
+
   onContinueGame() {
     if (this.hasValidJWT && this.currentGameId) {
       this.router.navigate(['/lobby', this.currentGameId]);
     }
   }
-  
+
   shouldShowContinueOption(): boolean {
     return this.hasValidJWT && !!this.currentPlayer && !!this.currentGameId;
   }

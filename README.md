@@ -1,82 +1,92 @@
-# Pacsim
+# Operation Pacific Shield (OPS)
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This repository contains the digital implementation of the "Operation Pacific Shield" (OPS) wargame, a culminating capstone exercise for the Officer Training School (OTS). The application provides an experiential learning environment for Officer Trainees (OTs) to plan, brief, and execute a joint scheme of maneuver in a high-intensity, contested, and operationally limited environment.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+The primary goal is to employ Agile Combat Employment (ACE) concepts in a fictional conflict. Players manage resources, establish Forward Operating Sites (FOS), and coordinate between different command teams to achieve mission objectives and accumulate Mission Points (MP).
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Core Application Features
 
-## Finish your remote caching setup
+- **Multi-Team Gameplay:** Supports distinct teams, including a Combined Air Operations Center (CAOC), a Combined Space Operations Center (CSpOC), and multiple Main Operating Bases (MOBs), each with unique roles and responsibilities.
+- **Real-time Game State:** Utilizes WebSockets to ensure all players have a live, synchronized view of the game board, assets, and events.
+- **Persistent Game Sessions:** Game states are saved to a database, allowing for sessions to be paused and resumed.
+- **Complex Rule Enforcement:** The system is designed to programmatically enforce the game's complex rules for movement, combat, logistics, and scoring.
+- **Dynamic Scenarios:** Simulates the fog and friction of war through event cards, political shifts, and resource constraints.
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/P3I3XsXNB9)
+## Technical Overview
 
+This project is a monorepo managed by [Nx](https://nx.dev).
 
-## Run tasks
+- **Frontend (`pac-shield`):** An [Angular](https://angular.io/) application providing the main user interface, game board visualization, and player controls.
+- **Backend (`pac-shield-api`):** A [NestJS](https://nestjs.com/) application that manages game logic, API endpoints, and WebSocket communication.
+- **Database:** A PostgreSQL database managed with [Prisma](https://www.prisma.io/) as the Object-Relational Mapper (ORM).
+- **Real-time Communication:** Handled by the `EventsGateway` in the NestJS API using WebSockets.
 
-To run the dev server for your app, use:
+## Development
 
-```sh
-npx nx serve pac-shield
-```
+### Prerequisites
 
-To create a production bundle:
+- Node.js / Yarn
+- An accessible PostgreSQL database.
 
-```sh
-npx nx build pac-shield
-```
+### Initial Setup
 
-To see all available targets to run for a project, run:
+1.  Install dependencies:
+    ```sh
+    yarn install
+    ```
+2.  Configure your database connection string in `apps/pac-shield-api/src/prisma/.env`.
+3.  Apply the database schema:
+    ```sh
+    npx nx prisma-db-push pac-shield-api
+    ```
 
-```sh
-npx nx show project pac-shield
-```
+### Running the Application
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+To run the full application, you need to run both the frontend and backend servers.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1.  **Start the Backend API:**
+    ```sh
+    npx nx serve pac-shield-api
+    ```
+2.  **Start the Frontend UI:**
+    ```sh
+    npx nx serve pac-shield
+    ```
+    The frontend will be available at `http://localhost:4200/`.
 
-## Add new projects
+### Key Commands
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+Here are some of the most common commands for managing the workspace.
 
-Use the plugin's generator to create new projects.
+#### General
+- **Run Frontend:** `npx nx serve pac-shield`
+- **Run Backend:** `npx nx serve pac-shield-api`
+- **Build Frontend:** `npx nx build pac-shield`
+- **Build Backend:** `npx nx build pac-shield-api`
+- **Run API Tests:** `npx nx test pac-shield-api`
+- **Run Frontend E2E Tests:** `npx nx e2e pac-shield-e2e`
 
-To generate a new application, use:
+#### Database (Prisma)
+All database commands are targeted at the `pac-shield-api` project.
 
-```sh
-npx nx g @nx/angular:app demo
-```
+- **Generate Prisma Client:** (Run this after changing `schema.prisma`)
+  ```sh
+  npx nx prisma-generate pac-shield-api
+  ```
+- **Apply Schema Changes:** (Pushes non-destructive changes to the DB)
+  ```sh
+  npx nx prisma-db-push pac-shield-api
+  ```
+- **Reset the Database:** (Clears all data and re-applies migrations)
+  ```sh
+  npx nx prisma-db-reset pac-shield-api
+  ```
+- **Open Prisma Studio:** (A GUI for viewing and editing database records)
+  ```sh
+  npx nx prisma-studio pac-shield-api
+  ```
 
-To generate a new library, use:
+### Explore the Workspace
 
-```sh
-npx nx g @nx/angular:lib mylib
-```
+Run `npx nx graph` to see a visual diagram of the projects and their dependencies.
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)

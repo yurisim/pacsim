@@ -128,6 +128,7 @@ When working with PrimeNG dialogs:
 ### Common Pitfalls
 - **Schema First**: Always check `schema.prisma` before implementing data features
 - **Generate After Changes**: Never forget `prisma-generate` after schema modifications
+- **Generated Folder**: You will NOT attempt to add or modify files in a generated folder.
 - **Test Framework**: Use Jest syntax (`jest.spyOn`), not Jasmine (`spyOn`)
 - **Case Sensitivity**: Player roles must be uppercase everywhere
 - **WebSocket Rooms**: Always use `gameId` as room identifier

@@ -18,6 +18,25 @@ export class PlayerService {
     private readonly cls: ClsService,
   ) {}
 
+  async checkPlayerNameAvailability(roomCode: string, playerName: string): Promise<{ isAvailable: boolean }> {
+    const game = await this.prisma.game.findUnique({ where: { roomCode } });
+    if (!game) {
+      throw new NotFoundException('Invalid room code');
+    }
+
+    const existingPlayer = await this.prisma.player.findFirst({
+      where: {
+        gameId: game.id,
+        name: {
+          equals: playerName,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    return { isAvailable: !existingPlayer };
+  }
+
   async joinGame(joinGameDto: JoinGameDto): Promise<{ token: string; player: Player }> {
     const game = await this.prisma.game.findUnique({
       where: { roomCode: joinGameDto.roomCode },
@@ -123,7 +142,7 @@ export class PlayerService {
   async updateWithRole(id: number, updatePlayerDto: UpdatePlayerWithRoleDto) {
     const requestId = this.cls.getId();
     this.logger.log(`[${requestId}] Updating player ${id} with data: ${JSON.stringify(updatePlayerDto)}`);
-    
+
     // Validate input
     if (updatePlayerDto.name !== undefined) {
       const trimmedName = updatePlayerDto.name?.trim();
@@ -140,14 +159,14 @@ export class PlayerService {
         throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
       }
     }
-    
+
     try {
-      const result = await this.prisma.player.update({ 
-        where: { id }, 
+      const result = await this.prisma.player.update({
+        where: { id },
         data: updatePlayerDto,
         include: { game: true }
       });
-      
+
       // Emit WebSocket event to notify other players
       if (result.game) {
         const players = await this.prisma.player.findMany({
@@ -155,7 +174,7 @@ export class PlayerService {
         });
         this.eventsGateway.sendToLobby(result.game.roomCode, 'playerListUpdate', players);
       }
-      
+
       this.logger.log(`[${requestId}] Successfully updated player ${id}`);
       return result;
     } catch (error) {
@@ -165,7 +184,7 @@ export class PlayerService {
       } else {
         this.logger.error(`[${requestId}] Failed to update player ${id}: ${error.message}`, error.stack);
       }
-      
+
       if (error.code === 'P2025') {
         throw new NotFoundException('Player not found');
       }
@@ -206,7 +225,7 @@ export class PlayerService {
       } else {
         this.logger.error(`[${requestId}] Failed to update player ${id} name: ${error.message}`, error.stack);
       }
-      
+
       if (error.code === 'P2025') {
         throw new NotFoundException('Player not found');
       }

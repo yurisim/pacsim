@@ -56,4 +56,14 @@ export class PlayerController {
     const { token, player } = await this.playerService.joinGame(joinGameDto);
     return { token, player, id: player.id };
   }
+
+  @Post('check-name-availability')
+  async checkPlayerNameAvailability(
+    @Body() body: { roomCode: string; playerName: string },
+  ): Promise<{ isAvailable: boolean }> {
+    return this.playerService.checkPlayerNameAvailability(
+      body.roomCode,
+      body.playerName,
+    );
+  }
 }
