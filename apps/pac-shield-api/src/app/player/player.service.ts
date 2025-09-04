@@ -7,6 +7,14 @@ import { JoinGameDto } from '../../game/dto/join-game.dto';
 import { ClsService } from 'nestjs-cls';
 import { UpdatePlayerWithRoleDto } from './dto/update-player-with-role.dto';
 
+/**
+ * PlayerService coordinates player lifecycle and session logic:
+ * - Join/resume flows with PIN/name-conflict handling
+ * - CRUD operations against Prisma models
+ * - JWT minting for session-scoped auth (via JwtService)
+ * - Real-time roster broadcasts to lobby rooms (via EventsGateway)
+ * Also leverages request-scoped CLS for structured, correlated logging.
+ */
 @Injectable()
 export class PlayerService {
   private readonly logger = new Logger(PlayerService.name);
@@ -18,6 +26,11 @@ export class PlayerService {
     private readonly cls: ClsService,
   ) {}
 
+  /**
+   * Check if a proposed player name is available within a specific game (by roomCode).
+   * Case-insensitive comparison to prevent duplicate identities within the same session.
+   * Throws NotFoundException if roomCode is invalid.
+   */
   async checkPlayerNameAvailability(roomCode: string, playerName: string): Promise<{ isAvailable: boolean }> {
     const game = await this.prisma.game.findUnique({ where: { roomCode } });
     if (!game) {
@@ -120,6 +133,10 @@ export class PlayerService {
     return this.prisma.player.create({ data: createPlayerDto });
   }
 
+  /**
+   * Create a minimal Player record within an existing game.
+   * Used by GameService.joinGame() when no PIN/name conflict logic is required.
+   */
   async createPlayerInGame(playerName: string, gameId: number) {
     return this.prisma.player.create({
       data: {
@@ -144,6 +161,13 @@ export class PlayerService {
     return this.prisma.player.update({ where: { id }, data: updatePlayerDto });
   }
 
+  /**
+   * Update player fields (name, role) with validation and correlated logging.
+   * - Trims and validates non-empty name if provided
+   * - Ensures role is one of the allowed uppercase enum values
+   * - Emits lobby roster updates on success
+   * Throws NotFoundException for missing players (P2025) and BadRequest for invalid input.
+   */
   async updateWithRole(id: number, updatePlayerDto: UpdatePlayerWithRoleDto) {
     const requestId = this.cls.getId();
     this.logger.log(`[${requestId}] Updating player ${id} with data: ${JSON.stringify(updatePlayerDto)}`);
@@ -197,6 +221,11 @@ export class PlayerService {
     }
   }
 
+  /**
+   * Update only the player's name with strict non-empty validation.
+   * Emits lobby roster updates on success.
+   * Throws NotFoundException when player doesn't exist.
+   */
   async updatePlayerName(id: number, newName: string) {
     const requestId = this.cls.getId();
     this.logger.log(`[${requestId}] Updating player ${id} name to: ${newName}`);
@@ -262,6 +291,9 @@ export class PlayerService {
     return testPatterns.includes(id);
   }
 
+  /**
+   * Permanently delete a player by id.
+   */
   remove(id: number) {
     return this.prisma.player.delete({ where: { id } });
   }

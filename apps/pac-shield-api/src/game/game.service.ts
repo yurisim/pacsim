@@ -7,6 +7,14 @@ import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 import { PlayerService } from '../app/player/player.service';
 
+/**
+ * Domain service handling game lifecycle operations: creation, retrieval, room-code validation, and join orchestration.
+ * Coordinates:
+ * - PrismaService for database IO
+ * - AuthService to mint JWTs for sessions
+ * - PlayerService to create players
+ * - GameGateway to broadcast real-time events (e.g., playerJoined)
+ */
 @Injectable()
 export class GameService {
   private readonly logger = new Logger(GameService.name);
@@ -57,6 +65,11 @@ export class GameService {
     return game;
   }
 
+  /**
+   * Fetch a game by id including teams and players.
+   * Used by lobby UI to render current roster.
+   * Throws NotFoundException if game doesn't exist.
+   */
   async getGameById(id: number): Promise<Game> {
     const game = await this.prisma.game.findUnique({
       where: { id },
@@ -77,6 +90,10 @@ export class GameService {
     return game;
   }
 
+  /**
+   * Validate a 6-character room code without loading full game details.
+   * @returns { valid: boolean, gameId?: number } to support client-side routing.
+   */
   async validateRoomCode(roomCode: string): Promise<{ valid: boolean; gameId?: number }> {
     const game = await this.prisma.game.findUnique({
       where: { roomCode },
@@ -115,6 +132,10 @@ export class GameService {
     return this.authService.login(game.id, player.id);
   }
 
+  /**
+   * Generate a collision-resistant 6-char uppercase alphanumeric room code.
+   * Uses Math.random; acceptable for human-friendly codes, not cryptographic.
+   */
   private generateRoomCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';

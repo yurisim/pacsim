@@ -3,6 +3,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+/**
+ * Thin HTTP client wrapper that centralizes:
+ * - Base API URL configuration
+ * - Common REST helpers (GET/POST/PUT/PATCH/DELETE)
+ * - Feature-specific convenience calls
+ *
+ * Returns strongly typed RxJS Observables so callers can compose streams.
+ * All endpoints here are relative to environment.apiUrl.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -10,30 +19,66 @@ export class ApiService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
+  /**
+   * Performs a typed HTTP GET.
+   * @param endpoint Relative endpoint (e.g., "game/123")
+   * @param params Optional query string parameters
+   * @returns Observable<T> of the server response
+   */
   get<T>(endpoint: string, params?: HttpParams): Observable<T> {
     return this.http.get<T>(`${this.apiUrl}/${endpoint}`, { params });
   }
 
+  /**
+   * Performs a typed HTTP POST.
+   * Use for creating resources or executing commands on the API.
+   * @param endpoint Relative endpoint
+   * @param body Request payload (serializable)
+   */
   post<T>(endpoint: string, body: unknown): Observable<T> {
     return this.http.post<T>(`${this.apiUrl}/${endpoint}`, body);
   }
 
+  /**
+   * Performs a typed HTTP PUT.
+   * Use for full resource replacement.
+   * @param endpoint Relative endpoint
+   * @param body Resource state to replace with
+   */
   put<T>(endpoint: string, body: unknown): Observable<T> {
     return this.http.put<T>(`${this.apiUrl}/${endpoint}`, body);
   }
 
+  /**
+   * Performs a typed HTTP PATCH.
+   * Use for partial updates to a resource.
+   * @param endpoint Relative endpoint
+   * @param body Partial state to apply
+   */
   patch<T>(endpoint: string, body: unknown): Observable<T> {
     return this.http.patch<T>(`${this.apiUrl}/${endpoint}`, body);
   }
 
+  /**
+   * Performs a typed HTTP DELETE.
+   * @param endpoint Relative endpoint
+   */
   delete<T>(endpoint: string): Observable<T> {
     return this.http.delete<T>(`${this.apiUrl}/${endpoint}`);
   }
 
+  /**
+   * Convenience API to update only the player's display name.
+   * Delegates to PATCH /player/:id/name.
+   */
   updatePlayerName(playerId: string, newName: string): Observable<any> {
     return this.patch(`player/${playerId}/name`, { name: newName });
   }
 
+  /**
+   * Convenience API to update both player name and role in a single call.
+   * Delegates to PATCH /player/:id.
+   */
   updatePlayerNameAndRole(playerId: string, name: string, role: string): Observable<any> {
     return this.patch(`player/${playerId}`, { name, role });
   }

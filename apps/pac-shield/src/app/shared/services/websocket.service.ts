@@ -8,13 +8,25 @@ import { AppState } from '../../core/store/app.state';
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Singleton service managing Socket.IO connection for real-time game events.
+ * - Maintains resilient reconnection using a Fibonacci backoff strategy
+ * - Scopes the connection to a specific game via `gameId` query parameter
+ * - Exposes helpers to connect/disconnect, emit events, and subscribe to server events
+ * - Publishes connection status for UI/state synchronization (connectionStatus$)
+ */
 export class WebSocketService {
   private socket: Socket;
   private store = inject(Store<AppState>);
   private connectionStatus = new BehaviorSubject<boolean>(false);
   private gameId: string | null = null;
+  /** Emits true when connected; subscribe to reflect socket availability in UI/store. */
   public connectionStatus$ = this.connectionStatus.asObservable();
 
+  /**
+   * Configure the Socket.IO client with manual connect and adaptive reconnection.
+   * Uses Fibonacci backoff between attempts and resets backoff on successful connect.
+   */
   constructor() {
     const fibonacciDelays = [1000, 2000, 3000, 5000, 8000, 13000, 21000];
     let attempt = 0;
@@ -58,6 +70,10 @@ export class WebSocketService {
     this.socket.connect();
   }
 
+  /**
+   * Tear down the active socket connection and clear game context.
+   * Safe to call multiple times; no-op if already disconnected.
+   */
   disconnect(): void {
     if (this.socket.connected) {
       this.socket.disconnect();
@@ -65,6 +81,10 @@ export class WebSocketService {
     this.gameId = null;
   }
 
+  /**
+   * Emit an event to the server for the current game connection.
+   * Logs and skips if not connected to avoid throwing from UI flows.
+   */
   emit<T>(eventName: string, data: T): void {
     if (!this.socket.connected) {
       console.error('Socket not connected. Cannot emit event.');
@@ -105,6 +125,13 @@ export class WebSocketService {
     });
   }
 
+  /**
+   * Wire up core lifecycle events to update connection status and optionally dispatch actions.
+   * Hooks:
+   * - connect: set status true
+   * - disconnect: set status false with reason
+   * - connect_error: set status false and log the error
+   */
   private setupConnectionListeners(): void {
     this.socket.on('connect', () => {
       console.log('Successfully connected to WebSocket server.');
