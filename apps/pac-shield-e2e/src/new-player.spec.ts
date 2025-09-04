@@ -52,25 +52,21 @@ test.describe('New Player Flow', () => {
     await page.fill('input[formcontrolname="newPlayerName"]', 'DUPLICATE_NAME');
 
     await page.getByRole('textbox', { name: 'Enter a new player name' }).fill('DUPLICATE_NAME');
-    await page.getByRole('button', { name: ' Check Name Availability' }).click();
+    await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.getByText('This name is already taken')).toBeVisible();
 
     // Enter a unique name
     const uniqueName = `NEW_PLAYER_${Date.now()}`;
     await page.fill('input[formcontrolname="newPlayerName"]', uniqueName);
-    await page.click('button:has-text("Check Name Availability")');
+    await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.locator('text=This name is available!')).toBeVisible();
 
     // Create the new player
-    await page.click('button:has-text("Create New Player")');
+    await page.getByRole('button', { name: /create new player/i }).click();
 
-    // Expect the PIN alert to appear
-    page.on('dialog', async dialog => {
-      expect(dialog.message()).toContain('Your PIN is:');
-      await dialog.accept();
-    });
-
-    // Expect to be redirected to the lobby
+    // Expect to be redirected to the lobby and see the new player
+    await expect(page).toHaveURL(/\/lobby\//);
     await expect(page.getByText(roomCode)).toBeVisible();
+    await expect(page.getByText(uniqueName)).toBeVisible();
   });
 });

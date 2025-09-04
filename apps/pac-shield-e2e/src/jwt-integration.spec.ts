@@ -181,34 +181,31 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.fill('input[placeholder="Player Name"]', 'OriginalUser');
     await page.getByRole('button', { name: /join/i }).click();
 
-    // Should show name conflict
+    // Should show name conflict (message enhanced with PrimeNG p-message)
     await expect(
-      page.getByText('A player named "OriginalUser" already exists')
+      page.getByText(/A player named "OriginalUser".*exists/i)
     ).toBeVisible();
 
     // Click "I'm a new person"
     await page.getByRole('button', { name: /i'm a new person/i }).click();
 
-    // Should generate PIN and redirect to lobby
-    const alertPromise = page.waitForEvent('dialog');
-    const alert = await alertPromise;
-    expect(alert.message()).toContain('Your PIN is:');
-    expect(alert.message()).toContain('Please remember it for future logins');
+    // Should now be prompted to create a new player with a different name
+    await expect(page.getByText('Create a New Player')).toBeVisible();
 
-    // Extract PIN from alert message
-    const pinMatch = alert.message().match(/Your PIN is: (\d{4})/);
-    expect(pinMatch).toBeTruthy();
-    const generatedPin = pinMatch?.[1];
-    expect(generatedPin).toHaveLength(4);
+    const uniqueName = `OriginalUser_${Date.now()}`;
+    await page.getByRole('textbox', { name: /enter a new player name/i }).fill(uniqueName);
 
-    await alert.accept();
+    await page.getByRole('button', { name: /check name availability/i }).click();
+    await expect(page.getByText('This name is available!')).toBeVisible();
+
+    await page.getByRole('button', { name: /create new player/i }).click();
 
     // Should be in lobby now
     await expect(page).toHaveURL(/\/lobby\//);
     await expect(page.locator('.text-7xl')).toContainText(roomCode!);
 
-    // Should see the new player (may have same name but different ID)
-    await expect(page.getByText('OriginalUser')).toBeVisible();
+    // Should see the newly created player name
+    await expect(page.getByText(uniqueName)).toHaveCount(2);
   });
 
   test('should validate room code in real-time with visual feedback', async ({
