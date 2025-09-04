@@ -225,12 +225,10 @@ export class JoinComponent {
       this.isLoading = true;
       this.errorMessage = null;
       const newPlayerName = this.newPersonForm.value.newPlayerName;
-      const newPin = Math.floor(1000 + Math.random() * 9000).toString();
 
-      this.authService.joinGameWithPin(this.roomCode, newPlayerName, newPin).subscribe({
+      this.authService.joinGame(this.roomCode, newPlayerName).subscribe({
         next: (response: JoinResponse) => {
           this.isLoading = false;
-          alert(`Your PIN is: ${newPin}\nPlease remember it for future logins`);
           const currentGameId = this.authService.getGameId();
           this.router.navigate(['/lobby', currentGameId || this.roomCode]);
         },
