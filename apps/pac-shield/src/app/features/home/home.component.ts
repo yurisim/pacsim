@@ -41,6 +41,7 @@ export class HomeComponent {
   createdGame: Game | null = null;
 
   createGame(): void {
+    // Do not disconnect the socket here; guard no longer runs on root so we can keep the status "Connected".
     this.isLoading = true;
     this.errorMessage = null;
     this.roomCode = null;

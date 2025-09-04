@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { sessionAuthGuard } from './shared/guards/session-auth.guard';
 
 export const appRoutes: Routes = [
   {
@@ -8,11 +9,13 @@ export const appRoutes: Routes = [
   },
   {
     path: 'game/:id',
+    canActivate: [sessionAuthGuard],
     loadComponent: () =>
       import('./features/game/game-board.component').then((m) => m.GameBoardComponent),
   },
   {
     path: 'lobby/:gameId',
+    canActivate: [sessionAuthGuard],
     loadComponent: () =>
       import('./features/lobby/lobby.component').then((m) => m.LobbyComponent),
   },
