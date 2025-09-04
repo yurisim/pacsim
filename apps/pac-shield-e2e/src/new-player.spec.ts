@@ -31,7 +31,7 @@ test.describe('New Player Flow', () => {
     await page.goto('/');
 
 
-    await page.getByRole('button', { name: 'Join Game' }).click();
+    await page.getByRole('button', { name: /join( game)?/i }).click();
 
     // Join with a name that will be taken
     await page.fill('input[formcontrolname="gameId"]', roomCode);
@@ -43,7 +43,7 @@ test.describe('New Player Flow', () => {
     await expect(page.locator('text=A player with this name already exists')).toBeVisible();
 
     // Click "I'm a new person"
-    await page.getByRole('button', { name: ' I\'m a New Person' }).click();
+    await page.getByRole('button', { name: /i'm a new person/i }).click();
 
     // Expect to see the new person flow
     await expect(page.locator('text=Create a New Player')).toBeVisible();

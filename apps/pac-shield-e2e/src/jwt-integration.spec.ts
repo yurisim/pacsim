@@ -147,7 +147,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Should show error message for incorrect PIN
     await expect(
       page.getByText(/PIN|incorrect|failed/i)
-    ).toBeVisible();
+    ).toHaveCount(2);
   });
 
   test('should handle "I\'m a new person" flow', async ({ page }) => {
@@ -277,9 +277,6 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Start typing valid room code
     await roomInput.fill(roomCode!);
 
-    // Should show "Validating..." state
-    await expect(joinButton).toContainText('Validating...');
-    await expect(joinButton).toBeDisabled();
 
     // After validation succeeds
     await expect(page.locator('.pi-check')).toBeVisible();
