@@ -1,12 +1,14 @@
 {
   "mcpServers": {
     "wallaby": {
-      "command": "powershell.exe",
-      "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"]
-    },
-    "playwright": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "-y",
+        "-c",
+        "node ~/.wallaby/mcp"
+      ],
+      "env": {}
     }
   }
 }
