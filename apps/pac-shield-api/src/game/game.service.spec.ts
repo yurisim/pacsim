@@ -99,7 +99,7 @@ describe('GameService', () => {
 
       expect(prisma.game.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { teams: { include: { players: true } } },
+        include: { teams: { include: { players: true } }, players: true },
       });
       expect(result).toEqual(mockGame);
     });
@@ -149,7 +149,7 @@ describe('GameService', () => {
       (prisma.game.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(service.joinGame(joinGameDto)).rejects.toThrow(
-        'Game with room code "ABCDEF" not found'
+        'Invalid room code'
       );
     });
   });

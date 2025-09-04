@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+::ng-deep .p-inputotp {
+  gap: 0.5rem;
+  
+  .p-inputotp-input {
+    width: 3rem !important;
+    height: 3rem !important;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+}

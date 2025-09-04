@@ -1,1 +1,13 @@
+.app-title {
+  color: var(--primary-color);
+}
 
+p-toolbar {
+  border: none !important;
+  outline: none !important;
+}
+
+:host ::ng-deep .p-toolbar {
+  border: none !important;
+  outline: none !important;
+}

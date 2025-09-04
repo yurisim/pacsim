@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
+import { PlayerRole } from '.prisma/client';
 
 export class JoinGameDto {
   @ApiProperty()
@@ -11,4 +12,14 @@ export class JoinGameDto {
   @IsString()
   @IsNotEmpty()
   playerName: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsEnum(['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'])
+  role?: PlayerRole;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  pin?: string;
 }

@@ -12,9 +12,11 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
-import { EMPTY, Observable, switchMap } from 'rxjs';
+import { EMPTY, Observable, map } from 'rxjs';
 import { JoinTeamDialogComponent } from './join-team-dialog/join-team-dialog.component';
+import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
 import { WebSocketService } from '../../shared/services/websocket.service';
+import { AuthService } from '../../shared/services/auth.service';
 
 enum PlayerRole {
   PLAYER = 'PLAYER',
@@ -36,6 +38,7 @@ enum PlayerRole {
     InputTextModule,
     AutoCompleteModule,
     ReactiveFormsModule,
+    PlayerSettingsDialogComponent,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
@@ -48,17 +51,36 @@ export class LobbyComponent implements OnInit {
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
   private webSocketService = inject(WebSocketService);
+  private authService = inject(AuthService);
 
   game$: Observable<Game> = EMPTY;
+  currentPlayer$: Observable<Player | undefined> = EMPTY;
   playerRoles = Object.values(PlayerRole);
+  showPlayerSettingsDialog = false;
 
   ngOnInit(): void {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
       this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+
+      // Set up current player observable
+      const playerId = this.authService.getPlayerId();
+      if (playerId) {
+        this.currentPlayer$ = this.game$.pipe(
+          map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
+        );
+      }
+
       this.webSocketService.connect(gameId);
       this.webSocketService.listen('playerJoined').subscribe(() => {
         this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+        // Update current player when game data refreshes
+        const playerId = this.authService.getPlayerId();
+        if (playerId) {
+          this.currentPlayer$ = this.game$.pipe(
+            map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
+          );
+        }
       });
     }
   }
@@ -100,5 +122,61 @@ export class LobbyComponent implements OnInit {
           });
       }
     });
+  }
+
+  openPlayerSettings(): void {
+    this.showPlayerSettingsDialog = true;
+  }
+
+  onPlayerSettingsSave(settings: PlayerSettings): void {
+    const playerId = this.authService.getPlayerId();
+    if (!playerId) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Not Authenticated',
+        detail: 'Please rejoin the game.',
+      });
+      return;
+    }
+
+    this.apiService.updatePlayerNameAndRole(playerId, settings.name, settings.role).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Settings Updated',
+          detail: 'Your name and role have been updated',
+        });
+        this.showPlayerSettingsDialog = false;
+        // Refresh game data
+        const gameId = this.route.snapshot.paramMap.get('gameId');
+        if (gameId) {
+          this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+          // Update current player when game data refreshes
+          const playerId = this.authService.getPlayerId();
+          if (playerId) {
+            this.currentPlayer$ = this.game$.pipe(
+              map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
+            );
+          }
+        }
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Update Failed',
+          detail: err.error?.message || 'Failed to update settings',
+        });
+      },
+    });
+  }
+
+  onPlayerSettingsCancel(): void {
+    console.log('🚫 Lobby onPlayerSettingsCancel called');
+    this.showPlayerSettingsDialog = false;
+    console.log('🚫 showPlayerSettingsDialog set to false');
+  }
+
+  formatRoleDisplay(role: string): string {
+    return role || 'PLAYER';
   }
 }

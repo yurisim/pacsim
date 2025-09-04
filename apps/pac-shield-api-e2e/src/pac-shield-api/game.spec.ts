@@ -43,7 +43,7 @@ describe('Game Controller E2E', () => {
       });
     } catch (error) {
       expect(error.response.status).toBe(404);
-      expect(error.response.data.message).toBe('Game with room code "INVALID" not found');
+      expect(error.response.data.message).toBe('Invalid room code');
     }
   });
   });

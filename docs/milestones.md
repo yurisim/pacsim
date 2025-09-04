@@ -10,7 +10,7 @@ _This phase is about making key decisions, establishing the technical groundwork
     - [X] Establish main, develop, and feature branching strategies.
     - [X] Configure repository on GitHub/GitLab.
 
-2.  **Backend Setup (Node.js/NestJS/Prisma/MongoDB):**
+2.  **Backend Setup (Node.js/NestJS/Prisma/PostgreSQL):**
 
     - [X] Initialize a Node.js project (`npm init`).
     - [X] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
@@ -22,7 +22,7 @@ _This phase is about making key decisions, establishing the technical groundwork
       - [X] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
       - [X] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
     - [X] **Create Database Service:**
-      - [X] Implement a service to connect to the MongoDB database.
+      - [X] Implement a service to connect to the PostgreSQL database.
       - [X] Generate the Prisma Client.
     - [X] **API Scaffolding:**
       - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
@@ -54,9 +54,15 @@ _This phase is about making key decisions, establishing the technical groundwork
       - [X] `AuthService`: For handling game joining via room code and managing the session JWT.
 
 4.  **Initial UI Scaffolding:**
-    - [X] Set up Angular routing for a `/join` page (for entering a room code) and a `/game/:id` page.
+    - [X] Set up Angular routing for a `/join` page (for entering a room code), a `/game/:id` page, and a `/lobby/:gameId` page.
     - [X] Implement a basic `AppComponent` with a toolbar and a router outlet.
     - [X] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
+    - [X] **Advanced Authentication Flow:**
+      - [X] Implement comprehensive player name conflict resolution with PIN system.
+      - [X] Add room code validation with real-time feedback.
+      - [X] Support JWT-based session persistence across browser sessions.
+      - [X] Create lobby system with team assignment and player settings management.
+      - [X] Implement Game Master setup flow with secure PIN generation.
 
 ---
 
@@ -66,7 +72,8 @@ _Focus on creating the static visual elements of the game. At this stage, things
 
 1.  **Game Board Rendering:**
 
-    - [ ] **Implement `GameBoardComponent`:**
+    - [X] **Implement `GameBoardComponent`:**
+      - [X] Create basic component structure with proper routing.
       - [ ] Integrate Leaflet.js to display a static map image.
       - [ ] Implement or integrate a hex grid overlay library. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
       - [ ] Write a function to render the DF-26 threat ring and country borders.
@@ -79,7 +86,8 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [ ] In `GameBoardComponent`, subscribe to these selectors and use `ngFor` to render a `GameTokenComponent` for each asset at its correct hex/airfield location.
 
 2.  **Dashboard and Side Panel Rendering:**
-    - [ ] **Implement `MobDashboardComponent`:**
+    - [X] **Implement `MobDashboardComponent`:**
+      - [X] Create basic component structure.
       - [ ] Create static UI layouts for the MOB board (On-Station Personnel, Commodities, etc.).
       - [ ] Use NgRx selectors to get the specific MOB's inventory.
       - [ ] Use `ngFor` and the `GameTokenComponent` to display all assets currently located at the MOB.
@@ -89,6 +97,9 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [ ] Use CSS classes (`.task-complete`, `.task-incomplete`) to style the task slots based on the FOS's `Completed_Tasks` array.
     - [ ] **Implement `ScoreboardComponent`:**
       - [ ] A simple component that subscribes to team-specific `missionPoints` and `demoralizationPoints` from the NgRx store and displays them.
+    - [X] **Implement `CaocDashboardComponent`:**
+      - [X] Create basic component structure.
+      - [ ] Create a UI to render CAOC-specific functionality (ATO management, PPR approval).
     - [ ] **Implement `CSpOCBoardComponent`:**
       - [ ] Create a UI to render the orbital tracks (LEO, MEO, GEO).
       - [ ] Subscribe to `satelliteInstances` from the NgRx store and render `GameTokenComponent`s for each satellite on its correct orbit/position.
@@ -169,11 +180,11 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
 
 1.  **Session Authentication & Authorization:**
 
-    - [ ] Implement a `JoinGameComponent` with a form to submit a room code.
-    - [ ] The `AuthService` sends the room code to an `/api/game/join` endpoint.
-    - [ ] The backend validates the room code, checks for an available slot, and generates a session-specific JWT containing the `gameId` and assigned `role`.
-    - [ ] The frontend stores the session JWT in `localStorage`.
-    - [ ] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API and WebSocket requests.
+    - [X] Implement a `JoinGameComponent` with a form to submit a room code.
+    - [X] The `AuthService` sends the room code to an `/api/game/join` endpoint.
+    - [X] The backend validates the room code, checks for an available slot, and generates a session-specific JWT containing the `gameId` and assigned `role`.
+    - [X] The frontend stores the session JWT in `localStorage`.
+    - [X] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API and WebSocket requests.
     - [ ] Implement Angular Route Guards (`SessionAuthGuard`, `RoleGuard`) to protect game routes.
 
 2.  **Role-Specific UI (Conditional Rendering):**

@@ -4,6 +4,45 @@
 
 /* You can add global styles to this file, and also import other style files */
 
+/* Google Material Icons classes styled to match PrimeNG icons */
+.material-icons,
+.material-symbols-outlined {
+  font-size: 1rem;
+  line-height: 1;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Utility classes for consistent icon sizing */
+.mi {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  vertical-align: middle;
+  align-items: center;
+  justify-content: center;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Size variants to match PrimeNG icon sizes */
+.mi-sm { font-size: 0.875rem; }
+.mi-lg { font-size: 1.25rem; }
+.mi-xl { font-size: 1.5rem; }
+.mi-2xl { font-size: 1.75rem; }
+.mi-3xl { font-size: 2rem; }
+
+
 html,
 body {
   height: 100%;

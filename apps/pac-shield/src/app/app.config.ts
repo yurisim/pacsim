@@ -5,7 +5,7 @@ import {
   provideZoneChangeDetection,
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { appRoutes } from './app.routes';
@@ -16,6 +16,8 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { gameReducer } from './core/store/game/game.reducer';
 import { provideEffects } from '@ngrx/effects';
 import { GameEffects } from './core/store/game/game.effects';
+import { authInterceptor } from './shared/interceptors/auth.interceptor';
+import { ApiLoggingInterceptor } from './shared/interceptors/api-logging.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,7 +36,8 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     provideRouter(appRoutes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    { provide: HTTP_INTERCEPTORS, useClass: ApiLoggingInterceptor, multi: true },
     MessageService,
   ],
 };

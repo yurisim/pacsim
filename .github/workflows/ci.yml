@@ -52,6 +52,8 @@ jobs:
       - name: Run affected systems
         run: |
           npx nx serve pac-shield-api &
+          echo "Waiting for backend to start..."
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done' || echo "Backend health check failed or timed out"
           npx nx affected -t lint test build e2e
 
         env:
@@ -61,8 +63,4 @@ jobs:
         if: always()
         with:
           name: playwright-e2e-artifacts
-          path: dist/.playwright/apps/pac-shield-e2e/test-results
-
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
-      - run: npx nx fix-ci
-        if: always()
+          path: dist/.playwright/apps/pac-shield-e2e/test-output

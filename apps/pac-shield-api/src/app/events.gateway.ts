@@ -5,6 +5,7 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -28,14 +29,34 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
+  /**
+   * Handles player joining a game room via WebSocket. Creates Socket.IO room isolation 
+   * so game events are only broadcast to players in the same game session.
+   * Each gameId becomes a separate room for real-time multiplayer communication.
+   */
   @SubscribeMessage('joinGame')
-  handleJoinGame(@MessageBody('gameId') gameId: string, client: Socket): void {
+  handleJoinGame(@MessageBody() gameId: string, @ConnectedSocket() client: Socket): void {
     client.join(gameId);
     this.logger.log(`Client ${client.id} joined room: ${gameId}`);
     // Optionally, send a confirmation to the client who just joined
     client.emit('joinedRoom', `You have successfully joined game ${gameId}`);
   }
 
+  /**
+   * Broadcasts events to all players in a specific lobby/game room.
+   * Used by game services to push state updates, player actions, or system messages
+   * to all connected clients in the same game session.
+   */
+  sendToLobby(lobbyId: string, event: string, data: any) {
+    this.server.to(lobbyId).emit(event, data);
+  }
+
+  /**
+   * Generic event relay system for real-time multiplayer game actions.
+   * Receives typed events from clients (player moves, chat, game commands) and 
+   * broadcasts them to all other players in the same game room.
+   * Core mechanism for synchronized multiplayer state across all connected clients.
+   */
   @SubscribeMessage('gameEvent')
   handleGameEvent(
     @MessageBody() payload: { gameId: string; eventName: string; data: unknown }

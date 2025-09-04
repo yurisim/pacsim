@@ -1,0 +1,58 @@
+<p-dialog
+  header="Player Settings"
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="true"
+  (onHide)="cancelSettings()"
+  [style]="{ width: '450px' }"
+>
+  <div class="flex flex-col gap-4">
+    <div>
+      <label for="playerName" class="block text-sm font-medium mb-2">
+        Name <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        id="playerName"
+        type="text"
+        [(ngModel)]="name"
+        placeholder="Enter your name"
+        class="w-full"
+        maxlength="50"
+      />
+    </div>
+
+    <div>
+      <label for="playerRole" class="block text-sm font-medium mb-2">
+        Role
+      </label>
+      <p-autoComplete
+        id="playerRole"
+        [(ngModel)]="role"
+        [suggestions]="roleOptions"
+        (completeMethod)="filterRoles($event)"
+        field="label"
+        placeholder="Select a role"
+        class="w-full"
+        [dropdown]="true"
+        [forceSelection]="true"
+        appendTo="body"
+      ></p-autoComplete>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        (onClick)="cancelSettings()"
+      ></p-button>
+      <p-button
+        label="Save"
+        (onClick)="saveSettings()"
+        [disabled]="!isFormValid"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

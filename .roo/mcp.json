@@ -3,6 +3,10 @@
     "wallaby": {
       "command": "powershell.exe",
       "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }

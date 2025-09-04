@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { TeamType } from '.prisma/client';
@@ -7,8 +7,18 @@ import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 import { PlayerService } from '../app/player/player.service';
 
+/**
+ * Domain service handling game lifecycle operations: creation, retrieval, room-code validation, and join orchestration.
+ * Coordinates:
+ * - PrismaService for database IO
+ * - AuthService to mint JWTs for sessions
+ * - PlayerService to create players
+ * - GameGateway to broadcast real-time events (e.g., playerJoined)
+ */
 @Injectable()
 export class GameService {
+  private readonly logger = new Logger(GameService.name);
+
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
@@ -16,13 +26,23 @@ export class GameService {
     private playerService: PlayerService
   ) {}
 
+  /**
+   * Creates a new multiplayer game session with unique room code and team structure.
+   * Generates collision-resistant 6-character alphanumeric room codes for player joining.
+   * Initializes all team types (BLUE_TEAM, RED_TEAM, etc.) from Prisma enum for balanced gameplay.
+   */
   async createGame(createGameDto: CreateGameDto): Promise<Game> {
     const { victoryConditionMP } = createGameDto;
     let roomCode: string;
 
-    do {
-      roomCode = this.generateRoomCode();
-    } while (await this.prisma.game.findUnique({ where: { roomCode } }));
+    try {
+      do {
+        roomCode = this.generateRoomCode();
+      } while (await this.prisma.game.findUnique({ where: { roomCode } }));
+    } catch (error) {
+      this.logger.error('Database connection error while checking room code:', error);
+      throw new Error('Database connection failed. Please ensure the database is running and properly configured.');
+    }
 
     const game = await this.prisma.game.create({
       data: {
@@ -45,6 +65,11 @@ export class GameService {
     return game;
   }
 
+  /**
+   * Fetch a game by id including teams and players.
+   * Used by lobby UI to render current roster.
+   * Throws NotFoundException if game doesn't exist.
+   */
   async getGameById(id: number): Promise<Game> {
     const game = await this.prisma.game.findUnique({
       where: { id },
@@ -54,6 +79,7 @@ export class GameService {
             players: true,
           },
         },
+        players: true,
       },
     });
 
@@ -64,6 +90,27 @@ export class GameService {
     return game;
   }
 
+  /**
+   * Validate a 6-character room code without loading full game details.
+   * @returns { valid: boolean, gameId?: number } to support client-side routing.
+   */
+  async validateRoomCode(roomCode: string): Promise<{ valid: boolean; gameId?: number }> {
+    const game = await this.prisma.game.findUnique({
+      where: { roomCode },
+      select: { id: true }
+    });
+
+    return {
+      valid: !!game,
+      gameId: game?.id
+    };
+  }
+
+  /**
+   * Handles player joining existing game session via room code.
+   * Creates player record, broadcasts join event to other players in real-time,
+   * and returns JWT token for authenticated game participation and API access.
+   */
   async joinGame(joinGameDto: JoinGameDto) {
     const { roomCode, playerName } = joinGameDto;
 
@@ -72,9 +119,7 @@ export class GameService {
     });
 
     if (!game) {
-      throw new NotFoundException(
-        `Game with room code "${roomCode}" not found`
-      );
+      throw new NotFoundException('Invalid room code');
     }
 
     const player = await this.playerService.createPlayerInGame(
@@ -87,6 +132,10 @@ export class GameService {
     return this.authService.login(game.id, player.id);
   }
 
+  /**
+   * Generate a collision-resistant 6-char uppercase alphanumeric room code.
+   * Uses Math.random; acceptable for human-friendly codes, not cryptographic.
+   */
   private generateRoomCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
