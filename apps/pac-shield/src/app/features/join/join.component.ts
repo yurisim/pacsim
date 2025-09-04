@@ -12,6 +12,8 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputOtpModule } from 'primeng/inputotp';
 import { AvatarModule } from 'primeng/avatar';
+import { MessageModule } from 'primeng/message';
+import { DividerModule } from 'primeng/divider';
 import { CommonModule } from '@angular/common';
 
 interface JoinResponse {
@@ -32,6 +34,8 @@ interface JoinResponse {
     InputGroupAddonModule,
     InputOtpModule,
     AvatarModule,
+    MessageModule,
+    DividerModule,
     CommonModule,
   ],
   templateUrl: './join.component.html',
