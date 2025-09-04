@@ -97,7 +97,7 @@
     "prisma-db-push": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma db push --schema src/prisma/schema.prisma --accept-data-loss",
+        "command": "npx prisma db push --schema src/prisma/schema.prisma --accept-data-loss --force-reset",
         "cwd": "apps/pac-shield-api"
       }
     },

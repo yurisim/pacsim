@@ -8,7 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { PlayerService } from './player.service';
-import { CreatePlayerDto, Player, UpdatePlayerDto } from '../generated';
+import { CreatePlayerDto, Player } from '../generated';
 import { JoinGameDto } from '../../game/dto/join-game.dto';
 import { UpdatePlayerWithRoleDto } from './dto/update-player-with-role.dto';
 
@@ -103,5 +103,26 @@ export class PlayerController {
       body.roomCode,
       body.playerName,
     );
+  }
+
+  /**
+   * POST /player/:id/join-team
+   * Assign a player to a specific team within their game.
+   */
+  @Post(':id/join-team')
+  async joinTeam(
+    @Param('id') id: string,
+    @Body() body: { teamId: number },
+  ): Promise<Player> {
+    return this.playerService.joinTeam(+id, body.teamId);
+  }
+
+  /**
+   * POST /player/:id/leave-team
+   * Remove a player from their current team.
+   */
+  @Post(':id/leave-team')
+  async leaveTeam(@Param('id') id: string): Promise<Player> {
+    return this.playerService.leaveTeam(+id);
   }
 }

@@ -82,4 +82,20 @@ export class ApiService {
   updatePlayerNameAndRole(playerId: string, name: string, role: string): Observable<any> {
     return this.patch(`player/${playerId}`, { name, role });
   }
+
+  /**
+   * Convenience API to assign a player to a specific team.
+   * Delegates to POST /player/:id/join-team.
+   */
+  joinTeam(playerId: string, teamId: number): Observable<any> {
+    return this.post(`player/${playerId}/join-team`, { teamId });
+  }
+
+  /**
+   * Convenience API to remove a player from their current team.
+   * Delegates to POST /player/:id/leave-team.
+   */
+  leaveTeam(playerId: string): Observable<any> {
+    return this.post(`player/${playerId}/leave-team`, {});
+  }
 }

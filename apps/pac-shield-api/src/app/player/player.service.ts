@@ -292,6 +292,105 @@ export class PlayerService {
   }
 
   /**
+   * Assign a player to a specific team within their game.
+   * Validates that the team exists and belongs to the same game as the player.
+   * Emits lobby roster updates on success.
+   */
+  async joinTeam(playerId: number, teamId: number) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Player ${playerId} attempting to join team ${teamId}`);
+
+    // Get player with their current game
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      include: { game: true },
+    });
+
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+
+    // Validate that the team exists and belongs to the same game
+    const team = await this.prisma.team.findUnique({
+      where: { id: teamId },
+      include: { game: true },
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    if (team.gameId !== player.gameId) {
+      throw new BadRequestException('Team does not belong to the same game as player');
+    }
+
+    try {
+      // Update player's team assignment
+      const updatedPlayer = await this.prisma.player.update({
+        where: { id: playerId },
+        data: { teamId: teamId },
+        include: { 
+          game: true,
+          team: true,
+        },
+      });
+
+      // Emit WebSocket event to notify other players
+      if (updatedPlayer.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: updatedPlayer.gameId },
+          include: { team: true },
+        });
+        this.eventsGateway.sendToLobby(updatedPlayer.game.roomCode, 'playerListUpdate', players);
+      }
+
+      this.logger.log(`[${requestId}] Successfully assigned player ${playerId} to team ${teamId}`);
+      return updatedPlayer;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to assign player ${playerId} to team ${teamId}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove a player from their current team (set teamId to null).
+   * Emits lobby roster updates on success.
+   */
+  async leaveTeam(playerId: number) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Player ${playerId} leaving team`);
+
+    try {
+      const updatedPlayer = await this.prisma.player.update({
+        where: { id: playerId },
+        data: { teamId: null },
+        include: { 
+          game: true,
+          team: true,
+        },
+      });
+
+      // Emit WebSocket event to notify other players
+      if (updatedPlayer.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: updatedPlayer.gameId },
+          include: { team: true },
+        });
+        this.eventsGateway.sendToLobby(updatedPlayer.game.roomCode, 'playerListUpdate', players);
+      }
+
+      this.logger.log(`[${requestId}] Successfully removed player ${playerId} from team`);
+      return updatedPlayer;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to remove player ${playerId} from team: ${error.message}`, error.stack);
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Player not found');
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Permanently delete a player by id.
    */
   remove(id: number) {

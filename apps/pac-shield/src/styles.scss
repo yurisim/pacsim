@@ -31,17 +31,25 @@
   vertical-align: middle;
   align-items: center;
   justify-content: center;
-  -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
 
 /* Size variants to match PrimeNG icon sizes */
-.mi-sm { font-size: 0.875rem; }
-.mi-lg { font-size: 1.25rem; }
-.mi-xl { font-size: 1.5rem; }
-.mi-2xl { font-size: 1.75rem; }
-.mi-3xl { font-size: 2rem; }
-
+.mi-sm {
+  font-size: 0.875rem;
+}
+.mi-lg {
+  font-size: 1.25rem;
+}
+.mi-xl {
+  font-size: 1.5rem;
+}
+.mi-2xl {
+  font-size: 1.75rem;
+}
+.mi-3xl {
+  font-size: 2rem;
+}
 
 html,
 body {

@@ -2,11 +2,19 @@
   "mcpServers": {
     "wallaby": {
       "command": "powershell.exe",
-      "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"]
+      "args": [
+        "node",
+        "$Env:USERPROFILE/.wallaby/mcp/"
+      ],
+      "alwaysAllow": [
+        "wallaby_failingTests"
+      ]
     },
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     }
   }
 }
