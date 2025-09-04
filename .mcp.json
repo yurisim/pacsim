@@ -6,7 +6,7 @@
       "args": [
         "-y",
         "-c",
-        "node ~/.wallaby/mcp"
+        "node C:\\Users\\yuras\\.wallaby\\mcp"
       ],
       "env": {}
     }

@@ -3,9 +3,14 @@
     "allow": [
       "Bash(claude mcp:*)",
       "mcp__wallaby__wallaby_failingTests",
-      "WebFetch(domain:primeng.org)"
+      "WebFetch(domain:primeng.org)",
+      "Read(/F:\\Code Projects\\pacsim\\apps\\pac-shield-e2e\\src/**)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "wallaby"
+  ],
+  "enableAllProjectMcpServers": true
 }
