@@ -68,7 +68,7 @@ export class HomeComponent {
 
     this.isLoading = true;
     this.authService.createGameMaster(
-      this.createdGame.roomCode, 
+      this.createdGame.roomCode,
       gameMasterInfo.lastName,
       gameMasterInfo.pin
     ).subscribe({
