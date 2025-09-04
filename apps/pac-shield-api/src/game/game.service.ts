@@ -18,6 +18,11 @@ export class GameService {
     private playerService: PlayerService
   ) {}
 
+  /**
+   * Creates a new multiplayer game session with unique room code and team structure.
+   * Generates collision-resistant 6-character alphanumeric room codes for player joining.
+   * Initializes all team types (BLUE_TEAM, RED_TEAM, etc.) from Prisma enum for balanced gameplay.
+   */
   async createGame(createGameDto: CreateGameDto): Promise<Game> {
     const { victoryConditionMP } = createGameDto;
     let roomCode: string;
@@ -84,6 +89,11 @@ export class GameService {
     };
   }
 
+  /**
+   * Handles player joining existing game session via room code.
+   * Creates player record, broadcasts join event to other players in real-time,
+   * and returns JWT token for authenticated game participation and API access.
+   */
   async joinGame(joinGameDto: JoinGameDto) {
     const { roomCode, playerName } = joinGameDto;
 

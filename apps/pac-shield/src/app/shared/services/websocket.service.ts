@@ -45,6 +45,11 @@ export class WebSocketService {
     this.setupConnectionListeners();
   }
 
+  /**
+   * Establishes WebSocket connection for a specific game session.
+   * Implements Fibonacci backoff strategy for resilient reconnection in unstable networks.
+   * Sets gameId context for server-side room management and event routing.
+   */
   connect(gameId: string): void {
     if (this.socket.connected) return;
 
@@ -68,6 +73,11 @@ export class WebSocketService {
     this.socket.emit(eventName, data);
   }
 
+  /**
+   * Joins a Socket.IO room for game-specific event isolation.
+   * Creates multiplayer session boundary - only players in the same room
+   * receive each other's game events, ensuring proper game state synchronization.
+   */
   joinGameRoom(roomCode: string): void {
     if (!this.socket.connected) {
       console.error('Socket not connected. Cannot join room.');
@@ -77,6 +87,11 @@ export class WebSocketService {
     console.log(`Joining game room: ${roomCode}`);
   }
 
+  /**
+   * Creates RxJS Observable for real-time game events from server.
+   * Components subscribe to specific event types (player-joined, state-updated, etc.)
+   * Automatically handles cleanup when component unsubscribes to prevent memory leaks.
+   */
   listen<T>(eventName: string): Observable<T> {
     return new Observable((subscriber) => {
       this.socket.on(eventName, (data: T) => {

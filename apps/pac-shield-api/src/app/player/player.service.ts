@@ -37,6 +37,11 @@ export class PlayerService {
     return { isAvailable: !existingPlayer };
   }
 
+  /**
+   * Complex player authentication flow supporting both new and returning players.
+   * Handles name collision detection, PIN-based player resumption, and session management.
+   * Creates unique sessionIds for tracking and broadcasts player list updates via WebSocket.
+   */
   async joinGame(joinGameDto: JoinGameDto): Promise<{ token: string; player: Player }> {
     const game = await this.prisma.game.findUnique({
       where: { roomCode: joinGameDto.roomCode },

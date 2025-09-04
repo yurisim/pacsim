@@ -4,13 +4,15 @@
       "Bash(claude mcp:*)",
       "mcp__wallaby__wallaby_failingTests",
       "WebFetch(domain:primeng.org)",
-      "Read(/F:\\Code Projects\\pacsim\\apps\\pac-shield-e2e\\src/**)"
+      "Read(/C:\\pacsim\\**)",
+      "Read(/C:\\pacsim\\apps\\pac-shield-api\\src\\prisma/**)",
+      "Read(/C:\\pacsim\\apps\\pac-shield-api\\src\\app\\player/**)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "wallaby"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
