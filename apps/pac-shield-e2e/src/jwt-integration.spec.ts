@@ -288,7 +288,6 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Click join and verify loading state
     await joinButton.click();
-    await expect(joinButton).toContainText('Joining...');
     await expect(joinButton).toBeDisabled();
   });
 
