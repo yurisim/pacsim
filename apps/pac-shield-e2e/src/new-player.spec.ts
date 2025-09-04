@@ -67,6 +67,6 @@ test.describe('New Player Flow', () => {
     // Expect to be redirected to the lobby and see the new player
     await expect(page).toHaveURL(/\/lobby\//);
     await expect(page.getByText(roomCode)).toBeVisible();
-    await expect(page.getByText(uniqueName)).toBeVisible();
+    await expect(page.getByText(uniqueName)).toHaveCount(2);
   });
 });
