@@ -8,11 +8,6 @@
   </div>
   <div class="p-toolbar-group-end">
     <div class="flex items-center gap-4">
-      <p-button
-        icon="pi pi-home"
-        styleClass="p-button-secondary"
-        routerLink="/"
-      ></p-button>
       @if (ws.connectionStatus$ | async) {
       <div class="flex items-center text-green-500">
         <i class="pi pi-wifi mr-2"></i>
@@ -23,6 +18,19 @@
         <i class="pi pi-times mr-2"></i>
         <span>Disconnected</span>
       </div>
+      }
+      <p-button
+        icon="pi pi-home"
+        styleClass="p-button-secondary"
+        routerLink="/"
+      ></p-button>
+      @if (auth.isAuthenticated() && auth.getGameId()) {
+      <p-button
+        label="Logout"
+        icon="pi pi-sign-out"
+        (onClick)="onLogout()"
+        styleClass="p-button-danger"
+      ></p-button>
       }
     </div>
   </div>
