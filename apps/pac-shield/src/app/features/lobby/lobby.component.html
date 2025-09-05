@@ -15,7 +15,7 @@
           title="Copy Room Code"
         >
           <p class="text-7xl font-mono tracking-widest">{{ game.roomCode }}</p>
-          <span class="material-symbols-outlined text-4xl">content_copy</span>
+          <mat-icon fontIcon="content_copy" class="text-4xl" aria-hidden="true"></mat-icon>
         </div>
         <p class="text-sm text-gray-500">Click to copy</p>
       </div>
@@ -28,13 +28,13 @@
       <div class="mb-6 p-4 border rounded flex flex-col items-center w-full max-w-xl">
         <div class="flex gap-2">
           <button mat-raised-button color="primary" (click)="openPlayerSettings()">
-            <span class="material-symbols-outlined mr-2">edit</span>
+            <mat-icon fontIcon="edit" class="mr-2" aria-hidden="true"></mat-icon>
             Edit Name & Role
           </button>
           @if (currentPlayer$ | async; as currentPlayer) {
             @if (currentPlayer.teamId) {
               <button mat-stroked-button color="warn" (click)="leaveCurrentTeam()">
-                <span class="material-symbols-outlined mr-2">logout</span>
+                <mat-icon fontIcon="logout" class="mr-2" aria-hidden="true"></mat-icon>
                 Leave Team
               </button>
             }
@@ -84,9 +84,7 @@
                   <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
                          [style.background-color]="getTeamTypeInfo(team).color">
-                      <span class="material-symbols-outlined">
-                        {{ getTeamTypeInfo(team).icon }}
-                      </span>
+                      <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" aria-hidden="true"></mat-icon>
                     </div>
                     <div>
                       <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
@@ -113,7 +111,7 @@
                     </div>
                   } @else {
                     <div class="text-center text-gray-500 py-8">
-                      <span class="material-symbols-outlined text-3xl mb-3 block opacity-50">group</span>
+                      <mat-icon fontIcon="group" class="text-3xl mb-3 block opacity-50" aria-hidden="true"></mat-icon>
                       <span class="text-sm">Awaiting personnel assignment</span>
                     </div>
                   }
@@ -126,14 +124,12 @@
                       class="w-full"
                       (click)="openJoinTeamDialog(team)"
                       [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
-                      <span class="material-symbols-outlined mr-2">
-                        {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add' }}
-                      </span>
+                      <mat-icon [fontIcon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add'" class="mr-2" aria-hidden="true"></mat-icon>
                       {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
                     </button>
                   } @else {
                     <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
-                      <span class="material-symbols-outlined mr-2">add</span>
+                      <mat-icon fontIcon="add" class="mr-2" aria-hidden="true"></mat-icon>
                       Join Team
                     </button>
                   }
@@ -146,7 +142,7 @@
         <!-- Command & Control -->
         <mat-divider></mat-divider>
         <div class="flex items-center gap-2 my-4">
-          <span class="material-symbols-outlined">account_tree</span>
+          <mat-icon fontIcon="account_tree" aria-hidden="true"></mat-icon>
           <span class="font-semibold">Command & Control</span>
         </div>
 
@@ -157,9 +153,7 @@
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
                        [style.background-color]="getTeamTypeInfo(team).color">
-                    <span class="material-symbols-outlined">
-                      {{ getTeamTypeInfo(team).icon }}
-                    </span>
+                    <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" aria-hidden="true"></mat-icon>
                   </div>
                   <div>
                     <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
@@ -199,9 +193,7 @@
                   </div>
                 } @else {
                   <div class="text-center text-gray-500 py-6">
-                    <span class="material-symbols-outlined text-3xl mb-3 block opacity-50">
-                      {{ getTeamTypeInfo(team).icon }}
-                    </span>
+                    <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" class="text-3xl mb-3 block opacity-50" aria-hidden="true"></mat-icon>
                     <span class="text-sm">Awaiting team members</span>
                   </div>
                 }
@@ -213,14 +205,12 @@
                     class="w-full"
                     (click)="openJoinTeamDialog(team)"
                     [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
-                    <span class="material-symbols-outlined mr-2">
-                      {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add' }}
-                    </span>
+                    <mat-icon [fontIcon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add'" class="mr-2" aria-hidden="true"></mat-icon>
                     {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
                   </button>
                 } @else {
                   <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
-                    <span class="material-symbols-outlined mr-2">add</span>
+                    <mat-icon fontIcon="add" class="mr-2" aria-hidden="true"></mat-icon>
                     Join Team
                   </button>
                 }
@@ -232,7 +222,7 @@
         <!-- Support Teams -->
         <mat-divider></mat-divider>
         <div class="flex items-center gap-2 my-4">
-          <span class="material-symbols-outlined">favorite</span>
+          <mat-icon fontIcon="favorite" aria-hidden="true"></mat-icon>
           <span class="font-semibold">Support Teams</span>
         </div>
 
@@ -243,9 +233,7 @@
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
                        [style.background-color]="getTeamTypeInfo(team).color">
-                    <span class="material-symbols-outlined">
-                      {{ getTeamTypeInfo(team).icon }}
-                    </span>
+                    <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" aria-hidden="true"></mat-icon>
                   </div>
                   <div>
                     <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
@@ -285,9 +273,7 @@
                   </div>
                 } @else {
                   <div class="text-center text-gray-500 py-6">
-                    <span class="material-symbols-outlined text-3xl mb-3 block opacity-50">
-                      {{ getTeamTypeInfo(team).icon }}
-                    </span>
+                    <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" class="text-3xl mb-3 block opacity-50" aria-hidden="true"></mat-icon>
                     <span class="text-sm">Awaiting team members</span>
                   </div>
                 }
@@ -299,14 +285,12 @@
                     class="w-full"
                     (click)="openJoinTeamDialog(team)"
                     [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
-                    <span class="material-symbols-outlined mr-2">
-                      {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add' }}
-                    </span>
+                    <mat-icon [fontIcon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add'" class="mr-2" aria-hidden="true"></mat-icon>
                     {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
                   </button>
                 } @else {
                   <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
-                    <span class="material-symbols-outlined mr-2">add</span>
+                    <mat-icon fontIcon="add" class="mr-2" aria-hidden="true"></mat-icon>
                     Join Team
                   </button>
                 }

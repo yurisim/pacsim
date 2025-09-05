@@ -40,7 +40,7 @@
             (click)="onContinueGame()"
             class="w-full"
           >
-            <span class="material-symbols-outlined mr-2">arrow_forward</span>
+            <mat-icon fontIcon="arrow_forward" class="mr-2" aria-hidden="true"></mat-icon>
             Continue Game
           </button>
         </div>
@@ -57,7 +57,7 @@
       <div [formGroup]="joinForm" class="flex flex-col gap-4">
         <!-- Room Code -->
         <mat-form-field appearance="outline" class="w-full">
-          <span matPrefix class="material-symbols-outlined mr-2">key</span>
+          <mat-icon matPrefix fontIcon="key" class="mr-2" aria-hidden="true"></mat-icon>
           <input
             matInput
             formControlName="gameId"
@@ -76,14 +76,12 @@
           <span
             *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
             matSuffix
-            class="material-symbols-outlined text-green-500"
-            >check_circle</span
+            ><mat-icon fontIcon="check_circle" class="text-green-500" aria-hidden="true"></mat-icon></span
           >
           <span
             *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
             matSuffix
-            class="material-symbols-outlined text-red-500"
-            >cancel</span
+            ><mat-icon fontIcon="cancel" class="text-red-500" aria-hidden="true"></mat-icon></span
           >
         </mat-form-field>
 
@@ -99,7 +97,7 @@
         <!-- Player Name (shown after room is valid) -->
         <div *ngIf="shouldShowPlayerName()">
           <mat-form-field appearance="outline" class="w-full">
-            <span matPrefix class="material-symbols-outlined mr-2">person</span>
+            <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
             <input
               matInput
               formControlName="playerName"
@@ -131,7 +129,7 @@
         (click)="router.navigate(['/'])"
         class="justify-center"
       >
-        <span class="material-symbols-outlined mr-2">arrow_back</span>
+        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
         Back
       </button>
 
@@ -142,15 +140,7 @@
         [disabled]="isJoinButtonDisabled()"
         class="justify-center"
       >
-        <span class="material-symbols-outlined mr-2">
-          {{
-            isLoading
-              ? 'hourglass_top'
-              : isValidatingRoom
-              ? 'autorenew'
-              : 'login'
-          }}
-        </span>
+        <mat-icon [fontIcon]="isLoading ? 'hourglass_top' : isValidatingRoom ? 'autorenew' : 'login'" class="mr-2" aria-hidden="true"></mat-icon>
         {{
           isLoading ? 'Joining...' : isValidatingRoom ? 'Validating...' : 'Join'
         }}
@@ -192,7 +182,7 @@
           >
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>4-Digit PIN</mat-label>
-              <span matPrefix class="material-symbols-outlined mr-2">pin</span>
+              <mat-icon matPrefix fontIcon="pin" class="mr-2" aria-hidden="true"></mat-icon>
               <input
                 matInput
                 formControlName="pin"
@@ -219,7 +209,7 @@
             [disabled]="isVerifyButtonDisabled()"
             class="w-full mt-2"
           >
-            <span class="material-symbols-outlined mr-2">check_circle</span>
+            <mat-icon fontIcon="check_circle" class="mr-2" aria-hidden="true"></mat-icon>
             Verify PIN
           </button>
         </div>
@@ -243,7 +233,7 @@
             [disabled]="isLoading"
             class="w-full"
           >
-            <span class="material-symbols-outlined mr-2">person_add</span>
+            <mat-icon fontIcon="person_add" class="mr-2" aria-hidden="true"></mat-icon>
             I'm a New Person
           </button>
         </div>
@@ -262,7 +252,7 @@
         [disabled]="isLoading"
         class="justify-center"
       >
-        <span class="material-symbols-outlined mr-2">arrow_back</span>
+        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
         Back
       </button>
     </mat-card-actions>
@@ -277,7 +267,7 @@
     <mat-card-content>
       <div [formGroup]="newPersonForm" class="flex flex-col gap-4">
         <mat-form-field appearance="outline" class="w-full">
-          <span matPrefix class="material-symbols-outlined mr-2">person</span>
+          <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
           <input
             matInput
             formControlName="newPlayerName"
@@ -292,7 +282,7 @@
             (click)="onCheckNameAvailability()"
             [disabled]="newPersonForm.invalid || isCheckingName"
           >
-            <span class="material-symbols-outlined mr-2">search</span>
+            <mat-icon fontIcon="search" class="mr-2" aria-hidden="true"></mat-icon>
             Check Name Availability
           </button>
           <mat-progress-spinner
@@ -319,7 +309,7 @@
         [disabled]="isLoading"
         class="justify-center"
       >
-        <span class="material-symbols-outlined mr-2">arrow_back</span>
+        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
         Back
       </button>
 
@@ -329,7 +319,7 @@
         (click)="onCreateNewPlayer()"
         [disabled]="!isNameAvailable || isLoading"
       >
-        <span class="material-symbols-outlined mr-2">person_add</span>
+        <mat-icon fontIcon="person_add" class="mr-2" aria-hidden="true"></mat-icon>
         Create New Player
       </button>
     </mat-card-actions>

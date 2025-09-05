@@ -10,12 +10,12 @@
     <div class="flex items-center gap-4">
       @if (ws.connectionStatus$ | async) {
         <div class="flex items-center text-green-500">
-          <span class="material-symbols-outlined mr-2" aria-label="wifi" role="img">wifi</span>
+          <mat-icon fontIcon="wifi" class="mr-2" aria-hidden="true"></mat-icon>
           <span>Connected</span>
         </div>
       } @else {
         <div class="flex items-center text-red-500">
-          <span class="material-symbols-outlined mr-2" aria-label="signal_wifi_off" role="img">signal_wifi_off</span>
+          <mat-icon fontIcon="signal_wifi_off" class="mr-2" aria-hidden="true"></mat-icon>
           <span>Disconnected</span>
         </div>
       }
