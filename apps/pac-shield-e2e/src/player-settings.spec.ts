@@ -87,10 +87,8 @@ test.describe('Player Settings in Lobby', () => {
     await page.getByRole('button', { name: 'Edit Name & Role' }).click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
 
-    // Select a different role from the autocomplete
-    await page.getByRole('combobox', { name: 'Select a role' }).click();
-    await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'COMMANDER' }).click();
+    // Select a different role from the native select
+    await page.selectOption('#playerRole', 'COMMANDER');
     await page.getByRole('button', { name: 'Save' }).click();
 
     // Wait for dialog to close
@@ -115,9 +113,7 @@ test.describe('Player Settings in Lobby', () => {
     await page.getByLabel('Name').fill(newPlayerName);
 
     // Change role
-    await page.getByRole('combobox', { name: 'Select a role' }).click();
-    await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'COMMANDER' }).click();
+    await page.selectOption('#playerRole', 'COMMANDER');
     await page.getByRole('button', { name: 'Save' }).click();
 
     // Wait for dialog to close
@@ -145,9 +141,7 @@ test.describe('Player Settings in Lobby', () => {
     await page.getByLabel('Name').fill('Changed Name');
 
     // Change role
-    await page.getByRole('combobox', { name: 'Select a role' }).click();
-    await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'COMMANDER' }).click();
+    await page.selectOption('#playerRole', 'COMMANDER');
 
     // Cancel changes
     await page.getByRole('button', { name: 'Cancel' }).click();
