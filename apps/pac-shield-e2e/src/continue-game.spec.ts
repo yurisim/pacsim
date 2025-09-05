@@ -78,7 +78,7 @@ test.describe('Continue Game functionality', () => {
     await page.fill('input[placeholder="Room Code"]', roomCode!);
 
     // Wait for room validation
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
 
     // Player name should appear
     await expect(page.locator('input[placeholder="Player Name"]')).toBeVisible();

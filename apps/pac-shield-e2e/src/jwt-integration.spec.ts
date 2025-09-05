@@ -102,7 +102,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // First, join as ConflictUser to create the player
     await page.goto('/join');
     await page.fill('input[placeholder="Room Code"]', roomCode!);
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible(); // Wait for validation
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
     await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
 
@@ -114,7 +114,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.evaluate(() => localStorage.clear());
     await page.goto('/join');
     await page.fill('input[placeholder="Room Code"]', roomCode!);
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible(); // Wait for validation
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
     await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
 
@@ -161,7 +161,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     await page.fill('input[placeholder="Room Code"]', roomCode!);
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
     await page.fill('input[placeholder="Player Name"]', 'OriginalUser');
     await page.getByRole('button', { name: /join/i }).click();
 
@@ -203,8 +203,8 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Type less than 4 characters - no validation yet
     await roomInput.fill('ABC');
     await expect(page.locator('mat-progress-spinner')).toHaveCount(0);
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toHaveCount(0);
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'cancel' })).toHaveCount(0);
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toHaveCount(0);
+    await expect(page.locator('mat-icon[fontIcon="cancel"]')).toHaveCount(0);
 
     // Type 4 characters with invalid code
     await roomInput.fill('ABCD');
@@ -213,7 +213,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.locator('mat-progress-spinner')).toBeVisible();
 
     // Should eventually show error
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'cancel' })).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="cancel"]')).toBeVisible();
     await expect(page.locator('mat-progress-spinner')).toHaveCount(0);
 
     // Error message should appear
@@ -260,7 +260,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
 
     // After validation succeeds
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
 
     // Player name should appear and join button should be enabled after filling name
     await page.fill('input[placeholder="Player Name"]', 'StateTestUser');
@@ -306,7 +306,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await roomInput.fill(roomCode!);
 
     // After validation, room code should still be there
-    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
     await expect(roomInput).toHaveValue(roomCode!);
 
     // Player name field appears and can be filled
