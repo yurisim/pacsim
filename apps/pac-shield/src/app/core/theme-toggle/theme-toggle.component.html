@@ -1,0 +1,17 @@
+<!-- In your component template -->
+<button
+  mat-icon-button
+  (click)="toggleTheme()"
+  [attr.aria-label]="
+    themeService.isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'
+  "
+  [title]="
+    themeService.isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'
+  "
+>
+  @if (themeService.isDarkMode()) {
+  <mat-icon>light_mode</mat-icon>
+  } @else {
+  <mat-icon>dark_mode</mat-icon>
+  }
+</button>
