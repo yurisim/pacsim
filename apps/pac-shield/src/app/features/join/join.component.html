@@ -1,56 +1,51 @@
-<div class="flex justify-center items-center h-[calc(100vh-100px)]">
+<div class="md-sys-bg-background min-h-[calc(100vh-64px)] flex justify-center items-center md-padding-lg">
   <!-- Initial Join Form -->
   <mat-card
     *ngIf="!showNameConflict"
-    [class]="
-      shouldShowContinueOption()
-        ? 'w-[450px] text-center'
-        : 'w-[400px] text-center'
-    "
+    class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-md"
+    [class.max-w-lg]="shouldShowContinueOption()"
   >
-    <mat-card-header>
-      <mat-card-title>Join Game</mat-card-title>
+    <mat-card-header class="text-center">
+      <mat-card-title class="md-typescale-headline-medium md-sys-color-on-surface">Join Game</mat-card-title>
     </mat-card-header>
 
-    <mat-card-content>
+    <mat-card-content class="md-padding-lg">
       <!-- Continue Game Option for JWT Users -->
       <div *ngIf="shouldShowContinueOption()" class="mb-6">
-        <div
-          class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
-        >
-          <div class="flex items-center gap-3 mb-3">
-            <div
-              class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold"
-            >
-              {{ currentPlayer?.name?.charAt(0) }}
+        <div class="md-sys-bg-primary-container md-shape-corner-lg md-padding-lg">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 md-shape-corner-full md-sys-bg-primary flex items-center justify-center">
+              <span class="md-typescale-title-medium md-sys-color-on-primary font-semibold">
+                {{ currentPlayer?.name?.charAt(0) }}
+              </span>
             </div>
             <div class="text-left">
-              <div class="font-semibold text-blue-900 dark:text-blue-100">
+              <div class="md-typescale-title-medium md-sys-color-on-primary-container font-medium">
                 Welcome back, {{ currentPlayer?.name }}!
               </div>
-              <div class="text-sm text-blue-700 dark:text-blue-300">
+              <div class="md-typescale-body-small md-sys-color-on-primary-container opacity-90">
                 Continue your game session
               </div>
             </div>
           </div>
 
           <button
-            mat-raised-button
+            mat-flat-button
             color="primary"
             (click)="onContinueGame()"
-            class="w-full"
+            class="w-full interactive-surface"
           >
             <mat-icon fontIcon="arrow_forward" class="mr-2" aria-hidden="true"></mat-icon>
-            Continue Game
+            <span class="md-typescale-label-large">Continue Game</span>
           </button>
         </div>
 
-        <div class="flex items-center my-4">
-          <div class="flex-1 border-t border-gray-300"></div>
-          <span class="px-3 text-gray-500 text-sm"
-            >or join a different game</span
-          >
-          <div class="flex-1 border-t border-gray-300"></div>
+        <div class="flex items-center my-6">
+          <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
+          <span class="md-padding-sm md-typescale-body-small md-sys-color-on-surface-variant">
+            or join a different game
+          </span>
+          <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
         </div>
       </div>
 
@@ -89,7 +84,7 @@
           *ngIf="
             joinForm.get('gameId')?.invalid && joinForm.get('gameId')?.touched
           "
-          class="text-red-600 text-sm"
+          class="md-typescale-body-small md-sys-color-error mt-1"
         >
           Room code is required
         </div>
@@ -110,40 +105,42 @@
               joinForm.get('playerName')?.invalid &&
               joinForm.get('playerName')?.touched
             "
-            class="text-red-600 text-sm"
+            class="md-typescale-body-small md-sys-color-error mt-1"
           >
             Player name is required
           </div>
         </div>
 
-        <div *ngIf="errorMessage" class="text-red-600 text-sm">
+        <div *ngIf="errorMessage" class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
           {{ errorMessage }}
         </div>
       </div>
     </mat-card-content>
 
-    <mat-card-actions class="flex gap-2 mt-4 justify-center">
+    <mat-card-actions class="flex gap-3 md-padding-lg justify-center">
       <button
-        mat-stroked-button
+        mat-outlined-button
         color="primary"
         (click)="router.navigate(['/'])"
-        class="justify-center"
+        class="interactive-surface"
       >
         <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
-        Back
+        <span class="md-typescale-label-large">Back</span>
       </button>
 
       <button
-        mat-raised-button
+        mat-flat-button
         color="primary"
         (click)="onSubmit()"
         [disabled]="isJoinButtonDisabled()"
-        class="justify-center"
+        class="interactive-surface"
       >
         <mat-icon [fontIcon]="isLoading ? 'hourglass_top' : isValidatingRoom ? 'autorenew' : 'login'" class="mr-2" aria-hidden="true"></mat-icon>
-        {{
-          isLoading ? 'Joining...' : isValidatingRoom ? 'Validating...' : 'Join'
-        }}
+        <span class="md-typescale-label-large">
+          {{
+            isLoading ? 'Joining...' : isValidatingRoom ? 'Validating...' : 'Join'
+          }}
+        </span>
       </button>
     </mat-card-actions>
   </mat-card>
@@ -238,7 +235,7 @@
           </button>
         </div>
 
-        <div *ngIf="errorMessage" class="text-red-600 text-sm">
+        <div *ngIf="errorMessage" class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
           {{ errorMessage }}
         </div>
       </div>
@@ -292,7 +289,7 @@
           ></mat-progress-spinner>
         </div>
 
-        <div *ngIf="errorMessage" class="text-red-600 text-sm">
+        <div *ngIf="errorMessage" class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
           {{ errorMessage }}
         </div>
         <div *ngIf="isNameAvailable" class="text-green-600 text-sm">
