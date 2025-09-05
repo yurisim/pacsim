@@ -3,7 +3,10 @@
     "allow": [
       "Read(*)",
       "Search(*)",
-      "Read(/C:\\pacsim\\apps\\pac-shield-api\\src\\prisma/**)"
+      "Read(/C:\\pacsim\\apps\\pac-shield-api\\src\\prisma/**)",
+      "mcp__nx-mcp__nx_current_running_tasks_details",
+      "mcp__nx-mcp__nx_workspace",
+      "Bash(npx nx build:*)"
     ],
     "deny": [],
     "ask": []
