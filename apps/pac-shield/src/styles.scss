@@ -18,6 +18,7 @@ body {
 
 // Define both dark and light themes
 $dark-theme: (
+    color-scheme: light dark,
   color: (
     primary: mat.$magenta-palette,
     tertiary: mat.$green-palette,
