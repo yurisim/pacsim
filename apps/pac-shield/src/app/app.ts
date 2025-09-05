@@ -6,9 +6,10 @@ import { AuthService } from './shared/services/auth.service';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-  imports: [RouterModule, MatToolbarModule, AsyncPipe, CommonModule, MatButtonModule, MatSnackBarModule],
+  imports: [RouterModule, MatToolbarModule, AsyncPipe, CommonModule, MatButtonModule, MatSnackBarModule, MatIconModule],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
