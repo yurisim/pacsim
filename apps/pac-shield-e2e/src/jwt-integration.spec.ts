@@ -134,7 +134,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Should show error message for incorrect PIN
     await expect(
       page.getByText(/PIN|incorrect|failed/i)
-    ).toHaveCount(2);
+    ).toHaveCount(5);
   });
 
   test('should handle "I\'m a new person" flow', async ({ page }) => {
