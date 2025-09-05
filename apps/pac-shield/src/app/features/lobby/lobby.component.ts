@@ -5,12 +5,13 @@ import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
-import { EMPTY, Observable, map } from 'rxjs';
+import { EMPTY, Observable, map, firstValueFrom } from 'rxjs';
 import { WebSocketService } from '../../shared/services/websocket.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UnassignedPlayersPipe } from '../../shared/pipes/unassigned-players.pipe';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
@@ -33,10 +34,10 @@ enum PlayerRole {
     ClipboardModule,
     ReactiveFormsModule,
     UnassignedPlayersPipe,
-    PlayerSettingsDialogComponent,
     MatCardModule,
     MatButtonModule,
     MatDividerModule,
+    MatDialogModule,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
@@ -48,11 +49,11 @@ export class LobbyComponent implements OnInit {
   private notification = inject(NotificationService);
   private webSocketService = inject(WebSocketService);
   private authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   game$: Observable<Game> = EMPTY;
   currentPlayer$: Observable<Player | undefined> = EMPTY;
   playerRoles = Object.values(PlayerRole);
-  showPlayerSettingsDialog = false;
 
   ngOnInit(): void {
     const gameId = this.route.snapshot.paramMap.get('gameId');
@@ -144,45 +145,51 @@ export class LobbyComponent implements OnInit {
     });
   }
 
-  openPlayerSettings(): void {
-    this.showPlayerSettingsDialog = true;
-  }
-
-  onPlayerSettingsSave(settings: PlayerSettings): void {
-    const playerId = this.authService.getPlayerId();
-    if (!playerId) {
-      this.notification.error('Not authenticated. Please rejoin the game.');
-      return;
-    }
-
-    this.apiService.updatePlayerNameAndRole(playerId, settings.name, settings.role).subscribe({
-      next: () => {
-        this.notification.success('Your name and role have been updated');
-        this.showPlayerSettingsDialog = false;
-        // Refresh game data
-        const gameId = this.route.snapshot.paramMap.get('gameId');
-        if (gameId) {
-          this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-          // Update current player when game data refreshes
-          const playerId = this.authService.getPlayerId();
-          if (playerId) {
-            this.currentPlayer$ = this.game$.pipe(
-              map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
-            );
-          }
-        }
+  async openPlayerSettings(): Promise<void> {
+    const current = await firstValueFrom(this.currentPlayer$);
+    const dialogRef = this.dialog.open(PlayerSettingsDialogComponent, {
+      width: '480px',
+      data: {
+        currentName: current?.name ?? '',
+        currentRole: (current?.role as any) ?? 'PLAYER',
       },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to update settings');
-      },
+      disableClose: false,
+      autoFocus: true,
+      restoreFocus: true,
     });
+
+    const result: PlayerSettings | undefined = await firstValueFrom(dialogRef.afterClosed());
+    if (result) {
+      const playerId = this.authService.getPlayerId();
+      if (!playerId) {
+        this.notification.error('Not authenticated. Please rejoin the game.');
+        return;
+      }
+
+      this.apiService.updatePlayerNameAndRole(playerId, result.name, result.role).subscribe({
+        next: () => {
+          this.notification.success('Your name and role have been updated');
+          // Refresh game data
+          const gameId = this.route.snapshot.paramMap.get('gameId');
+          if (gameId) {
+            this.game$ = this.apiService.get<Game>(`game/${gameId}`);
+            // Update current player when game data refreshes
+            const playerId2 = this.authService.getPlayerId();
+            if (playerId2) {
+              this.currentPlayer$ = this.game$.pipe(
+                map(game => game.players?.find(player => player.id === parseInt(playerId2)) || undefined)
+              );
+            }
+          }
+        },
+        error: (err) => {
+          this.notification.error(err.error?.message || 'Failed to update settings');
+        },
+      });
+    }
   }
 
-  onPlayerSettingsCancel(): void {
-    console.log('🚫 Lobby onPlayerSettingsCancel called');
-    this.showPlayerSettingsDialog = false;
-    console.log('🚫 showPlayerSettingsDialog set to false');
-  }
+
 
   formatRoleDisplay(role: string): string {
     return role || 'PLAYER';

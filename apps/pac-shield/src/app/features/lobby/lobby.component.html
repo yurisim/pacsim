@@ -318,11 +318,4 @@
     </div>
   </div>
 
-  <app-player-settings-dialog
-    [visible]="showPlayerSettingsDialog"
-    [currentName]="(currentPlayer$ | async)?.name || ''"
-    [currentRole]="(currentPlayer$ | async)?.role || 'PLAYER'"
-    (save)="onPlayerSettingsSave($event)"
-    (cancelled)="onPlayerSettingsCancel()"
-  ></app-player-settings-dialog>
 }
