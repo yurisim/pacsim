@@ -191,11 +191,13 @@
             class="flex flex-col items-center gap-2 w-full"
           >
             <mat-form-field appearance="outline" class="w-full">
+              <mat-label>4-Digit PIN</mat-label>
               <span matPrefix class="material-symbols-outlined mr-2">pin</span>
               <input
                 matInput
                 formControlName="pin"
                 placeholder="4-digit PIN"
+                aria-label="PIN"
                 maxlength="4"
                 inputmode="numeric"
                 pattern="[0-9]*"
