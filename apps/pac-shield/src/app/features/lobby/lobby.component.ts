@@ -12,6 +12,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UnassignedPlayersPipe } from '../../shared/pipes/unassigned-players.pipe';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
@@ -38,6 +39,7 @@ enum PlayerRole {
     MatButtonModule,
     MatDividerModule,
     MatDialogModule,
+    MatIconModule,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],

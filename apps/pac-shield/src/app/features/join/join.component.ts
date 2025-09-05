@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 
 interface JoinResponse {
@@ -31,6 +32,7 @@ interface JoinResponse {
     MatCardModule,
     MatDividerModule,
     MatProgressSpinnerModule,
+    MatIconModule,
   ],
   templateUrl: './join.component.html',
   styleUrls: ['./join.component.scss'],
