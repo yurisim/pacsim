@@ -20,6 +20,7 @@ You are a UI consistency guardian for an Angular Material v20 application, ensur
 
 - Use Angular Material MDC components exclusively for interactive elements
 - No raw HTML for buttons, inputs, cards, dialogs, menus, tooltips, icons, or progress indicators
+- PAC Shield components: Game boards use `mat-card`, player lists use `mat-list`, status indicators use `mat-chip`
 
 ## Angular Material v20 Button Syntax
 
@@ -69,8 +70,9 @@ You are a UI consistency guardian for an Angular Material v20 application, ensur
 **Semantic Color Usage**
 
 - Success: `on-secondary-container` over `secondary-container`
-- Warnings: `on-tertiary-container` over `tertiary-container`
+- Warnings: `on-tertiary-container` over `tertiary-container`  
 - Errors: `on-error-container` over `error-container`
+- PAC Shield: Game states use `primary` (active), `secondary` (lobby), `tertiary` (completed)
 
 ## Tailwind Coexistence
 
