@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatDialogRef } from '@angular/material/dialog';
 import {
   FormControl,
   FormGroup,
@@ -36,13 +37,22 @@ import {
           </select>
         </div>
 
-        <button
-          type="submit"
-          [disabled]="form.invalid"
-          class="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
-        >
-          Join
-        </button>
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            [disabled]="form.invalid"
+            class="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
+          >
+            Join
+          </button>
+          <button
+            type="button"
+            (click)="cancel()"
+            class="px-4 py-2 rounded border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </form>
   `,
@@ -51,6 +61,7 @@ export class JoinTeamDialogComponent implements OnInit {
   @Input() roles: string[] = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
   @Output() submitJoin = new EventEmitter<{ name: string; role: string; sessionId: string }>();
 
+  private dialogRef = inject(MatDialogRef<JoinTeamDialogComponent, { name: string; role: string; sessionId: string }>, { optional: true });
   form!: FormGroup;
 
   ngOnInit(): void {
@@ -65,7 +76,18 @@ export class JoinTeamDialogComponent implements OnInit {
 
   submit(): void {
     if (this.form.valid) {
-      this.submitJoin.emit(this.form.value as { name: string; role: string; sessionId: string });
+      const value = this.form.value as { name: string; role: string; sessionId: string };
+      if (this.dialogRef) {
+        this.dialogRef.close(value);
+      } else {
+        this.submitJoin.emit(value);
+      }
+    }
+  }
+
+  cancel(): void {
+    if (this.dialogRef) {
+      this.dialogRef.close();
     }
   }
 }
