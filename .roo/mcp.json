@@ -23,7 +23,8 @@
         "nx-mcp@latest"
       ],
       "alwaysAllow": [
-        "nx_workspace"
+        "nx_workspace",
+        "nx_current_running_tasks_details"
       ]
     }
   }
