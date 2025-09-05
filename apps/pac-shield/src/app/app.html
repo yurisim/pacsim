@@ -1,34 +1,55 @@
-<mat-toolbar class="flex justify-between">
-  <div class="flex items-center">
-    <mat-icon fontIcon="security" class="mr-3 text-primary" aria-hidden="true"></mat-icon>
-    <h1 class="app-title text-primary font-bold text-2xl">
+<mat-toolbar role="banner">
+  <div class="flex items-center gap-3">
+    <mat-icon
+      fontIcon="security"
+      style="color: var(--mat-sys-primary)"
+      aria-hidden="true">
+    </mat-icon>
+    <h1 class="text-xl font-medium m-0" style="color: var(--mat-sys-on-surface)">
       <span class="hidden sm:inline">{{ title }}</span>
       <span class="sm:hidden">OPS</span>
     </h1>
   </div>
-  <div>
-    <div class="flex items-center gap-4">
-      @if (ws.connectionStatus$ | async) {
-        <div class="flex items-center text-green-500">
-          <mat-icon fontIcon="wifi" class="mr-2" aria-hidden="true"></mat-icon>
-          <span>Connected</span>
-        </div>
-      } @else {
-        <div class="flex items-center text-red-500">
-          <mat-icon fontIcon="signal_wifi_off" class="mr-2" aria-hidden="true"></mat-icon>
-          <span>Disconnected</span>
-        </div>
-      }
-      <button mat-icon-button routerLink="/" aria-label="Home">
-        <mat-icon fontIcon="home" aria-hidden="true"></mat-icon>
+
+  <div class="flex items-center gap-2">
+    <!-- Connection Status -->
+    @if (ws.connectionStatus$ | async) {
+      <div class="flex items-center gap-2" style="color: var(--mat-sys-tertiary)">
+        <mat-icon fontIcon="wifi" aria-hidden="true"></mat-icon>
+        <span class="text-sm hidden md:inline">Connected</span>
+      </div>
+    } @else {
+      <div class="flex items-center gap-2" style="color: var(--mat-sys-error)">
+        <mat-icon fontIcon="signal_wifi_off" aria-hidden="true"></mat-icon>
+        <span class="text-sm hidden md:inline">Disconnected</span>
+      </div>
+    }
+
+    <!-- Theme Toggle Button -->
+       <app-theme-toggle></app-theme-toggle>
+
+
+    <!-- Home Button -->
+    <button
+      mat-icon-button
+      routerLink="/"
+      aria-label="Navigate to home page"
+      matTooltip="Home">
+      <mat-icon fontIcon="home"></mat-icon>
+    </button>
+
+    <!-- Logout Button -->
+    @if (auth.isAuthenticated() && auth.getGameId()) {
+      <button
+        mat-raised-button
+        color="warn"
+        (click)="onLogout()"
+        class="ml-2"
+        aria-label="Logout from current game">
+        <mat-icon fontIcon="logout" class="mr-2"></mat-icon>
+        <span class="hidden md:inline">Logout</span>
       </button>
-      @if (auth.isAuthenticated() && auth.getGameId()) {
-        <button mat-raised-button color="warn" (click)="onLogout()">
-          <mat-icon fontIcon="logout" class="mr-2" aria-hidden="true"></mat-icon>
-          Logout
-        </button>
-      }
-    </div>
+    }
   </div>
 </mat-toolbar>
 
