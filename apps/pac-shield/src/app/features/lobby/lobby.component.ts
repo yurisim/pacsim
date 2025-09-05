@@ -1,28 +1,20 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
-import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
 import { EMPTY, Observable, map } from 'rxjs';
-import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
 import { WebSocketService } from '../../shared/services/websocket.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { NotificationService } from '../../shared/services/notification.service';
 import { UnassignedPlayersPipe } from '../../shared/pipes/unassigned-players.pipe';
-import { TagModule } from 'primeng/tag';
-import { ChipModule } from 'primeng/chip';
-import { AvatarModule } from 'primeng/avatar';
-import { BadgeModule } from 'primeng/badge';
-import { DividerModule } from 'primeng/divider';
-import { FieldsetModule } from 'primeng/fieldset';
+import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
+
 
 enum PlayerRole {
   PLAYER = 'PLAYER',
@@ -31,38 +23,29 @@ enum PlayerRole {
   STRATEGIST = 'STRATEGIST',
 }
 
+
+
 @Component({
   selector: 'app-lobby',
   standalone: true,
   imports: [
     CommonModule,
-    CardModule,
-    ButtonModule,
     ClipboardModule,
-    ToastModule,
-    DynamicDialogModule,
-    InputTextModule,
-    AutoCompleteModule,
     ReactiveFormsModule,
-    PlayerSettingsDialogComponent,
     UnassignedPlayersPipe,
-    TagModule,
-    ChipModule,
-    AvatarModule,
-    BadgeModule,
-    DividerModule,
-    FieldsetModule,
+    PlayerSettingsDialogComponent,
+    MatCardModule,
+    MatButtonModule,
+    MatDividerModule,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
-  providers: [MessageService, DialogService],
 })
 export class LobbyComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private clipboard = inject(Clipboard);
-  private messageService = inject(MessageService);
-  private dialogService = inject(DialogService);
+  private notification = inject(NotificationService);
   private webSocketService = inject(WebSocketService);
   private authService = inject(AuthService);
 
@@ -100,31 +83,19 @@ export class LobbyComponent implements OnInit {
 
   copyRoomCode(roomCode: string): void {
     this.clipboard.copy(roomCode);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Copied',
-      detail: 'Room code copied to clipboard',
-    });
+    this.notification.success('Room code copied to clipboard');
   }
 
   openJoinTeamDialog(team: Team): void {
     const playerId = this.authService.getPlayerId();
     if (!playerId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Not Authenticated',
-        detail: 'Please rejoin the game.',
-      });
+      this.notification.error('Not authenticated. Please rejoin the game.');
       return;
     }
 
     this.apiService.joinTeam(playerId, team.id!).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: `Joined ${team.name}`,
-        });
+        this.notification.success(`Joined ${team.name}`);
         // Refresh game data
         const gameId = this.route.snapshot.paramMap.get('gameId');
         if (gameId) {
@@ -139,11 +110,7 @@ export class LobbyComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Join Failed',
-          detail: err.error?.message || 'Failed to join team',
-        });
+        this.notification.error(err.error?.message || 'Failed to join team');
       },
     });
   }
@@ -151,21 +118,13 @@ export class LobbyComponent implements OnInit {
   leaveCurrentTeam(): void {
     const playerId = this.authService.getPlayerId();
     if (!playerId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Not Authenticated',
-        detail: 'Please rejoin the game.',
-      });
+      this.notification.error('Not authenticated. Please rejoin the game.');
       return;
     }
 
     this.apiService.leaveTeam(playerId).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Left current team',
-        });
+        this.notification.success('Left current team');
         // Refresh game data
         const gameId = this.route.snapshot.paramMap.get('gameId');
         if (gameId) {
@@ -180,11 +139,7 @@ export class LobbyComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Leave Failed',
-          detail: err.error?.message || 'Failed to leave team',
-        });
+        this.notification.error(err.error?.message || 'Failed to leave team');
       },
     });
   }
@@ -196,21 +151,13 @@ export class LobbyComponent implements OnInit {
   onPlayerSettingsSave(settings: PlayerSettings): void {
     const playerId = this.authService.getPlayerId();
     if (!playerId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Not Authenticated',
-        detail: 'Please rejoin the game.',
-      });
+      this.notification.error('Not authenticated. Please rejoin the game.');
       return;
     }
 
     this.apiService.updatePlayerNameAndRole(playerId, settings.name, settings.role).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Settings Updated',
-          detail: 'Your name and role have been updated',
-        });
+        this.notification.success('Your name and role have been updated');
         this.showPlayerSettingsDialog = false;
         // Refresh game data
         const gameId = this.route.snapshot.paramMap.get('gameId');
@@ -226,11 +173,7 @@ export class LobbyComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Update Failed',
-          detail: err.error?.message || 'Failed to update settings',
-        });
+        this.notification.error(err.error?.message || 'Failed to update settings');
       },
     });
   }
@@ -247,30 +190,30 @@ export class LobbyComponent implements OnInit {
 
   getTeamTypeInfo(team: Team): { icon: string; severity: 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast'; color: string } {
     if (!team.type) {
-      return { icon: 'pi pi-users', severity: 'secondary', color: 'gray' };
+      return { icon: 'group', severity: 'secondary', color: 'gray' };
     }
 
     switch (team.type) {
       case 'CAOC':
-        return { icon: 'pi pi-sitemap', severity: 'info', color: 'blue' };
+        return { icon: 'account_tree', severity: 'info', color: 'blue' };
       case 'CSPOC':
-        return { icon: 'pi pi-globe', severity: 'contrast', color: 'purple' };
+        return { icon: 'public', severity: 'contrast', color: 'purple' };
       case 'MOB_KADENA':
-        return { icon: 'pi pi-flag-fill', severity: 'success', color: 'green' };
+        return { icon: 'flag', severity: 'success', color: 'green' };
       case 'MOB_ANDERSEN':
-        return { icon: 'pi pi-compass', severity: 'success', color: 'teal' };
+        return { icon: 'explore', severity: 'success', color: 'teal' };
       case 'MOB_YOKOTA':
-        return { icon: 'pi pi-send', severity: 'success', color: 'cyan' };
+        return { icon: 'send', severity: 'success', color: 'cyan' };
       case 'MOB_OSAN':
-        return { icon: 'pi pi-shield', severity: 'success', color: 'indigo' };
+        return { icon: 'shield', severity: 'success', color: 'indigo' };
       case 'MOB_JBPHH':
-        return { icon: 'pi pi-star', severity: 'success', color: 'blue' };
+        return { icon: 'star', severity: 'success', color: 'blue' };
       case 'MEDCOM':
-        return { icon: 'pi pi-heart', severity: 'danger', color: 'red' };
+        return { icon: 'favorite', severity: 'danger', color: 'red' };
       case 'GM':
-        return { icon: 'pi pi-cog', severity: 'warn', color: 'orange' };
+        return { icon: 'settings', severity: 'warn', color: 'orange' };
       default:
-        return { icon: 'pi pi-users', severity: 'secondary', color: 'gray' };
+        return { icon: 'group', severity: 'secondary', color: 'gray' };
     }
   }
 

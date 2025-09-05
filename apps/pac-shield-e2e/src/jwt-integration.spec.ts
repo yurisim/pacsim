@@ -15,10 +15,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for game creation and extract the room code from the display
@@ -57,10 +54,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('ExpiredUser');
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby
@@ -97,10 +91,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('ConflictTestGM');
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -111,7 +102,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // First, join as ConflictUser to create the player
     await page.goto('/join');
     await page.fill('input[placeholder="Room Code"]', roomCode!);
-    await expect(page.locator('.pi-check')).toBeVisible(); // Wait for validation
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible(); // Wait for validation
     await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
 
@@ -123,7 +114,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.evaluate(() => localStorage.clear());
     await page.goto('/join');
     await page.fill('input[placeholder="Room Code"]', roomCode!);
-    await expect(page.locator('.pi-check')).toBeVisible(); // Wait for validation
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible(); // Wait for validation
     await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
 
@@ -133,14 +124,10 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     ).toBeVisible();
 
     // Should show OTP component
-    await expect(page.locator('p-inputOtp')).toBeVisible();
+    await expect(page.getByLabel(/pin/i)).toBeVisible();
 
     // Enter wrong PIN
-    const otpInputs = page.locator('p-inputOtp input');
-    await otpInputs.nth(0).fill('9');
-    await otpInputs.nth(1).fill('9');
-    await otpInputs.nth(2).fill('9');
-    await otpInputs.nth(3).fill('9');
+    await page.getByLabel(/pin/i).fill('9999');
 
     await page.getByRole('button', { name: /verify pin/i }).click();
 
@@ -160,10 +147,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('OriginalUser');
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -177,7 +161,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     await page.fill('input[placeholder="Room Code"]', roomCode!);
-    await expect(page.locator('.pi-check')).toBeVisible();
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
     await page.fill('input[placeholder="Player Name"]', 'OriginalUser');
     await page.getByRole('button', { name: /join/i }).click();
 
@@ -218,19 +202,19 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Type less than 4 characters - no validation yet
     await roomInput.fill('ABC');
-    await expect(page.locator('.pi-spinner')).toBeHidden();
-    await expect(page.locator('.pi-check')).toBeHidden();
-    await expect(page.locator('.pi-times')).toBeHidden();
+    await expect(page.locator('mat-progress-spinner')).toHaveCount(0);
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toHaveCount(0);
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'cancel' })).toHaveCount(0);
 
     // Type 4 characters with invalid code
     await roomInput.fill('ABCD');
 
     // Should show spinner while validating
-    await expect(page.locator('.pi-spinner')).toBeVisible();
+    await expect(page.locator('mat-progress-spinner')).toBeVisible();
 
     // Should eventually show error
-    await expect(page.locator('.pi-times')).toBeVisible();
-    await expect(page.locator('.pi-spinner')).toBeHidden();
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'cancel' })).toBeVisible();
+    await expect(page.locator('mat-progress-spinner')).toHaveCount(0);
 
     // Error message should appear
     await expect(page.getByText('Invalid room code')).toBeVisible();
@@ -255,10 +239,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('StateTestGM');
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -279,7 +260,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
 
     // After validation succeeds
-    await expect(page.locator('.pi-check')).toBeVisible();
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
 
     // Player name should appear and join button should be enabled after filling name
     await page.fill('input[placeholder="Player Name"]', 'StateTestUser');
@@ -305,10 +286,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('FormTestGM');
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -328,7 +306,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await roomInput.fill(roomCode!);
 
     // After validation, room code should still be there
-    await expect(page.locator('.pi-check')).toBeVisible();
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
     await expect(roomInput).toHaveValue(roomCode!);
 
     // Player name field appears and can be filled

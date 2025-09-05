@@ -1,40 +1,36 @@
-<p-toolbar>
-  <div class="p-toolbar-group-start flex items-center">
-    <i class="mi mi-2xl mr-3 text-primary">security</i>
+<mat-toolbar class="flex justify-between">
+  <div class="flex items-center">
+    <span class="material-symbols-outlined mr-3 text-primary">security</span>
     <h1 class="app-title text-primary font-bold text-2xl">
       <span class="hidden sm:inline">{{ title }}</span>
       <span class="sm:hidden">OPS</span>
     </h1>
   </div>
-  <div class="p-toolbar-group-end">
+  <div>
     <div class="flex items-center gap-4">
       @if (ws.connectionStatus$ | async) {
-      <div class="flex items-center text-green-500">
-        <i class="pi pi-wifi mr-2"></i>
-        <span>Connected</span>
-      </div>
+        <div class="flex items-center text-green-500">
+          <span class="material-symbols-outlined mr-2">wifi</span>
+          <span>Connected</span>
+        </div>
       } @else {
-      <div class="flex items-center text-red-500">
-        <i class="pi pi-times mr-2"></i>
-        <span>Disconnected</span>
-      </div>
+        <div class="flex items-center text-red-500">
+          <span class="material-symbols-outlined mr-2">signal_wifi_off</span>
+          <span>Disconnected</span>
+        </div>
       }
-      <p-button
-        icon="pi pi-home"
-        styleClass="p-button-secondary"
-        routerLink="/"
-      ></p-button>
+      <button mat-icon-button routerLink="/" aria-label="Home">
+        <span class="material-symbols-outlined">home</span>
+      </button>
       @if (auth.isAuthenticated() && auth.getGameId()) {
-      <p-button
-        label="Logout"
-        icon="pi pi-sign-out"
-        (onClick)="onLogout()"
-        styleClass="p-button-danger"
-      ></p-button>
+        <button mat-raised-button color="warn" (click)="onLogout()">
+          <span class="material-symbols-outlined mr-2">logout</span>
+          Logout
+        </button>
       }
     </div>
   </div>
-</p-toolbar>
+</mat-toolbar>
 
 <main class="app-content">
   <router-outlet></router-outlet>

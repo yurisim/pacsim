@@ -1,10 +1,10 @@
 import { Component, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputOtpModule } from 'primeng/inputotp';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 
 export interface GameMasterInfo {
   lastName: string;
@@ -17,10 +17,10 @@ export interface GameMasterInfo {
   imports: [
     CommonModule,
     FormsModule,
-    ButtonModule,
-    CardModule,
-    InputTextModule,
-    InputOtpModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
   ],
   templateUrl: './game-master-setup.component.html',
   styleUrls: ['./game-master-setup.component.scss'],

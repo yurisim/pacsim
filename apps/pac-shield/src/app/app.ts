@@ -1,14 +1,14 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { ToolbarModule } from 'primeng/toolbar';
 import { WebSocketService } from './shared/services/websocket.service';
 import { AuthService } from './shared/services/auth.service';
-
-import { ButtonModule } from 'primeng/button';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-  imports: [RouterModule, ToolbarModule, AsyncPipe, CommonModule, ButtonModule],
+  imports: [RouterModule, MatToolbarModule, AsyncPipe, CommonModule, MatButtonModule, MatSnackBarModule],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',

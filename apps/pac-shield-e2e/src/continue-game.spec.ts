@@ -9,16 +9,13 @@ test.describe('Continue Game functionality', () => {
 
     // Create a game
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    
+
     // Wait for Game Master Setup form to appear
     await expect(page.getByText('Game Master Setup')).toBeVisible();
-    
+
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for game creation and extract the room code from the display
@@ -35,7 +32,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByText('Continue your game session')).toBeVisible();
 
     // Verify avatar with player initial
-    const avatar = page.locator('p-avatar');
+    const avatar = page.locator('.w-10.h-10.rounded-full');
     await expect(avatar).toBeVisible();
     await expect(avatar).toContainText('T');
 
@@ -60,16 +57,13 @@ test.describe('Continue Game functionality', () => {
     // Create a game first
     await page.goto('/');
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    
+
     // Wait for Game Master Setup form to appear
     await expect(page.getByText('Game Master Setup')).toBeVisible();
-    
+
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('GameMaster');
-    await page.locator('p-inputotp input').first().fill('5');
-    await page.locator('p-inputotp input').nth(1).fill('6');
-    await page.locator('p-inputotp input').nth(2).fill('7');
-    await page.locator('p-inputotp input').nth(3).fill('8');
+    await page.getByLabel('4-Digit PIN').fill('5678');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -79,12 +73,12 @@ test.describe('Continue Game functionality', () => {
 
     // Navigate to join page in a different context
     await page.goto('/join');
-    
+
     // Test manual join
     await page.fill('input[placeholder="Room Code"]', roomCode!);
 
     // Wait for room validation
-    await expect(page.locator('.pi-check')).toBeVisible();
+    await expect(page.locator('.material-symbols-outlined', { hasText: 'check_circle' })).toBeVisible();
 
     // Player name should appear
     await expect(page.locator('input[placeholder="Player Name"]')).toBeVisible();
@@ -138,7 +132,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
 
     // Form should be in compact layout (400px width)
-    const card = page.locator('p-card');
+    const card = page.locator('mat-card');
     await expect(card).toHaveClass(/w-\[400px\]/);
   });
 
@@ -149,16 +143,13 @@ test.describe('Continue Game functionality', () => {
     const userName = 'LayoutTest';
 
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    
+
     // Wait for Game Master Setup form to appear
     await expect(page.getByText('Game Master Setup')).toBeVisible();
-    
+
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     await expect(page).toHaveURL(/\/lobby\//);
@@ -170,7 +161,7 @@ test.describe('Continue Game functionality', () => {
     await page.getByRole('button', { name: 'Join' }).click();
 
     // Should show expanded layout (450px width) when continue option is present
-    const card = page.locator('p-card');
+    const card = page.locator('mat-card');
     await expect(card).toHaveClass(/w-\[450px\]/);
 
     // Verify continue section styling

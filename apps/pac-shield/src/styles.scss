@@ -1,61 +1,55 @@
-@tailwind base;
+@use '@angular/material' as mat;
+
 @tailwind components;
 @tailwind utilities;
 
-/* You can add global styles to this file, and also import other style files */
+// Define both dark and light themes
+$dark-theme: (
+  color: (
+    primary: mat.$magenta-palette,
+    tertiary: mat.$green-palette,
+    theme-type: dark,
+  ),
+  typography: Roboto,
+  density: 0,
+);
 
-/* Google Material Icons classes styled to match PrimeNG icons */
-.material-icons,
-.material-symbols-outlined {
-  font-size: 1rem;
-  line-height: 1;
-  vertical-align: middle;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+$light-theme: (
+  color: (
+    primary: mat.$magenta-palette,
+    tertiary: mat.$green-palette,
+    theme-type: light,
+  ),
+  typography: Roboto,
+  density: 0,
+);
 
-/* Utility classes for consistent icon sizing */
-.mi {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 1rem;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-flex;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  vertical-align: middle;
-  align-items: center;
-  justify-content: center;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Size variants to match PrimeNG icon sizes */
-.mi-sm {
-  font-size: 0.875rem;
-}
-.mi-lg {
-  font-size: 1.25rem;
-}
-.mi-xl {
-  font-size: 1.5rem;
-}
-.mi-2xl {
-  font-size: 1.75rem;
-}
-.mi-3xl {
-  font-size: 2rem;
+// Default theme (dark mode)
+html {
+  height: 100%;
 }
 
 html,
 body {
-  height: 100%;
+  @include mat.theme($dark-theme);
+  background-color: #121212; // Dark background
+  color: #ffffff; // Light text for dark background
+  min-height: 100%;
 }
+
+// Light mode theme - applied when .light-mode class is present
+body.light-mode {
+  @include mat.theme($light-theme);
+  background-color: #ffffff; // Light background
+  color: #000000; // Dark text for light background
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
+  min-width: 500px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

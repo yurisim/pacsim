@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormControl,
@@ -6,71 +6,66 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-join-team-dialog',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    InputTextModule,
-    AutoCompleteModule,
-    ButtonModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="p-4">
       <div class="flex flex-col gap-4">
-        <input pInputText formControlName="name" placeholder="Enter your name" />
-        <p-autocomplete
-          formControlName="role"
-          [suggestions]="filteredRoles"
-          (completeMethod)="searchRoles($event)"
-          [dropdown]="true"
-          appendTo="body"
-          placeholder="Select your role"
-        ></p-autocomplete>
-        <p-button
-          label="Join"
+        <div>
+          <label for="jt-name" class="block text-sm font-medium mb-1">Name</label>
+          <input
+            id="jt-name"
+            type="text"
+            formControlName="name"
+            placeholder="Enter your name"
+            class="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label for="jt-role" class="block text-sm font-medium mb-1">Role</label>
+          <select
+            id="jt-role"
+            formControlName="role"
+            class="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <button
           type="submit"
           [disabled]="form.invalid"
-        ></p-button>
+          class="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
+        >
+          Join
+        </button>
       </div>
     </form>
   `,
 })
 export class JoinTeamDialogComponent implements OnInit {
-  private ref = inject(DynamicDialogRef);
-  private config = inject(DynamicDialogConfig);
+  @Input() roles: string[] = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
+  @Output() submitJoin = new EventEmitter<{ name: string; role: string; sessionId: string }>();
 
   form!: FormGroup;
-  roles: string[] = [];
-  filteredRoles: string[] = [];
 
   ngOnInit(): void {
-    this.roles = this.config.data.roles;
-    this.filteredRoles = [...this.roles];
+    const sessionId = sessionStorage.getItem('sessionId') ?? '';
+
     this.form = new FormGroup({
       name: new FormControl('', Validators.required),
-      role: new FormControl(this.roles[0], Validators.required),
-      sessionId: new FormControl(
-        sessionStorage.getItem('sessionId') ?? '',
-        Validators.required
-      ),
+      role: new FormControl(this.roles[0] ?? 'PLAYER', Validators.required),
+      sessionId: new FormControl(sessionId, Validators.required),
     });
   }
 
   submit(): void {
-    this.ref.close(this.form.value);
-  }
-
-  searchRoles(event: { query: string }): void {
-    const query = event.query.toLowerCase();
-    this.filteredRoles = this.roles.filter((role) =>
-      role.toLowerCase().includes(query)
-    );
+    if (this.form.valid) {
+      this.submitJoin.emit(this.form.value as { name: string; role: string; sessionId: string });
+    }
   }
 }

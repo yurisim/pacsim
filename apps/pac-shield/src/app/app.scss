@@ -1,13 +1,12 @@
-.app-title {
-  color: var(--primary-color);
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-p-toolbar {
-  border: none !important;
-  outline: none !important;
-}
-
-:host ::ng-deep .p-toolbar {
-  border: none !important;
-  outline: none !important;
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }

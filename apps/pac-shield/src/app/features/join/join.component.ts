@@ -5,15 +5,12 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Player } from '../../models/player.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { CardModule } from 'primeng/card';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { InputOtpModule } from 'primeng/inputotp';
-import { AvatarModule } from 'primeng/avatar';
-import { MessageModule } from 'primeng/message';
-import { DividerModule } from 'primeng/divider';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 
 interface JoinResponse {
@@ -27,16 +24,13 @@ interface JoinResponse {
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    ButtonModule,
-    InputTextModule,
-    CardModule,
-    InputGroupModule,
-    InputGroupAddonModule,
-    InputOtpModule,
-    AvatarModule,
-    MessageModule,
-    DividerModule,
     CommonModule,
+    MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatCardModule,
+    MatDividerModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './join.component.html',
   styleUrls: ['./join.component.scss'],

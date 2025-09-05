@@ -58,11 +58,7 @@ test.describe('Home create game flow', () => {
 
     // Fill GM form
     await page.getByLabel('Last Name').fill('TestGM');
-    const otp = page.locator('p-inputotp input');
-    await otp.nth(0).fill('1');
-    await otp.nth(1).fill('2');
-    await otp.nth(2).fill('3');
-    await otp.nth(3).fill('4');
+    await page.getByLabel('4-Digit PIN').fill('1234');
 
     await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -100,10 +96,8 @@ test.describe('Home create game flow', () => {
     await startBtn.click();
 
     // Error message should be displayed
-    // The Home component renders errorMessage in a div with class p-error
-    const errorLocator = page.locator('.p-error');
+    const errorLocator = page.getByText(/Failed to create a new game|Simulated failure/i);
     await expect(errorLocator).toBeVisible();
-    await expect(errorLocator).toContainText(/Failed to create a new game|Simulated failure/i);
 
     // GM setup should not be visible
     await expect(page.getByText('Game Master Setup')).toHaveCount(0);

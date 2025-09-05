@@ -1,8 +1,9 @@
-<p-toast position="top-center"></p-toast>
 @if (game$ | async; as game) {
   <div class="h-[calc(100vh-100px)]">
     <div class="flex flex-col items-center justify-center p-8">
       <h1 class="text-4xl font-bold mb-2">Game Lobby</h1>
+
+      <!-- Room Code -->
       <div class="flex flex-col items-center gap-2 mb-8">
         <h2 class="text-2xl">Room Code</h2>
         <div
@@ -14,7 +15,7 @@
           title="Copy Room Code"
         >
           <p class="text-7xl font-mono tracking-widest">{{ game.roomCode }}</p>
-          <i class="pi pi-copy text-4xl"></i>
+          <span class="material-symbols-outlined text-4xl">content_copy</span>
         </div>
         <p class="text-sm text-gray-500">Click to copy</p>
       </div>
@@ -23,24 +24,23 @@
         Game ID: <span class="font-mono">{{ game.id }}</span>
       </p>
 
-      <div class="mb-6 p-4 border-round-md border-1 surface-border flex flex-col items-center">
+      <!-- Current player quick actions -->
+      <div class="mb-6 p-4 border rounded flex flex-col items-center w-full max-w-xl">
         <div class="flex gap-2">
-          <p-button
-            label="Edit Name & Role"
-            icon="pi pi-user-edit"
-            (onClick)="openPlayerSettings()"
-          ></p-button>
+          <button mat-raised-button color="primary" (click)="openPlayerSettings()">
+            <span class="material-symbols-outlined mr-2">edit</span>
+            Edit Name & Role
+          </button>
           @if (currentPlayer$ | async; as currentPlayer) {
             @if (currentPlayer.teamId) {
-              <p-button
-                label="Leave Team"
-                icon="pi pi-sign-out"
-                severity="secondary"
-                (onClick)="leaveCurrentTeam()"
-              ></p-button>
+              <button mat-stroked-button color="warn" (click)="leaveCurrentTeam()">
+                <span class="material-symbols-outlined mr-2">logout</span>
+                Leave Team
+              </button>
             }
           }
         </div>
+
         @if (currentPlayer$ | async; as currentPlayer) {
           <div class="mt-3 text-sm text-gray-600 text-center">
             <strong>Name:</strong> {{ currentPlayer.name }} |
@@ -52,7 +52,8 @@
         }
       </div>
 
-      <div class="max-w-7xl mx-auto">
+      <div class="max-w-7xl mx-auto w-full">
+        <!-- Unassigned Players -->
         <div class="mb-8">
           <h3 class="text-2xl font-bold mb-4">Unassigned Players</h3>
           <div class="flex flex-wrap gap-4">
@@ -67,36 +68,44 @@
             }
           </div>
         </div>
+
         <!-- MOB Teams Section -->
-        <p-fieldset legend="Main Operating Bases (MOBs)" class="mb-8">
-          <p class="text-gray-600 mb-6">Main Operating Bases where aircraft and personnel deploy to establish Forward Operating Sites (FOS)</p>
+        <section class="mb-8">
+          <h3 class="text-xl font-semibold mb-2">Main Operating Bases (MOBs)</h3>
+          <p class="text-gray-600 mb-6">
+            Main Operating Bases where aircraft and personnel deploy to establish Forward Operating Sites (FOS)
+          </p>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             @for (team of getMOBTeams(game.teams || []); track team.id) {
-              <p-card class="h-full">
-                <ng-template #header>
-                  <div class="flex items-center justify-between p-4">
-                    <div class="flex items-center gap-3">
-                      <i [class]="getTeamTypeInfo(team).icon" class="text-xl text-gray-700"></i>
-                      <div>
-                        <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
-                        <span class="text-sm text-gray-600">{{ team.players?.length || 0 }} personnel</span>
-                      </div>
+              <mat-card class="h-full">
+                <!-- Card header -->
+                <div class="flex items-center justify-between p-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
+                         [style.background-color]="getTeamTypeInfo(team).color">
+                      <span class="material-symbols-outlined">
+                        {{ getTeamTypeInfo(team).icon }}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
+                      <span class="text-sm text-gray-600">{{ team.players?.length || 0 }} personnel</span>
                     </div>
                   </div>
-                </ng-template>
+                </div>
 
-                <div class="flex flex-col gap-4">
+                <mat-divider></mat-divider>
+
+                <div class="p-4 flex flex-col gap-4">
                   <!-- Personnel Tiles -->
                   @if (team.players && team.players.length > 0) {
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       @for (player of team.players; track player.id) {
                         <div class="flex flex-col items-center p-3 border border-gray-200 rounded-lg transition-colors">
-                          <p-avatar
-                            [label]="player.name.charAt(0).toUpperCase()"
-                            size="normal"
-                            shape="circle"
-                            class="mb-2">
-                          </p-avatar>
+                          <div class="mb-2 w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold bg-gray-500">
+                            {{ player.name.charAt(0).toUpperCase() }}
+                          </div>
                           <span class="text-xs font-medium text-center truncate w-full">{{ player.name }}</span>
                           <span class="text-xs text-gray-500">{{ formatRoleDisplay(player.role) }}</span>
                         </div>
@@ -104,185 +113,205 @@
                     </div>
                   } @else {
                     <div class="text-center text-gray-500 py-8">
-                      <i class="pi pi-users text-3xl mb-3 block opacity-50"></i>
+                      <span class="material-symbols-outlined text-3xl mb-3 block opacity-50">group</span>
                       <span class="text-sm">Awaiting personnel assignment</span>
                     </div>
                   }
 
                   <!-- Join Button -->
                   @if (currentPlayer$ | async; as currentPlayer) {
-                    <p-button
-                      [label]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team'"
-                      (onClick)="openJoinTeamDialog(team)"
-                      [severity]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'secondary' : 'primary'"
-                      [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
-                      [icon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'pi pi-check' : 'pi pi-plus'"
-                      class="w-full">
-                    </p-button>
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      class="w-full"
+                      (click)="openJoinTeamDialog(team)"
+                      [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
+                      <span class="material-symbols-outlined mr-2">
+                        {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add' }}
+                      </span>
+                      {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
+                    </button>
                   } @else {
-                    <p-button
-                      label="Join Team"
-                      icon="pi pi-plus"
-                      (onClick)="openJoinTeamDialog(team)"
-                      severity="primary"
-                      class="w-full">
-                    </p-button>
+                    <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
+                      <span class="material-symbols-outlined mr-2">add</span>
+                      Join Team
+                    </button>
                   }
                 </div>
-              </p-card>
+              </mat-card>
             }
           </div>
-        </p-fieldset>
+        </section>
 
-        <p-divider align="center">
-          <span class="flex items-center gap-2 bg-transparent">
-            <i class="pi pi-sitemap"></i>
-            Command & Control
-          </span>
-        </p-divider>
+        <!-- Command & Control -->
+        <mat-divider></mat-divider>
+        <div class="flex items-center gap-2 my-4">
+          <span class="material-symbols-outlined">account_tree</span>
+          <span class="font-semibold">Command & Control</span>
+        </div>
 
-        <!-- Command & Control Teams Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           @for (team of getCommandControlTeams(game.teams || []); track team.id) {
-            <p-card class="h-full">
-              <ng-template #header>
-                <div class="flex items-center justify-between p-4">
-                  <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                         [style.background-color]="getTeamTypeInfo(team).color">
-                      <i [class]="getTeamTypeInfo(team).icon"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
-                      <p-tag [value]="team.type || 'COMMAND'" [severity]="getTeamTypeInfo(team).severity"></p-tag>
-                    </div>
+            <mat-card class="h-full">
+              <div class="flex items-center justify-between p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
+                       [style.background-color]="getTeamTypeInfo(team).color">
+                    <span class="material-symbols-outlined">
+                      {{ getTeamTypeInfo(team).icon }}
+                    </span>
                   </div>
-                  @if (team.players && team.players.length > 0) {
-                    <p-badge [value]="team.players.length" [severity]="getTeamTypeInfo(team).severity"></p-badge>
-                  }
+                  <div>
+                    <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                      {{ team.type || 'COMMAND' }}
+                    </span>
+                  </div>
                 </div>
-              </ng-template>
+                @if (team.players && team.players.length > 0) {
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    {{ team.players.length }}
+                  </span>
+                }
+              </div>
 
-              <div class="flex flex-col gap-3">
+              <mat-divider></mat-divider>
+
+              <div class="p-4 flex flex-col gap-3">
                 @if (team.players && team.players.length > 0) {
                   <div class="grid gap-2">
                     @for (player of team.players; track player.id) {
-                      <div class="flex items-center justify-between p-3 border border-surface-200 rounded-lg">
+                      <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                         <div class="flex items-center gap-2">
-                          <p-avatar
-                            [label]="player.name.charAt(0).toUpperCase()"
-                            size="normal"
-                            [style.background-color]="getTeamTypeInfo(team).color">
-                          </p-avatar>
+                          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
+                               [style.background-color]="getTeamTypeInfo(team).color">
+                            {{ player.name.charAt(0).toUpperCase() }}
+                          </div>
                           <span class="font-medium">{{ player.name }}</span>
                         </div>
-                        <p-tag [value]="formatRoleDisplay(player.role)" [severity]="getTeamTypeInfo(team).severity"></p-tag>
+                        <span
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                          {{ formatRoleDisplay(player.role) }}
+                        </span>
                       </div>
                     }
                   </div>
                 } @else {
                   <div class="text-center text-gray-500 py-6">
-                    <i [class]="getTeamTypeInfo(team).icon" class="text-3xl mb-3 block opacity-50"></i>
+                    <span class="material-symbols-outlined text-3xl mb-3 block opacity-50">
+                      {{ getTeamTypeInfo(team).icon }}
+                    </span>
                     <span class="text-sm">Awaiting team members</span>
                   </div>
                 }
 
                 @if (currentPlayer$ | async; as currentPlayer) {
-                  <p-button
-                    [label]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team'"
-                    (onClick)="openJoinTeamDialog(team)"
-                    [severity]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'secondary' : getTeamTypeInfo(team).severity"
-                    [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
-                    [icon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'pi pi-check' : 'pi pi-plus'"
-                    class="w-full">
-                  </p-button>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    class="w-full"
+                    (click)="openJoinTeamDialog(team)"
+                    [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
+                    <span class="material-symbols-outlined mr-2">
+                      {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add' }}
+                    </span>
+                    {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
+                  </button>
                 } @else {
-                  <p-button
-                    label="Join Team"
-                    icon="pi pi-plus"
-                    (onClick)="openJoinTeamDialog(team)"
-                    [severity]="getTeamTypeInfo(team).severity"
-                    class="w-full">
-                  </p-button>
+                  <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
+                    <span class="material-symbols-outlined mr-2">add</span>
+                    Join Team
+                  </button>
                 }
               </div>
-            </p-card>
+            </mat-card>
           }
         </div>
 
-        <p-divider align="center">
-          <span class="flex items-center gap-2 bg-transparent">
-            <i class="pi pi-heart"></i>
-            Support Teams
-          </span>
-        </p-divider>
+        <!-- Support Teams -->
+        <mat-divider></mat-divider>
+        <div class="flex items-center gap-2 my-4">
+          <span class="material-symbols-outlined">favorite</span>
+          <span class="font-semibold">Support Teams</span>
+        </div>
 
-        <!-- Support Teams Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           @for (team of getSupportTeams(game.teams || []); track team.id) {
-            <p-card class="h-full">
-              <ng-template #header>
-                <div class="flex items-center justify-between p-4 ">
-                  <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                         [style.background-color]="getTeamTypeInfo(team).color">
-                      <i [class]="getTeamTypeInfo(team).icon"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
-                      <p-tag [value]="team.type || 'SUPPORT'" [severity]="getTeamTypeInfo(team).severity"></p-tag>
-                    </div>
+            <mat-card class="h-full">
+              <div class="flex items-center justify-between p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
+                       [style.background-color]="getTeamTypeInfo(team).color">
+                    <span class="material-symbols-outlined">
+                      {{ getTeamTypeInfo(team).icon }}
+                    </span>
                   </div>
-                  @if (team.players && team.players.length > 0) {
-                    <p-badge [value]="team.players.length" [severity]="getTeamTypeInfo(team).severity"></p-badge>
-                  }
+                  <div>
+                    <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                      {{ team.type || 'SUPPORT' }}
+                    </span>
+                  </div>
                 </div>
-              </ng-template>
+                @if (team.players && team.players.length > 0) {
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    {{ team.players.length }}
+                  </span>
+                }
+              </div>
 
-              <div class="flex flex-col gap-3">
+              <mat-divider></mat-divider>
+
+              <div class="p-4 flex flex-col gap-3">
                 @if (team.players && team.players.length > 0) {
                   <div class="grid gap-2">
                     @for (player of team.players; track player.id) {
-                      <div class="flex items-center justify-between p-3 border border-surface-200 rounded-lg hover:bg-surface-50 transition-colors">
+                      <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div class="flex items-center gap-2">
-                          <p-avatar
-                            [label]="player.name.charAt(0).toUpperCase()"
-                            size="normal"
-                            [style.background-color]="getTeamTypeInfo(team).color">
-                          </p-avatar>
+                          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
+                               [style.background-color]="getTeamTypeInfo(team).color">
+                            {{ player.name.charAt(0).toUpperCase() }}
+                          </div>
                           <span class="font-medium">{{ player.name }}</span>
                         </div>
-                        <p-tag [value]="formatRoleDisplay(player.role)" [severity]="getTeamTypeInfo(team).severity"></p-tag>
+                        <span
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                          {{ formatRoleDisplay(player.role) }}
+                        </span>
                       </div>
                     }
                   </div>
                 } @else {
                   <div class="text-center text-gray-500 py-6">
-                    <i [class]="getTeamTypeInfo(team).icon" class="text-3xl mb-3 block opacity-50"></i>
+                    <span class="material-symbols-outlined text-3xl mb-3 block opacity-50">
+                      {{ getTeamTypeInfo(team).icon }}
+                    </span>
                     <span class="text-sm">Awaiting team members</span>
                   </div>
                 }
 
                 @if (currentPlayer$ | async; as currentPlayer) {
-                  <p-button
-                    [label]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team'"
-                    (onClick)="openJoinTeamDialog(team)"
-                    [severity]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'secondary' : getTeamTypeInfo(team).severity"
-                    [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
-                    [icon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'pi pi-check' : 'pi pi-plus'"
-                    class="w-full">
-                  </p-button>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    class="w-full"
+                    (click)="openJoinTeamDialog(team)"
+                    [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
+                    <span class="material-symbols-outlined mr-2">
+                      {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add' }}
+                    </span>
+                    {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
+                  </button>
                 } @else {
-                  <p-button
-                    label="Join Team"
-                    icon="pi pi-plus"
-                    (onClick)="openJoinTeamDialog(team)"
-                    [severity]="getTeamTypeInfo(team).severity"
-                    class="w-full">
-                  </p-button>
+                  <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
+                    <span class="material-symbols-outlined mr-2">add</span>
+                    Join Team
+                  </button>
                 }
               </div>
-            </p-card>
+            </mat-card>
           }
         </div>
       </div>
