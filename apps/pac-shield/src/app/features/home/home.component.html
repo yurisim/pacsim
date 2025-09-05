@@ -3,24 +3,24 @@
     (complete)="onGameMasterSetupComplete($event)"
   ></app-game-master-setup>
 } @else {
-  <div class="flex justify-center items-center h-[calc(100vh-100px)]">
-    <mat-card class="w-[450px] text-center">
-      <mat-card-header>
-        <mat-card-title>OPERATION: PACIFIC SHIELD</mat-card-title>
+  <div class="md-sys-bg-background min-h-[calc(100vh-100px)] flex justify-center items-center md-padding-lg">
+    <mat-card class="w-[450px] text-center md-sys-bg-surface-container md-shape-corner-lg md-elevation-2">
+      <mat-card-header class="md-padding-md">
+        <mat-card-title class="md-typescale-headline-small md-sys-color-on-surface">OPERATION: PACIFIC SHIELD</mat-card-title>
       </mat-card-header>
-      <mat-card-content>
+      <mat-card-content class="md-padding-lg">
         <div class="flex flex-col gap-4">
-          <button mat-raised-button color="primary" (click)="createGame()" [disabled]="isLoading">
+          <button mat-flat-button color="primary" (click)="createGame()" [disabled]="isLoading" class="interactive-surface">
             <span *ngIf="!isLoading">Start New Game</span>
             <span *ngIf="isLoading">Starting...</span>
           </button>
-          <button mat-stroked-button color="accent" (click)="navigateToJoin()">
+          <button mat-stroked-button color="primary" (click)="navigateToJoin()" class="interactive-surface">
             Join Game
           </button>
         </div>
 
         @if (errorMessage) {
-        <div class="mt-4 text-red-600">
+        <div class="mt-4 md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
           {{ errorMessage }}
         </div>
         }

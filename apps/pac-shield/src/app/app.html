@@ -1,50 +1,48 @@
-<mat-toolbar role="banner">
+<mat-toolbar class="app-toolbar" role="banner">
   <div class="flex items-center gap-3">
-    <mat-icon
-      fontIcon="security"
-      style="color: var(--mat-sys-primary)"
-      aria-hidden="true">
-    </mat-icon>
-    <h1 class="text-xl font-medium m-0" style="color: var(--mat-sys-on-surface)">
+    <mat-icon fontIcon="security" class="md-sys-color-primary" aria-hidden="true"></mat-icon>
+    <h1 class="text-xl font-medium m-0 md-sys-color-on-surface">
       <span class="hidden sm:inline">{{ title }}</span>
       <span class="sm:hidden">OPS</span>
     </h1>
   </div>
 
+  <span class="toolbar-spacer"></span>
+
   <div class="flex items-center gap-2">
     <!-- Connection Status -->
     @if (ws.connectionStatus$ | async) {
-      <div class="flex items-center gap-2" style="color: var(--mat-sys-tertiary)">
+      <div class="flex items-center gap-2 md-sys-color-tertiary">
         <mat-icon fontIcon="wifi" aria-hidden="true"></mat-icon>
         <span class="text-sm hidden md:inline">Connected</span>
       </div>
     } @else {
-      <div class="flex items-center gap-2" style="color: var(--mat-sys-error)">
+      <div class="flex items-center gap-2 md-sys-color-error">
         <mat-icon fontIcon="signal_wifi_off" aria-hidden="true"></mat-icon>
         <span class="text-sm hidden md:inline">Disconnected</span>
       </div>
     }
 
     <!-- Theme Toggle Button -->
-       <app-theme-toggle></app-theme-toggle>
-
+    <app-theme-toggle></app-theme-toggle>
 
     <!-- Home Button -->
     <button
       mat-icon-button
       routerLink="/"
       aria-label="Navigate to home page"
-      matTooltip="Home">
+      matTooltip="Home"
+      class="interactive-surface">
       <mat-icon fontIcon="home"></mat-icon>
     </button>
 
     <!-- Logout Button -->
     @if (auth.isAuthenticated() && auth.getGameId()) {
       <button
-        mat-raised-button
+        mat-flat-button
         color="warn"
         (click)="onLogout()"
-        class="ml-2"
+        class="ml-2 interactive-surface"
         aria-label="Logout from current game">
         <mat-icon fontIcon="logout" class="mr-2"></mat-icon>
         <span class="hidden md:inline">Logout</span>

@@ -50,19 +50,148 @@ body {
   min-height: 100%;
 }
 
-// Light mode theme - applied when .light-mode class is present
+ // Light mode theme - applied when .light-mode class is present
 body.light-mode {
   @include mat.theme($light-theme);
-  background-color: #ffffff; // Light background
-  color: #000000; // Dark text for light background
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
   min-height: 100%;
 }
 
 body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
-  min-width: 500px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+// Material 3 surface background for app toolbar
+.app-toolbar {
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  @include mat.elevation(2);
+}
+
+// App content area spacing and colors
+.app-content {
+  padding: clamp(12px, 2vw, 24px);
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+// Harmonized snackbar colors with Material 3 tokens
+// Uses CSS variables provided by Angular Material v20 (MDC under the hood)
+mat-mdc-snack-bar-container.snack-success {
+  --mdc-snackbar-container-color: var(--mat-sys-secondary-container);
+  --mdc-snackbar-supporting-text-color: var(--mat-sys-on-secondary-container);
+}
+
+mat-mdc-snack-bar-container.snack-info {
+  --mdc-snackbar-container-color: var(--mat-sys-tertiary-container);
+  --mdc-snackbar-supporting-text-color: var(--mat-sys-on-tertiary-container);
+}
+
+mat-mdc-snack-bar-container.snack-warn {
+  /* Fallback to tertiary if no dedicated "warning" tokens exist */
+  --mdc-snackbar-container-color: var(--mat-sys-warning-container, var(--mat-sys-tertiary-container));
+  --mdc-snackbar-supporting-text-color: var(--mat-sys-on-warning-container, var(--mat-sys-on-tertiary-container));
+}
+
+mat-mdc-snack-bar-container.snack-error {
+  --mdc-snackbar-container-color: var(--mat-sys-error-container);
+  --mdc-snackbar-supporting-text-color: var(--mat-sys-on-error-container);
+}
+
+/* ===========================
+   Material 3 utility classes
+   Maps Angular Material v20 CSS variables to simple utility classes
+   =========================== */
+
+/* Typography scales */
+.md-typescale-display-small { font: var(--mat-sys-display-small); }
+.md-typescale-headline-medium { font: var(--mat-sys-headline-medium); }
+.md-typescale-headline-small { font: var(--mat-sys-headline-small); }
+.md-typescale-title-medium { font: var(--mat-sys-title-medium); }
+.md-typescale-label-large { font: var(--mat-sys-label-large); }
+.md-typescale-label-medium { font: var(--mat-sys-label-medium); }
+.md-typescale-body-large { font: var(--mat-sys-body-large); }
+.md-typescale-body-medium { font: var(--mat-sys-body-medium); }
+.md-typescale-body-small { font: var(--mat-sys-body-small); }
+
+/* Paddings (Material comfortable spacing) */
+.md-padding-sm { padding: 8px; }
+.md-padding-md { padding: 12px; }
+.md-padding-lg { padding: 16px; }
+.md-padding-xl { padding: 24px; }
+
+/* Shapes (rounded corners) */
+.md-shape-corner-sm { border-radius: 8px; }
+.md-shape-corner-md { border-radius: 12px; }
+.md-shape-corner-lg { border-radius: 16px; }
+.md-shape-corner-full { border-radius: 9999px; }
+
+/* Elevation helpers */
+.md-elevation-1 { @include mat.elevation(1); }
+.md-elevation-2 { @include mat.elevation(2); }
+.md-elevation-3 { @include mat.elevation(3); }
+
+/* System color tokens - text color */
+.md-sys-color-primary { color: var(--mat-sys-primary); }
+.md-sys-color-secondary { color: var(--mat-sys-secondary); }
+.md-sys-color-tertiary { color: var(--mat-sys-tertiary); }
+.md-sys-color-error { color: var(--mat-sys-error); }
+
+.md-sys-color-on-surface { color: var(--mat-sys-on-surface); }
+.md-sys-color-on-surface-variant { color: var(--mat-sys-on-surface-variant); }
+.md-sys-color-on-background { color: var(--mat-sys-on-background); }
+
+.md-sys-color-on-primary-container { color: var(--mat-sys-on-primary-container); }
+.md-sys-color-on-secondary-container { color: var(--mat-sys-on-secondary-container); }
+.md-sys-color-on-tertiary-container { color: var(--mat-sys-on-tertiary-container); }
+.md-sys-color-on-error-container { color: var(--mat-sys-on-error-container); }
+
+.md-sys-color-outline { color: var(--mat-sys-outline); }
+/* Special case: when used as a 1px rule, color should tint the background */
+.md-sys-color-outline.h-px { background-color: var(--mat-sys-outline); }
+
+/* System color tokens - background */
+.md-sys-bg-background { background-color: var(--mat-sys-background); }
+.md-sys-bg-surface { background-color: var(--mat-sys-surface); }
+.md-sys-bg-surface-variant { background-color: var(--mat-sys-surface-variant); }
+.md-sys-bg-surface-container { background-color: var(--mat-sys-surface-container); }
+
+.md-sys-bg-primary-container { background-color: var(--mat-sys-primary-container); }
+.md-sys-bg-secondary-container { background-color: var(--mat-sys-secondary-container); }
+.md-sys-bg-tertiary-container { background-color: var(--mat-sys-tertiary-container); }
+.md-sys-bg-error-container { background-color: var(--mat-sys-error-container); }
+
+/* Interactive surface state (subtle hover/focus styles aligned with M3) */
+.interactive-surface {
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+  border-radius: inherit;
+}
+.interactive-surface:hover {
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+}
+.interactive-surface:active {
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
+}
+.interactive-surface:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--mat-sys-primary) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* Toolbar spacer utility for flex layout */
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+/* Mat form field density normalization in cards */
+.mat-mdc-form-field {
+  width: 100%;
 }

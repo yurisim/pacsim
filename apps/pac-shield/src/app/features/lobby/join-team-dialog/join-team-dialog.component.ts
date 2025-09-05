@@ -7,50 +7,36 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-join-team-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule],
   template: `
-    <form [formGroup]="form" (ngSubmit)="submit()" class="p-4">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="p-4 md-sys-bg-surface-container md-shape-corner-lg md-elevation-2">
       <div class="flex flex-col gap-4">
-        <div>
-          <label for="jt-name" class="block text-sm font-medium mb-1">Name</label>
-          <input
-            id="jt-name"
-            type="text"
-            formControlName="name"
-            placeholder="Enter your name"
-            class="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Name</mat-label>
+          <input matInput id="jt-name" type="text" formControlName="name" placeholder="Enter your name" />
+        </mat-form-field>
 
-        <div>
-          <label for="jt-role" class="block text-sm font-medium mb-1">Role</label>
-          <select
-            id="jt-role"
-            formControlName="role"
-            class="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
-          </select>
-        </div>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Role</mat-label>
+          <mat-select id="jt-role" formControlName="role">
+            <mat-option *ngFor="let r of roles" [value]="r">{{ r }}</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-        <div class="flex gap-2">
-          <button
-            type="submit"
-            [disabled]="form.invalid"
-            class="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
-          >
-            Join
-          </button>
-          <button
-            type="button"
-            (click)="cancel()"
-            class="px-4 py-2 rounded border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700"
-          >
+        <div class="flex gap-2 justify-end">
+          <button mat-stroked-button type="button" (click)="cancel()" class="interactive-surface">
             Cancel
+          </button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid" class="interactive-surface">
+            Join
           </button>
         </div>
       </div>

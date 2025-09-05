@@ -2,7 +2,13 @@ import { Component, input, output, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { playerRole, PlayerRole } from '../../../generated/enums';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 
 export interface PlayerSettings {
   name: string;
@@ -17,7 +23,17 @@ interface PlayerSettingsDialogData {
 @Component({
   selector: 'app-player-settings-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule,
+    MatDialogModule
+  ],
   templateUrl: './player-settings-dialog.component.html',
   styleUrls: ['./player-settings-dialog.component.scss'],
 })

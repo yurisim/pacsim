@@ -480,5 +480,5 @@ When working with PrimeNG dialogs:
 ### Usage Guidelines
 
 1. **Import Strategy**: Always import only the modules you need in each component
-2. Use Material 3 design as needed, https://m3.material.io/
+2. Use Material 3 design as needed, https://m3.material.io/ in combination with AAngular Material and Tailwind CSS
 3. **Icons**: Use Material Icons for consistent iconography, https://fonts.google.com/icons
