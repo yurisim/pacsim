@@ -28,21 +28,20 @@
 
     <!-- Home Button -->
     <button
-      mat-icon-button
+      matIconButton
       routerLink="/"
       aria-label="Navigate to home page"
-      matTooltip="Home"
-      class="interactive-surface">
+      matTooltip="Home">
       <mat-icon fontIcon="home"></mat-icon>
     </button>
 
     <!-- Logout Button -->
     @if (auth.isAuthenticated() && auth.getGameId()) {
       <button
-        mat-flat-button
+        matButton="filled"
         color="warn"
         (click)="onLogout()"
-        class="ml-2 interactive-surface"
+        class="ml-2"
         aria-label="Logout from current game">
         <mat-icon fontIcon="logout" class="mr-2"></mat-icon>
         <span class="hidden md:inline">Logout</span>

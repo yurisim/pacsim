@@ -26,10 +26,10 @@
     <mat-divider></mat-divider>
 
     <div class="px-6 py-4 flex justify-end gap-2">
-      <button mat-stroked-button type="button" (click)="cancelSettings()" class="interactive-surface">
+      <button matButton="outlined" type="button" (click)="cancelSettings()" class="">
         Cancel
       </button>
-      <button mat-flat-button color="primary" type="button" (click)="saveSettings()" [disabled]="!isFormValid" class="interactive-surface">
+      <button matButton="filled" color="primary" type="button" (click)="saveSettings()" [disabled]="!isFormValid" class="">
         Save
       </button>
     </div>

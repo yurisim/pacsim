@@ -30,20 +30,20 @@
         <mat-card-content class="md-padding-lg">
           <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
             <button 
-              mat-flat-button 
+              matButton="filled" 
               color="primary" 
               (click)="openPlayerSettings()"
-              class="interactive-surface">
+              class="">
               <mat-icon fontIcon="edit" class="mr-2" aria-hidden="true"></mat-icon>
               <span class="md-typescale-label-large">Edit Profile</span>
             </button>
             @if (currentPlayer$ | async; as currentPlayer) {
               @if (currentPlayer.teamId) {
                 <button 
-                  mat-outlined-button 
+                  matButton="outlined" 
                   color="warn" 
                   (click)="leaveCurrentTeam()"
-                  class="interactive-surface">
+                  class="">
                   <mat-icon fontIcon="logout" class="mr-2" aria-hidden="true"></mat-icon>
                   <span class="md-typescale-label-large">Leave Team</span>
                 </button>
@@ -147,7 +147,7 @@
                   <!-- Join Button -->
                   @if (currentPlayer$ | async; as currentPlayer) {
                     <button
-                      mat-raised-button
+                      matButton="filled"
                       color="primary"
                       class="w-full"
                       (click)="openJoinTeamDialog(team)"
@@ -156,7 +156,7 @@
                       {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
                     </button>
                   } @else {
-                    <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
+                    <button matButton="filled" color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
                       <mat-icon fontIcon="add" class="mr-2" aria-hidden="true"></mat-icon>
                       Join Team
                     </button>
@@ -228,7 +228,7 @@
 
                 @if (currentPlayer$ | async; as currentPlayer) {
                   <button
-                    mat-raised-button
+                    matButton="filled"
                     color="primary"
                     class="w-full"
                     (click)="openJoinTeamDialog(team)"
@@ -237,7 +237,7 @@
                     {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
                   </button>
                 } @else {
-                  <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
+                  <button matButton="filled" color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
                     <mat-icon fontIcon="add" class="mr-2" aria-hidden="true"></mat-icon>
                     Join Team
                   </button>
@@ -308,7 +308,7 @@
 
                 @if (currentPlayer$ | async; as currentPlayer) {
                   <button
-                    mat-raised-button
+                    matButton="filled"
                     color="primary"
                     class="w-full"
                     (click)="openJoinTeamDialog(team)"
@@ -317,7 +317,7 @@
                     {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
                   </button>
                 } @else {
-                  <button mat-raised-button color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
+                  <button matButton="filled" color="primary" class="w-full" (click)="openJoinTeamDialog(team)">
                     <mat-icon fontIcon="add" class="mr-2" aria-hidden="true"></mat-icon>
                     Join Team
                   </button>
