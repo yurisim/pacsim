@@ -84,10 +84,10 @@ test.describe('Continue Game functionality', () => {
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
 
     // Player name should appear
-    await expect(page.locator('input[placeholder="Player Name"]')).toBeVisible();
+    await expect(page.locator('input[formControlName="playerName"]')).toBeVisible();
 
     // Enter player name and join
-    await page.fill('input[placeholder="Player Name"]', 'NewPlayer');
+    await page.fill('input[formControlName="playerName"]', 'NewPlayer');
     await page.getByRole('button', { name: /join/i }).click();
 
     // Should join the game and navigate to lobby
@@ -134,9 +134,9 @@ test.describe('Continue Game functionality', () => {
     // Should show normal join form
     await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
 
-    // Form should be in compact layout (400px width)
+    // Form should be in compact layout (max-w-md = 448px)
     const card = page.locator('mat-card');
-    await expect(card).toHaveClass(/w-\[400px\]/);
+    await expect(card).toHaveClass(/max-w-md/);
   });
 
   test('should show expanded layout when continue option is present', async ({ page }) => {
@@ -163,13 +163,13 @@ test.describe('Continue Game functionality', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Join' }).click();
 
-    // Should show expanded layout (450px width) when continue option is present
+    // Should show expanded layout (max-w-lg = 512px) when continue option is present
     const card = page.locator('mat-card');
-    await expect(card).toHaveClass(/w-\[450px\]/);
+    await expect(card).toHaveClass(/max-w-lg/);
 
     // Verify continue section styling
-    const continueSection = page.locator('.bg-blue-50');
+    const continueSection = page.locator('.md-sys-bg-primary-container');
     await expect(continueSection).toBeVisible();
-    await expect(continueSection).toHaveClass(/border-blue-200/);
+    await expect(continueSection).toHaveClass(/md-shape-corner-lg/);
   });
 });
