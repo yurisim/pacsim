@@ -116,6 +116,7 @@ model Team {
   demoralizationPoints Int      @default(0)
   resourcePoints       Int      @default(0)
   riskTokensAvailable  Int      @default(2)
+  locked               Boolean  @default(false)
 
   players           Player[]
   controlledFOS     ForwardOperatingSite[]

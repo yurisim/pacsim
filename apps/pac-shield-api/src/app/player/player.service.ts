@@ -105,17 +105,46 @@ export class PlayerService {
     }
 
     // Create new player
+    const role = joinGameDto.role || 'PLAYER';
+
+    // If role is GM, assign the player to the GM team for this game
+    let teamId: number | undefined = undefined;
+    if (role === 'GM') {
+      const gmTeam = await this.prisma.team.findFirst({
+        where: { gameId: game.id, type: 'GM' },
+        select: { id: true },
+      });
+      if (gmTeam) {
+        teamId = gmTeam.id;
+      }
+    }
+
     const player = await this.prisma.player.create({
       data: {
         name: joinGameDto.playerName,
-        role: joinGameDto.role || 'PLAYER',
+        role,
         pin: joinGameDto.pin || null,
         sessionId: `${joinGameDto.playerName}-${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 9)}`,
         gameId: game.id,
+        teamId: teamId,
       },
     });
+
+    // Safety: ensure GM is actually attached to GM team even if the prefetch missed
+    if (role === 'GM' && !player.teamId) {
+      const gmTeam2 = await this.prisma.team.findFirst({
+        where: { gameId: game.id, type: 'GM' },
+        select: { id: true },
+      });
+      if (gmTeam2) {
+        await this.prisma.player.update({
+          where: { id: player.id },
+          data: { teamId: gmTeam2.id },
+        });
+      }
+    }
 
     const payload = { gameId: game.id, playerId: player.id };
     const token = this.jwtService.sign(payload);
@@ -186,6 +215,20 @@ export class PlayerService {
       const validRoles = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
       if (!validRoles.includes(updatePlayerDto.role as string)) {
         throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
+      }
+
+      // Enforce: GM role requires membership in GM team
+      if (updatePlayerDto.role === 'GM') {
+        const current = await this.prisma.player.findUnique({
+          where: { id },
+          include: { team: true },
+        });
+        if (!current) {
+          throw new NotFoundException('Player not found');
+        }
+        if (!current.team || current.team.type !== 'GM') {
+          throw new BadRequestException('Cannot set role to GM unless the player is on the GM team');
+        }
       }
     }
 
@@ -324,12 +367,22 @@ export class PlayerService {
       throw new BadRequestException('Team does not belong to the same game as player');
     }
 
+    // Enforce: team roster lock
+    if (team.locked) {
+      throw new BadRequestException('Team roster is locked');
+    }
+
+    // Enforce: player with GM role can only be on GM team
+    if (player.role === 'GM' && team.type !== 'GM') {
+      throw new BadRequestException('Players with GM role must be on the GM team');
+    }
+
     try {
       // Update player's team assignment
       const updatedPlayer = await this.prisma.player.update({
         where: { id: playerId },
         data: { teamId: teamId },
-        include: { 
+        include: {
           game: true,
           team: true,
         },

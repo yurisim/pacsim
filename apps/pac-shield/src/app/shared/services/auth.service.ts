@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { tap } from 'rxjs';
+import { tap, switchMap, map, of, catchError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
 import { WebSocketService } from './websocket.service';
 import { Player } from '../../models/player.model';
+import { Game } from '../../generated';
 
 interface JwtPayload {
   gameId: string;
@@ -103,6 +104,7 @@ export class AuthService {
         role: 'GM'
       })
       .pipe(
+        // Persist session locally
         tap(({ token, player }) => {
           this.setToken(token);
           this.setPlayer(player);
@@ -110,6 +112,29 @@ export class AuthService {
           if (playerId) {
             localStorage.setItem('playerId', playerId);
           }
+        }),
+        // Ensure GM is attached to GM team in case server-side assignment is delayed/missed
+        switchMap(({ token, player }) => {
+          const gameId = this.getGameId();
+          const playerId = this.getPlayerIdFromToken();
+          if (!gameId || !playerId) {
+            return of({ token, player });
+          }
+          return this.apiService.get<Game>(`game/${gameId}`).pipe(
+            switchMap((game) => {
+              const gmTeam = (game.teams || []).find((t: any) => t.type === 'GM');
+              if (gmTeam?.id) {
+                return this.apiService.joinTeam(playerId, gmTeam.id).pipe(
+                  // Ignore failure; server may have already assigned
+                  catchError(() => of(null)),
+                  map(() => ({ token, player }))
+                );
+              }
+              return of({ token, player });
+            }),
+            // If fetching game fails, still return original join response
+            catchError(() => of({ token, player }))
+          );
         })
       );
   }
