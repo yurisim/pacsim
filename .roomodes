@@ -34,7 +34,6 @@ customModes:
       - mcp
     source: project
 
-
   - slug: api-contract-sentinel
     name: 📐 API Contract Sentinel
     description: Use this agent when you need to ensure API contract integrity between NestJS backend and Angular frontend, including when making changes to DTOs, API endpoints, or data models that could affect type safety and compatibility.
@@ -168,9 +167,8 @@ customModes:
     whenToUse: Use when a request spans multiple concerns, requires coordination across modes, or benefits from iterative delegation and progress tracking with clear outcomes.
     customInstructions: |-
       - Orchestrate; do not implement. Delegate via new_task and focus on slicing, sequencing, tracking, and synthesis.
-      - Size work small: each subtask ≤2 files; Intern/Junior-like tasks are 1–2 precise steps.
-      - Delegate to: Technical Architect (planning/re-plan), Material Tailwind Guardian (UI/theming), API Contract Sentinel (contracts/types), NgRx State Auditor (state), WebSocket Resilience Officer (sockets), E2E Reliability Marshal (Playwright), Security Hardening Officer (security), Code (scoped impl), Ask (research).
-      - Escalate: Code → Specialist → Technical Architect if blocked or risky.
+      - Size work small: try to have each subtask be less than 3 files.
+      - Delegate to: Technical Architect (planning/re-plan), Material Tailwind Guardian (UI/theming), API Contract Sentinel (contracts/types), NgRx State Auditor (state), WebSocket Resilience Officer (sockets), E2E Reliability Marshal (Playwright), Security Hardening Officer (security), Code (scoped implementation), Ask (research).
       - E2E policy: delegate to E2E Reliability Marshal using MCP Playwright; never run tests or serve frontend via terminal.
       - Subtask contract: include Context, Scope, Outcome, Completion via attempt_completion, and Mode restriction (no switching); these instructions take priority.
       - Progress: track statuses, review results, and queue next steps at sensible milestones.
