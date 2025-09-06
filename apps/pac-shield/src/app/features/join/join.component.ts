@@ -102,6 +102,17 @@ export class JoinComponent {
     }
   }
 
+  onRoomCodeOtpComplete(code: string) {
+    const upper = (code || '').toUpperCase();
+    this.joinForm.patchValue({ gameId: upper });
+    if (upper.length === 6) {
+      this.validateRoomCode(upper);
+    } else {
+      this.isRoomValid = false;
+      this.roomValidated = false;
+    }
+  }
+
   private validateRoomCode(roomCode: string) {
     this.isValidatingRoom = true;
     this.errorMessage = null;

@@ -50,34 +50,41 @@
 
       <div [formGroup]="joinForm" class="flex flex-col gap-4">
         <!-- Room Code -->
-        <mat-form-field appearance="outline" >
-          <mat-label>Room Code</mat-label>
-          <mat-icon matPrefix fontIcon="key" class="mr-2" aria-hidden="true"></mat-icon>
-          <input
-            matInput
+        <div class="flex flex-col items-center gap-2">
+          <div class="block md-typescale-body-medium md-sys-color-on-surface mb-2 text-center">
+            <mat-icon fontIcon="key" class="mr-2" aria-hidden="true"></mat-icon>
+            <span>Room Code</span>
+          </div>
+          <app-input-otp
+            [length]="6"
+            [integerOnly]="false"
             formControlName="gameId"
-            (input)="onRoomCodeChange()"
-            class="uppercase"
-          />
-          <!-- Validation indicators -->
-          <mat-progress-spinner
-            *ngIf="isValidatingRoom"
-            matSuffix
-            mode="indeterminate"
-            [diameter]="16"
-          ></mat-progress-spinner>
+            ariaLabel="6-character Room Code"
+            (complete)="onRoomCodeOtpComplete($event)"
+          ></app-input-otp>
 
-          <span
-            *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
-            matSuffix
-            ><mat-icon fontIcon="check_circle" class="text-green-500" aria-hidden="true"></mat-icon></span
-          >
-          <span
-            *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
-            matSuffix
-            ><mat-icon fontIcon="cancel" class="text-red-500" aria-hidden="true"></mat-icon></span
-          >
-        </mat-form-field>
+          <div class="h-6 flex items-center justify-center gap-2 mt-1">
+            <mat-progress-spinner
+              *ngIf="isValidatingRoom"
+              mode="indeterminate"
+              [diameter]="16"
+            ></mat-progress-spinner>
+
+            <mat-icon
+              *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
+              fontIcon="check_circle"
+              class="text-green-500"
+              aria-hidden="true"
+            ></mat-icon>
+
+            <mat-icon
+              *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
+              fontIcon="cancel"
+              class="text-red-500"
+              aria-hidden="true"
+            ></mat-icon>
+          </div>
+        </div>
 
         <div
           *ngIf="
