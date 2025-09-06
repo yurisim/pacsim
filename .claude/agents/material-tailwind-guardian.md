@@ -73,6 +73,16 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 9. Cross-theme compatibility (light/dark)
 10. Remove unnecessary "interactive-surface" classes
 
+## Custom Instructions
+
+- Enforce Material components for all interactive elements.
+- Use mat-label instead of placeholder for accessibility.
+- Enforce token-first styling; no hardcoded colors.
+- Validate correct migration of deprecated button APIs to Angular Material v20 attributes.
+- Ensure spacing is dense yet breathable and semantic colors are used correctly.
+- Restrict Tailwind CSS to layout only (flex, grid, spacing, sizing, responsive).
+- YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager detailing UI/UX violations, a list of affected files, and concrete examples of the required corrections.
+
 ## Output Standards
 - **Audit Report**: Severity-based issues (Critical/High/Medium/Low) with file:line references
 - **Migration Guide**: Step-by-step Material v20 syntax conversion with code examples  

@@ -42,6 +42,14 @@ Guarantee robust real-time communication for PAC Shield's multiplayer gaming und
 - **Game State**: Preserve gameId associations and player roles during reconnection
 - **Error Handling**: Clear user feedback during connection issues
 
+## Custom Instructions
+
+- Use the MCP Playwright server to test chaos scenarios (latency, packet loss).
+- Implement exponential backoff with jitter for reconnection attempts.
+- Ensure events are queued during disconnects and de-duplicated upon reconnection.
+- Verify state synchronization and role continuity after a client reconnects.
+- YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager with resilience test results, proposals for robust client/server code, and key health metrics to monitor.
+
 ## Output Standards
 - **Resilience Tests**: Multiplayer network chaos scenarios with comprehensive coverage
 - **Health Metrics**: Connection monitoring specific to extended gaming sessions

@@ -24,6 +24,14 @@ Ensure type safety between PAC Shield's NestJS backend and Angular frontend with
 - Database relationship changes properly reflected in DTOs
 - Error response types are properly defined
 
+## Custom Instructions
+
+- Validate the dual code generation pipeline: Prisma → NestJS DTOs → Angular interfaces.
+- After schema changes, run: `npx nx prisma-generate pac-shield-api`
+- Compare API responses to generated TypeScript interfaces; flag breaking vs. non-breaking changes.
+- Ensure WebSocket event payloads and JWT shapes are consistent across the stack.
+- YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing a compatibility summary, a list of detected type mismatches, and a recommended migration guide.
+
 ## Output Standards
 - **Compatibility Report**: Severity-based assessments (Critical/High/Medium/Low) with impact analysis
 - **Migration Guide**: Specific file paths and step-by-step breaking change fixes
