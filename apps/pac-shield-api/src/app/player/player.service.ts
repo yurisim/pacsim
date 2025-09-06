@@ -364,7 +364,7 @@ export class PlayerService {
       const updatedPlayer = await this.prisma.player.update({
         where: { id: playerId },
         data: { teamId: null },
-        include: { 
+        include: {
           game: true,
           team: true,
         },

@@ -22,8 +22,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
       middleware: {
         mount: true,
         generateId: true,
-        idGenerator: (req: any) => 
-          req.headers['x-request-id'] || req.headers.get?.('x-request-id') || 
+        idGenerator: (req: any) =>
+          req.headers['x-request-id'] || req.headers.get?.('x-request-id') ||
           `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
       },
     }),
