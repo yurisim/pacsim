@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
 import { EMPTY, Observable, map, firstValueFrom } from 'rxjs';
@@ -23,7 +23,6 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NotificationService } from '../../shared/services/notification.service';
-import { UnassignedPlayersPipe } from '../../shared/pipes/unassigned-players.pipe';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
 
 
@@ -43,7 +42,7 @@ enum PlayerRole {
     CommonModule,
     ClipboardModule,
     ReactiveFormsModule,
-    UnassignedPlayersPipe,
+    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatDividerModule,

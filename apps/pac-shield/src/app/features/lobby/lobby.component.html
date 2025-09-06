@@ -128,400 +128,817 @@
       </mat-card-content>
     </mat-card>
 
-    <div class="w-full">
-      <!-- Unassigned Players Section -->
-      <section class="mb-8">
-        <h3 class="md-typescale-headline-small md-sys-color-on-background mb-4">
-          Unassigned Players
-        </h3>
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-        >
-          @for (player of game.players | unassignedPlayers; track player.id) {
-          <mat-card
-            class="md-elevation-1 interactive-surface text-center md-sys-bg-surface-container"
-          >
-            <mat-card-content class="md-padding-md">
-              <div
-                class="w-12 h-12 mx-auto mb-3 md-sys-bg-secondary-container md-shape-corner-full flex items-center justify-center"
-              >
-                <span
-                  class="md-typescale-title-medium md-sys-color-on-secondary-container font-medium"
-                >
-                  {{ player.name.charAt(0).toUpperCase() }}
-                </span>
-              </div>
-              <div
-                class="md-typescale-body-large md-sys-color-on-surface font-medium"
-              >
-                {{ player.name }}
-              </div>
-              <div
-                class="md-typescale-body-small md-sys-color-on-surface-variant"
-              >
-                {{ formatRoleDisplay(player.role) }}
-              </div>
-            </mat-card-content>
-          </mat-card>
-          } @if ((game.players | unassignedPlayers).length === 0) {
-          <div class="col-span-full text-center md-padding-xl">
-            <mat-icon
-              fontIcon="group_off"
-              class="md-typescale-display-small md-sys-color-outline mb-2 opacity-50"
-            ></mat-icon>
-            <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
-              All players are assigned to teams
-            </p>
-          </div>
-          }
-        </div>
-      </section>
-
-      <!-- MOB Teams Section -->
-      <section class="mb-8">
-        <h3 class="text-xl font-semibold mb-2">Main Operating Bases (MOBs)</h3>
-        <p class="text-gray-600 mb-6">
-          Main Operating Bases where aircraft and personnel deploy to establish
-          Forward Operating Sites (FOS)
-        </p>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          @for (team of getMOBTeams(game.teams || []); track team.id) {
-          <mat-card class="h-full">
-            <!-- Card header -->
-            <div class="flex items-center justify-between p-4">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                  [style.background-color]="getTeamTypeInfo(team).color"
-                >
-                  <mat-icon
-                    [fontIcon]="getTeamTypeInfo(team).icon"
-                    aria-hidden="true"
-                  ></mat-icon>
-                </div>
-                <div>
-                  <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
-                  <span class="text-sm text-gray-600"
-                    >{{ team.players?.length || 0 }} personnel</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <mat-divider></mat-divider>
-
-            <div class="p-4 flex flex-col gap-4">
-              <!-- Personnel Tiles -->
-              @if (team.players && team.players.length > 0) {
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                @for (player of team.players; track player.id) {
-                <div
-                  class="flex flex-col items-center p-3 border border-gray-200 rounded-lg transition-colors"
-                >
-                  <div
-                    class="mb-2 w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold bg-gray-500"
-                  >
-                    {{ player.name.charAt(0).toUpperCase() }}
+    <!-- Tabbed Interface -->
+    <mat-card class="w-full md-elevation-1 md-sys-bg-surface-container">
+      <mat-tab-group [(selectedIndex)]="activeTabIndex" class="w-full">
+        <!-- Overview Tab -->
+        <mat-tab label="Overview">
+          <div class="p-6">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <mat-card class="text-center md-elevation-1">
+                <mat-card-content class="p-4">
+                  <div class="md-typescale-display-small md-sys-color-primary font-bold">
+                    {{ totalPlayers(game) }}
                   </div>
-                  <span
-                    class="text-xs font-medium text-center truncate w-full"
-                    >{{ player.name }}</span
-                  >
-                  <span class="text-xs text-gray-500">{{
-                    formatRoleDisplay(player.role)
-                  }}</span>
-                </div>
-                }
-              </div>
-              } @else {
-              <div class="text-center text-gray-500 py-8">
-                <mat-icon
-                  fontIcon="group"
-                  class="text-3xl mb-3 block opacity-50"
-                  aria-hidden="true"
-                ></mat-icon>
-                <span class="text-sm">Awaiting personnel assignment</span>
-              </div>
-              }
-
-              <!-- Join Button -->
-              @if (currentPlayer$ | async; as currentPlayer) {
-              <button
-                matButton="filled"
-                color="primary"
-                (click)="openJoinTeamDialog(team)"
-                [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
-              >
-                <mat-icon
-                  [fontIcon]="
-                    isCurrentPlayerOnTeam(team, currentPlayer)
-                      ? 'check_circle'
-                      : 'add'
-                  "
-                  class="mr-2"
-                  aria-hidden="true"
-                ></mat-icon>
-                {{
-                  isCurrentPlayerOnTeam(team, currentPlayer)
-                    ? 'Current Team'
-                    : 'Join Team'
-                }}
-              </button>
-              } @else {
-              <button
-                matButton="filled"
-                color="primary"
-                class="w-full"
-                (click)="openJoinTeamDialog(team)"
-              >
-                <mat-icon
-                  fontIcon="add"
-                  class="mr-2"
-                  aria-hidden="true"
-                ></mat-icon>
-                Join Team
-              </button>
-              }
-            </div>
-          </mat-card>
-          }
-        </div>
-      </section>
-
-      <!-- Command & Control -->
-      <mat-divider></mat-divider>
-      <div class="flex items-center gap-2 my-4">
-        <mat-icon fontIcon="account_tree" aria-hidden="true"></mat-icon>
-        <span class="font-semibold">Command & Control</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        @for (team of getCommandControlTeams(game.teams || []); track team.id) {
-        <mat-card class="h-full">
-          <div class="flex items-center justify-between p-4">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                [style.background-color]="getTeamTypeInfo(team).color"
-              >
-                <mat-icon
-                  [fontIcon]="getTeamTypeInfo(team).icon"
-                  aria-hidden="true"
-                ></mat-icon>
-              </div>
-              <div>
-                <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-                >
-                  {{ team.type || 'COMMAND' }}
-                </span>
-              </div>
-            </div>
-            @if (team.players && team.players.length > 0) {
-            <span
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-            >
-              {{ team.players.length }}
-            </span>
-            }
-          </div>
-
-          <mat-divider></mat-divider>
-
-          <div class="p-4 flex flex-col gap-3">
-            @if (team.players && team.players.length > 0) {
-            <div class="grid gap-2">
-              @for (player of team.players; track player.id) {
-              <div
-                class="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-              >
-                <div class="flex items-center gap-2">
-                  <div
-                    class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                    [style.background-color]="getTeamTypeInfo(team).color"
-                  >
-                    {{ player.name.charAt(0).toUpperCase() }}
+                  <div class="md-typescale-body-medium md-sys-color-on-surface-variant">
+                    Total Players
                   </div>
-                  <span class="font-medium">{{ player.name }}</span>
-                </div>
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-                >
-                  {{ formatRoleDisplay(player.role) }}
-                </span>
-              </div>
-              }
-            </div>
-            } @else {
-            <div class="text-center text-gray-500 py-6">
-              <mat-icon
-                [fontIcon]="getTeamTypeInfo(team).icon"
-                class="text-3xl mb-3 block opacity-50"
-                aria-hidden="true"
-              ></mat-icon>
-              <span class="text-sm">Awaiting team members</span>
-            </div>
-            } @if (currentPlayer$ | async; as currentPlayer) {
-            <button
-              matButton="filled"
-              color="primary"
-              (click)="openJoinTeamDialog(team)"
-              [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
-            >
-              <mat-icon
-                [fontIcon]="
-                  isCurrentPlayerOnTeam(team, currentPlayer)
-                    ? 'check_circle'
-                    : 'add'
-                "
-                class="mr-2"
-                aria-hidden="true"
-              ></mat-icon>
-              {{
-                isCurrentPlayerOnTeam(team, currentPlayer)
-                  ? 'Current Team'
-                  : 'Join Team'
-              }}
-            </button>
-            } @else {
-            <button
-              matButton="filled"
-              color="primary"
-              class="w-full"
-              (click)="openJoinTeamDialog(team)"
-            >
-              <mat-icon
-                fontIcon="add"
-                class="mr-2"
-                aria-hidden="true"
-              ></mat-icon>
-              Join Team
-            </button>
-            }
-          </div>
-        </mat-card>
-        }
-      </div>
-
-      <!-- Support Teams -->
-      <mat-divider></mat-divider>
-      <div class="flex items-center gap-2 my-4">
-        <mat-icon fontIcon="favorite" aria-hidden="true"></mat-icon>
-        <span class="font-semibold">Support Teams</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        @for (team of getSupportTeams(game.teams || []); track team.id) {
-        <mat-card class="h-full">
-          <div class="flex items-center justify-between p-4">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                [style.background-color]="getTeamTypeInfo(team).color"
-              >
-                <mat-icon
-                  [fontIcon]="getTeamTypeInfo(team).icon"
-                  aria-hidden="true"
-                ></mat-icon>
-              </div>
-              <div>
-                <h4 class="font-bold m-0 text-lg">{{ team.name }}</h4>
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-                >
-                  {{ team.type || 'SUPPORT' }}
-                </span>
-              </div>
-            </div>
-            @if (team.players && team.players.length > 0) {
-            <span
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-            >
-              {{ team.players.length }}
-            </span>
-            }
-          </div>
-
-          <mat-divider></mat-divider>
-
-          <div class="p-4 flex flex-col gap-3">
-            @if (team.players && team.players.length > 0) {
-            <div class="grid gap-2">
-              @for (player of team.players; track player.id) {
-              <div
-                class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div class="flex items-center gap-2">
-                  <div
-                    class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                    [style.background-color]="getTeamTypeInfo(team).color"
-                  >
-                    {{ player.name.charAt(0).toUpperCase() }}
+                </mat-card-content>
+              </mat-card>
+              <mat-card class="text-center md-elevation-1">
+                <mat-card-content class="p-4">
+                  <div class="md-typescale-display-small md-sys-color-secondary font-bold">
+                    {{ unassignedCount(game) }}
                   </div>
-                  <span class="font-medium">{{ player.name }}</span>
+                  <div class="md-typescale-body-medium md-sys-color-on-surface-variant">
+                    Unassigned
+                  </div>
+                </mat-card-content>
+              </mat-card>
+              <mat-card class="text-center md-elevation-1">
+                <mat-card-content class="p-4">
+                  <div class="md-typescale-display-small md-sys-color-tertiary font-bold">
+                    {{ teamsMissingCommander(game) }}
+                  </div>
+                  <div class="md-typescale-body-medium md-sys-color-on-surface-variant">
+                    Teams Missing Commander
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Quick Team Summary -->
+            <h3 class="md-typescale-headline-small mb-4">Team Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (team of game.teams || []; track team.id) {
+              <mat-card class="md-elevation-1">
+                <mat-card-content class="p-4">
+                  <div class="flex items-center gap-3 mb-2">
+                    <mat-icon
+                      [fontIcon]="getTeamTypeInfo(team).icon"
+                      [style.color]="getTeamTypeInfo(team).color"
+                    ></mat-icon>
+                    <div>
+                      <h4 class="md-typescale-title-medium font-bold m-0">{{ team.name }}</h4>
+                      <p class="md-typescale-body-small md-sys-color-on-surface-variant m-0">
+                        {{ team.players?.length || 0 }} personnel
+                      </p>
+                    </div>
+                  </div>
+                  @if (currentPlayer$ | async; as currentPlayer) {
+                  <button
+                    matButton="outlined"
+                    size="small"
+                    (click)="openJoinTeamDialog(team)"
+                    [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
+                  >
+                    {{
+                      isCurrentPlayerOnTeam(team, currentPlayer)
+                        ? 'Current Team'
+                        : 'Join Team'
+                    }}
+                  </button>
+                  }
+                </mat-card-content>
+              </mat-card>
+              }
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Teams Tab -->
+        <mat-tab label="Teams">
+          <div class="p-6">
+            <!-- Filter Bar -->
+            <div class="flex flex-wrap gap-4 mb-6 items-center">
+              <mat-form-field appearance="outline" class="min-w-64">
+                <mat-label>Search players...</mat-label>
+                <input matInput [(ngModel)]="searchTerm" />
+                <mat-icon matSuffix fontIcon="search"></mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="min-w-48">
+                <mat-label>Team Type</mat-label>
+                <mat-select [(value)]="filterTeamType">
+                  <mat-option value="ALL">All Types</mat-option>
+                  <mat-option value="MOB">MOB Teams</mat-option>
+                  <mat-option value="CAOC">CAOC</mat-option>
+                  <mat-option value="CSPOC">CSPOC</mat-option>
+                  <mat-option value="MEDCOM">MEDCOM</mat-option>
+                  <mat-option value="GM">GM</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="min-w-48">
+                <mat-label>Role</mat-label>
+                <mat-select [(value)]="filterRole">
+                  <mat-option value="ALL">All Roles</mat-option>
+                  <mat-option value="GM">GM</mat-option>
+                  <mat-option value="COMMANDER">Commander</mat-option>
+                  <mat-option value="DEPUTY">Deputy</mat-option>
+                  <mat-option value="STRATEGIST">Strategist</mat-option>
+                  <mat-option value="PLAYER">Player</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div class="flex gap-4 ml-auto">
+                <mat-slide-toggle [(ngModel)]="hideEmptyTeams">
+                  Hide Empty Teams
+                </mat-slide-toggle>
+                <mat-slide-toggle [(ngModel)]="dense">
+                  Dense View
+                </mat-slide-toggle>
+              </div>
+            </div>
+
+            <!-- Team Accordion -->
+            <mat-accordion>
+              <!-- MOB Teams -->
+              @if (getMOBTeams(game.teams || []).length > 0) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon fontIcon="flag" class="mr-2"></mat-icon>
+                    Main Operating Bases ({{ getMOBTeams(game.teams || []).length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  @for (team of getMOBTeams(game.teams || []); track team.id) {
+                  <mat-card class="md-elevation-1">
+                    <mat-card-header class="pb-2">
+                      <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-10 h-10 rounded-full flex items-center justify-center text-white"
+                            [style.background-color]="getTeamTypeInfo(team).color"
+                          >
+                            <mat-icon
+                              [fontIcon]="getTeamTypeInfo(team).icon"
+                              class="text-lg"
+                            ></mat-icon>
+                          </div>
+                          <div>
+                            <h4 class="md-typescale-title-medium font-bold m-0">
+                              {{ team.name }}
+                              @if (team.locked) {
+                              <mat-icon 
+                                fontIcon="lock"
+                                class="text-sm ml-1 md-sys-color-error"
+                                matTooltip="Team locked"
+                              ></mat-icon>
+                              }
+                            </h4>
+                            <p class="md-typescale-body-small md-sys-color-on-surface-variant m-0">
+                              {{ team.players?.length || 0 }} personnel
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <!-- GM Tools -->
+                        @if (isCurrentPlayerGM(game)) {
+                        <div class="flex gap-2">
+                          <button
+                            mat-icon-button
+                            (click)="assignOneUnassigned(team.id!)"
+                            matTooltip="Assign one unassigned player"
+                            [disabled]="unassignedCount(game) === 0"
+                          >
+                            <mat-icon fontIcon="person_add"></mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            (click)="team.locked ? unlockTeam(team.id!) : lockTeam(team.id!)"
+                            [matTooltip]="team.locked ? 'Unlock team' : 'Lock team'"
+                          >
+                            <mat-icon [fontIcon]="team.locked ? 'lock_open' : 'lock'"></mat-icon>
+                          </button>
+                        </div>
+                        }
+                      </div>
+                    </mat-card-header>
+
+                    <mat-card-content [class.dense]="dense">
+                      <!-- Role-grouped roster -->
+                      @for (roleGroup of groupPlayersByRole(team); track roleGroup.role) {
+                      @if (roleGroup.players.length > 0) {
+                      <div class="mb-3">
+                        <h5 class="md-typescale-label-medium md-sys-color-primary font-medium mb-2">
+                          {{ roleGroup.role }} ({{ roleGroup.players.length }})
+                        </h5>
+                        <div class="space-y-2">
+                          @for (player of roleGroup.players; track player.id) {
+                          <div 
+                            class="flex items-center justify-between p-2 md-sys-bg-surface-variant md-shape-corner-sm"
+                            [class.py-1]="dense"
+                          >
+                            <div class="flex items-center gap-2">
+                              <div
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                                [class.w-6]="dense"
+                                [class.h-6]="dense"
+                                [style.background-color]="getTeamTypeInfo(team).color"
+                              >
+                                {{ player.name.charAt(0).toUpperCase() }}
+                              </div>
+                              <span 
+                                class="font-medium"
+                                [class.text-sm]="dense"
+                              >
+                                {{ player.name }}
+                              </span>
+                            </div>
+                            
+                            <!-- GM Player Menu -->
+                            @if (isCurrentPlayerGM(game)) {
+                            <button 
+                              mat-icon-button
+                              size="small"
+                              [matMenuTriggerFor]="playerMenu"
+                              [matMenuTriggerData]="{player: player, teams: game.teams}"
+                            >
+                              <mat-icon fontIcon="more_vert"></mat-icon>
+                            </button>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </div>
+                      }
+                      }
+                      
+                      <!-- Join Button -->
+                      @if (currentPlayer$ | async; as currentPlayer) {
+                      <button
+                        matButton="outlined"
+                        (click)="openJoinTeamDialog(team)"
+                        [disabled]="isCurrentPlayerOnTeam(team, currentPlayer) || team.locked"
+                        class="w-full mt-4"
+                      >
+                        <mat-icon
+                          [fontIcon]="
+                            isCurrentPlayerOnTeam(team, currentPlayer)
+                              ? 'check_circle'
+                              : team.locked
+                              ? 'lock'
+                              : 'add'
+                          "
+                          class="mr-2"
+                        ></mat-icon>
+                        {{
+                          isCurrentPlayerOnTeam(team, currentPlayer)
+                            ? 'Current Team'
+                            : team.locked
+                            ? 'Team Locked'
+                            : 'Join Team'
+                        }}
+                      </button>
+                      }
+                    </mat-card-content>
+                  </mat-card>
+                  }
                 </div>
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-                >
-                  {{ formatRoleDisplay(player.role) }}
-                </span>
+              </mat-expansion-panel>
+              }
+
+              <!-- Command & Control Teams -->
+              @if (getCommandControlTeams(game.teams || []).length > 0) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon fontIcon="account_tree" class="mr-2"></mat-icon>
+                    Command & Control ({{ getCommandControlTeams(game.teams || []).length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  @for (team of getCommandControlTeams(game.teams || []); track team.id) {
+                  <mat-card class="md-elevation-1">
+                    <mat-card-header class="pb-2">
+                      <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-10 h-10 rounded-full flex items-center justify-center text-white"
+                            [style.background-color]="getTeamTypeInfo(team).color"
+                          >
+                            <mat-icon
+                              [fontIcon]="getTeamTypeInfo(team).icon"
+                              class="text-lg"
+                            ></mat-icon>
+                          </div>
+                          <div>
+                            <h4 class="md-typescale-title-medium font-bold m-0">
+                              {{ team.name }}
+                              @if (team.locked) {
+                              <mat-icon 
+                                fontIcon="lock"
+                                class="text-sm ml-1 md-sys-color-error"
+                                matTooltip="Team locked"
+                              ></mat-icon>
+                              }
+                            </h4>
+                            <p class="md-typescale-body-small md-sys-color-on-surface-variant m-0">
+                              {{ team.players?.length || 0 }} personnel
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <!-- GM Tools -->
+                        @if (isCurrentPlayerGM(game)) {
+                        <div class="flex gap-2">
+                          <button
+                            mat-icon-button
+                            (click)="assignOneUnassigned(team.id!)"
+                            matTooltip="Assign one unassigned player"
+                            [disabled]="unassignedCount(game) === 0"
+                          >
+                            <mat-icon fontIcon="person_add"></mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            (click)="team.locked ? unlockTeam(team.id!) : lockTeam(team.id!)"
+                            [matTooltip]="team.locked ? 'Unlock team' : 'Lock team'"
+                          >
+                            <mat-icon [fontIcon]="team.locked ? 'lock_open' : 'lock'"></mat-icon>
+                          </button>
+                        </div>
+                        }
+                      </div>
+                    </mat-card-header>
+
+                    <mat-card-content [class.dense]="dense">
+                      <!-- Role-grouped roster -->
+                      @for (roleGroup of groupPlayersByRole(team); track roleGroup.role) {
+                      @if (roleGroup.players.length > 0) {
+                      <div class="mb-3">
+                        <h5 class="md-typescale-label-medium md-sys-color-primary font-medium mb-2">
+                          {{ roleGroup.role }} ({{ roleGroup.players.length }})
+                        </h5>
+                        <div class="space-y-2">
+                          @for (player of roleGroup.players; track player.id) {
+                          <div 
+                            class="flex items-center justify-between p-2 md-sys-bg-surface-variant md-shape-corner-sm"
+                            [class.py-1]="dense"
+                          >
+                            <div class="flex items-center gap-2">
+                              <div
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                                [class.w-6]="dense"
+                                [class.h-6]="dense"
+                                [style.background-color]="getTeamTypeInfo(team).color"
+                              >
+                                {{ player.name.charAt(0).toUpperCase() }}
+                              </div>
+                              <span 
+                                class="font-medium"
+                                [class.text-sm]="dense"
+                              >
+                                {{ player.name }}
+                              </span>
+                            </div>
+                            
+                            <!-- GM Player Menu -->
+                            @if (isCurrentPlayerGM(game)) {
+                            <button 
+                              mat-icon-button
+                              size="small"
+                              [matMenuTriggerFor]="playerMenu"
+                              [matMenuTriggerData]="{player: player, teams: game.teams}"
+                            >
+                              <mat-icon fontIcon="more_vert"></mat-icon>
+                            </button>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </div>
+                      }
+                      }
+                      
+                      <!-- Join Button -->
+                      @if (currentPlayer$ | async; as currentPlayer) {
+                      <button
+                        matButton="outlined"
+                        (click)="openJoinTeamDialog(team)"
+                        [disabled]="isCurrentPlayerOnTeam(team, currentPlayer) || team.locked"
+                        class="w-full mt-4"
+                      >
+                        <mat-icon
+                          [fontIcon]="
+                            isCurrentPlayerOnTeam(team, currentPlayer)
+                              ? 'check_circle'
+                              : team.locked
+                              ? 'lock'
+                              : 'add'
+                          "
+                          class="mr-2"
+                        ></mat-icon>
+                        {{
+                          isCurrentPlayerOnTeam(team, currentPlayer)
+                            ? 'Current Team'
+                            : team.locked
+                            ? 'Team Locked'
+                            : 'Join Team'
+                        }}
+                      </button>
+                      }
+                    </mat-card-content>
+                  </mat-card>
+                  }
+                </div>
+              </mat-expansion-panel>
+              }
+
+              <!-- Support Teams -->
+              @if (getSupportTeams(game.teams || []).length > 0) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon fontIcon="favorite" class="mr-2"></mat-icon>
+                    Support Teams ({{ getSupportTeams(game.teams || []).length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  @for (team of getSupportTeams(game.teams || []); track team.id) {
+                  <mat-card class="md-elevation-1">
+                    <mat-card-header class="pb-2">
+                      <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-10 h-10 rounded-full flex items-center justify-center text-white"
+                            [style.background-color]="getTeamTypeInfo(team).color"
+                          >
+                            <mat-icon
+                              [fontIcon]="getTeamTypeInfo(team).icon"
+                              class="text-lg"
+                            ></mat-icon>
+                          </div>
+                          <div>
+                            <h4 class="md-typescale-title-medium font-bold m-0">
+                              {{ team.name }}
+                              @if (team.locked) {
+                              <mat-icon 
+                                fontIcon="lock"
+                                class="text-sm ml-1 md-sys-color-error"
+                                matTooltip="Team locked"
+                              ></mat-icon>
+                              }
+                            </h4>
+                            <p class="md-typescale-body-small md-sys-color-on-surface-variant m-0">
+                              {{ team.players?.length || 0 }} personnel
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <!-- GM Tools -->
+                        @if (isCurrentPlayerGM(game)) {
+                        <div class="flex gap-2">
+                          <button
+                            mat-icon-button
+                            (click)="assignOneUnassigned(team.id!)"
+                            matTooltip="Assign one unassigned player"
+                            [disabled]="unassignedCount(game) === 0"
+                          >
+                            <mat-icon fontIcon="person_add"></mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            (click)="team.locked ? unlockTeam(team.id!) : lockTeam(team.id!)"
+                            [matTooltip]="team.locked ? 'Unlock team' : 'Lock team'"
+                          >
+                            <mat-icon [fontIcon]="team.locked ? 'lock_open' : 'lock'"></mat-icon>
+                          </button>
+                        </div>
+                        }
+                      </div>
+                    </mat-card-header>
+
+                    <mat-card-content [class.dense]="dense">
+                      <!-- Role-grouped roster -->
+                      @for (roleGroup of groupPlayersByRole(team); track roleGroup.role) {
+                      @if (roleGroup.players.length > 0) {
+                      <div class="mb-3">
+                        <h5 class="md-typescale-label-medium md-sys-color-primary font-medium mb-2">
+                          {{ roleGroup.role }} ({{ roleGroup.players.length }})
+                        </h5>
+                        <div class="space-y-2">
+                          @for (player of roleGroup.players; track player.id) {
+                          <div 
+                            class="flex items-center justify-between p-2 md-sys-bg-surface-variant md-shape-corner-sm"
+                            [class.py-1]="dense"
+                          >
+                            <div class="flex items-center gap-2">
+                              <div
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                                [class.w-6]="dense"
+                                [class.h-6]="dense"
+                                [style.background-color]="getTeamTypeInfo(team).color"
+                              >
+                                {{ player.name.charAt(0).toUpperCase() }}
+                              </div>
+                              <span 
+                                class="font-medium"
+                                [class.text-sm]="dense"
+                              >
+                                {{ player.name }}
+                              </span>
+                            </div>
+                            
+                            <!-- GM Player Menu -->
+                            @if (isCurrentPlayerGM(game)) {
+                            <button 
+                              mat-icon-button
+                              size="small"
+                              [matMenuTriggerFor]="playerMenu"
+                              [matMenuTriggerData]="{player: player, teams: game.teams}"
+                            >
+                              <mat-icon fontIcon="more_vert"></mat-icon>
+                            </button>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </div>
+                      }
+                      }
+                      
+                      <!-- Join Button -->
+                      @if (currentPlayer$ | async; as currentPlayer) {
+                      <button
+                        matButton="outlined"
+                        (click)="openJoinTeamDialog(team)"
+                        [disabled]="isCurrentPlayerOnTeam(team, currentPlayer) || team.locked"
+                        class="w-full mt-4"
+                      >
+                        <mat-icon
+                          [fontIcon]="
+                            isCurrentPlayerOnTeam(team, currentPlayer)
+                              ? 'check_circle'
+                              : team.locked
+                              ? 'lock'
+                              : 'add'
+                          "
+                          class="mr-2"
+                        ></mat-icon>
+                        {{
+                          isCurrentPlayerOnTeam(team, currentPlayer)
+                            ? 'Current Team'
+                            : team.locked
+                            ? 'Team Locked'
+                            : 'Join Team'
+                        }}
+                      </button>
+                      }
+                    </mat-card-content>
+                  </mat-card>
+                  }
+                </div>
+              </mat-expansion-panel>
+              }
+            </mat-accordion>
+          </div>
+        </mat-tab>
+
+        <!-- Unassigned Tab -->
+        <mat-tab label="Unassigned">
+          <div class="p-6">
+            <h3 class="md-typescale-headline-small mb-4">
+              Unassigned Players ({{ filteredUnassigned(game).length }})
+            </h3>
+            
+            <!-- Filter Bar -->
+            <div class="flex gap-4 mb-6 items-center">
+              <mat-form-field appearance="outline" class="min-w-64">
+                <mat-label>Search players...</mat-label>
+                <input matInput [(ngModel)]="searchTerm" />
+                <mat-icon matSuffix fontIcon="search"></mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="min-w-48">
+                <mat-label>Role</mat-label>
+                <mat-select [(value)]="filterRole">
+                  <mat-option value="ALL">All Roles</mat-option>
+                  <mat-option value="GM">GM</mat-option>
+                  <mat-option value="COMMANDER">Commander</mat-option>
+                  <mat-option value="DEPUTY">Deputy</mat-option>
+                  <mat-option value="STRATEGIST">Strategist</mat-option>
+                  <mat-option value="PLAYER">Player</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            >
+              @for (player of filteredUnassigned(game); track player.id) {
+              <mat-card
+                class="md-elevation-1 interactive-surface text-center md-sys-bg-surface-container"
+              >
+                <mat-card-content class="md-padding-md">
+                  <div class="flex items-center justify-between mb-3">
+                    <div
+                      class="w-12 h-12 mx-auto md-sys-bg-secondary-container md-shape-corner-full flex items-center justify-center"
+                    >
+                      <span
+                        class="md-typescale-title-medium md-sys-color-on-secondary-container font-medium"
+                      >
+                        {{ player.name.charAt(0).toUpperCase() }}
+                      </span>
+                    </div>
+                    
+                    <!-- GM Player Menu -->
+                    @if (isCurrentPlayerGM(game)) {
+                    <button 
+                      mat-icon-button
+                      [matMenuTriggerFor]="playerMenu"
+                      [matMenuTriggerData]="{player: player, teams: game.teams}"
+                    >
+                      <mat-icon fontIcon="more_vert"></mat-icon>
+                    </button>
+                    }
+                  </div>
+                  <div
+                    class="md-typescale-body-large md-sys-color-on-surface font-medium"
+                  >
+                    {{ player.name }}
+                  </div>
+                  <div
+                    class="md-typescale-body-small md-sys-color-on-surface-variant"
+                  >
+                    {{ formatRoleDisplay(player.role) }}
+                  </div>
+                </mat-card-content>
+              </mat-card>
+              } 
+              
+              @if (filteredUnassigned(game).length === 0) {
+              <div class="col-span-full text-center md-padding-xl">
+                <mat-icon
+                  fontIcon="group_off"
+                  class="md-typescale-display-small md-sys-color-outline mb-2 opacity-50"
+                ></mat-icon>
+                <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
+                  @if (searchTerm || filterRole !== 'ALL') {
+                    No unassigned players match your filters
+                  } @else {
+                    All players are assigned to teams
+                  }
+                </p>
               </div>
               }
             </div>
-            } @else {
-            <div class="text-center text-gray-500 py-6">
-              <mat-icon
-                [fontIcon]="getTeamTypeInfo(team).icon"
-                class="text-3xl mb-3 block opacity-50"
-                aria-hidden="true"
-              ></mat-icon>
-              <span class="text-sm">Awaiting team members</span>
-            </div>
-            } @if (currentPlayer$ | async; as currentPlayer) {
-            <button
-              matButton="filled"
-              color="primary"
-              (click)="openJoinTeamDialog(team)"
-              [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)"
-            >
-              <mat-icon
-                [fontIcon]="
-                  isCurrentPlayerOnTeam(team, currentPlayer)
-                    ? 'check_circle'
-                    : 'add'
-                "
-                class="mr-2"
-                aria-hidden="true"
-              ></mat-icon>
-              {{
-                isCurrentPlayerOnTeam(team, currentPlayer)
-                  ? 'Current Team'
-                  : 'Join Team'
-              }}
-            </button>
-            } @else {
-            <button
-              matButton="filled"
-              color="primary"
-              class="w-full"
-              (click)="openJoinTeamDialog(team)"
-            >
-              <mat-icon
-                fontIcon="add"
-                class="mr-2"
-                aria-hidden="true"
-              ></mat-icon>
-              Join Team
-            </button>
-            }
           </div>
-        </mat-card>
-        }
-      </div>
-    </div>
+        </mat-tab>
+
+        <!-- Players Tab -->
+        <mat-tab label="Players">
+          <div class="p-6">
+            <h3 class="md-typescale-headline-small mb-4">
+              All Players ({{ filteredPlayers(game).length }})
+            </h3>
+
+            <!-- Filter Bar -->
+            <div class="flex flex-wrap gap-4 mb-6 items-center">
+              <mat-form-field appearance="outline" class="min-w-64">
+                <mat-label>Search players...</mat-label>
+                <input matInput [(ngModel)]="searchTerm" />
+                <mat-icon matSuffix fontIcon="search"></mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="min-w-48">
+                <mat-label>Role</mat-label>
+                <mat-select [(value)]="filterRole">
+                  <mat-option value="ALL">All Roles</mat-option>
+                  <mat-option value="GM">GM</mat-option>
+                  <mat-option value="COMMANDER">Commander</mat-option>
+                  <mat-option value="DEPUTY">Deputy</mat-option>
+                  <mat-option value="STRATEGIST">Strategist</mat-option>
+                  <mat-option value="PLAYER">Player</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-slide-toggle [(ngModel)]="filterUnassignedOnly">
+                Unassigned Only
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Player List -->
+            <div class="space-y-2">
+              @for (player of filteredPlayers(game); track player.id) {
+              <mat-card class="md-elevation-1">
+                <mat-card-content class="p-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
+                        style="background-color: var(--mat-sys-primary)"
+                      >
+                        {{ player.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <div>
+                        <h4 class="md-typescale-title-medium font-bold m-0">{{ player.name }}</h4>
+                        <div class="flex items-center gap-2 text-sm md-sys-color-on-surface-variant">
+                          <span>{{ formatRoleDisplay(player.role) }}</span>
+                          @if (player.team) {
+                          <span class="mx-1">•</span>
+                          <span class="md-sys-color-primary">{{ player.team.name }}</span>
+                          } @else {
+                          <span class="mx-1">•</span>
+                          <span class="md-sys-color-error">Unassigned</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- GM Player Menu -->
+                    @if (isCurrentPlayerGM(game)) {
+                    <button 
+                      mat-icon-button
+                      [matMenuTriggerFor]="playerMenu"
+                      [matMenuTriggerData]="{player: player, teams: game.teams}"
+                    >
+                      <mat-icon fontIcon="more_vert"></mat-icon>
+                    </button>
+                    }
+                  </div>
+                </mat-card-content>
+              </mat-card>
+              }
+              
+              @if (filteredPlayers(game).length === 0) {
+              <div class="text-center md-padding-xl">
+                <mat-icon
+                  fontIcon="group_off"
+                  class="md-typescale-display-small md-sys-color-outline mb-2 opacity-50"
+                ></mat-icon>
+                <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
+                  No players match your filters
+                </p>
+              </div>
+              }
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card>
   </div>
 </div>
+
+<!-- GM Player Context Menu -->
+<mat-menu #playerMenu="matMenu">
+  <ng-template matMenuContent let-player="player" let-teams="teams">
+    <h6 class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</h6>
+    <mat-divider></mat-divider>
+    
+    <button mat-menu-item [matMenuTriggerFor]="roleSubmenu" [matMenuTriggerData]="{player: player}">
+      <mat-icon fontIcon="person"></mat-icon>
+      <span>Change Role</span>
+    </button>
+    
+    <button mat-menu-item [matMenuTriggerFor]="teamSubmenu" [matMenuTriggerData]="{player: player, teams: teams}">
+      <mat-icon fontIcon="group"></mat-icon>
+      <span>Move to Team</span>
+    </button>
+    
+    @if (player.teamId) {
+    <button mat-menu-item (click)="removePlayerFromTeam(player.id)">
+      <mat-icon fontIcon="logout"></mat-icon>
+      <span>Remove from Team</span>
+    </button>
+    }
+    
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="removePlayerFromGame(player.id)" class="md-sys-color-error">
+      <mat-icon fontIcon="delete" class="md-sys-color-error"></mat-icon>
+      <span>Remove from Game</span>
+    </button>
+  </ng-template>
+</mat-menu>
+
+<mat-menu #roleSubmenu="matMenu">
+  <ng-template matMenuContent let-player="player">
+    @for (role of playerRoles; track role) {
+    <button mat-menu-item (click)="updatePlayerRole(player.id, role)">
+      {{ role }}
+    </button>
+    }
+  </ng-template>
+</mat-menu>
+
+<mat-menu #teamSubmenu="matMenu">
+  <ng-template matMenuContent let-player="player" let-teams="teams">
+    @for (team of teams; track team.id) {
+    <button mat-menu-item (click)="movePlayerToTeam(player.id, team.id!)" [disabled]="team.locked">
+      <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" class="mr-2"></mat-icon>
+      {{ team.name }}
+      @if (team.locked) {
+      <mat-icon fontIcon="lock" class="ml-auto text-sm"></mat-icon>
+      }
+    </button>
+    }
+  </ng-template>
+</mat-menu>
 
 }
