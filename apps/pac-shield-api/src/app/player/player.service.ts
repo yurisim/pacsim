@@ -217,17 +217,28 @@ export class PlayerService {
         throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
       }
 
-      // Enforce: GM role requires membership in GM team
+      // Auto-assign to GM team when role is set to GM
       if (updatePlayerDto.role === 'GM') {
         const current = await this.prisma.player.findUnique({
           where: { id },
-          include: { team: true },
+          include: { team: true, game: true },
         });
         if (!current) {
           throw new NotFoundException('Player not found');
         }
+        
+        // If not already on GM team, find and assign to GM team
         if (!current.team || current.team.type !== 'GM') {
-          throw new BadRequestException('Cannot set role to GM unless the player is on the GM team');
+          if (current.gameId) {
+            const gmTeam = await this.prisma.team.findFirst({
+              where: { gameId: current.gameId, type: 'GM' },
+              select: { id: true },
+            });
+            if (gmTeam) {
+              // We'll update the teamId in the main update below
+              updatePlayerDto = { ...updatePlayerDto, teamId: gmTeam.id } as any;
+            }
+          }
         }
       }
     }
