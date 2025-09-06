@@ -21,8 +21,9 @@ test.describe('Continue Game functionality', () => {
 
     // Wait for game creation and extract the room code from the display
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     // Navigate to join page to test continue functionality
     await page.goto('/');
@@ -49,7 +50,7 @@ test.describe('Continue Game functionality', () => {
 
     // Should redirect to the correct lobby
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toContainText(roomCode!);
+    await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode!);
     // Verify we're in the lobby
     await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
   });
@@ -69,8 +70,9 @@ test.describe('Continue Game functionality', () => {
 
     // Wait for lobby and extract room code
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     // Navigate to join page in a different context
     await page.goto('/join');
@@ -90,7 +92,7 @@ test.describe('Continue Game functionality', () => {
 
     // Should join the game and navigate to lobby
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toContainText(roomCode!);
+    await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode!);
   });
 
   test('should handle continue game with invalid/expired JWT gracefully', async ({ page }) => {

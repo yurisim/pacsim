@@ -21,8 +21,9 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Wait for game creation and extract the room code from the display
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     expect(roomCode).toBeDefined();
 
@@ -97,8 +98,9 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Wait for lobby and extract room code
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     // First, join as ConflictUser to create the player
     await page.goto('/join');
@@ -153,8 +155,9 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Wait for lobby and extract room code
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
     await expect(page.getByText('OriginalUser')).toHaveCount(2);
 
     // Clear session and try to join with same name
@@ -187,7 +190,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Should be in lobby now
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toContainText(roomCode!);
+    await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode!);
 
     // Should see the newly created player name
     await expect(page.getByText(uniqueName)).toHaveCount(2);
@@ -245,8 +248,9 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Wait for lobby and extract room code
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     await page.goto('/join');
 
@@ -292,8 +296,9 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Wait for lobby and extract room code
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     // Go back to join and test form preservation
     await page.goto('/join');
