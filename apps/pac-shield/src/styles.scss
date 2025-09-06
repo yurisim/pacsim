@@ -207,15 +207,22 @@ mat-mdc-snack-bar-container.snack-error {
 
 /* Fix for mat-card-header centering - ensures proper Material 3 layout */
 .md-card-header-center {
-  @apply flex justify-center w-full;
+  /* Let header size naturally; avoid width:100% + extra padding causing overflow */
+  @apply flex justify-center;
 }
 
-.md-card-header-center .mat-mdc-card-header {
-  @apply justify-center text-center w-full;
+/* mat-card-header renders with class mat-mdc-card-header on the same element */
+.mat-mdc-card-header.md-card-header-center {
+  @apply justify-center text-center;
+}
+
+/* Remove default left offset applied to header text wrapper when no avatar is present */
+.mat-mdc-card-header.md-card-header-center .mat-mdc-card-header-text {
+  margin-left: 0;
 }
 
 /* Ensure mat-card-title respects centering in Material 3 context */
 .md-card-title-center {
   text-align: center !important;
-  @apply block w-full;
+  display: block; /* full line for centering without forcing extra width */
 }

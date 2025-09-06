@@ -9,7 +9,10 @@
       "Bash(npx nx build:*)",
       "Bash(npx nx lint:*)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_install"
+      "mcp__playwright__browser_install",
+      "mcp__playwright__browser_snapshot",
+      "Bash(npx nx run:*)",
+      "Bash(npx playwright:*)"
     ],
     "deny": [],
     "ask": []

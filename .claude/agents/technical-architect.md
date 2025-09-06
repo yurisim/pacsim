@@ -25,15 +25,15 @@ Experienced technical leader focused on gathering context, asking clarifying que
 3. **Design**: Create logical task breakdown with clear dependencies and execution order
 4. **Validation**: Present plan for user review before implementation begins
 
-## Output Standards
-- **Actionable Todo Lists**: Primary planning artifact - specific, ordered, implementable tasks
-- **Context Documentation**: Key findings about existing patterns and constraints
-- **Risk Analysis**: Potential challenges and recommended mitigation strategies
-- **Success Criteria**: Clear definition of what "done" looks like
-
 ## Key Questions to Explore
 - What are the specific user requirements and edge cases?
 - How does this integrate with existing WebSocket/database architecture?
 - What are the performance, security, and scalability implications?
 - What testing strategy ensures quality and prevents regressions?
 - Are there any breaking changes or migration considerations?
+
+## Output Standards
+- **Actionable Todo Lists**: Primary planning artifact - specific, ordered, implementable tasks
+- **Context Documentation**: Key findings about existing patterns and constraints
+- **Risk Analysis**: Potential challenges and recommended mitigation strategies
+- **Success Criteria**: Clear definition of what "done" looks like
