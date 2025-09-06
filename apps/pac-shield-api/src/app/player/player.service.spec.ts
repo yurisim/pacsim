@@ -31,6 +31,7 @@ describe('PlayerService', () => {
       player: {
         update: jest.fn(),
         findMany: jest.fn(),
+        findUnique: jest.fn(),
       },
     } as any;
 
@@ -117,7 +118,7 @@ describe('PlayerService', () => {
 
     it('should accept all valid roles', async () => {
       const validRoles = [PlayerRole.PLAYER, PlayerRole.COMMANDER, PlayerRole.DEPUTY, PlayerRole.STRATEGIST, PlayerRole.GM];
-      
+
       (prismaService.player.update as jest.Mock).mockResolvedValue(mockPlayer);
 
       for (const role of validRoles) {
@@ -126,8 +127,17 @@ describe('PlayerService', () => {
           role
         };
 
+        // When setting role to GM, service enforces the player is on a GM team.
+        // Mock the current player with a GM team for this iteration.
+        if (role === PlayerRole.GM) {
+          (prismaService.player.findUnique as jest.Mock).mockResolvedValueOnce({
+            id: 1,
+            team: { id: 99, type: 'GM' }
+          });
+        }
+
         await service.updateWithRole(1, updateDto);
-        
+
         expect(prismaService.player.update).toHaveBeenCalledWith({
           where: { id: 1 },
           data: {
@@ -227,7 +237,7 @@ describe('PlayerService', () => {
     it('should send WebSocket update when player has game', async () => {
       const playerWithGame = { ...mockPlayer, game: { id: 1, roomCode: 'ROOM123' } };
       const gamePlayers = [mockPlayer, { ...mockPlayer, id: 2 }];
-      
+
       (prismaService.player.update as jest.Mock).mockResolvedValue(playerWithGame);
       (prismaService.player.findMany as jest.Mock).mockResolvedValue(gamePlayers);
 
@@ -242,7 +252,7 @@ describe('PlayerService', () => {
 
     it('should not send WebSocket update when player has no game', async () => {
       const playerWithoutGame = { ...mockPlayer, game: null };
-      
+
       (prismaService.player.update as jest.Mock).mockResolvedValue(playerWithoutGame);
 
       await service.updatePlayerName(1, 'New Name');
