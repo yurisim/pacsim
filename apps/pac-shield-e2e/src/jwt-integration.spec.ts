@@ -227,7 +227,11 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.locator('input[formControlName="playerName"]')).toBeHidden();
 
     // Join button should be disabled
-    const joinButton = page.getByRole('button', { name: /join/i });
+    const joinButton =
+      page.getByRole('dialog', { name: /join team/i }).getByRole('button', { name: /^join$/i })
+        .or(page.getByRole('dialog').getByRole('button', { name: /^join$/i }))
+        .or(page.getByTestId('join-team-dialog').getByRole('button', { name: /^join$/i }))
+        .or(page.getByRole('button', { name: /^join$/i }));
     await expect(joinButton).toBeDisabled();
   });
 
@@ -254,7 +258,11 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     await page.goto('/join');
 
-    const joinButton = page.getByRole('button', { name: /join/i });
+    const joinButton =
+      page.getByRole('dialog', { name: /join team/i }).getByRole('button', { name: /^join$/i })
+        .or(page.getByRole('dialog').getByRole('button', { name: /^join$/i }))
+        .or(page.getByTestId('join-team-dialog').getByRole('button', { name: /^join$/i }))
+        .or(page.getByRole('button', { name: /^join$/i }));
 
     // Initially disabled
     await expect(joinButton).toBeDisabled();
