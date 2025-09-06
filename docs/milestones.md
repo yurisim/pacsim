@@ -186,6 +186,8 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
     - [X] The frontend stores the session JWT in `localStorage`.
     - [X] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API and WebSocket requests.
     - [ ] Implement Angular Route Guards (`SessionAuthGuard`, `RoleGuard`) to protect game routes.
+      - [x] Implement SessionAuthGuard and apply to game and lobby routes
+      - [ ] Implement RoleGuard
 
 2.  **Role-Specific UI (Conditional Rendering):**
 
@@ -232,6 +234,12 @@ _This phase focuses on finalizing the user experience, recreating rich data disp
     - [ ] Add a notification/toast service (`ngx-toastr`) for immediate feedback on actions.
     - [ ] Add tooltips (using PrimeNG Tooltips) to explain complex UI elements.
     - [ ] Refine all CSS for a clean, professional look.
+    - [x] Migrate UI from PrimeNG to Angular Material v20 with Material 3 theming
+    - [x] Migrate iconography to MatIcon and update E2E selectors
+    - [x] Add dark/light ThemeToggle component and ThemeService
+    - [x] Implement Logout button with conditional toolbar display
+    - [x] Implement OTP input for room code on Join screen
+    - [x] Add notification service using MatSnackBar (NotificationService) for user feedback
 
 2.  **Game Master (GM) Interface:**
 
@@ -251,6 +259,10 @@ _This phase focuses on finalizing the user experience, recreating rich data disp
     - [ ] Deploy the containers to a cloud service (e.g., AWS, Google Cloud, DigitalOcean).
 
 4.  **Testing and Bug Fixing:**
+    - [x] Adopt Playwright for end-to-end testing
+    - [x] Add Playwright tests for route guards and toolbar
+    - [x] Add API E2E test for JWT claims on join
+    - [x] Add E2E test for "Start New Game" flow
     - [ ] Conduct thorough end-to-end testing of all game mechanics.
     - [ ] Perform user acceptance testing (UAT) with a group of test players.
     - [ ] Track and resolve bugs found during testing.
