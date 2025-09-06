@@ -116,21 +116,34 @@ export class JoinComponent {
   private validateRoomCode(roomCode: string) {
     this.isValidatingRoom = true;
     this.errorMessage = null;
+    
+    const startTime = Date.now();
+    const minDisplayTime = 800; // Minimum 800ms display time
 
     this.authService.validateRoomCode(roomCode).subscribe({
       next: (response) => {
-        this.isValidatingRoom = false;
-        this.isRoomValid = response.valid;
-        this.roomValidated = true;
-        if (!response.valid) {
-          this.errorMessage = 'Invalid room code';
-        }
+        const elapsed = Date.now() - startTime;
+        const remainingTime = Math.max(0, minDisplayTime - elapsed);
+        
+        setTimeout(() => {
+          this.isValidatingRoom = false;
+          this.isRoomValid = response.valid;
+          this.roomValidated = true;
+          if (!response.valid) {
+            this.errorMessage = 'Invalid room code';
+          }
+        }, remainingTime);
       },
       error: () => {
-        this.isValidatingRoom = false;
-        this.isRoomValid = false;
-        this.roomValidated = true;
-        this.errorMessage = 'Error validating room code';
+        const elapsed = Date.now() - startTime;
+        const remainingTime = Math.max(0, minDisplayTime - elapsed);
+        
+        setTimeout(() => {
+          this.isValidatingRoom = false;
+          this.isRoomValid = false;
+          this.roomValidated = true;
+          this.errorMessage = 'Error validating room code';
+        }, remainingTime);
       }
     });
   }

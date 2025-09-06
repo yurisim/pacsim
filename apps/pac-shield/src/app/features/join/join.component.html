@@ -81,24 +81,25 @@
             (complete)="onRoomCodeOtpComplete($event)"
           ></app-input-otp>
 
-          <div class="h-6 flex items-center justify-center gap-2 mt-2">
+          <div class="h-6 flex items-center justify-center gap-2 mt-2 transition-all duration-300 ease-out">
             <mat-progress-spinner
               *ngIf="isValidatingRoom"
               mode="indeterminate"
               [diameter]="16"
+              class="animate-in fade-in-0 zoom-in-95 duration-200"
             ></mat-progress-spinner>
 
             <mat-icon
               *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
               fontIcon="check_circle"
-              class="md-sys-color-secondary"
+              class="md-sys-color-secondary animate-in fade-in-0 zoom-in-50 duration-400 animate-pulse"
               aria-hidden="true"
             ></mat-icon>
 
             <mat-icon
               *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
               fontIcon="cancel"
-              class="md-sys-color-error"
+              class="md-sys-color-error animate-in fade-in-0 zoom-in-50 duration-400 animate-bounce"
               aria-hidden="true"
             ></mat-icon>
           </div>
