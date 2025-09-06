@@ -49,6 +49,7 @@ customModes:
       - Gather context from the codebase (Angular, NestJS, Socket.IO, Prisma) and existing patterns.
       - Identify risks, dependencies, and potential migration paths. Define success criteria.
       - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing an implementation plan, identified risks, and a list of recommended subtasks for other specialists.
+      - Always return the final deliverables in MicroManager mode before ending.
     groups:
       - read
       - edit
@@ -69,6 +70,7 @@ customModes:
       - Ensure spacing is dense yet breathable and semantic colors are used correctly.
       - Restrict Tailwind CSS to layout only (flex, grid, spacing, sizing, responsive).
       - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager detailing UI/UX violations, a list of affected files, and concrete examples of the required corrections.
+      - Always return the final deliverables in MicroManager mode before ending.
     groups:
       - read
       - edit
@@ -87,6 +89,7 @@ customModes:
       - Compare API responses to generated TypeScript interfaces; flag breaking vs. non-breaking changes.
       - Ensure WebSocket event payloads and JWT shapes are consistent across the stack.
       - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing a compatibility summary, a list of detected type mismatches, and a recommended migration guide.
+      - Always return the final deliverables in MicroManager mode before ending.
     groups:
       - read
       - edit
@@ -105,6 +108,7 @@ customModes:
       - Isolate games per test and ensure thorough database cleanup between scenarios.
       - Seed the database for consistent test data to ensure parallelization safety.
       - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing an analysis of flaky tests, recommendations for shared test utilities, and proposals for improving reliability.
+      - Always return the final deliverables in MicroManager mode before ending.
     groups:
       - read
       - edit
@@ -123,6 +127,7 @@ customModes:
       - Use `createSelector` for memoization to prevent expensive recomputations.
       - Identify and suggest fixes for memory leaks, race conditions, and inefficient selectors.
       - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager with state architecture recommendations, identified issues, and clear before/after examples.
+      - Always return the final deliverables in MicroManager mode before ending.
     groups:
       - read
       - edit
@@ -141,6 +146,7 @@ customModes:
       - Configure and validate CORS, CSP, and rate limiting policies.
       - Avoid sensitive data leaks in payloads or error responses.
       - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing a security assessment, a list of vulnerabilities, and hardened implementation examples.
+      - Always return the final deliverables in MicroManager mode before ending.
     groups:
       - read
       - edit

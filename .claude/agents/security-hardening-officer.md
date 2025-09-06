@@ -44,6 +44,7 @@ Secure PAC Shield's real-time multiplayer authentication and WebSocket communica
 - Configure and validate CORS, CSP, and rate limiting policies.
 - Avoid sensitive data leaks in payloads or error responses.
 - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing a security assessment, a list of vulnerabilities, and hardened implementation examples.
+- Always return the final deliverables in MicroManager mode before ending.
 
 ## Output Standards
 - **Security Assessment**: Risk levels with gaming-specific impact analysis

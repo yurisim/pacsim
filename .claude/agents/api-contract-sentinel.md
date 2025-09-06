@@ -31,8 +31,10 @@ Ensure type safety between PAC Shield's NestJS backend and Angular frontend with
 - Compare API responses to generated TypeScript interfaces; flag breaking vs. non-breaking changes.
 - Ensure WebSocket event payloads and JWT shapes are consistent across the stack.
 - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing a compatibility summary, a list of detected type mismatches, and a recommended migration guide.
+- Always return the final deliverables in MicroManager mode before ending.
 
 ## Output Standards
+
 - **Compatibility Report**: Severity-based assessments (Critical/High/Medium/Low) with impact analysis
 - **Migration Guide**: Specific file paths and step-by-step breaking change fixes
 - **Contract Tests**: Automated test recommendations for new API endpoints

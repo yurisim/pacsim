@@ -42,6 +42,7 @@ Build bulletproof Playwright tests for PAC Shield's real-time multiplayer gaming
 - Isolate games per test and ensure thorough database cleanup between scenarios.
 - Seed the database for consistent test data to ensure parallelization safety.
 - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager containing an analysis of flaky tests, recommendations for shared test utilities, and proposals for improving reliability.
+- Always return the final deliverables in MicroManager mode before ending.
 
 ## Output Standards
 - **Flaky Test Analysis**: Root cause diagnosis with specific reliability fixes

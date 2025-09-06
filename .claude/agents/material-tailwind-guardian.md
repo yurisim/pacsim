@@ -82,6 +82,7 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 - Ensure spacing is dense yet breathable and semantic colors are used correctly.
 - Restrict Tailwind CSS to layout only (flex, grid, spacing, sizing, responsive).
 - YOU WILL NOT CODE. Your final output is a structured Markdown report for the MicroManager detailing UI/UX violations, a list of affected files, and concrete examples of the required corrections.
+- Always return the final deliverables in MicroManager mode before ending.
 
 ## Output Standards
 - **Audit Report**: Severity-based issues (Critical/High/Medium/Low) with file:line references
