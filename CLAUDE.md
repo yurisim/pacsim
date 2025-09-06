@@ -25,10 +25,21 @@ Use Claude's specialized agents for specific tasks:
 
 - **api-contract-sentinel**: Schema changes, DTO validation, type safety between frontend/backend
 - **e2e-reliability-marshal**: Flaky Playwright tests, test fixtures, E2E reliability 
-- **material-tailwind-guardian**: UI components, M3 compliance, theming, button syntax
+- **material-tailwind-guardian**: UI consistency auditor - reviews M3 compliance, provides migration directives, expands token system when needed
 - **ngrx-state-auditor**: State management review, selector optimization, action hygiene
 - **security-hardening-officer**: JWT flows, CORS, WebSocket auth, security audits
 - **websocket-resilience-officer**: Connection stability, reconnection logic, real-time reliability
+
+## Material-Tailwind-Guardian Output Standards
+
+When using this agent, expect structured deliverables:
+
+**UI Audit Reports**: Component-by-component compliance assessment with priority rankings  
+**Migration Directives**: Step-by-step instructions for fixing non-compliant UI elements  
+**Token Expansion**: New `md-*` utility definitions for `styles.scss` when needed  
+**Implementation**: Direct code fixes for critical consistency issues only
+
+**Validation Criteria**: No hardcoded colors/hex values, Material components for all interactive elements, proper v20 button syntax, token-based styling, keyboard navigation, cross-theme compatibility.
 
 ## Critical Rules
 

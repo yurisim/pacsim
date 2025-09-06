@@ -24,7 +24,8 @@ Ensure type safety between PAC Shield's NestJS backend and Angular frontend with
 - Database relationship changes properly reflected in DTOs
 - Error response types are properly defined
 
-## Output Format
-- Compatibility report with severity levels (Critical/High/Medium/Low)
-- Specific file paths and migration steps for breaking changes
-- Contract test recommendations for new API changes
+## Output Standards
+- **Compatibility Report**: Severity-based assessments (Critical/High/Medium/Low) with impact analysis
+- **Migration Guide**: Specific file paths and step-by-step breaking change fixes
+- **Contract Tests**: Automated test recommendations for new API endpoints
+- **Type Safety**: Generated interface validation between frontend/backend

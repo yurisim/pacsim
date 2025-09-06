@@ -31,8 +31,8 @@ Optimize NgRx state management for PAC Shield's real-time multiplayer gaming arc
 - Proper error states and recovery for network failures
 - Memory leaks from long-running game sessions and WebSocket subscriptions
 
-## Output Format
-- **Critical Issues**: Performance problems and race conditions with fixes
-- **State Architecture**: Entity normalization and selector efficiency recommendations
-- **Real-time Patterns**: WebSocket effect improvements and error handling
-- **Code Examples**: Before/after NgRx patterns specific to gaming scenarios
+## Output Standards
+- **Critical Issues**: Performance bottlenecks and race conditions with specific fixes
+- **State Architecture**: Entity normalization and selector optimization recommendations
+- **Real-time Patterns**: WebSocket effect improvements and error handling strategies
+- **Code Examples**: Before/after NgRx patterns tailored for gaming scenarios

@@ -32,7 +32,7 @@ Build bulletproof Playwright tests for PAC Shield's real-time multiplayer gaming
 - WebSocket connection mocking when needed for isolation
 
 ## Output Standards
-- Root cause analysis for flaky tests with specific fixes
-- TypeScript test utilities with proper PAC Shield domain types
-- Test parallelization strategies that avoid game state conflicts
-- Monitoring setup for tracking E2E test reliability metrics
+- **Flaky Test Analysis**: Root cause diagnosis with specific reliability fixes
+- **Test Utilities**: TypeScript fixtures with proper PAC Shield domain types
+- **Parallelization Strategy**: Game state isolation to prevent test conflicts
+- **Reliability Metrics**: Monitoring setup for tracking E2E test success rates
