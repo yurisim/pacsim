@@ -1,58 +1,76 @@
-<div class="md-sys-bg-background min-h-[calc(100vh-64px)] flex justify-center items-center md-padding-lg">
+<div
+  class="md-sys-bg-background min-h-[calc(100vh-64px)] flex justify-center items-center md-padding-lg"
+>
   <!-- Initial Join Form -->
   <mat-card
     *ngIf="!showNameConflict"
     class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-md"
     [class.max-w-lg]="shouldShowContinueOption()"
   >
-    <mat-card-header class="text-center">
-      <mat-card-title class="md-typescale-headline-medium md-sys-color-on-surface">Join Game</mat-card-title>
+    <mat-card-header class="md-card-header-center">
+      <mat-card-title
+        class="md-typescale-headline-medium md-sys-color-on-surface md-card-title-center"
+        >Join Game</mat-card-title
+      >
     </mat-card-header>
 
     <mat-card-content class="md-padding-lg">
       <!-- Continue Game Option for JWT Users -->
       <div *ngIf="shouldShowContinueOption()" class="mb-6">
-        <div class="md-sys-bg-primary-container md-shape-corner-lg md-padding-lg">
+        <div
+          class="md-sys-bg-primary-container md-shape-corner-lg md-padding-lg"
+        >
           <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 md-shape-corner-full md-sys-bg-primary flex items-center justify-center">
-              <span class="md-typescale-title-medium md-sys-color-on-primary font-semibold">
+            <div
+              class="w-12 h-12 md-shape-corner-full md-sys-bg-primary flex items-center justify-center"
+            >
+              <span
+                class="md-typescale-title-medium md-sys-color-on-primary font-semibold"
+              >
                 {{ currentPlayer?.name?.charAt(0) }}
               </span>
             </div>
             <div class="text-left">
-              <div class="md-typescale-title-medium md-sys-color-on-primary-container font-medium">
+              <div
+                class="md-typescale-title-medium md-sys-color-on-primary-container font-medium"
+              >
                 Welcome back, {{ currentPlayer?.name }}!
               </div>
-              <div class="md-typescale-body-small md-sys-color-on-primary-container opacity-90">
+              <div
+                class="md-typescale-body-small md-sys-color-on-primary-container opacity-90"
+              >
                 Continue your game session
               </div>
             </div>
           </div>
 
-          <button
-            matButton="filled"
-            color="primary"
-            (click)="onContinueGame()"
-                      >
-            <mat-icon fontIcon="arrow_forward" class="mr-2" aria-hidden="true"></mat-icon>
+          <button matButton="filled" color="primary" (click)="onContinueGame()">
+            <mat-icon
+              fontIcon="arrow_forward"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
             <span class="md-typescale-label-large">Continue Game</span>
           </button>
         </div>
 
         <div class="flex items-center my-6">
           <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
-          <span class="md-padding-sm md-typescale-body-small md-sys-color-on-surface-variant">
+          <span
+            class="md-padding-sm md-typescale-body-small md-sys-color-on-surface-variant"
+          >
             or join a different game
           </span>
           <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
         </div>
       </div>
 
-      <div [formGroup]="joinForm" class="flex flex-col gap-4">
+      <div [formGroup]="joinForm" class="flex flex-col gap-6">
         <!-- Room Code -->
         <div class="flex flex-col items-center gap-2">
-          <div class="block md-typescale-body-medium md-sys-color-on-surface mb-2 text-center">
-            <mat-icon fontIcon="key" class="mr-2" aria-hidden="true"></mat-icon>
+          <div
+            class="block md-typescale-body-medium md-sys-color-on-surface mt-4 text-center"
+          >
             <span>Room Code</span>
           </div>
           <app-input-otp
@@ -63,7 +81,7 @@
             (complete)="onRoomCodeOtpComplete($event)"
           ></app-input-otp>
 
-          <div class="h-6 flex items-center justify-center gap-2 mt-1">
+          <div class="h-6 flex items-center justify-center gap-2 mt-2">
             <mat-progress-spinner
               *ngIf="isValidatingRoom"
               mode="indeterminate"
@@ -73,14 +91,14 @@
             <mat-icon
               *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
               fontIcon="check_circle"
-              class="text-green-500"
+              class="md-sys-color-secondary"
               aria-hidden="true"
             ></mat-icon>
 
             <mat-icon
               *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
               fontIcon="cancel"
-              class="text-red-500"
+              class="md-sys-color-error"
               aria-hidden="true"
             ></mat-icon>
           </div>
@@ -97,9 +115,14 @@
 
         <!-- Player Name (shown after room is valid) -->
         <div *ngIf="shouldShowPlayerName()">
-          <mat-form-field appearance="outline" >
+          <mat-form-field appearance="outline">
             <mat-label>Player Name</mat-label>
-            <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
+            <mat-icon
+              matPrefix
+              fontIcon="person"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
             <input
               matInput
               formControlName="playerName"
@@ -117,20 +140,27 @@
           </div>
         </div>
 
-        <div *ngIf="errorMessage" class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
+        <div
+          *ngIf="errorMessage"
+          class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        >
           {{ errorMessage }}
         </div>
       </div>
     </mat-card-content>
 
-    <mat-card-actions class="flex gap-3 md-padding-lg justify-center">
+    <mat-card-actions class="flex gap-3 md-padding-lg justify-center mt-4">
       <button
         matButton="outlined"
         color="primary"
         (click)="router.navigate(['/'])"
         class=""
       >
-        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
+        <mat-icon
+          fontIcon="arrow_back"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
         <span class="md-typescale-label-large">Back</span>
       </button>
 
@@ -141,10 +171,24 @@
         [disabled]="isJoinButtonDisabled()"
         class=""
       >
-        <mat-icon [fontIcon]="isLoading ? 'hourglass_top' : isValidatingRoom ? 'autorenew' : 'login'" class="mr-2" aria-hidden="true"></mat-icon>
+        <mat-icon
+          [fontIcon]="
+            isLoading
+              ? 'hourglass_top'
+              : isValidatingRoom
+              ? 'autorenew'
+              : 'login'
+          "
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
         <span class="md-typescale-label-large">
           {{
-            isLoading ? 'Joining...' : isValidatingRoom ? 'Validating...' : 'Join'
+            isLoading
+              ? 'Joining...'
+              : isValidatingRoom
+              ? 'Validating...'
+              : 'Join'
           }}
         </span>
       </button>
@@ -156,21 +200,26 @@
     *ngIf="showNameConflict && !isNewPersonFlow"
     class="w-[450px] text-center"
   >
-    <mat-card-header>
-      <mat-card-title>Player Name Already Exists</mat-card-title>
+    <mat-card-header class="md-card-header-center m-3">
+      <mat-card-title class="md-card-title-center"
+        >Player Name Already Exists</mat-card-title
+      >
     </mat-card-header>
 
     <mat-card-content>
       <div class="flex flex-col gap-6 text-left">
         <div
-          class="text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2"
+          class="md-sys-bg-secondary-container md-sys-color-on-secondary-container md-shape-corner-sm md-padding-sm border text-center"
+          style="border-color: var(--mat-sys-outline-variant)"
         >
           A player named "{{ playerName }}" already exists in this game.
         </div>
 
-        <div class="mt-2">
-          <h4 class="font-semibold mb-2">Option 1: I'm the same person</h4>
-          <p class="text-sm text-gray-600 mb-3">
+        <div class="text-center">
+          <div class="font-semibold">Option 1: I'm the same person</div>
+          <p
+            class="md-typescale-body-small md-sys-color-on-surface-variant mb-3"
+          >
             Enter your PIN to continue as this player:
           </p>
 
@@ -179,10 +228,6 @@
             class="flex flex-col items-center gap-2 w-full"
           >
             <div class="mb-4">
-              <div id="pin-label" class="block md-typescale-body-medium md-sys-color-on-surface mb-2 text-center">
-                <mat-icon fontIcon="pin" class="mr-2" aria-hidden="true"></mat-icon>
-                <span>Enter your 4-digit PIN</span>
-              </div>
               <app-input-otp
                 [length]="4"
                 [integerOnly]="true"
@@ -195,7 +240,7 @@
 
             <div
               *ngIf="pinForm.get('pin')?.invalid && pinForm.get('pin')?.touched"
-              class="text-red-600 text-sm"
+              class="md-sys-color-error md-typescale-body-small"
             >
               PIN is required
             </div>
@@ -206,22 +251,37 @@
             color="primary"
             (click)="onVerifyPin()"
             [disabled]="isVerifyButtonDisabled()"
-            class="w-full mt-2"
+            class="mt-2 mx-auto"
           >
-            <mat-icon fontIcon="check_circle" class="mr-2" aria-hidden="true"></mat-icon>
+            <mat-icon
+              fontIcon="check_circle"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
             Verify PIN
           </button>
         </div>
 
-        <div class="flex items-center my-4">
-          <div class="flex-1 border-t border-gray-300"></div>
-          <span class="px-3 text-gray-500 text-sm">or</span>
-          <div class="flex-1 border-t border-gray-300"></div>
+        <mat-divider
+          class="mt-2"
+          role="separator"
+          aria-label="Options separator top"
+        ></mat-divider>
+        <div
+          class="md-typescale-body-small md-sys-color-on-surface-variant text-center"
+        >
+          or
         </div>
+        <mat-divider
+          role="separator"
+          aria-label="Options separator bottom"
+        ></mat-divider>
 
-        <div class="mt-1 text-center">
+        <div class="text-center">
           <h4 class="font-semibold mb-2">Option 2: I'm a new person</h4>
-          <p class="text-sm text-gray-600 mb-3">
+          <p
+            class="md-typescale-body-small md-sys-color-on-surface-variant mb-3"
+          >
             Create a new player with a different name:
           </p>
 
@@ -232,12 +292,19 @@
             [disabled]="isLoading"
             class="mx-auto"
           >
-            <mat-icon fontIcon="person_add" class="mr-2" aria-hidden="true"></mat-icon>
+            <mat-icon
+              fontIcon="person_add"
+              class=""
+              aria-hidden="true"
+            ></mat-icon>
             I'm a New Person
           </button>
         </div>
 
-        <div *ngIf="errorMessage" class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
+        <div
+          *ngIf="errorMessage"
+          class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        >
           {{ errorMessage }}
         </div>
       </div>
@@ -251,37 +318,52 @@
         [disabled]="isLoading"
         class="justify-center"
       >
-        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
+        <mat-icon
+          fontIcon="arrow_back"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
         Back
       </button>
     </mat-card-actions>
   </mat-card>
 
   <!-- New Person Flow -->
-  <mat-card *ngIf="isNewPersonFlow" class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-md text-center mx-auto self-center">
-    <mat-card-header>
-      <mat-card-title>Create a New Player</mat-card-title>
+  <mat-card
+    *ngIf="isNewPersonFlow"
+    class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-md text-center mx-auto self-center"
+  >
+    <mat-card-header class="md-card-header-center mb-3">
+      <mat-card-title class="md-card-title-center"
+        >Create a New Player</mat-card-title
+      >
     </mat-card-header>
 
     <mat-card-content>
       <div [formGroup]="newPersonForm" class="flex flex-col gap-4">
-        <mat-form-field appearance="outline" >
+        <mat-form-field appearance="outline">
           <mat-label>New Player Name</mat-label>
-          <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
-          <input
-            matInput
-            formControlName="newPlayerName"
-          />
+          <mat-icon
+            matPrefix
+            fontIcon="person"
+            class="mr-2"
+            aria-hidden="true"
+          ></mat-icon>
+          <input matInput formControlName="newPlayerName" />
         </mat-form-field>
 
-        <div class="flex gap-2">
+        <div class="flex gap-2 justify-center items-center">
           <button
             matButton="outlined"
             color="primary"
             (click)="onCheckNameAvailability()"
             [disabled]="newPersonForm.invalid || isCheckingName"
           >
-            <mat-icon fontIcon="search" class="mr-2" aria-hidden="true"></mat-icon>
+            <mat-icon
+              fontIcon="search"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
             Check Name Availability
           </button>
           <mat-progress-spinner
@@ -291,10 +373,16 @@
           ></mat-progress-spinner>
         </div>
 
-        <div *ngIf="errorMessage" class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm">
+        <div
+          *ngIf="errorMessage"
+          class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        >
           {{ errorMessage }}
         </div>
-        <div *ngIf="isNameAvailable" class="text-green-600 text-sm">
+        <div
+          *ngIf="isNameAvailable"
+          class="md-sys-color-secondary md-typescale-body-small"
+        >
           This name is available!
         </div>
       </div>
@@ -308,7 +396,11 @@
         [disabled]="isLoading"
         class="justify-center"
       >
-        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
+        <mat-icon
+          fontIcon="arrow_back"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
         Back
       </button>
 
@@ -318,7 +410,11 @@
         (click)="onCreateNewPlayer()"
         [disabled]="!isNameAvailable || isLoading"
       >
-        <mat-icon fontIcon="person_add" class="mr-2" aria-hidden="true"></mat-icon>
+        <mat-icon
+          fontIcon="person_add"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
         Create New Player
       </button>
     </mat-card-actions>

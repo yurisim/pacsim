@@ -13,6 +13,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UnassignedPlayersPipe } from '../../shared/pipes/unassigned-players.pipe';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
@@ -40,6 +49,15 @@ enum PlayerRole {
     MatDividerModule,
     MatDialogModule,
     MatIconModule,
+    MatTabsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatSidenavModule,
+    MatMenuModule,
+    MatTooltipModule,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
@@ -197,32 +215,19 @@ export class LobbyComponent implements OnInit {
     return role || 'PLAYER';
   }
 
-  getTeamTypeInfo(team: Team): { icon: string; severity: 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast'; color: string } {
-    if (!team.type) {
-      return { icon: 'group', severity: 'secondary', color: 'gray' };
-    }
-
+  // Icon/color metadata for teams (kept minimal for template binding)
+  getTeamTypeInfo(team: Team): { icon: string; color: string } {
     switch (team.type) {
-      case 'CAOC':
-        return { icon: 'account_tree', severity: 'info', color: 'blue' };
-      case 'CSPOC':
-        return { icon: 'public', severity: 'contrast', color: 'purple' };
-      case 'MOB_KADENA':
-        return { icon: 'flag', severity: 'success', color: 'green' };
-      case 'MOB_ANDERSEN':
-        return { icon: 'explore', severity: 'success', color: 'teal' };
-      case 'MOB_YOKOTA':
-        return { icon: 'send', severity: 'success', color: 'cyan' };
-      case 'MOB_OSAN':
-        return { icon: 'shield', severity: 'success', color: 'indigo' };
-      case 'MOB_JBPHH':
-        return { icon: 'star', severity: 'success', color: 'blue' };
-      case 'MEDCOM':
-        return { icon: 'favorite', severity: 'danger', color: 'red' };
-      case 'GM':
-        return { icon: 'settings', severity: 'warn', color: 'orange' };
-      default:
-        return { icon: 'group', severity: 'secondary', color: 'gray' };
+      case 'CAOC': return { icon: 'account_tree', color: 'var(--mat-sys-primary)' };
+      case 'CSPOC': return { icon: 'public', color: 'var(--mat-sys-tertiary)' };
+      case 'MOB_KADENA': return { icon: 'flag', color: 'var(--mat-sys-secondary)' };
+      case 'MOB_ANDERSEN': return { icon: 'explore', color: 'var(--mat-sys-secondary)' };
+      case 'MOB_YOKOTA': return { icon: 'send', color: 'var(--mat-sys-secondary)' };
+      case 'MOB_OSAN': return { icon: 'shield', color: 'var(--mat-sys-secondary)' };
+      case 'MOB_JBPHH': return { icon: 'star', color: 'var(--mat-sys-secondary)' };
+      case 'MEDCOM': return { icon: 'favorite', color: 'var(--mat-sys-error)' };
+      case 'GM': return { icon: 'settings', color: 'var(--mat-sys-primary)' };
+      default: return { icon: 'group', color: 'var(--mat-sys-outline)' };
     }
   }
 
