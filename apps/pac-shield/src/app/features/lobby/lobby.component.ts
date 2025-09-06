@@ -386,7 +386,7 @@ export class LobbyComponent implements OnInit {
   }
 
   updatePlayerRole(playerId: number, role: string): void {
-    this.apiService.updatePlayerRole(playerId, role).subscribe({
+    this.apiService.updatePlayerRole(playerId.toString(), role).subscribe({
       next: () => {
         this.notification.success('Player role updated');
       },
@@ -397,7 +397,7 @@ export class LobbyComponent implements OnInit {
   }
 
   removePlayerFromGame(playerId: number): void {
-    this.apiService.deletePlayer(playerId).subscribe({
+    this.apiService.deletePlayer(playerId.toString()).subscribe({
       next: () => {
         this.notification.success('Player removed from game');
       },
