@@ -107,7 +107,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
     await page.fill('input[formControlName="playerName"]', 'ConflictUser');
-    await page.getByRole('button', { name: /join/i }).click();
+    await page.getByRole('button', { name: /^join$/i }).click();
 
     // Should successfully join the lobby
     await expect(page).toHaveURL(/\/lobby\//);
@@ -119,7 +119,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
     await page.fill('input[formControlName="playerName"]', 'ConflictUser');
-    await page.getByRole('button', { name: /join/i }).click();
+    await page.getByRole('button', { name: /^join$/i }).click();
 
     // Should trigger name conflict since ConflictUser already exists
     await expect(
@@ -167,7 +167,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
     await page.fill('input[formControlName="playerName"]', 'OriginalUser');
-    await page.getByRole('button', { name: /join/i }).click();
+    await page.getByRole('button', { name: /^join$/i }).click();
 
     // Should show name conflict (message enhanced with PrimeNG p-message)
     await expect(
