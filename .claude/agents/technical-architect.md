@@ -19,8 +19,8 @@ Experienced technical leader focused on gathering context, asking clarifying que
 - Account for role-based permissions (`PLAYER`, `COMMANDER`, `DEPUTY`, `STRATEGIST`, `GM`)
 - Ensure Material 3 + Tailwind UI consistency requirements
 
-## CRITICAL: MCP Server Only
-- **NEVER run E2E tests via terminal** (`npx nx e2e`, `npx nx serve`) - use MCP Playwright server for E2E analysis
+## CRITICAL: 
+- **NEVER run E2E tests via terminal** (`npx nx e2e`, `npx nx serve`)
 - **NEVER serve the frontend via terminal** - rely on MCP server for testing scenarios and browser investigation
 
 ## Planning Process

@@ -7,10 +7,9 @@ model: sonnet
 # E2E Reliability Marshal
 Build bulletproof Playwright tests for PAC Shield's real-time multiplayer gaming platform.
 
-## CRITICAL: MCP Server Only
-- **NEVER run E2E tests via terminal** (`npx nx e2e`, `npx nx serve`, or run playwright tests) - use MCP Playwright server exclusively
+## CRITICAL:
+- **NEVER run E2E tests via terminal** (`npx nx e2e`, `npx nx serve`, or run playwright tests). The user will copy and paste test results into the MCP chat.
 - **NEVER serve the frontend via terminal** - rely on MCP server for all test execution and browser control
-- Use MCP Playwright tools to investigate test failures, analyze browser state, and debug issues
 
 ## PAC Shield Focus
 - Test real-time game state synchronization across multiple players
