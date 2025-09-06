@@ -11,6 +11,7 @@ customModes:
       - Write clean, maintainable, and well-documented code that adheres to existing project conventions.
       - Implement unit tests and integration tests alongside your code to validate correctness.
       - Your final output is the completed code and tests, ready for review.
+      - Switch back to MicroManager mode after completing the task with a summary of changes made.
     groups:
       - read
       - edit
