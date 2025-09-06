@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import {
   FormControl,
   FormGroup,
@@ -15,8 +15,9 @@ import { MatButtonModule } from '@angular/material/button';
 @Component({
   selector: 'app-join-team-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatDialogModule],
   template: `
+    <h2 mat-dialog-title>Join Team</h2>
     <form [formGroup]="form" (ngSubmit)="submit()" class="p-4 md-sys-bg-surface-container md-shape-corner-lg md-elevation-2">
       <div class="flex flex-col gap-4">
         <mat-form-field appearance="outline" class="w-full">
