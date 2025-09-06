@@ -179,3 +179,13 @@ export async function clearOtpField(page: Page, length = 4): Promise<void> {
     }
   }
 }
+
+/**
+ * Simplified helper for filling room code OTP component
+ * @param page - Playwright Page object
+ * @param roomCode - The room code string to enter (e.g., 'ABC123')
+ * @returns Promise<void>
+ */
+export async function fillRoomCodeOtp(page: Page, roomCode: string): Promise<void> {
+  await fillOtpFieldByAriaLabel(page, '6-character Room Code', roomCode);
+}
