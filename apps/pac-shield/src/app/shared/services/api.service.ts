@@ -98,4 +98,39 @@ export class ApiService {
   leaveTeam(playerId: string): Observable<any> {
     return this.post(`player/${playerId}/leave-team`, {});
   }
+
+  /**
+   * Lock a team's roster to prevent joins/moves.
+   */
+  lockTeam(teamId: number): Observable<any> {
+    return this.patch(`team/${teamId}/lock`, {});
+  }
+
+  /**
+   * Unlock a team's roster to allow joins/moves.
+   */
+  unlockTeam(teamId: number): Observable<any> {
+    return this.patch(`team/${teamId}/unlock`, {});
+  }
+
+  /**
+   * Assign the first available unassigned player in the same game to this team.
+   */
+  assignOneUnassigned(teamId: number): Observable<any> {
+    return this.post(`team/${teamId}/assign-one-unassigned`, {});
+  }
+
+  /**
+   * Update only a player's role.
+   */
+  updatePlayerRole(playerId: string, role: string): Observable<any> {
+    return this.patch(`player/${playerId}`, { role });
+  }
+
+  /**
+   * Permanently remove a player from the game.
+   */
+  deletePlayer(playerId: string): Observable<any> {
+    return this.delete(`player/${playerId}`);
+  }
 }
