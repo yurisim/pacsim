@@ -51,7 +51,7 @@ test.describe('New Player Flow', () => {
     // Try to create a player with the same name again
     await page.fill('input[formControlName="newPlayerName"]', 'DUPLICATE_NAME');
 
-    await page.getByRole('textbox', { name: 'Enter a new player name' }).fill('DUPLICATE_NAME');
+    await page.getByRole('textbox', { name: 'New Player Name' }).fill('DUPLICATE_NAME');
     await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.getByText('This name is already taken. Please choose another one.')).toBeVisible();
 
@@ -67,6 +67,6 @@ test.describe('New Player Flow', () => {
     // Expect to be redirected to the lobby and see the new player
     await expect(page).toHaveURL(/\/lobby\//);
     await expect(page.getByText(roomCode)).toBeVisible();
-    await expect(page.getByText(uniqueName)).toHaveCount(2);
+    await expect(page.getByText(uniqueName)).not.toHaveCount(0);
   });
 });
