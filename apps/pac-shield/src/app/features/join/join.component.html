@@ -167,11 +167,6 @@
         >
           A player named "{{ playerName }}" already exists in this game.
         </div>
-        <div
-          class="text-sky-700 bg-sky-50 border border-sky-200 rounded px-3 py-2"
-        >
-          A player with this name already exists
-        </div>
 
         <div class="mt-2">
           <h4 class="font-semibold mb-2">Option 1: I'm the same person</h4>
@@ -224,7 +219,7 @@
           <div class="flex-1 border-t border-gray-300"></div>
         </div>
 
-        <div class="mt-1">
+        <div class="mt-1 text-center">
           <h4 class="font-semibold mb-2">Option 2: I'm a new person</h4>
           <p class="text-sm text-gray-600 mb-3">
             Create a new player with a different name:
@@ -235,7 +230,8 @@
             color="primary"
             (click)="onNewPerson()"
             [disabled]="isLoading"
-                      >
+            class="mx-auto"
+          >
             <mat-icon fontIcon="person_add" class="mr-2" aria-hidden="true"></mat-icon>
             I'm a New Person
           </button>
