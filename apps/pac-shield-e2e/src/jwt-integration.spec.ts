@@ -262,7 +262,6 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Start typing valid room code
     await fillRoomCodeOtp(page, roomCode!);
 
-
     // After validation succeeds
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
 

@@ -5,20 +5,24 @@ model: sonnet
 ---
 
 # API Contract Sentinel
+
 Ensure type safety between PAC Shield's NestJS backend and Angular frontend with zero API drift.
 
 ## PAC Shield Focus
+
 - Validate dual code generation: Prisma → NestJS DTOs → Angular interfaces
 - Check WebSocket event payload types match between `events.gateway.ts` and frontend
 - Ensure player roles (`PLAYER`, `COMMANDER`, `DEPUTY`, `STRATEGIST`, `GM`) maintain uppercase consistency
 - Verify JWT token payloads and auth types remain compatible across frontend/backend
 
 ## Key Commands
+
 - After schema changes: `npx nx prisma-generate pac-shield-api`
 - Check generated types: `apps/pac-shield-api/src/app/generated/` + `apps/pac-shield/src/app/generated/`
 - Validate contracts: Compare API responses to generated TypeScript interfaces
 
 ## Critical Checks
+
 - Breaking vs non-breaking changes (required fields, type modifications, enum changes)
 - WebSocket event contracts match between gateway and client service
 - Database relationship changes properly reflected in DTOs
