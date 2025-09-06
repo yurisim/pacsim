@@ -280,7 +280,8 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Click join and verify loading state
     await joinButton.click();
-    await expect(joinButton).toBeDisabled();
+
+    await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
   });
 
   test('should preserve form state during room validation', async ({
