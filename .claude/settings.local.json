@@ -7,7 +7,9 @@
       "mcp__nx-mcp__nx_current_running_tasks_details",
       "mcp__nx-mcp__nx_workspace",
       "Bash(npx nx build:*)",
-      "Bash(npx nx lint:*)"
+      "Bash(npx nx lint:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install"
     ],
     "deny": [],
     "ask": []

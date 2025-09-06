@@ -196,3 +196,36 @@ mat-mdc-snack-bar-container.snack-error {
 .mat-mdc-form-field {
   width: 100%;
 }
+
+/* Material 3 layout utilities for proper centering */
+.md-layout-center { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+}
+
+.md-layout-center-text { 
+  text-align: center; 
+  display: block; 
+  width: 100%; 
+}
+
+/* Fix for mat-card-header centering - ensures proper Material 3 layout */
+.md-card-header-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.md-card-header-center .mat-mdc-card-header {
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+/* Ensure mat-card-title respects centering in Material 3 context */
+.md-card-title-center {
+  text-align: center !important;
+  display: block;
+  width: 100%;
+}

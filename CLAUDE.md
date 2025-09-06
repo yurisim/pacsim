@@ -17,6 +17,7 @@ Guidance for Claude Code when working with PAC Shield - a real-time multiplayer 
 **Data Layer**: `schema.prisma` → dual generation (NestJS DTOs + Angular interfaces)  
 **WebSocket**: Socket.IO rooms (gameId-based) - Backend: `events.gateway.ts` | Frontend: `websocket.service.ts`  
 **UI**: Material 3 tokens only (`styles.scss`), Tailwind for layout only  
+**Button Sizing**: Buttons should size to content, not fill containers - use appropriate margins for spacing  
 **Roles**: UPPERCASE everywhere (`PLAYER`, `COMMANDER`, `DEPUTY`, `STRATEGIST`, `GM`)
 
 ## Specialized Agents
@@ -39,7 +40,7 @@ When using this agent, expect structured deliverables:
 **Token Expansion**: New `md-*` utility definitions for `styles.scss` when needed  
 **Implementation**: Direct code fixes for critical consistency issues only
 
-**Validation Criteria**: No hardcoded colors/hex values, Material components for all interactive elements, proper v20 button syntax, token-based styling, keyboard navigation, cross-theme compatibility.
+**Validation Criteria**: No hardcoded colors/hex values, Material components for all interactive elements, proper v20 button syntax, token-based styling, keyboard navigation, cross-theme compatibility, buttons size to content (not container-width), dense but appropriately spaced layout.
 
 ## Critical Rules
 

@@ -23,9 +23,6 @@
       </div>
     }
 
-    <!-- Theme Toggle Button -->
-    <app-theme-toggle></app-theme-toggle>
-
     <!-- Home Button -->
     <button
       matIconButton
@@ -34,6 +31,9 @@
       matTooltip="Home">
       <mat-icon fontIcon="home"></mat-icon>
     </button>
+
+    <!-- Theme Toggle Button -->
+    <app-theme-toggle></app-theme-toggle>
 
     <!-- Logout Button -->
     @if (auth.isAuthenticated() && auth.getGameId()) {

@@ -149,8 +149,7 @@
                     <button
                       matButton="filled"
                       color="primary"
-                      class="w-full"
-                      (click)="openJoinTeamDialog(team)"
+                                            (click)="openJoinTeamDialog(team)"
                       [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
                       <mat-icon [fontIcon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add'" class="mr-2" aria-hidden="true"></mat-icon>
                       {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
@@ -230,8 +229,7 @@
                   <button
                     matButton="filled"
                     color="primary"
-                    class="w-full"
-                    (click)="openJoinTeamDialog(team)"
+                                        (click)="openJoinTeamDialog(team)"
                     [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
                     <mat-icon [fontIcon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add'" class="mr-2" aria-hidden="true"></mat-icon>
                     {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}
@@ -310,8 +308,7 @@
                   <button
                     matButton="filled"
                     color="primary"
-                    class="w-full"
-                    (click)="openJoinTeamDialog(team)"
+                                        (click)="openJoinTeamDialog(team)"
                     [disabled]="isCurrentPlayerOnTeam(team, currentPlayer)">
                     <mat-icon [fontIcon]="isCurrentPlayerOnTeam(team, currentPlayer) ? 'check_circle' : 'add'" class="mr-2" aria-hidden="true"></mat-icon>
                     {{ isCurrentPlayerOnTeam(team, currentPlayer) ? 'Current Team' : 'Join Team' }}

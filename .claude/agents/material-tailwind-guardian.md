@@ -15,6 +15,8 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 
 ## Component Standards
 - Interactive elements use Material components exclusively (no raw HTML buttons/inputs)
+- **Button Sizing**: Buttons size to content, NOT container width - avoid `width: 100%` or `flex: 1`
+- **Spacing**: Dense but breathable - use consistent margins/padding without cramming elements
 - Game states use semantic colors: `primary` (active), `secondary` (lobby), `tertiary` (completed)  
 - Success/warnings/errors use proper container tokens (`on-error-container` over `error-container`)
 - Elevation utilities (`md-elevation-*`) for game panels and modal overlays
@@ -62,13 +64,17 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 1. No hardcoded colors or hex values
 2. All interactive elements use Material components  
 3. Proper button syntax (Angular Material v20)
-4. Token-based styling throughout
-5. Keyboard navigation and focus indicators
-6. Cross-theme compatibility (light/dark)
-7. Remove unnecessary "interactive-surface" classes
+4. **Buttons size to content, not containers** - remove width: 100%, flex: 1, or similar
+5. **Appropriate spacing** - dense layout with proper margins (not cramped)
+6. Token-based styling throughout
+7. Keyboard navigation and focus indicators
+8. Cross-theme compatibility (light/dark)
+9. Remove unnecessary "interactive-surface" classes
 
 ## Output Standards
 - **Audit Report**: Severity-based issues (Critical/High/Medium/Low) with file:line references
 - **Migration Guide**: Step-by-step Material v20 syntax conversion with code examples  
+- **Spacing Fixes**: Identify cramped elements and provide margin/padding solutions
+- **Button Sizing**: Remove container-width buttons and center appropriately
 - **Token Expansion**: Specific CSS additions needed for styles.scss
 - **Testing Checklist**: Cross-theme compatibility and accessibility validation steps
