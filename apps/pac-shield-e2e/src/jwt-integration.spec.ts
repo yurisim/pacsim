@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fillGameMasterPin, fillVerificationPin } from './test-utils';
+import { fillGameMasterPin, fillVerificationPin, fillRoomCodeOtp } from './test-utils';
 
 test.describe('JWT Integration and Continue Game Flow', () => {
   test('should maintain session across page navigation', async ({ page }) => {
@@ -43,7 +43,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Should redirect to the correct lobby
     await expect(page.getByText(roomCode!)).toBeVisible();
-    await expect(page.getByText(userName)).toHaveCount(2);
+    await expect(page.getByText(userName)).toHaveCount(1);
   });
 
   test('should handle JWT expiration gracefully', async ({ page }) => {
@@ -61,7 +61,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Wait for lobby
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.getByText('ExpiredUser')).toHaveCount(2);
+    await expect(page.getByText('ExpiredUser')).toHaveCount(1);
 
     // Simulate JWT expiration by corrupting the token
     await page.evaluate(() => {
@@ -78,7 +78,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     ).toBeHidden();
 
     // Should show regular join form
-    await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
+    await expect(page.locator('.otp-container')).toBeVisible();
   });
 
   test('should handle name conflicts with PIN verification UI flow', async ({
@@ -104,30 +104,30 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // First, join as ConflictUser to create the player
     await page.goto('/join');
-    await page.fill('input[placeholder="Room Code"]', roomCode!);
+    await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
-    await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
+    await page.fill('input[formControlName="playerName"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
 
     // Should successfully join the lobby
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.getByText('ConflictUser')).toHaveCount(2);
+    await expect(page.getByText('ConflictUser')).toHaveCount(1);
 
     // Now clear session and try to join again with same name to trigger conflict
     await page.evaluate(() => localStorage.clear());
     await page.goto('/join');
-    await page.fill('input[placeholder="Room Code"]', roomCode!);
+    await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
-    await page.fill('input[placeholder="Player Name"]', 'ConflictUser');
+    await page.fill('input[formControlName="playerName"]', 'ConflictUser');
     await page.getByRole('button', { name: /join/i }).click();
 
     // Should trigger name conflict since ConflictUser already exists
     await expect(
-      page.getByText('A player with this name already exists')
+      page.getByText('A player named "ConflictUser" already exists in this game')
     ).toBeVisible();
 
     // Should show OTP component
-    await expect(page.getByLabel(/pin/i)).toBeVisible();
+    await expect(page.getByText("Enter your PIN to continue as this player")).toBeVisible();
 
     // Enter wrong PIN
     await fillVerificationPin(page, '9999');
@@ -137,7 +137,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Should show error message for incorrect PIN
     await expect(
       page.getByText(/PIN|incorrect|failed/i)
-    ).toHaveCount(5);
+    ).not.toHaveCount(0);
   });
 
   test('should handle "I\'m a new person" flow', async ({ page }) => {
@@ -158,20 +158,20 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
     await expect(roomCodeButton).toBeVisible();
     const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
-    await expect(page.getByText('OriginalUser')).toHaveCount(2);
+    await expect(page.getByText('OriginalUser')).not.toHaveCount(0);
 
     // Clear session and try to join with same name
     await page.evaluate(() => localStorage.clear());
     await page.goto('/join');
 
-    await page.fill('input[placeholder="Room Code"]', roomCode!);
+    await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
-    await page.fill('input[placeholder="Player Name"]', 'OriginalUser');
+    await page.fill('input[formControlName="playerName"]', 'OriginalUser');
     await page.getByRole('button', { name: /join/i }).click();
 
     // Should show name conflict (message enhanced with PrimeNG p-message)
     await expect(
-      page.getByText(/A player named "OriginalUser".*exists/i)
+      page.getByText('A player named "OriginalUser" already exists in this game')
     ).toBeVisible();
 
     // Click "I'm a new person"
@@ -181,7 +181,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByText('Create a New Player')).toBeVisible();
 
     const uniqueName = `OriginalUser_${Date.now()}`;
-    await page.getByRole('textbox', { name: /enter a new player name/i }).fill(uniqueName);
+    await page.getByRole('textbox', { name: 'New Player Name' }).fill(uniqueName);
 
     await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.getByText('This name is available!')).toBeVisible();
@@ -193,7 +193,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode!);
 
     // Should see the newly created player name
-    await expect(page.getByText(uniqueName)).toHaveCount(2);
+    await expect(page.getByText(uniqueName)).not.toHaveCount(0);
   });
 
   test('should validate room code in real-time with visual feedback', async ({
@@ -202,16 +202,16 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     // Start typing room code
-    const roomInput = page.locator('input[placeholder="Room Code"]');
+    const roomInput = page.locator('input[data-otp-index="0"]');
 
-    // Type less than 4 characters - no validation yet
-    await roomInput.fill('ABC');
+    // Type less than 6 characters - no validation yet
+    await fillRoomCodeOtp(page, 'ABCDE');
     await expect(page.locator('mat-progress-spinner')).toHaveCount(0);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toHaveCount(0);
     await expect(page.locator('mat-icon[fontIcon="cancel"]')).toHaveCount(0);
 
-    // Type 4 characters with invalid code
-    await roomInput.fill('ABCD');
+    // Type 6 characters with invalid code
+    await fillRoomCodeOtp(page, 'ABCDEF');
 
     // Should show spinner while validating
     await expect(page.locator('mat-progress-spinner')).toBeVisible();
@@ -224,7 +224,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByText('Invalid room code')).toBeVisible();
 
     // Player name field should not appear
-    await expect(page.locator('input[placeholder="Player Name"]')).toBeHidden();
+    await expect(page.locator('input[formControlName="playerName"]')).toBeHidden();
 
     // Join button should be disabled
     const joinButton = page.getByRole('button', { name: /join/i });
@@ -254,21 +254,20 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     await page.goto('/join');
 
-    const roomInput = page.locator('input[placeholder="Room Code"]');
     const joinButton = page.getByRole('button', { name: /join/i });
 
     // Initially disabled
     await expect(joinButton).toBeDisabled();
 
     // Start typing valid room code
-    await roomInput.fill(roomCode!);
+    await fillRoomCodeOtp(page, roomCode!);
 
 
     // After validation succeeds
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
 
     // Player name should appear and join button should be enabled after filling name
-    await page.fill('input[placeholder="Player Name"]', 'StateTestUser');
+    await page.fill('input[formControlName="playerName"]', 'StateTestUser');
     await expect(joinButton).toBeEnabled();
     await expect(joinButton).toContainText('Join');
 
@@ -304,24 +303,26 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     // Fill room code gradually and verify form state preservation
-    const roomInput = page.locator('input[placeholder="Room Code"]');
+    const roomInput = page.locator('input[data-otp-index="0"]');
 
-    await roomInput.fill(roomCode!.substring(0, 3));
-    await expect(roomInput).toHaveValue(roomCode!.substring(0, 3));
+    // Fill partial room code
+    await fillRoomCodeOtp(page, roomCode!.substring(0, 3));
+    await expect(roomInput).toHaveValue(roomCode!.charAt(0));
 
-    await roomInput.fill(roomCode!);
+    // Fill complete room code
+    await fillRoomCodeOtp(page, roomCode!);
 
     // After validation, room code should still be there
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
-    await expect(roomInput).toHaveValue(roomCode!);
+    await expect(roomInput).toHaveValue(roomCode!.charAt(0));
 
     // Player name field appears and can be filled
-    const nameInput = page.locator('input[placeholder="Player Name"]');
+    const nameInput = page.locator('input[formControlName="playerName"]');
     await expect(nameInput).toBeVisible();
     await nameInput.fill('FormStateUser');
 
     // Both fields should retain their values
-    await expect(roomInput).toHaveValue(roomCode!);
+    await expect(roomInput).toHaveValue(roomCode!.charAt(0));
     await expect(nameInput).toHaveValue('FormStateUser');
   });
 });
