@@ -16,7 +16,8 @@
       "Bash(npx nx e2e:*)",
       "mcp__wallaby__wallaby_failingTests",
       "Bash(npx tsc:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npx nx test:*)"
     ],
     "deny": [],
     "ask": []
