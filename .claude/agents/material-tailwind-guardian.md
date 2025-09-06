@@ -16,6 +16,7 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 ## Component Standards
 - Interactive elements use Material components exclusively (no raw HTML buttons/inputs)
 - **Button Sizing**: Buttons size to content, NOT container width - avoid `width: 100%` or `flex: 1`
+- **Form Fields**: Always use `<mat-label>` instead of placeholder attributes - better accessibility and UX
 - **Spacing**: Dense but breathable - use consistent margins/padding without cramming elements
 - Game states use semantic colors: `primary` (active), `secondary` (lobby), `tertiary` (completed)  
 - Success/warnings/errors use proper container tokens (`on-error-container` over `error-container`)
@@ -65,11 +66,12 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 2. All interactive elements use Material components  
 3. Proper button syntax (Angular Material v20)
 4. **Buttons size to content, not containers** - remove width: 100%, flex: 1, or similar
-5. **Appropriate spacing** - dense layout with proper margins (not cramped)
-6. Token-based styling throughout
-7. Keyboard navigation and focus indicators
-8. Cross-theme compatibility (light/dark)
-9. Remove unnecessary "interactive-surface" classes
+5. **Form fields use mat-label** - replace placeholder attributes with `<mat-label>`
+6. **Appropriate spacing** - dense layout with proper margins (not cramped)
+7. Token-based styling throughout
+8. Keyboard navigation and focus indicators
+9. Cross-theme compatibility (light/dark)
+10. Remove unnecessary "interactive-surface" classes
 
 ## Output Standards
 - **Audit Report**: Severity-based issues (Critical/High/Medium/Low) with file:line references

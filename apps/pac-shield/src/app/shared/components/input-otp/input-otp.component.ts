@@ -1,0 +1,223 @@
+import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+
+@Component({
+  selector: 'app-input-otp',
+  standalone: true,
+  imports: [CommonModule, MatInputModule, MatFormFieldModule],
+  templateUrl: './input-otp.component.html',
+  styleUrls: ['./input-otp.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputOtpComponent),
+      multi: true
+    }
+  ]
+})
+export class InputOtpComponent implements ControlValueAccessor {
+  @Input() length: number = 4;
+  @Input() mask: boolean = false;
+  @Input() disabled: boolean = false;
+  @Input() placeholder: string = '';
+  @Input() integerOnly: boolean = true;
+  @Input() ariaLabel: string = 'OTP Input';
+  
+  @Output() complete = new EventEmitter<string>();
+  
+  values: string[] = [];
+  private onChange = (value: string) => {};
+  private onTouched = () => {};
+
+  constructor() {
+    this.initializeValues();
+  }
+
+  private initializeValues(): void {
+    this.values = new Array(this.length).fill('');
+  }
+
+  onInputChange(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Handle integer only validation
+    if (this.integerOnly && value && !/^\d$/.test(value)) {
+      input.value = this.values[index] || '';
+      return;
+    }
+
+    // Update values array
+    this.values[index] = value;
+
+    // Move to next input if value entered and not last input
+    if (value && index < this.length - 1) {
+      this.focusNext(index + 1);
+    }
+
+    // Emit the complete value
+    const completeValue = this.values.join('');
+    this.onChange(completeValue);
+
+    // Check if OTP is complete
+    if (completeValue.length === this.length && !completeValue.includes('')) {
+      this.complete.emit(completeValue);
+    }
+  }
+
+  onInputKeyDown(event: KeyboardEvent, index: number): void {
+    const input = event.target as HTMLInputElement;
+
+    // Handle backspace
+    if (event.key === 'Backspace') {
+      if (input.value === '' && index > 0) {
+        // Move to previous input if current is empty
+        this.focusPrevious(index - 1);
+      } else {
+        // Clear current input
+        this.values[index] = '';
+        input.value = '';
+        this.onChange(this.values.join(''));
+      }
+    }
+    // Handle arrow keys
+    else if (event.key === 'ArrowLeft' && index > 0) {
+      this.focusPrevious(index - 1);
+    }
+    else if (event.key === 'ArrowRight' && index < this.length - 1) {
+      this.focusNext(index + 1);
+    }
+    // Handle paste
+    else if (event.key === 'v' && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      this.handlePaste();
+    }
+  }
+
+  onInputPaste(event: ClipboardEvent, index: number): void {
+    event.preventDefault();
+    const pastedData = event.clipboardData?.getData('text') || '';
+    this.handlePasteData(pastedData, index);
+  }
+
+  private handlePaste(): void {
+    navigator.clipboard.readText().then(text => {
+      this.handlePasteData(text, 0);
+    });
+  }
+
+  private handlePasteData(pastedData: string, startIndex: number): void {
+    const cleanData = this.integerOnly ? pastedData.replace(/\D/g, '') : pastedData;
+    const chars = cleanData.split('').slice(0, this.length - startIndex);
+
+    chars.forEach((char, i) => {
+      const index = startIndex + i;
+      if (index < this.length) {
+        this.values[index] = char;
+        const input = this.getInputElement(index);
+        if (input) {
+          input.value = char;
+        }
+      }
+    });
+
+    // Focus on next empty input or last input
+    const nextEmptyIndex = this.values.findIndex((val, i) => i >= startIndex && val === '');
+    const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : Math.min(startIndex + chars.length, this.length - 1);
+    this.focusNext(focusIndex);
+
+    const completeValue = this.values.join('');
+    this.onChange(completeValue);
+
+    if (completeValue.length === this.length && !completeValue.includes('')) {
+      this.complete.emit(completeValue);
+    }
+  }
+
+  private focusNext(index: number): void {
+    setTimeout(() => {
+      const input = this.getInputElement(index);
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    });
+  }
+
+  private focusPrevious(index: number): void {
+    setTimeout(() => {
+      const input = this.getInputElement(index);
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    });
+  }
+
+  private getInputElement(index: number): HTMLInputElement | null {
+    return document.querySelector(`input[data-otp-index="${index}"]`);
+  }
+
+  // ControlValueAccessor implementation
+  writeValue(value: string): void {
+    if (value) {
+      const chars = value.split('').slice(0, this.length);
+      this.values = [...chars, ...new Array(this.length - chars.length).fill('')];
+      
+      // Update input elements
+      setTimeout(() => {
+        chars.forEach((char, index) => {
+          const input = this.getInputElement(index);
+          if (input) {
+            input.value = char;
+          }
+        });
+      });
+    } else {
+      this.initializeValues();
+    }
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
+
+  onInputFocus(): void {
+    this.onTouched();
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  clear(): void {
+    this.initializeValues();
+    this.onChange('');
+    
+    // Clear all input elements
+    setTimeout(() => {
+      for (let i = 0; i < this.length; i++) {
+        const input = this.getInputElement(i);
+        if (input) {
+          input.value = '';
+        }
+      }
+      // Focus first input
+      const firstInput = this.getInputElement(0);
+      if (firstInput) {
+        firstInput.focus();
+      }
+    });
+  }
+}

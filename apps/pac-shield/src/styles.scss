@@ -72,8 +72,7 @@ body {
   background: var(--mat-sys-surface-container);
   color: var(--mat-sys-on-surface);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
-  position: sticky;
-  top: 0;
+  @apply sticky top-0;
   z-index: 1000;
   @include mat.elevation(2);
 }
@@ -189,43 +188,34 @@ mat-mdc-snack-bar-container.snack-error {
 
 /* Toolbar spacer utility for flex layout */
 .toolbar-spacer {
-  flex: 1 1 auto;
+  @apply flex-auto;
 }
 
 /* Mat form field density normalization in cards */
 .mat-mdc-form-field {
-  width: 100%;
+  @apply w-full;
 }
 
 /* Material 3 layout utilities for proper centering */
-.md-layout-center { 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
+.md-layout-center {
+  @apply flex justify-center items-center;
 }
 
-.md-layout-center-text { 
-  text-align: center; 
-  display: block; 
-  width: 100%; 
+.md-layout-center-text {
+  @apply text-center block w-full;
 }
 
 /* Fix for mat-card-header centering - ensures proper Material 3 layout */
 .md-card-header-center {
-  display: flex;
-  justify-content: center;
-  width: 100%;
+  @apply flex justify-center w-full;
 }
 
 .md-card-header-center .mat-mdc-card-header {
-  justify-content: center;
-  text-align: center;
-  width: 100%;
+  @apply justify-center text-center w-full;
 }
 
 /* Ensure mat-card-title respects centering in Material 3 context */
 .md-card-title-center {
   text-align: center !important;
-  display: block;
-  width: 100%;
+  @apply block w-full;
 }

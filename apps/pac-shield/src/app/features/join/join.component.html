@@ -50,12 +50,12 @@
 
       <div [formGroup]="joinForm" class="flex flex-col gap-4">
         <!-- Room Code -->
-        <mat-form-field appearance="outline" class="w-full">
+        <mat-form-field appearance="outline" >
+          <mat-label>Room Code</mat-label>
           <mat-icon matPrefix fontIcon="key" class="mr-2" aria-hidden="true"></mat-icon>
           <input
             matInput
             formControlName="gameId"
-            placeholder="Room Code"
             (input)="onRoomCodeChange()"
             class="uppercase"
           />
@@ -90,12 +90,12 @@
 
         <!-- Player Name (shown after room is valid) -->
         <div *ngIf="shouldShowPlayerName()">
-          <mat-form-field appearance="outline" class="w-full">
+          <mat-form-field appearance="outline" >
+            <mat-label>Player Name</mat-label>
             <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
             <input
               matInput
               formControlName="playerName"
-              placeholder="Player Name"
               (keydown.enter)="onSubmit()"
             />
           </mat-form-field>
@@ -176,19 +176,20 @@
             [formGroup]="pinForm"
             class="flex flex-col items-center gap-2 w-full"
           >
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>4-Digit PIN</mat-label>
-              <mat-icon matPrefix fontIcon="pin" class="mr-2" aria-hidden="true"></mat-icon>
-              <input
-                matInput
+            <div class="mb-4">
+              <div id="pin-label" class="block md-typescale-body-medium md-sys-color-on-surface mb-2 text-center">
+                <mat-icon fontIcon="pin" class="mr-2" aria-hidden="true"></mat-icon>
+                <span>Enter your 4-digit PIN</span>
+              </div>
+              <app-input-otp
+                [length]="4"
+                [integerOnly]="true"
                 formControlName="pin"
-                placeholder="4-digit PIN"
-                aria-label="PIN"
-                maxlength="4"
-                inputmode="numeric"
-                pattern="[0-9]*"
-              />
-            </mat-form-field>
+                ariaLabel="4-digit PIN"
+                [attr.aria-labelledby]="'pin-label'"
+                (complete)="onPinComplete($event)"
+              ></app-input-otp>
+            </div>
 
             <div
               *ngIf="pinForm.get('pin')?.invalid && pinForm.get('pin')?.touched"
@@ -261,12 +262,12 @@
 
     <mat-card-content>
       <div [formGroup]="newPersonForm" class="flex flex-col gap-4">
-        <mat-form-field appearance="outline" class="w-full">
+        <mat-form-field appearance="outline" >
+          <mat-label>New Player Name</mat-label>
           <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
           <input
             matInput
             formControlName="newPlayerName"
-            placeholder="Enter a new player name"
           />
         </mat-form-field>
 

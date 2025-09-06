@@ -13,6 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { InputOtpComponent } from '../../shared/components/input-otp/input-otp.component';
 
 interface JoinResponse {
   token: string;
@@ -33,6 +34,7 @@ interface JoinResponse {
     MatDividerModule,
     MatProgressSpinnerModule,
     MatIconModule,
+    InputOtpComponent,
   ],
   templateUrl: './join.component.html',
   styleUrls: ['./join.component.scss'],
@@ -187,6 +189,16 @@ export class JoinComponent {
       });
     } else {
       this.errorMessage = 'Please enter all 4 digits of your PIN';
+    }
+  }
+
+  onPinComplete(pin: string) {
+    // Auto-trigger PIN verification when all 4 digits are entered
+    if (pin.length === 4) {
+      this.pinForm.patchValue({ pin });
+      setTimeout(() => {
+        this.onVerifyPin();
+      }, 200); // Small delay for better UX
     }
   }
 

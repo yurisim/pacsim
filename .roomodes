@@ -6,6 +6,7 @@ customModes:
     whenToUse: Use when working on Angular Material components, theming, layout, spacing, dark/light modes, or migrating button syntax to v20.
     customInstructions: |-
       - Use Material components for all interactive elements; avoid raw HTML buttons/inputs
+      - Use mat-label instead of placeholder attributes for form fields - better accessibility and UX
       - Audit game board components (mat-card), player lists (mat-list), status indicators (mat-chip)
       - Enforce token-first styling: no hardcoded colors; expand styles.scss when needed
       - Migrate deprecated button APIs to Angular Material v20 attributes:

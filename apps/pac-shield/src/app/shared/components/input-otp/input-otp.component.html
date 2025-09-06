@@ -1,0 +1,18 @@
+<div class="otp-container" role="group" [attr.aria-label]="ariaLabel">
+  <input
+    *ngFor="let value of values; let i = index; trackBy: trackByIndex"
+    class="otp-input md-sys-bg-surface-container md-sys-color-on-surface"
+    [type]="mask ? 'password' : 'text'"
+    [value]="values[i]"
+    [disabled]="disabled"
+    [placeholder]="placeholder"
+    [attr.data-otp-index]="i"
+    [attr.aria-label]="ariaLabel + ' digit ' + (i + 1)"
+    maxlength="1"
+    autocomplete="off"
+    (input)="onInputChange($event, i)"
+    (keydown)="onInputKeyDown($event, i)"
+    (paste)="onInputPaste($event, i)"
+    (focus)="onInputFocus()"
+  />
+</div>

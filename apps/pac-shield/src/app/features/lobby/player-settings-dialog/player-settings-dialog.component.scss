@@ -1,15 +1,21 @@
 :host {
-  display: block;
+  @apply block;
 }
 
 ::ng-deep .p-dialog {
+  @apply overflow-visible;
+  /* Retain important to ensure override of PrimeNG internals when needed */
   overflow: visible !important;
 }
 
 ::ng-deep .p-dialog-content {
+  @apply overflow-visible;
+  /* Retain important to ensure override of PrimeNG internals when needed */
   overflow: visible !important;
 }
 
 ::ng-deep .p-autocomplete-panel {
+  @apply z-[9999];
+  /* Keep important for safety to ensure the panel is above overlays/dialogs */
   z-index: 9999 !important;
 }
