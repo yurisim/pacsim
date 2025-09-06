@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { fillGameMasterPin } from './test-utils';
 
 test.describe('Continue Game functionality', () => {
   test('should show continue game option for users with valid JWT', async ({ page }) => {
@@ -15,7 +16,7 @@ test.describe('Continue Game functionality', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for game creation and extract the room code from the display
@@ -63,7 +64,7 @@ test.describe('Continue Game functionality', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('GameMaster');
-    await page.getByLabel('4-Digit PIN').fill('5678');
+    await fillGameMasterPin(page, '5678');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -149,7 +150,7 @@ test.describe('Continue Game functionality', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     await expect(page).toHaveURL(/\/lobby\//);

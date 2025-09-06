@@ -12,7 +12,9 @@
       "mcp__playwright__browser_install",
       "mcp__playwright__browser_snapshot",
       "Bash(npx nx run:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(npx nx e2e:*)",
+      "mcp__wallaby__wallaby_failingTests"
     ],
     "deny": [],
     "ask": []

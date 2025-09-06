@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { fillGameMasterPin, fillVerificationPin } from './test-utils';
 
 test.describe('JWT Integration and Continue Game Flow', () => {
   test('should maintain session across page navigation', async ({ page }) => {
@@ -15,7 +16,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for game creation and extract the room code from the display
@@ -54,7 +55,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('ExpiredUser');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby
@@ -91,7 +92,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('ConflictTestGM');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -127,7 +128,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByLabel(/pin/i)).toBeVisible();
 
     // Enter wrong PIN
-    await page.getByLabel(/pin/i).fill('9999');
+    await fillVerificationPin(page, '9999');
 
     await page.getByRole('button', { name: /verify pin/i }).click();
 
@@ -147,7 +148,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('OriginalUser');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -239,7 +240,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('StateTestGM');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
@@ -286,7 +287,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('FormTestGM');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code

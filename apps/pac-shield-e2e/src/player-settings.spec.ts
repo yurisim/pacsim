@@ -1,4 +1,5 @@
 import { test, expect, request } from '@playwright/test';
+import { fillGameMasterPin } from './test-utils';
 
 test.describe('Player Settings in Lobby', () => {
   let roomCode: string;
@@ -30,7 +31,7 @@ test.describe('Player Settings in Lobby', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('TestGM');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby to load

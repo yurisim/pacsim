@@ -19,18 +19,22 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   ]
 })
 export class InputOtpComponent implements ControlValueAccessor {
-  @Input() length: number = 4;
-  @Input() mask: boolean = false;
-  @Input() disabled: boolean = false;
-  @Input() placeholder: string = '';
-  @Input() integerOnly: boolean = true;
-  @Input() ariaLabel: string = 'OTP Input';
-  
+  @Input() length = 4;
+  @Input() mask = false;
+  @Input() disabled = false;
+  @Input() placeholder = '';
+  @Input() integerOnly = true;
+  @Input() ariaLabel = 'OTP Input';
+
   @Output() complete = new EventEmitter<string>();
-  
+
   values: string[] = [];
-  private onChange = (value: string) => {};
-  private onTouched = () => {};
+  private onChange = (_value: string) => {
+    // This will be overridden by registerOnChange
+  };
+  private onTouched = () => {
+    // This will be overridden by registerOnTouched
+  };
 
   constructor() {
     this.initializeValues();
@@ -42,7 +46,7 @@ export class InputOtpComponent implements ControlValueAccessor {
 
   onInputChange(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
-    let value = input.value;
+    const value = input.value;
 
     // Handle integer only validation
     if (this.integerOnly && value && !/^\d$/.test(value)) {
@@ -166,7 +170,7 @@ export class InputOtpComponent implements ControlValueAccessor {
     if (value) {
       const chars = value.split('').slice(0, this.length);
       this.values = [...chars, ...new Array(this.length - chars.length).fill('')];
-      
+
       // Update input elements
       setTimeout(() => {
         chars.forEach((char, index) => {
@@ -197,14 +201,14 @@ export class InputOtpComponent implements ControlValueAccessor {
     this.onTouched();
   }
 
-  trackByIndex(index: number, item: any): number {
+  trackByIndex(index: number): number {
     return index;
   }
 
   clear(): void {
     this.initializeValues();
     this.onChange('');
-    
+
     // Clear all input elements
     setTimeout(() => {
       for (let i = 0; i < this.length; i++) {

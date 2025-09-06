@@ -1,4 +1,5 @@
 import { test, expect, request, type APIRequestContext, Page } from '@playwright/test';
+import { fillGameMasterPin } from './test-utils';
 
 async function createGame(api: APIRequestContext, victoryConditionMP = 1000) {
   const res = await api.post('http://localhost:3000/api/game/create', {
@@ -58,7 +59,7 @@ test.describe('Home create game flow', () => {
 
     // Fill GM form
     await page.getByLabel('Last Name').fill('TestGM');
-    await page.getByLabel('4-Digit PIN').fill('1234');
+    await fillGameMasterPin(page, '1234');
 
     await page.getByRole('button', { name: 'Continue' }).click();
 

@@ -134,7 +134,7 @@ export class JoinComponent {
       this.playerName = playerName;
 
       this.authService.joinGame(gameId, playerName).subscribe({
-        next: (response: JoinResponse) => {
+        next: (_response: JoinResponse) => {
           this.isLoading = false;
           // JWT is automatically stored by AuthService.joinGame method
           const currentGameId = this.authService.getGameId();
@@ -168,7 +168,7 @@ export class JoinComponent {
       const { pin } = this.pinForm.value;
 
       this.authService.joinGameWithPin(this.roomCode, this.playerName, pin).subscribe({
-        next: (response: JoinResponse) => {
+        next: (_response: JoinResponse) => {
           this.isLoading = false;
           const currentGameId = this.authService.getGameId();
           this.router.navigate(['/lobby', currentGameId || this.roomCode]);
@@ -235,7 +235,7 @@ export class JoinComponent {
       const newPlayerName = this.newPersonForm.value.newPlayerName;
 
       this.authService.joinGame(this.roomCode, newPlayerName).subscribe({
-        next: (response: JoinResponse) => {
+        next: (_response: JoinResponse) => {
           this.isLoading = false;
           const currentGameId = this.authService.getGameId();
           this.router.navigate(['/lobby', currentGameId || this.roomCode]);

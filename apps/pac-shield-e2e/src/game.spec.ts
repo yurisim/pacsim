@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { fillGameMasterPin } from './test-utils';
 
 test('should create a new game and navigate to the game board', async ({
   page,
@@ -19,7 +20,7 @@ test('should create a new game and navigate to the game board', async ({
 
   // Fill out Game Master Setup form
   await page.getByLabel('Last Name').fill('TestGM');
-  await page.getByLabel('4-Digit PIN').fill('1234');
+  await fillGameMasterPin(page, '1234');
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // Assert that the game lobby has loaded by checking for the heading.

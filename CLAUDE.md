@@ -4,9 +4,9 @@ Guidance for Claude Code when working with PAC Shield - a real-time multiplayer 
 
 ## Quick Commands
 
-**Development**: `npx nx serve pac-shield` | **Build**: `npx nx build pac-shield`  
-**Tests**: `npx nx test pac-shield` | **E2E**: `npx nx e2e pac-shield-e2e`  
-**Schema Changes**: `npx nx prisma-generate pac-shield-api` → `npx nx prisma-db-push pac-shield-api`
+**Build**: `npx nx build pac-shield` | **Tests**: `npx nx test pac-shield`  
+**Schema Changes**: `npx nx prisma-generate pac-shield-api` → `npx nx prisma-db-push pac-shield-api`  
+**E2E Testing**: Use MCP Playwright server only - never run `npx nx serve` or `npx nx e2e` via terminal. You may prompt the user to run the e2e tests if needed.
 
 ## Tech Stack
 
@@ -26,7 +26,7 @@ Guidance for Claude Code when working with PAC Shield - a real-time multiplayer 
 Use Claude's specialized agents for specific tasks:
 
 - **api-contract-sentinel**: Schema changes, DTO validation, type safety between frontend/backend
-- **e2e-reliability-marshal**: Flaky Playwright tests, test fixtures, E2E reliability 
+- **e2e-reliability-marshal**: Flaky Playwright tests, test fixtures, E2E reliability
 - **material-tailwind-guardian**: UI consistency auditor - reviews M3 compliance, provides migration directives, expands token system when needed
 - **ngrx-state-auditor**: State management review, selector optimization, action hygiene
 - **security-hardening-officer**: JWT flows, CORS, WebSocket auth, security audits
@@ -46,5 +46,5 @@ When using this agent, expect structured deliverables:
 ## Critical Rules
 
 - ❌ **Never** modify `generated/` folders or skip `prisma-generate`
-- ❌ **Never** use hardcoded colors, Jasmine syntax, or Tailwind colors  
-- ✅ **Always** check `schema.prisma`, use `gameId` for WebSocket rooms, run E2E tests
+- ❌ **Never** use hardcoded colors, Jasmine syntax, or Tailwind colors
+- ✅ **Always** check `schema.prisma`, use `gameId` for WebSocket rooms, use MCP Playwright server for E2E testing
