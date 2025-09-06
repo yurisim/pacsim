@@ -67,7 +67,7 @@ export class InputOtpComponent implements ControlValueAccessor {
     this.onChange(completeValue);
 
     // Check if OTP is complete
-    if (completeValue.length === this.length && !completeValue.includes('')) {
+    if (completeValue.length === this.length && !this.values.includes('')) {
       this.complete.emit(completeValue);
     }
   }
@@ -136,7 +136,7 @@ export class InputOtpComponent implements ControlValueAccessor {
     const completeValue = this.values.join('');
     this.onChange(completeValue);
 
-    if (completeValue.length === this.length && !completeValue.includes('')) {
+    if (completeValue.length === this.length && !this.values.includes('')) {
       this.complete.emit(completeValue);
     }
   }
