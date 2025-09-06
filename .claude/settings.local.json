@@ -14,7 +14,9 @@
       "Bash(npx nx run:*)",
       "Bash(npx playwright:*)",
       "Bash(npx nx e2e:*)",
-      "mcp__wallaby__wallaby_failingTests"
+      "mcp__wallaby__wallaby_failingTests",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []
