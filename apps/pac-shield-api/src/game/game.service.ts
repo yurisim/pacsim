@@ -24,7 +24,7 @@ export class GameService {
     private authService: AuthService,
     private gameGateway: GameGateway,
     private playerService: PlayerService
-  ) {}
+  ) { }
 
   /**
    * Creates a new multiplayer game session with unique room code and team structure.
@@ -51,13 +51,25 @@ export class GameService {
       },
     });
 
-    const teamTypes = Object.values(TeamType);
-    for (const type of teamTypes) {
+    // Create teams according to OPS User Guide specifications
+    const teams = [
+      { type: TeamType.CAOC, name: 'CAOC Team' },
+      { type: TeamType.CSPOC, name: 'CSpOC Team' },
+      { type: TeamType.MOB_KADENA, name: 'MOB Kadena, Japan' },
+      { type: TeamType.MOB_ANDERSEN, name: 'MOB Andersen, Guam' },
+      { type: TeamType.MOB_YOKOTA, name: 'MOB Yokota, Japan' },
+      { type: TeamType.MOB_OSAN, name: 'MOB Osan, RoK' },
+      { type: TeamType.MOB_JBPHH, name: 'JBPHH, Hawaii' },
+      { type: TeamType.MEDCOM, name: 'MEDCOM Team' },
+      { type: TeamType.GM, name: 'Game Master' },
+    ];
+
+    for (const teamData of teams) {
       await this.prisma.team.create({
         data: {
           gameId: game.id,
-          type,
-          name: `${type} Team`,
+          type: teamData.type,
+          name: teamData.name,
         },
       });
     }
@@ -79,7 +91,11 @@ export class GameService {
             players: true,
           },
         },
-        players: true,
+        players: {
+          include: {
+            team: true,
+          },
+        },
       },
     });
 

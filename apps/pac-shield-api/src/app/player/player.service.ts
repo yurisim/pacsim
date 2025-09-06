@@ -105,17 +105,46 @@ export class PlayerService {
     }
 
     // Create new player
+    const role = joinGameDto.role || 'PLAYER';
+
+    // If role is GM, assign the player to the GM team for this game
+    let teamId: number | undefined = undefined;
+    if (role === 'GM') {
+      const gmTeam = await this.prisma.team.findFirst({
+        where: { gameId: game.id, type: 'GM' },
+        select: { id: true },
+      });
+      if (gmTeam) {
+        teamId = gmTeam.id;
+      }
+    }
+
     const player = await this.prisma.player.create({
       data: {
         name: joinGameDto.playerName,
-        role: joinGameDto.role || 'PLAYER',
+        role,
         pin: joinGameDto.pin || null,
         sessionId: `${joinGameDto.playerName}-${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 9)}`,
         gameId: game.id,
+        teamId: teamId,
       },
     });
+
+    // Safety: ensure GM is actually attached to GM team even if the prefetch missed
+    if (role === 'GM' && !player.teamId) {
+      const gmTeam2 = await this.prisma.team.findFirst({
+        where: { gameId: game.id, type: 'GM' },
+        select: { id: true },
+      });
+      if (gmTeam2) {
+        await this.prisma.player.update({
+          where: { id: player.id },
+          data: { teamId: gmTeam2.id },
+        });
+      }
+    }
 
     const payload = { gameId: game.id, playerId: player.id };
     const token = this.jwtService.sign(payload);
@@ -186,6 +215,31 @@ export class PlayerService {
       const validRoles = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
       if (!validRoles.includes(updatePlayerDto.role as string)) {
         throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
+      }
+
+      // Auto-assign to GM team when role is set to GM
+      if (updatePlayerDto.role === 'GM') {
+        const current = await this.prisma.player.findUnique({
+          where: { id },
+          include: { team: true, game: true },
+        });
+        if (!current) {
+          throw new NotFoundException('Player not found');
+        }
+        
+        // If not already on GM team, find and assign to GM team
+        if (!current.team || current.team.type !== 'GM') {
+          if (current.gameId) {
+            const gmTeam = await this.prisma.team.findFirst({
+              where: { gameId: current.gameId, type: 'GM' },
+              select: { id: true },
+            });
+            if (gmTeam) {
+              // We'll update the teamId in the main update below
+              updatePlayerDto = { ...updatePlayerDto, teamId: gmTeam.id } as any;
+            }
+          }
+        }
       }
     }
 
@@ -289,6 +343,115 @@ export class PlayerService {
     ];
 
     return testPatterns.includes(id);
+  }
+
+  /**
+   * Assign a player to a specific team within their game.
+   * Validates that the team exists and belongs to the same game as the player.
+   * Emits lobby roster updates on success.
+   */
+  async joinTeam(playerId: number, teamId: number) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Player ${playerId} attempting to join team ${teamId}`);
+
+    // Get player with their current game
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      include: { game: true },
+    });
+
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+
+    // Validate that the team exists and belongs to the same game
+    const team = await this.prisma.team.findUnique({
+      where: { id: teamId },
+      include: { game: true },
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    if (team.gameId !== player.gameId) {
+      throw new BadRequestException('Team does not belong to the same game as player');
+    }
+
+    // Enforce: team roster lock
+    if (team.locked) {
+      throw new BadRequestException('Team roster is locked');
+    }
+
+    // Enforce: player with GM role can only be on GM team
+    if (player.role === 'GM' && team.type !== 'GM') {
+      throw new BadRequestException('Players with GM role must be on the GM team');
+    }
+
+    try {
+      // Update player's team assignment
+      const updatedPlayer = await this.prisma.player.update({
+        where: { id: playerId },
+        data: { teamId: teamId },
+        include: {
+          game: true,
+          team: true,
+        },
+      });
+
+      // Emit WebSocket event to notify other players
+      if (updatedPlayer.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: updatedPlayer.gameId },
+          include: { team: true },
+        });
+        this.eventsGateway.sendToLobby(updatedPlayer.game.roomCode, 'playerListUpdate', players);
+      }
+
+      this.logger.log(`[${requestId}] Successfully assigned player ${playerId} to team ${teamId}`);
+      return updatedPlayer;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to assign player ${playerId} to team ${teamId}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove a player from their current team (set teamId to null).
+   * Emits lobby roster updates on success.
+   */
+  async leaveTeam(playerId: number) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Player ${playerId} leaving team`);
+
+    try {
+      const updatedPlayer = await this.prisma.player.update({
+        where: { id: playerId },
+        data: { teamId: null },
+        include: {
+          game: true,
+          team: true,
+        },
+      });
+
+      // Emit WebSocket event to notify other players
+      if (updatedPlayer.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: updatedPlayer.gameId },
+          include: { team: true },
+        });
+        this.eventsGateway.sendToLobby(updatedPlayer.game.roomCode, 'playerListUpdate', players);
+      }
+
+      this.logger.log(`[${requestId}] Successfully removed player ${playerId} from team`);
+      return updatedPlayer;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to remove player ${playerId} from team: ${error.message}`, error.stack);
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Player not found');
+      }
+      throw error;
+    }
   }
 
   /**

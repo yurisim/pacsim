@@ -116,6 +116,7 @@ model Team {
   demoralizationPoints Int      @default(0)
   resourcePoints       Int      @default(0)
   riskTokensAvailable  Int      @default(2)
+  locked               Boolean  @default(false)
 
   players           Player[]
   controlledFOS     ForwardOperatingSite[]
@@ -342,7 +343,11 @@ enum PlayerRole {
 enum TeamType {
   CAOC
   CSPOC
-  MOB
+  MOB_KADENA
+  MOB_ANDERSEN
+  MOB_YOKOTA
+  MOB_OSAN
+  MOB_JBPHH
   MEDCOM
   GM
 }

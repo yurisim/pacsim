@@ -5,16 +5,15 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Player } from '../../models/player.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { CardModule } from 'primeng/card';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { InputOtpModule } from 'primeng/inputotp';
-import { AvatarModule } from 'primeng/avatar';
-import { MessageModule } from 'primeng/message';
-import { DividerModule } from 'primeng/divider';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { InputOtpComponent } from '../../shared/components/input-otp/input-otp.component';
 
 interface JoinResponse {
   token: string;
@@ -27,16 +26,15 @@ interface JoinResponse {
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    ButtonModule,
-    InputTextModule,
-    CardModule,
-    InputGroupModule,
-    InputGroupAddonModule,
-    InputOtpModule,
-    AvatarModule,
-    MessageModule,
-    DividerModule,
     CommonModule,
+    MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatCardModule,
+    MatDividerModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    InputOtpComponent,
   ],
   templateUrl: './join.component.html',
   styleUrls: ['./join.component.scss'],
@@ -104,24 +102,48 @@ export class JoinComponent {
     }
   }
 
+  onRoomCodeOtpComplete(code: string) {
+    const upper = (code || '').toUpperCase();
+    this.joinForm.patchValue({ gameId: upper });
+    if (upper.length === 6) {
+      this.validateRoomCode(upper);
+    } else {
+      this.isRoomValid = false;
+      this.roomValidated = false;
+    }
+  }
+
   private validateRoomCode(roomCode: string) {
     this.isValidatingRoom = true;
     this.errorMessage = null;
+    
+    const startTime = Date.now();
+    const minDisplayTime = 800; // Minimum 800ms display time
 
     this.authService.validateRoomCode(roomCode).subscribe({
       next: (response) => {
-        this.isValidatingRoom = false;
-        this.isRoomValid = response.valid;
-        this.roomValidated = true;
-        if (!response.valid) {
-          this.errorMessage = 'Invalid room code';
-        }
+        const elapsed = Date.now() - startTime;
+        const remainingTime = Math.max(0, minDisplayTime - elapsed);
+        
+        setTimeout(() => {
+          this.isValidatingRoom = false;
+          this.isRoomValid = response.valid;
+          this.roomValidated = true;
+          if (!response.valid) {
+            this.errorMessage = 'Invalid room code';
+          }
+        }, remainingTime);
       },
       error: () => {
-        this.isValidatingRoom = false;
-        this.isRoomValid = false;
-        this.roomValidated = true;
-        this.errorMessage = 'Error validating room code';
+        const elapsed = Date.now() - startTime;
+        const remainingTime = Math.max(0, minDisplayTime - elapsed);
+        
+        setTimeout(() => {
+          this.isValidatingRoom = false;
+          this.isRoomValid = false;
+          this.roomValidated = true;
+          this.errorMessage = 'Error validating room code';
+        }, remainingTime);
       }
     });
   }
@@ -136,7 +158,7 @@ export class JoinComponent {
       this.playerName = playerName;
 
       this.authService.joinGame(gameId, playerName).subscribe({
-        next: (response: JoinResponse) => {
+        next: (_response: JoinResponse) => {
           this.isLoading = false;
           // JWT is automatically stored by AuthService.joinGame method
           const currentGameId = this.authService.getGameId();
@@ -170,7 +192,7 @@ export class JoinComponent {
       const { pin } = this.pinForm.value;
 
       this.authService.joinGameWithPin(this.roomCode, this.playerName, pin).subscribe({
-        next: (response: JoinResponse) => {
+        next: (_response: JoinResponse) => {
           this.isLoading = false;
           const currentGameId = this.authService.getGameId();
           this.router.navigate(['/lobby', currentGameId || this.roomCode]);
@@ -191,6 +213,16 @@ export class JoinComponent {
       });
     } else {
       this.errorMessage = 'Please enter all 4 digits of your PIN';
+    }
+  }
+
+  onPinComplete(pin: string) {
+    // Auto-trigger PIN verification when all 4 digits are entered
+    if (pin.length === 4) {
+      this.pinForm.patchValue({ pin });
+      setTimeout(() => {
+        this.onVerifyPin();
+      }, 200); // Small delay for better UX
     }
   }
 
@@ -227,7 +259,7 @@ export class JoinComponent {
       const newPlayerName = this.newPersonForm.value.newPlayerName;
 
       this.authService.joinGame(this.roomCode, newPlayerName).subscribe({
-        next: (response: JoinResponse) => {
+        next: (_response: JoinResponse) => {
           this.isLoading = false;
           const currentGameId = this.authService.getGameId();
           this.router.navigate(['/lobby', currentGameId || this.roomCode]);

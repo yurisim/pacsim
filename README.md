@@ -90,3 +90,7 @@ All database commands are targeted at the `pac-shield-api` project.
 
 Run `npx nx graph` to see a visual diagram of the projects and their dependencies.
 
+qdrant
+
+docker run -p 6333:6333 qdrant/qdrant
+

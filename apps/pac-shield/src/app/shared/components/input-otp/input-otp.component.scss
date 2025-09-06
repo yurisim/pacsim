@@ -1,0 +1,88 @@
+.otp-container {
+  @apply flex gap-2 items-center justify-center;
+}
+
+.otp-input {
+  @apply w-12 h-14 border-2 border-solid rounded-xl text-center transition duration-150 ease-in-out outline-none;
+  border-color: var(--mat-sys-outline);
+  font-size: 18px;
+  font-weight: 500;
+  font-family: var(--mat-sys-body-large-font);
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+
+  &:focus {
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
+    background-color: var(--mat-sys-surface-container-high);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--mat-sys-on-surface);
+    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 4%, var(--mat-sys-surface-container));
+  }
+
+  &:disabled {
+    border-color: var(--mat-sys-outline-variant);
+    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 4%, var(--mat-sys-surface));
+    color: var(--mat-sys-on-surface-variant);
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+
+  &:invalid {
+    border-color: var(--mat-sys-error);
+    color: var(--mat-sys-on-error-container);
+    background-color: color-mix(in srgb, var(--mat-sys-error) 8%, var(--mat-sys-surface-container));
+  }
+
+  &:invalid:focus {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--mat-sys-error) 20%, transparent);
+  }
+
+  // Remove default input styling
+  @apply appearance-none;
+
+  // Remove number input arrows
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  // Password mask styling
+  &[type="password"] {
+    font-family: monospace;
+    letter-spacing: 0.1em;
+  }
+}
+
+// Responsive design
+@media (max-width: 480px) {
+  .otp-container {
+    gap: 6px;
+  }
+
+  .otp-input {
+    @apply w-10 h-12;
+    font-size: 16px;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .otp-input {
+    border-width: 3px;
+
+    &:focus {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--mat-sys-primary) 40%, transparent);
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .otp-input {
+    transition: none;
+  }
+}

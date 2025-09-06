@@ -82,4 +82,55 @@ export class ApiService {
   updatePlayerNameAndRole(playerId: string, name: string, role: string): Observable<any> {
     return this.patch(`player/${playerId}`, { name, role });
   }
+
+  /**
+   * Convenience API to assign a player to a specific team.
+   * Delegates to POST /player/:id/join-team.
+   */
+  joinTeam(playerId: string, teamId: number): Observable<any> {
+    return this.post(`player/${playerId}/join-team`, { teamId });
+  }
+
+  /**
+   * Convenience API to remove a player from their current team.
+   * Delegates to POST /player/:id/leave-team.
+   */
+  leaveTeam(playerId: string): Observable<any> {
+    return this.post(`player/${playerId}/leave-team`, {});
+  }
+
+  /**
+   * Lock a team's roster to prevent joins/moves.
+   */
+  lockTeam(teamId: number): Observable<any> {
+    return this.patch(`team/${teamId}/lock`, {});
+  }
+
+  /**
+   * Unlock a team's roster to allow joins/moves.
+   */
+  unlockTeam(teamId: number): Observable<any> {
+    return this.patch(`team/${teamId}/unlock`, {});
+  }
+
+  /**
+   * Assign the first available unassigned player in the same game to this team.
+   */
+  assignOneUnassigned(teamId: number): Observable<any> {
+    return this.post(`team/${teamId}/assign-one-unassigned`, {});
+  }
+
+  /**
+   * Update only a player's role.
+   */
+  updatePlayerRole(playerId: string, role: string): Observable<any> {
+    return this.patch(`player/${playerId}`, { role });
+  }
+
+  /**
+   * Permanently remove a player from the game.
+   */
+  deletePlayer(playerId: string): Observable<any> {
+    return this.delete(`player/${playerId}`);
+  }
 }

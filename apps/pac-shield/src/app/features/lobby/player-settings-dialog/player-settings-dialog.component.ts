@@ -1,15 +1,23 @@
-import { Component, input, output, OnInit, effect, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, input, output, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoCompleteModule } from 'primeng/autocomplete';
 import { playerRole, PlayerRole } from '../../../generated/enums';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 
 export interface PlayerSettings {
   name: string;
   role: PlayerRole;
+}
+
+interface PlayerSettingsDialogData {
+  currentName: string;
+  currentRole: PlayerRole;
 }
 
 @Component({
@@ -18,16 +26,21 @@ export interface PlayerSettings {
   imports: [
     CommonModule,
     FormsModule,
-    DialogModule,
-    ButtonModule,
-    InputTextModule,
-    AutoCompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule,
+    MatDialogModule
   ],
   templateUrl: './player-settings-dialog.component.html',
   styleUrls: ['./player-settings-dialog.component.scss'],
 })
-export class PlayerSettingsDialogComponent implements OnInit {
-  visible = input<boolean>(false);
+export class PlayerSettingsDialogComponent {
+  // Keep legacy inputs/outputs for backward compatibility with old overlay usage.
+  // Default visible to true so content renders when opened via MatDialog (no binding provided).
+  visible = input<boolean>(true);
   currentName = input<string>('');
   currentRole = input<PlayerRole>('PLAYER');
 
@@ -35,50 +48,29 @@ export class PlayerSettingsDialogComponent implements OnInit {
   cancelled = output<void>();
 
   name = '';
-  role: { label: string; value: PlayerRole } | PlayerRole | null = null;
-  roleOptions: { label: string; value: PlayerRole }[] = [];
+  role: PlayerRole | null = null;
+  roleOptions: PlayerRole[] = [...playerRole];
 
-  readonly allRoleOptions = playerRole.map(role => ({
-    label: this.formatRoleLabel(role),
-    value: role
-  }));
+  // Optional injections so the component works both with and without MatDialog.
+  private dialogRef = inject(MatDialogRef<PlayerSettingsDialogComponent, PlayerSettings>, { optional: true });
+  private dialogData = inject(MAT_DIALOG_DATA, { optional: true }) as PlayerSettingsDialogData | null;
 
   constructor() {
-    // Watch for dialog visibility changes and update form when opened
+    // If opened via MatDialog, initialize from injected data.
+    if (this.dialogData) {
+      this.name = this.dialogData.currentName ?? '';
+      this.role = this.dialogData.currentRole ?? 'PLAYER';
+    }
+
+    // Legacy behavior: when used as an inline overlay, initialize on visible() change.
+    // When opened via MatDialog, do NOT overwrite injected dialog data.
     effect(() => {
-      if (this.visible()) {
+      // Only mirror inputs when not using MatDialog (legacy inline usage)
+      if (!this.dialogRef && this.visible()) {
         this.name = this.currentName();
-        this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
+        this.role = this.currentRole();
       }
     });
-  }
-
-  ngOnInit() {
-    this.roleOptions = [...this.allRoleOptions];
-  }
-
-  filterRoles(event: any): void {
-    const query = event.query.toLowerCase();
-    this.roleOptions = this.allRoleOptions.filter(option =>
-      option.label.toLowerCase().includes(query)
-    );
-  }
-
-  private formatRoleLabel(role: PlayerRole): string {
-    switch (role) {
-      case 'GM':
-        return 'GM';
-      case 'PLAYER':
-        return 'PLAYER';
-      case 'COMMANDER':
-        return 'COMMANDER';
-      case 'DEPUTY':
-        return 'DEPUTY';
-      case 'STRATEGIST':
-        return 'STRATEGIST';
-      default:
-        return role;
-    }
   }
 
   get isFormValid(): boolean {
@@ -86,22 +78,25 @@ export class PlayerSettingsDialogComponent implements OnInit {
   }
 
   saveSettings(): void {
-    if (this.isFormValid) {
-      // Handle both object and string values from AutoComplete
-      const roleValue = typeof this.role === 'object' ? this.role!.value : this.role as PlayerRole;
-      const payload = {
-        name: this.name.trim(),
-        role: roleValue,
-      };
+    if (!this.isFormValid || this.role === null) return;
+    const payload: PlayerSettings = {
+      name: this.name.trim(),
+      role: this.role,
+    };
+    if (this.dialogRef) {
+      this.dialogRef.close(payload);
+    } else {
       this.save.emit(payload);
     }
   }
 
   cancelSettings(): void {
-    console.log('🚫 Dialog cancelSettings called');
     this.name = this.currentName();
-    this.role = this.allRoleOptions.find(option => option.value === this.currentRole()) || null;
-    console.log('🚫 Emitting cancelled event');
-    this.cancelled.emit();
+    this.role = this.currentRole();
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    } else {
+      this.cancelled.emit();
+    }
   }
 }

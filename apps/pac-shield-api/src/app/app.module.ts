@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ClsModule } from 'nestjs-cls';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { TeamModule } from './team/team.module';
 
 @Module({
   imports: [
@@ -22,8 +23,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
       middleware: {
         mount: true,
         generateId: true,
-        idGenerator: (req: any) => 
-          req.headers['x-request-id'] || req.headers.get?.('x-request-id') || 
+        idGenerator: (req: any) =>
+          req.headers['x-request-id'] || req.headers.get?.('x-request-id') ||
           `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
       },
     }),
@@ -32,10 +33,11 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     AuthModule,
     PlayerModule,
     LobbyModule,
+    TeamModule,
   ],
   controllers: [AppController],
   providers: [
-    AppService, 
+    AppService,
     EventsGateway,
     {
       provide: APP_INTERCEPTOR,

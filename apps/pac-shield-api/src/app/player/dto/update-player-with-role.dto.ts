@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
 
 export enum PlayerRole {
   PLAYER = 'PLAYER',
@@ -25,4 +25,12 @@ export class UpdatePlayerWithRoleDto {
   @IsOptional()
   @IsEnum(PlayerRole)
   role?: PlayerRole;
+
+  @ApiProperty({
+    type: 'number',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  teamId?: number;
 }

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { fillGameMasterPin, fillOtpField } from './test-utils';
 
 test.describe('Continue Game functionality', () => {
   test('should show continue game option for users with valid JWT', async ({ page }) => {
@@ -9,22 +10,20 @@ test.describe('Continue Game functionality', () => {
 
     // Create a game
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    
+
     // Wait for Game Master Setup form to appear
     await expect(page.getByText('Game Master Setup')).toBeVisible();
-    
+
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for game creation and extract the room code from the display
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     // Navigate to join page to test continue functionality
     await page.goto('/');
@@ -35,7 +34,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByText('Continue your game session')).toBeVisible();
 
     // Verify avatar with player initial
-    const avatar = page.locator('p-avatar');
+    const avatar = page.locator('.md-typescale-title-medium.md-sys-color-on-primary.font-semibold');
     await expect(avatar).toBeVisible();
     await expect(avatar).toContainText('T');
 
@@ -51,7 +50,7 @@ test.describe('Continue Game functionality', () => {
 
     // Should redirect to the correct lobby
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toContainText(roomCode!);
+    await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode!);
     // Verify we're in the lobby
     await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
   });
@@ -60,42 +59,40 @@ test.describe('Continue Game functionality', () => {
     // Create a game first
     await page.goto('/');
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    
+
     // Wait for Game Master Setup form to appear
     await expect(page.getByText('Game Master Setup')).toBeVisible();
-    
+
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('GameMaster');
-    await page.locator('p-inputotp input').first().fill('5');
-    await page.locator('p-inputotp input').nth(1).fill('6');
-    await page.locator('p-inputotp input').nth(2).fill('7');
-    await page.locator('p-inputotp input').nth(3).fill('8');
+    await fillGameMasterPin(page, '5678');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby and extract room code
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toBeVisible();
-    const roomCode = await page.locator('.text-7xl').textContent();
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton).toBeVisible();
+    const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
     // Navigate to join page in a different context
     await page.goto('/join');
-    
+
     // Test manual join
-    await page.fill('input[placeholder="Room Code"]', roomCode!);
+    await fillOtpField(page, roomCode!);
 
     // Wait for room validation
-    await expect(page.locator('.pi-check')).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
 
     // Player name should appear
-    await expect(page.locator('input[placeholder="Player Name"]')).toBeVisible();
+    await expect(page.locator('input[formControlName="playerName"]')).toBeVisible();
 
     // Enter player name and join
-    await page.fill('input[placeholder="Player Name"]', 'NewPlayer');
+    await page.fill('input[formControlName="playerName"]', 'NewPlayer');
     await page.getByRole('button', { name: /join/i }).click();
 
     // Should join the game and navigate to lobby
     await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.locator('.text-7xl')).toContainText(roomCode!);
+    await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode!);
   });
 
   test('should handle continue game with invalid/expired JWT gracefully', async ({ page }) => {
@@ -114,11 +111,11 @@ test.describe('Continue Game functionality', () => {
     await page.reload();
 
     // Continue option should not appear with invalid JWT
-    await expect(page.getByText('Welcome back, FakePlayer!')).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /continue game/i })).not.toBeVisible();
+    await expect(page.getByText('Welcome back, FakePlayer!')).toBeHidden();
+    await expect(page.getByRole('button', { name: /continue game/i })).toBeHidden();
 
     // Should show normal join form
-    await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
+    await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
   });
 
   test('should not show continue option for users without JWT', async ({ page }) => {
@@ -131,15 +128,15 @@ test.describe('Continue Game functionality', () => {
     await page.reload();
 
     // Continue option should not be visible
-    await expect(page.getByText('Welcome back')).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /continue game/i })).not.toBeVisible();
+    await expect(page.getByText('Welcome back')).toBeHidden();
+    await expect(page.getByRole('button', { name: /continue game/i })).toBeHidden();
 
     // Should show normal join form
-    await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
+    await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
 
-    // Form should be in compact layout (400px width)
-    const card = page.locator('p-card');
-    await expect(card).toHaveClass(/w-\[400px\]/);
+    // Form should be in compact layout (max-w-md = 448px)
+    const card = page.locator('mat-card');
+    await expect(card).toHaveClass(/max-w-md/);
   });
 
   test('should show expanded layout when continue option is present', async ({ page }) => {
@@ -149,16 +146,13 @@ test.describe('Continue Game functionality', () => {
     const userName = 'LayoutTest';
 
     await page.getByRole('button', { name: 'Start New Game' }).click();
-    
+
     // Wait for Game Master Setup form to appear
     await expect(page.getByText('Game Master Setup')).toBeVisible();
-    
+
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill(userName);
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     await expect(page).toHaveURL(/\/lobby\//);
@@ -169,13 +163,13 @@ test.describe('Continue Game functionality', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Join' }).click();
 
-    // Should show expanded layout (450px width) when continue option is present
-    const card = page.locator('p-card');
-    await expect(card).toHaveClass(/w-\[450px\]/);
+    // Should show expanded layout (max-w-lg = 512px) when continue option is present
+    const card = page.locator('mat-card');
+    await expect(card).toHaveClass(/max-w-lg/);
 
     // Verify continue section styling
-    const continueSection = page.locator('.bg-blue-50');
+    const continueSection = page.locator('.md-sys-bg-primary-container');
     await expect(continueSection).toBeVisible();
-    await expect(continueSection).toHaveClass(/border-blue-200/);
+    await expect(continueSection).toHaveClass(/md-shape-corner-lg/);
   });
 });

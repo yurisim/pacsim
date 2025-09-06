@@ -1,39 +1,52 @@
 <div class="flex justify-center items-center h-[calc(100vh-100px)]">
-  <p-card header="Game Master Setup" class="w-[450px] text-center">
-    <div class="flex flex-col gap-6">
-      <div class="text-left">
-        <label for="lastName" class="block text-sm font-medium mb-2">
-          Last Name <span class="text-red-500">*</span>
-        </label>
-        <input
-          pInputText
-          id="lastName"
-          type="text"
-          [(ngModel)]="lastName"
-          placeholder="Enter your last name"
-          class="w-full"
-          maxlength="50"
-        />
-      </div>
+  <mat-card class="w-[450px] text-center">
+    <mat-card-header class="md-padding-md md-card-header-center mb-4">
+      <mat-card-title
+        class="md-typescale-headline-small md-sys-color-on-surface md-card-title-center"
+        >Game Master Setup</mat-card-title
+      >
+    </mat-card-header>
+    <mat-card-content>
+      <div class="flex flex-col gap-6 items-center">
+        <div class="text-left">
+          <mat-form-field appearance="outline">
+            <mat-label
+              >Last Name <span class="md-sys-color-error">*</span></mat-label
+            >
+            <input
+              matInput
+              id="lastName"
+              type="text"
+              [(ngModel)]="lastName"
+              maxlength="50"
+            />
+          </mat-form-field>
+        </div>
 
-      <div class="text-left">
-        <label for="pin" class="block text-sm font-medium mb-2">
-          4-Digit PIN <span class="text-red-500">*</span>
-        </label>
-        <p-inputOtp
-          [(ngModel)]="pin"
-          [length]="4"
-          inputType="number"
-          class="flex justify-center"
-        ></p-inputOtp>
-      </div>
+        <div class="text-center">
+          <div
+            class="block md-typescale-body-medium md-sys-color-on-surface mb-4"
+          >
+            4-Digit PIN <span class="md-sys-color-error">*</span>
+          </div>
+          <app-input-otp
+            [length]="4"
+            [integerOnly]="true"
+            [(ngModel)]="pin"
+            ariaLabel="4-digit PIN for Game Master"
+            (complete)="onPinComplete($event)"
+          ></app-input-otp>
+        </div>
 
-      <p-button
-        label="Continue"
-        (onClick)="onSubmit()"
-        [disabled]="!isFormValid"
-        class="w-full"
-      ></p-button>
-    </div>
-  </p-card>
+        <button
+          matButton="filled"
+          color="primary"
+          (click)="onSubmit()"
+          [disabled]="!isFormValid"
+        >
+          Continue
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

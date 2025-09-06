@@ -7,10 +7,7 @@ import {
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { appRoutes } from './app.routes';
-import { providePrimeNG } from 'primeng/config';
-import Material from '@primeuix/themes/material';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { gameReducer } from './core/store/game/game.reducer';
@@ -27,17 +24,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideAnimationsAsync(),
-    providePrimeNG({
-      theme: {
-        preset: Material,
-        options: {
-          darkModeSelector: 'system',
-        },
-      },
-    }),
     provideRouter(appRoutes),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: HTTP_INTERCEPTORS, useClass: ApiLoggingInterceptor, multi: true },
-    MessageService,
   ],
 };

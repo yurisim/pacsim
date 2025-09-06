@@ -1,193 +1,423 @@
-<div class="flex justify-center items-center h-[calc(100vh-100px)]">
+<div
+  class="md-sys-bg-background min-h-[calc(100vh-64px)] flex justify-center items-center md-padding-lg"
+>
   <!-- Initial Join Form -->
-  <p-card *ngIf="!showNameConflict" header="Join Game" [class]="shouldShowContinueOption() ? 'w-[450px] text-center' : 'w-[400px] text-center'">
-    <!-- Continue Game Option for JWT Users -->
-    <div *ngIf="shouldShowContinueOption()" class="mb-6">
-      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <div class="flex items-center gap-3 mb-3">
-          <p-avatar
-            [label]="currentPlayer?.name?.charAt(0)"
-            shape="circle"
-            styleClass="bg-blue-500 text-white"
-          ></p-avatar>
-          <div class="text-left">
-            <div class="font-semibold text-blue-900 dark:text-blue-100">
-              Welcome back, {{ currentPlayer?.name }}!
+  <mat-card
+    *ngIf="!showNameConflict"
+    class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-md"
+    [class.max-w-lg]="shouldShowContinueOption()"
+  >
+    <mat-card-header class="md-card-header-center">
+      <mat-card-title
+        class="md-typescale-headline-medium md-sys-color-on-surface md-card-title-center"
+        >Join Game</mat-card-title
+      >
+    </mat-card-header>
+
+    <mat-card-content class="md-padding-lg">
+      <!-- Continue Game Option for JWT Users -->
+      <div *ngIf="shouldShowContinueOption()" class="mb-6">
+        <div
+          class="md-sys-bg-primary-container md-shape-corner-lg md-padding-lg"
+        >
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-12 h-12 md-shape-corner-full md-sys-bg-primary flex items-center justify-center"
+            >
+              <span
+                class="md-typescale-title-medium md-sys-color-on-primary font-semibold"
+              >
+                {{ currentPlayer?.name?.charAt(0) }}
+              </span>
             </div>
-            <div class="text-sm text-blue-700 dark:text-blue-300">
-              Continue your game session
+            <div class="text-left">
+              <div
+                class="md-typescale-title-medium md-sys-color-on-primary-container font-medium"
+              >
+                Welcome back, {{ currentPlayer?.name }}!
+              </div>
+              <div
+                class="md-typescale-body-small md-sys-color-on-primary-container opacity-90"
+              >
+                Continue your game session
+              </div>
             </div>
           </div>
+
+          <button matButton="filled" color="primary" (click)="onContinueGame()">
+            <mat-icon
+              fontIcon="arrow_forward"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
+            <span class="md-typescale-label-large">Continue Game</span>
+          </button>
         </div>
-        <p-button
-          label="Continue Game"
-          icon="pi pi-arrow-right"
-          (onClick)="onContinueGame()"
-          class="w-full"
-          styleClass="p-button-lg"
-        ></p-button>
-      </div>
 
-      <div class="flex items-center my-4">
-        <div class="flex-1 border-t border-gray-300"></div>
-        <span class="px-3 text-gray-500 text-sm">or join a different game</span>
-        <div class="flex-1 border-t border-gray-300"></div>
-      </div>
-    </div>
-
-    <div [formGroup]="joinForm" class="flex flex-col gap-4">
-      <p-inputgroup>
-        <p-inputgroup-addon>
-          <i class="pi pi-key"></i>
-        </p-inputgroup-addon>
-        <input
-          pInputText
-          formControlName="gameId"
-          placeholder="Room Code"
-          (input)="onRoomCodeChange()"
-          class="uppercase"
-        />
-        <p-inputgroup-addon *ngIf="isValidatingRoom">
-          <i class="pi pi-spin pi-spinner"></i>
-        </p-inputgroup-addon>
-        <p-inputgroup-addon *ngIf="roomValidated && isRoomValid && !isValidatingRoom">
-          <i class="pi pi-check text-green-500"></i>
-        </p-inputgroup-addon>
-        <p-inputgroup-addon *ngIf="roomValidated && !isRoomValid && !isValidatingRoom">
-          <i class="pi pi-times text-red-500"></i>
-        </p-inputgroup-addon>
-      </p-inputgroup>
-      <div *ngIf="joinForm.get('gameId')?.invalid && joinForm.get('gameId')?.touched" class="error">
-        Room code is required
-      </div>
-
-      <div *ngIf="shouldShowPlayerName()">
-        <p-inputgroup>
-          <p-inputgroup-addon>
-            <i class="pi pi-user"></i>
-          </p-inputgroup-addon>
-          <input pInputText formControlName="playerName" placeholder="Player Name" (keydown.enter)="onSubmit()" />
-        </p-inputgroup>
-        <div *ngIf="joinForm.get('playerName')?.invalid && joinForm.get('playerName')?.touched" class="error">
-          Player name is required
+        <div class="flex items-center my-6">
+          <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
+          <span
+            class="md-padding-sm md-typescale-body-small md-sys-color-on-surface-variant"
+          >
+            or join a different game
+          </span>
+          <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
         </div>
       </div>
 
-      <p-message *ngIf="errorMessage" severity="error">{{ errorMessage }}</p-message>
-    </div>
+      <div [formGroup]="joinForm" class="flex flex-col gap-6">
+        <!-- Room Code -->
+        <div class="flex flex-col items-center gap-2">
+          <div
+            class="block md-typescale-body-medium md-sys-color-on-surface mt-4 text-center"
+          >
+            <span>Room Code</span>
+          </div>
+          <app-input-otp
+            [length]="6"
+            [integerOnly]="false"
+            formControlName="gameId"
+            ariaLabel="6-character Room Code"
+            (complete)="onRoomCodeOtpComplete($event)"
+          ></app-input-otp>
 
-    <ng-template pTemplate="footer">
-      <div class="flex gap-2 mt-4 justify-center">
-        <p-button
-          label="Back"
-          icon="pi pi-arrow-left"
-          (onClick)="router.navigate(['/'])"
-          styleClass="p-button-secondary justify-center"
-        ></p-button>
-        <p-button
-          [label]="isLoading ? 'Joining...' : isValidatingRoom ? 'Validating...' : 'Join'"
-          icon="pi pi-arrow-right"
-          (onClick)="onSubmit()"
-          [disabled]="isJoinButtonDisabled()"
-          class="justify-center"
-        ></p-button>
+          <div class="h-6 flex items-center justify-center gap-2 mt-2 transition-all duration-300 ease-out">
+            <mat-progress-spinner
+              *ngIf="isValidatingRoom"
+              mode="indeterminate"
+              [diameter]="16"
+              class="animate-in fade-in-0 zoom-in-95 duration-200"
+            ></mat-progress-spinner>
+
+            <mat-icon
+              *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
+              fontIcon="check_circle"
+              class="md-sys-color-secondary animate-in fade-in-0 zoom-in-50 duration-400 animate-pulse"
+              aria-hidden="true"
+            ></mat-icon>
+
+            <mat-icon
+              *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
+              fontIcon="cancel"
+              class="md-sys-color-error animate-in fade-in-0 zoom-in-50 duration-400 animate-bounce"
+              aria-hidden="true"
+            ></mat-icon>
+          </div>
+        </div>
+
+        <div
+          *ngIf="
+            joinForm.get('gameId')?.invalid && joinForm.get('gameId')?.touched
+          "
+          class="md-typescale-body-small md-sys-color-error mt-1"
+        >
+          Room code is required
+        </div>
+
+        <!-- Player Name (shown after room is valid) -->
+        <div *ngIf="shouldShowPlayerName()">
+          <mat-form-field appearance="outline">
+            <mat-label>Player Name</mat-label>
+            <mat-icon
+              matPrefix
+              fontIcon="person"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
+            <input
+              matInput
+              formControlName="playerName"
+              (keydown.enter)="onSubmit()"
+            />
+          </mat-form-field>
+          <div
+            *ngIf="
+              joinForm.get('playerName')?.invalid &&
+              joinForm.get('playerName')?.touched
+            "
+            class="md-typescale-body-small md-sys-color-error mt-1"
+          >
+            Player name is required
+          </div>
+        </div>
+
+        <div
+          *ngIf="errorMessage"
+          class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        >
+          {{ errorMessage }}
+        </div>
       </div>
-    </ng-template>
-  </p-card>
+    </mat-card-content>
+
+    <mat-card-actions class="flex gap-3 md-padding-lg justify-center mt-4">
+      <button
+        matButton="outlined"
+        color="primary"
+        (click)="router.navigate(['/'])"
+        class=""
+      >
+        <mat-icon
+          fontIcon="arrow_back"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
+        <span class="md-typescale-label-large">Back</span>
+      </button>
+
+      <button
+        matButton="filled"
+        color="primary"
+        (click)="onSubmit()"
+        [disabled]="isJoinButtonDisabled()"
+        class=""
+      >
+        <mat-icon
+          [fontIcon]="
+            isLoading
+              ? 'hourglass_top'
+              : isValidatingRoom
+              ? 'autorenew'
+              : 'login'
+          "
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
+        <span class="md-typescale-label-large">
+          {{
+            isLoading
+              ? 'Joining...'
+              : isValidatingRoom
+              ? 'Validating...'
+              : 'Join'
+          }}
+        </span>
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
   <!-- Name Conflict Resolution -->
-  <p-card *ngIf="showNameConflict && !isNewPersonFlow" header="Player Name Already Exists" class="w-[450px] text-center">
-    <div class="flex flex-col gap-6 text-left">
-      <p-message severity="warn">A player named "{{ playerName }}" already exists in this game.</p-message>
-      <p-message severity="info">A player with this name already exists</p-message>
+  <mat-card
+    *ngIf="showNameConflict && !isNewPersonFlow"
+    class="w-[450px] text-center"
+  >
+    <mat-card-header class="md-card-header-center m-3">
+      <mat-card-title class="md-card-title-center"
+        >Player Name Already Exists</mat-card-title
+      >
+    </mat-card-header>
 
-      <div class="mt-2">
-        <h4 class="font-semibold mb-2">Option 1: I'm the same person</h4>
-        <p class="text-sm text-gray-600 mb-3">Enter your PIN to continue as this player:</p>
-
-        <div [formGroup]="pinForm" class="flex flex-col items-center gap-2">
-          <p-inputOtp formControlName="pin" [length]="4" [integerOnly]="true"></p-inputOtp>
-          <div *ngIf="pinForm.get('pin')?.invalid && pinForm.get('pin')?.touched" class="error">
-            PIN is required
-          </div>
+    <mat-card-content>
+      <div class="flex flex-col gap-6 text-left">
+        <div
+          class="md-sys-bg-secondary-container md-sys-color-on-secondary-container md-shape-corner-sm md-padding-sm border text-center"
+          style="border-color: var(--mat-sys-outline-variant)"
+        >
+          A player named "{{ playerName }}" already exists in this game.
         </div>
 
-        <p-button
-          label="Verify PIN"
-          icon="pi pi-check"
-          (onClick)="onVerifyPin()"
-          [disabled]="isVerifyButtonDisabled()"
-          class="w-full mt-2"
-        ></p-button>
+        <div class="text-center">
+          <div class="font-semibold">Option 1: I'm the same person</div>
+          <p
+            class="md-typescale-body-small md-sys-color-on-surface-variant mb-3"
+          >
+            Enter your PIN to continue as this player:
+          </p>
+
+          <div
+            [formGroup]="pinForm"
+            class="flex flex-col items-center gap-2 w-full"
+          >
+            <div class="mb-4">
+              <app-input-otp
+                [length]="4"
+                [integerOnly]="true"
+                formControlName="pin"
+                ariaLabel="4-digit PIN"
+                [attr.aria-labelledby]="'pin-label'"
+                (complete)="onPinComplete($event)"
+              ></app-input-otp>
+            </div>
+
+            <div
+              *ngIf="pinForm.get('pin')?.invalid && pinForm.get('pin')?.touched"
+              class="md-sys-color-error md-typescale-body-small"
+            >
+              PIN is required
+            </div>
+          </div>
+
+          <button
+            matButton="filled"
+            color="primary"
+            (click)="onVerifyPin()"
+            [disabled]="isVerifyButtonDisabled()"
+            class="mt-2 mx-auto"
+          >
+            <mat-icon
+              fontIcon="check_circle"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
+            Verify PIN
+          </button>
+        </div>
+
+        <mat-divider
+          class="mt-2"
+          role="separator"
+          aria-label="Options separator top"
+        ></mat-divider>
+        <div
+          class="md-typescale-body-small md-sys-color-on-surface-variant text-center"
+        >
+          or
+        </div>
+        <mat-divider
+          role="separator"
+          aria-label="Options separator bottom"
+        ></mat-divider>
+
+        <div class="text-center">
+          <h4 class="font-semibold mb-2">Option 2: I'm a new person</h4>
+          <p
+            class="md-typescale-body-small md-sys-color-on-surface-variant mb-3"
+          >
+            Create a new player with a different name:
+          </p>
+
+          <button
+            matButton="outlined"
+            color="primary"
+            (click)="onNewPerson()"
+            [disabled]="isLoading"
+            class="mx-auto"
+          >
+            <mat-icon
+              fontIcon="person_add"
+              class=""
+              aria-hidden="true"
+            ></mat-icon>
+            I'm a New Person
+          </button>
+        </div>
+
+        <div
+          *ngIf="errorMessage"
+          class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        >
+          {{ errorMessage }}
+        </div>
       </div>
+    </mat-card-content>
 
-      <p-divider align="center"><b>or</b></p-divider>
-
-      <div class="mt-1">
-        <h4 class="font-semibold mb-2">Option 2: I'm a new person</h4>
-        <p class="text-sm text-gray-600 mb-3">Create a new player with a different name:</p>
-
-        <p-button
-          label="I'm a New Person"
-          icon="pi pi-user-plus"
-          (onClick)="onNewPerson()"
-          [disabled]="isLoading"
-          styleClass="p-button-secondary w-full"
-        ></p-button>
-      </div>
-    </div>
-
-      <p-message *ngIf="errorMessage" severity="error">{{ errorMessage }}</p-message>
-
-    <ng-template pTemplate="footer">
-      <div class="flex gap-2 mt-4 justify-center">
-        <p-button
-          label="Back"
-          icon="pi pi-arrow-left"
-          (onClick)="onBackToJoin()"
-          styleClass="p-button-secondary justify-center"
-          [disabled]="isLoading"
-        ></p-button>
-      </div>
-    </ng-template>
-  </p-card>
+    <mat-card-actions class="flex gap-2 mt-4 justify-center">
+      <button
+        matButton="outlined"
+        color="primary"
+        (click)="onBackToJoin()"
+        [disabled]="isLoading"
+        class="justify-center"
+      >
+        <mat-icon
+          fontIcon="arrow_back"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
+        Back
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
   <!-- New Person Flow -->
-  <p-card *ngIf="isNewPersonFlow" header="Create a New Player" class="w-[450px] text-center">
-    <div [formGroup]="newPersonForm" class="flex flex-col gap-4">
-      <p-inputgroup>
-        <p-inputgroup-addon>
-          <i class="pi pi-user"></i>
-        </p-inputgroup-addon>
-        <input pInputText formControlName="newPlayerName" placeholder="Enter a new player name" />
-      </p-inputgroup>
-      <p-button
-        label="Check Name Availability"
-        icon="pi pi-search"
-        (onClick)="onCheckNameAvailability()"
-        [disabled]="newPersonForm.invalid || isCheckingName"
-      ></p-button>
+  <mat-card
+    *ngIf="isNewPersonFlow"
+    class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-md text-center mx-auto self-center"
+  >
+    <mat-card-header class="md-card-header-center mb-3">
+      <mat-card-title class="md-card-title-center"
+        >Create a New Player</mat-card-title
+      >
+    </mat-card-header>
 
-      <p-message *ngIf="errorMessage" severity="error">{{ errorMessage }}</p-message>
-      <p-message *ngIf="isNameAvailable" severity="success">This name is available!</p-message>
-    </div>
+    <mat-card-content>
+      <div [formGroup]="newPersonForm" class="flex flex-col gap-4">
+        <mat-form-field appearance="outline">
+          <mat-label>New Player Name</mat-label>
+          <mat-icon
+            matPrefix
+            fontIcon="person"
+            class="mr-2"
+            aria-hidden="true"
+          ></mat-icon>
+          <input matInput formControlName="newPlayerName" />
+        </mat-form-field>
 
-    <ng-template pTemplate="footer">
-      <div class="flex gap-2 mt-4 justify-center">
-        <p-button
-          label="Back"
-          icon="pi pi-arrow-left"
-          (onClick)="onBackToJoin()"
-          styleClass="p-button-secondary justify-center"
-          [disabled]="isLoading"
-        ></p-button>
-        <p-button
-          label="Create New Player"
-          icon="pi pi-user-plus"
-          (onClick)="onCreateNewPlayer()"
-          [disabled]="!isNameAvailable || isLoading"
-        ></p-button>
+        <div class="flex gap-2 justify-center items-center">
+          <button
+            matButton="outlined"
+            color="primary"
+            (click)="onCheckNameAvailability()"
+            [disabled]="newPersonForm.invalid || isCheckingName"
+          >
+            <mat-icon
+              fontIcon="search"
+              class="mr-2"
+              aria-hidden="true"
+            ></mat-icon>
+            Check Name Availability
+          </button>
+          <mat-progress-spinner
+            *ngIf="isCheckingName"
+            mode="indeterminate"
+            [diameter]="20"
+          ></mat-progress-spinner>
+        </div>
+
+        <div
+          *ngIf="errorMessage"
+          class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        >
+          {{ errorMessage }}
+        </div>
+        <div
+          *ngIf="isNameAvailable"
+          class="md-sys-color-secondary md-typescale-body-small"
+        >
+          This name is available!
+        </div>
       </div>
-    </ng-template>
-  </p-card>
+    </mat-card-content>
+
+    <mat-card-actions class="flex gap-2 mt-4 justify-center">
+      <button
+        matButton="outlined"
+        color="primary"
+        (click)="onBackToJoin()"
+        [disabled]="isLoading"
+        class="justify-center"
+      >
+        <mat-icon
+          fontIcon="arrow_back"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
+        Back
+      </button>
+
+      <button
+        matButton="filled"
+        color="primary"
+        (click)="onCreateNewPlayer()"
+        [disabled]="!isNameAvailable || isLoading"
+      >
+        <mat-icon
+          fontIcon="person_add"
+          class="mr-2"
+          aria-hidden="true"
+        ></mat-icon>
+        Create New Player
+      </button>
+    </mat-card-actions>
+  </mat-card>
 </div>

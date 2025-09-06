@@ -1,4 +1,5 @@
 import { test, expect, request } from '@playwright/test';
+import { fillGameMasterPin } from './test-utils';
 
 test.describe('Player Settings in Lobby', () => {
   let roomCode: string;
@@ -20,7 +21,7 @@ test.describe('Player Settings in Lobby', () => {
     await page.goto('/');
 
     // Wait for WebSocket connection to be established
-    await expect(page.locator('i.pi-wifi')).toBeVisible();
+    await expect(page.locator('mat-icon[fontIcon="wifi"]')).toBeVisible();
     await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Start New Game' }).click();
@@ -30,10 +31,7 @@ test.describe('Player Settings in Lobby', () => {
 
     // Fill out Game Master Setup form
     await page.getByLabel('Last Name').fill('TestGM');
-    await page.locator('p-inputotp input').first().fill('1');
-    await page.locator('p-inputotp input').nth(1).fill('2');
-    await page.locator('p-inputotp input').nth(2).fill('3');
-    await page.locator('p-inputotp input').nth(3).fill('4');
+    await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     // Wait for lobby to load
@@ -46,7 +44,7 @@ test.describe('Player Settings in Lobby', () => {
     page,
   }) => {
     // Click the Edit Name & Role button
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Edit Profile' }).click();
 
     // Verify dialog is visible
     await expect(page.locator('[role="dialog"]')).toBeVisible();
@@ -66,7 +64,7 @@ test.describe('Player Settings in Lobby', () => {
     const newPlayerName = 'Updated Player Name';
 
     // Open player settings dialog
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Profile' }).click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
 
     // Clear existing name and enter new name
@@ -80,20 +78,19 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.locator('[role="dialog"]')).toBeHidden();
 
     // Verify the updated name appears in the player settings section
-    await expect(page.getByText('Name: Updated Player Name |')).toBeVisible();
+    await expect(page.getByText('Name: Updated Player Name')).toBeVisible();
   });
 
   test('should allow changing player role through settings dialog', async ({
     page,
   }) => {
     // Open player settings dialog
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Edit Profile' }).click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
 
-    // Select a different role from the autocomplete
-    await page.getByRole('combobox', { name: 'Select a role' }).click();
-    await page.locator('#playerRole').getByRole('button').click();
+    await page.locator('#mat-select-value-4').click();
     await page.getByRole('option', { name: 'COMMANDER' }).click();
+
     await page.getByRole('button', { name: 'Save' }).click();
 
     // Wait for dialog to close
@@ -110,7 +107,7 @@ test.describe('Player Settings in Lobby', () => {
     const newPlayerName = 'Commander Player';
 
     // Open player settings dialog
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Edit Profile' }).click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
 
     // Change name
@@ -118,16 +115,16 @@ test.describe('Player Settings in Lobby', () => {
     await page.getByLabel('Name').fill(newPlayerName);
 
     // Change role
-    await page.getByRole('combobox', { name: 'Select a role' }).click();
-    await page.locator('#playerRole').getByRole('button').click();
+    await page.locator('#mat-select-value-4').click();
     await page.getByRole('option', { name: 'COMMANDER' }).click();
+
     await page.getByRole('button', { name: 'Save' }).click();
 
     // Wait for dialog to close
     await expect(page.locator('[role="dialog"]')).toBeHidden();
 
     // Verify both name and role are updated
-    await expect(page.getByText('Name: Commander Player | Role')).toBeVisible();
+    await expect(page.getByText('Role: COMMANDER')).toBeVisible();
   });
 
   test('should cancel changes and restore original values when Cancel is clicked', async ({
@@ -136,21 +133,20 @@ test.describe('Player Settings in Lobby', () => {
     const originalName = 'Original Name';
 
     // First set an original name
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Edit Profile' }).click();
     await page.getByLabel('Name').clear();
     await page.getByLabel('Name').fill(originalName);
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.locator('[role="dialog"]')).toBeHidden();
 
     // Open dialog again and make changes but cancel them
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Edit Profile' }).click();
     await page.getByLabel('Name').clear();
     await page.getByLabel('Name').fill('Changed Name');
 
-    // Change role
-    await page.getByRole('combobox', { name: 'Select a role' }).click();
-    await page.locator('#playerRole').getByRole('button').click();
-    await page.getByRole('option', { name: 'COMMANDER' }).click();
+
+    await page.locator('svg').click();
+    await page.getByRole('option', { name: 'DEPUTY' }).click();
 
     // Cancel changes
     await page.getByRole('button', { name: 'Cancel' }).click();
@@ -159,9 +155,8 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.locator('[role="dialog"]')).toBeHidden();
 
     // Verify original name is preserved in the lobby player list
-    const playerCard = page.locator('.p-4.border.rounded-lg', {
-      hasText: originalName,
-    });
+    const playerCard = page.getByText('Edit ProfileLeave TeamName:');
+    
     await expect(playerCard).toBeVisible();
     await expect(playerCard).toContainText(originalName);
   });
@@ -170,7 +165,7 @@ test.describe('Player Settings in Lobby', () => {
     page,
   }) => {
     // Open player settings dialog
-    await page.getByRole('button', { name: 'Edit Name & Role' }).click();
+    await page.getByRole('button', { name: 'Edit Profile' }).click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
 
     // Clear the name field

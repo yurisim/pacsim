@@ -1,76 +1,80 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ButtonModule } from 'primeng/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-join-team-dialog',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    InputTextModule,
-    AutoCompleteModule,
-    ButtonModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatDialogModule],
   template: `
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <h2 mat-dialog-title>Join Team</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="p-4 md-sys-bg-surface-container md-shape-corner-lg md-elevation-2">
       <div class="flex flex-col gap-4">
-        <input pInputText formControlName="name" placeholder="Enter your name" />
-        <p-autocomplete
-          formControlName="role"
-          [suggestions]="filteredRoles"
-          (completeMethod)="searchRoles($event)"
-          [dropdown]="true"
-          appendTo="body"
-          placeholder="Select your role"
-        ></p-autocomplete>
-        <p-button
-          label="Join"
-          type="submit"
-          [disabled]="form.invalid"
-        ></p-button>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Name</mat-label>
+          <input matInput id="jt-name" type="text" formControlName="name" placeholder="Enter your name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Role</mat-label>
+          <mat-select id="jt-role" formControlName="role">
+            <mat-option *ngFor="let r of roles" [value]="r">{{ r }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="flex gap-2 justify-end">
+          <button mat-stroked-button type="button" (click)="cancel()" class="interactive-surface">
+            Cancel
+          </button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid" class="interactive-surface">
+            Join
+          </button>
+        </div>
       </div>
     </form>
   `,
 })
 export class JoinTeamDialogComponent implements OnInit {
-  private ref = inject(DynamicDialogRef);
-  private config = inject(DynamicDialogConfig);
+  @Input() roles: string[] = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
+  @Output() submitJoin = new EventEmitter<{ name: string; role: string; sessionId: string }>();
 
+  private dialogRef = inject(MatDialogRef<JoinTeamDialogComponent, { name: string; role: string; sessionId: string }>, { optional: true });
   form!: FormGroup;
-  roles: string[] = [];
-  filteredRoles: string[] = [];
 
   ngOnInit(): void {
-    this.roles = this.config.data.roles;
-    this.filteredRoles = [...this.roles];
+    const sessionId = sessionStorage.getItem('sessionId') ?? '';
+
     this.form = new FormGroup({
       name: new FormControl('', Validators.required),
-      role: new FormControl(this.roles[0], Validators.required),
-      sessionId: new FormControl(
-        sessionStorage.getItem('sessionId') ?? '',
-        Validators.required
-      ),
+      role: new FormControl(this.roles[0] ?? 'PLAYER', Validators.required),
+      sessionId: new FormControl(sessionId, Validators.required),
     });
   }
 
   submit(): void {
-    this.ref.close(this.form.value);
+    if (this.form.valid) {
+      const value = this.form.value as { name: string; role: string; sessionId: string };
+      if (this.dialogRef) {
+        this.dialogRef.close(value);
+      } else {
+        this.submitJoin.emit(value);
+      }
+    }
   }
 
-  searchRoles(event: { query: string }): void {
-    const query = event.query.toLowerCase();
-    this.filteredRoles = this.roles.filter((role) =>
-      role.toLowerCase().includes(query)
-    );
+  cancel(): void {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
   }
 }

@@ -1,9 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude mcp:*)",
+      "Read(*)",
+      "Search(*)",
+      "Read(/C:\\pacsim\\apps\\pac-shield-api\\src\\prisma/**)",
+      "mcp__nx-mcp__nx_current_running_tasks_details",
+      "mcp__nx-mcp__nx_workspace",
+      "Bash(npx nx build:*)",
+      "Bash(npx nx lint:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install",
+      "mcp__playwright__browser_snapshot",
+      "Bash(npx nx run:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npx nx e2e:*)",
       "mcp__wallaby__wallaby_failingTests",
-      "WebFetch(domain:primeng.org)"
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx nx test:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
@@ -11,5 +26,78 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "wallaby"
-  ]
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_ARGS\" | grep -q \"schema\\.prisma\"; then echo \"🔗 Schema changed - consider using api-contract-sentinel for type safety validation\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit", 
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_ARGS\" | grep -q \"websocket\\.service\\.ts\"; then echo \"🌐 WebSocket code changed - consider using websocket-resilience-officer for connection stability\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_ARGS\" | grep -q \"\\.component\\.ts\"; then echo \"🎨 UI component changed - consider using material-tailwind-guardian for consistency\"; fi"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_USER_MESSAGE\" | grep -qi \"flaky\\|timing out\\|intermittent\"; then echo \"🧪 Consider using e2e-reliability-marshal for test reliability issues\"; fi"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_USER_MESSAGE\" | grep -qi \"connection\\|websocket\\|socket\"; then echo \"🌐 Consider using websocket-resilience-officer for real-time connection issues\"; fi"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command", 
+            "command": "if echo \"$CLAUDE_USER_MESSAGE\" | grep -qi \"schema\\|prisma\\|dto\\|type\"; then echo \"🔗 Consider using api-contract-sentinel for API contract validation\"; fi"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_USER_MESSAGE\" | grep -qi \"ui\\|material\\|styling\\|button\"; then echo \"🎨 Consider using material-tailwind-guardian for UI consistency\"; fi"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_USER_MESSAGE\" | grep -qi \"cors\\|auth\\|security\\|jwt\"; then echo \"🔒 Consider using security-hardening-officer for security review\"; fi"
+          }
+        ]
+      }
+    ]
+  }
 }

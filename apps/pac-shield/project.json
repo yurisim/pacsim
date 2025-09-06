@@ -22,8 +22,7 @@
           }
         ],
         "styles": [
-          "apps/pac-shield/src/styles.scss",
-          "node_modules/primeicons/primeicons.css"
+          "apps/pac-shield/src/styles.scss"
         ]
       },
       "configurations": {

@@ -1,14 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
-import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../shared/services/api.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { NotificationService } from '../../shared/services/notification.service';
 import { CreateGameDto, Game } from '../../generated';
 import { GameMasterSetupComponent, GameMasterInfo } from '../game-master-setup/game-master-setup.component';
 
@@ -17,11 +15,9 @@ import { GameMasterSetupComponent, GameMasterInfo } from '../game-master-setup/g
   standalone: true,
   imports: [
     CommonModule,
-    ButtonModule,
-    CardModule,
-    InputTextModule,
+    MatButtonModule,
+    MatCardModule,
     ClipboardModule,
-    ToastModule,
     GameMasterSetupComponent,
   ],
   templateUrl: './home.component.html',
@@ -31,7 +27,7 @@ export class HomeComponent {
   private apiService = inject(ApiService);
   private router = inject(Router);
   private clipboard = inject(Clipboard);
-  private messageService = inject(MessageService);
+  private notification = inject(NotificationService);
   private authService = inject(AuthService);
 
   isLoading = false;
@@ -41,6 +37,7 @@ export class HomeComponent {
   createdGame: Game | null = null;
 
   createGame(): void {
+    // Do not disconnect the socket here; guard no longer runs on root so we can keep the status "Connected".
     this.isLoading = true;
     this.errorMessage = null;
     this.roomCode = null;
@@ -67,7 +64,7 @@ export class HomeComponent {
 
     this.isLoading = true;
     this.authService.createGameMaster(
-      this.createdGame.roomCode, 
+      this.createdGame.roomCode,
       gameMasterInfo.lastName,
       gameMasterInfo.pin
     ).subscribe({
@@ -95,11 +92,7 @@ export class HomeComponent {
   copyRoomCode(): void {
     if (this.roomCode) {
       this.clipboard.copy(this.roomCode);
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Copied',
-        detail: 'Room code copied to clipboard',
-      });
+      this.notification.success('Room code copied to clipboard');
     }
   }
 

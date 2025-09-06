@@ -1,13 +1,7 @@
-.app-title {
-  color: var(--primary-color);
+main {
+  @apply flex flex-col min-h-0 flex-1;
 }
 
-p-toolbar {
-  border: none !important;
-  outline: none !important;
-}
-
-:host ::ng-deep .p-toolbar {
-  border: none !important;
-  outline: none !important;
+app-root {
+  @apply flex flex-col min-h-screen;
 }
