@@ -72,10 +72,10 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     // Continue option should not appear
-    await expect(page.getByText('Welcome back, ExpiredUser!')).not.toBeVisible();
+    await expect(page.getByText('Welcome back, ExpiredUser!')).toBeHidden();
     await expect(
       page.getByRole('button', { name: /continue game/i })
-    ).not.toBeVisible();
+    ).toBeHidden();
 
     // Should show regular join form
     await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
@@ -224,7 +224,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByText('Invalid room code')).toBeVisible();
 
     // Player name field should not appear
-    await expect(page.locator('input[placeholder="Player Name"]')).not.toBeVisible();
+    await expect(page.locator('input[placeholder="Player Name"]')).toBeHidden();
 
     // Join button should be disabled
     const joinButton = page.getByRole('button', { name: /join/i });

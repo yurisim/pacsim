@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fillGameMasterPin } from './test-utils';
+import { fillGameMasterPin, fillOtpField } from './test-utils';
 
 test.describe('Continue Game functionality', () => {
   test('should show continue game option for users with valid JWT', async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByText('Continue your game session')).toBeVisible();
 
     // Verify avatar with player initial
-    const avatar = page.locator('.w-10.h-10.rounded-full');
+    const avatar = page.locator('.md-typescale-title-medium.md-sys-color-on-primary.font-semibold');
     await expect(avatar).toBeVisible();
     await expect(avatar).toContainText('T');
 
@@ -78,7 +78,7 @@ test.describe('Continue Game functionality', () => {
     await page.goto('/join');
 
     // Test manual join
-    await page.fill('input[placeholder="Room Code"]', roomCode!);
+    await fillOtpField(page, roomCode!);
 
     // Wait for room validation
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
@@ -111,11 +111,11 @@ test.describe('Continue Game functionality', () => {
     await page.reload();
 
     // Continue option should not appear with invalid JWT
-    await expect(page.getByText('Welcome back, FakePlayer!')).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /continue game/i })).not.toBeVisible();
+    await expect(page.getByText('Welcome back, FakePlayer!')).toBeHidden();
+    await expect(page.getByRole('button', { name: /continue game/i })).toBeHidden();
 
     // Should show normal join form
-    await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
+    await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
   });
 
   test('should not show continue option for users without JWT', async ({ page }) => {
@@ -128,11 +128,11 @@ test.describe('Continue Game functionality', () => {
     await page.reload();
 
     // Continue option should not be visible
-    await expect(page.getByText('Welcome back')).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /continue game/i })).not.toBeVisible();
+    await expect(page.getByText('Welcome back')).toBeHidden();
+    await expect(page.getByRole('button', { name: /continue game/i })).toBeHidden();
 
     // Should show normal join form
-    await expect(page.locator('input[placeholder="Room Code"]')).toBeVisible();
+    await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
 
     // Form should be in compact layout (400px width)
     const card = page.locator('mat-card');
