@@ -1,0 +1,26 @@
+<mat-progress-spinner
+  *ngIf="state === 'checking'"
+  mode="indeterminate"
+  [diameter]="16"
+  class="animate-in fade-in-0 zoom-in-95 duration-200"
+  role="status"
+  aria-label="Validating room code"
+></mat-progress-spinner>
+
+<mat-icon
+  *ngIf="state === 'valid'"
+  fontIcon="check_circle"
+  class="md-sys-color-secondary animate-in fade-in-0 zoom-in-50 duration-400"
+  aria-hidden="true"
+></mat-icon>
+
+<mat-icon
+  *ngIf="state === 'invalid'"
+  fontIcon="cancel"
+  class="md-sys-color-error animate-in fade-in-0 zoom-in-50 duration-400"
+  aria-hidden="true"
+></mat-icon>
+
+<span *ngIf="state === 'invalid' && asString(message)" class="md-typescale-body-small md-sys-color-error">
+  {{ asString(message) }}
+</span>
