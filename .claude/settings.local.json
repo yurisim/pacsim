@@ -31,35 +31,6 @@
     "wallaby"
   ],
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_ARGS\" | grep -q \"schema\\.prisma\"; then echo \"🔗 Schema changed - consider using api-contract-sentinel for type safety validation\"; fi"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit", 
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_ARGS\" | grep -q \"websocket\\.service\\.ts\"; then echo \"🌐 WebSocket code changed - consider using websocket-resilience-officer for connection stability\"; fi"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_ARGS\" | grep -q \"\\.component\\.ts\"; then echo \"🎨 UI component changed - consider using material-tailwind-guardian for consistency\"; fi"
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -80,7 +51,7 @@
       {
         "hooks": [
           {
-            "type": "command", 
+            "type": "command",
             "command": "if echo \"$CLAUDE_USER_MESSAGE\" | grep -qi \"schema\\|prisma\\|dto\\|type\"; then echo \"🔗 Consider using api-contract-sentinel for API contract validation\"; fi"
           }
         ]
