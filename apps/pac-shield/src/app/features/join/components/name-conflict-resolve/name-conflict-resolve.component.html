@@ -1,0 +1,115 @@
+<mat-card class="w-full max-w-md text-center mx-auto self-center" data-testid="name-conflict-card">
+  <mat-card-header class="md-card-header-center mb-3">
+    <mat-card-title class="md-card-title-center">
+      Player Name Already Exists
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="flex flex-col gap-6 text-left">
+      <div
+        class="md-sys-bg-secondary-container md-sys-color-on-secondary-container md-shape-corner-sm md-padding-sm border text-center"
+        style="border-color: var(--mat-sys-outline-variant)"
+        aria-live="polite"
+      >
+        A player named "<strong>{{ playerName }}</strong>" already exists in this game.
+      </div>
+
+      <!-- Option 1: I'm the same person -->
+      <div class="text-center" data-testid="same-person-option">
+        <div class="font-semibold">Option 1: I'm the same person</div>
+        <p class="md-typescale-body-small md-sys-color-on-surface-variant mb-3">
+          Enter your PIN to continue as this player:
+        </p>
+
+        <form [formGroup]="pinForm" class="flex flex-col items-center gap-2 w-full" novalidate>
+          <div class="mb-4">
+            <app-input-otp
+              [length]="4"
+              [integerOnly]="true"
+              formControlName="pin"
+              ariaLabel="4-digit PIN"
+              (complete)="onPinComplete($event)"
+              data-testid="pin-otp"
+            ></app-input-otp>
+          </div>
+
+          <div
+            *ngIf="pinForm.controls.pin.invalid && pinForm.controls.pin.touched"
+            class="md-sys-color-error md-typescale-body-small"
+            [attr.id]="pinErrorId"
+            aria-live="polite"
+          >
+            {{ fieldError(pinForm.controls.pin) }}
+          </div>
+
+          <button
+            matButton="filled"
+            color="primary"
+            type="button"
+            (click)="onVerify()"
+            [disabled]="isVerifyButtonDisabled()"
+            class="mt-2 mx-auto"
+            data-testid="verify-pin-button"
+            aria-label="Verify PIN"
+          >
+            <mat-icon fontIcon="check_circle" class="mr-2" aria-hidden="true"></mat-icon>
+            Verify PIN
+          </button>
+        </form>
+      </div>
+
+      <mat-divider class="mt-2" role="separator" aria-label="Options separator top"></mat-divider>
+      <div class="md-typescale-body-small md-sys-color-on-surface-variant text-center">or</div>
+      <mat-divider role="separator" aria-label="Options separator bottom"></mat-divider>
+
+      <!-- Option 2: I'm a new person -->
+      <div class="text-center" data-testid="new-person-option">
+        <h4 class="font-semibold mb-2">Option 2: I'm a new person</h4>
+        <p class="md-typescale-body-small md-sys-color-on-surface-variant mb-3">
+          Create a new player with a different name:
+        </p>
+
+        <button
+          matButton="outlined"
+          color="primary"
+          type="button"
+          (click)="onNewPerson()"
+          [disabled]="isBusy"
+          class="mx-auto"
+          data-testid="new-person-button"
+          aria-label="I'm a new person"
+        >
+          <mat-icon fontIcon="person_add" aria-hidden="true"></mat-icon>
+          I'm a New Person
+        </button>
+      </div>
+
+      <div
+        *ngIf="errorMessage"
+        class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm"
+        aria-live="polite"
+        data-testid="conflict-error"
+      >
+        {{ errorMessage }}
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions class="flex gap-2 mt-4 justify-center">
+    <button
+      matButton="outlined"
+      color="primary"
+      type="button"
+      (click)="onBack()
+"
+      [disabled]="isBusy"
+      class="justify-center"
+      data-testid="conflict-back-button"
+      aria-label="Back to join"
+    >
+      <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
+      Back
+    </button>
+  </mat-card-actions>
+</mat-card>
