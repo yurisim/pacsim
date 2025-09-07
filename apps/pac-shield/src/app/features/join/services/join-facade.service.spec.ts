@@ -40,18 +40,14 @@ describe('JoinFacadeService', () => {
   });
 
   it('validateRoom should set pending then valid after min spinner time', fakeAsync(() => {
-    const roomStates: string[] = [];
-    const sub = service.roomStatus$.subscribe((rs) => roomStates.push(rs.status));
     service.validateRoom('abc123');
 
     // Immediately after call: pending
-    expect(roomStates[roomStates.length - 1]).toBe('pending');
+    expect(service.roomStatus().status).toBe('pending');
 
     // After min spinner time (800ms), expect valid
     tick(800);
-    expect(roomStates[roomStates.length - 1]).toBe('valid');
-
-    sub.unsubscribe();
+    expect(service.roomStatus().status).toBe('valid');
   }));
 
   it('join should navigate to lobby on success', fakeAsync(() => {
@@ -85,14 +81,13 @@ describe('JoinFacadeService', () => {
       )
     );
 
-    const steps: JoinStep[] = [];
-    const sub = service.step$.subscribe((s) => steps.push(s));
-
+    const initialStep = service.step();
+    
     service.join('ABC123', 'Bob');
     tick();
 
-    expect(steps.includes(JoinStep.NameConflict)).toBe(true);
-    sub.unsubscribe();
+    expect(service.step()).toBe(JoinStep.NameConflict);
+    expect(initialStep).not.toBe(JoinStep.NameConflict);
   }));
 
   it('verifyPin should set error on INVALID_PIN', fakeAsync(() => {
@@ -106,27 +101,18 @@ describe('JoinFacadeService', () => {
       )
     );
 
-    const errs: (string | null)[] = [];
-    const sub = service.error$.subscribe((e) => errs.push(e));
-
     service.verifyPin('ABC123', 'Bob', '1234');
     tick();
 
-    expect(errs.filter((e) => !!e).pop()).toContain('incorrect');
-
-    sub.unsubscribe();
+    expect(service.error()).toContain('incorrect');
   }));
 
   it('checkNewName should update nameCheck.available', fakeAsync(() => {
-    const avail: (boolean | null)[] = [];
-    const sub = service.nameCheck$.subscribe((nc) => avail.push(nc.available));
-
     service.checkNewName('ABC123', 'NewGuy');
     // debounce 300ms in pipeline
     tick(300);
 
     // After pipeline resolves, latest emission should be true
-    expect(avail.includes(true)).toBe(true);
-    sub.unsubscribe();
+    expect(service.nameCheck().available).toBe(true);
   }));
 });

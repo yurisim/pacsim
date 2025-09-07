@@ -1,7 +1,7 @@
-import { Injectable, DestroyRef, inject } from '@angular/core';
+import { Injectable, DestroyRef, inject, signal, computed, effect } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subject, Observable, of, timer } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, finalize, map, shareReplay, switchMap, take } from 'rxjs/operators';
+import { Subject, of, timer } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap, take } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../shared/services/auth.service';
@@ -10,6 +10,7 @@ import {
   JoinState,
   JoinStep,
   JoinViewModel,
+  JwtSessionState,
   NameCheckState,
   RoomStatus,
 } from '../models/join.models';
@@ -23,47 +24,64 @@ export class JoinFacadeService {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
-  // In-memory state store
-  private readonly stateSubject = new BehaviorSubject<JoinState>(this.initialState());
-  private readonly state$ = this.stateSubject.asObservable();
+  // Signal-based state management
+  private readonly stepSignal = signal<JoinStep>(JoinStep.AccountRoom);
+  private readonly roomStatusSignal = signal<RoomStatus>({ status: 'idle', message: null, code: '' });
+  private readonly nameCheckSignal = signal<NameCheckState>({ pending: false, available: null, error: null });
+  private readonly busySignal = signal<boolean>(false);
+  private readonly errorSignal = signal<string | null>(null);
+  private readonly jwtSessionSignal = signal<JwtSessionState>({ hasValid: false, player: null, gameId: null });
+  private readonly accountFormSignal = signal<AccountFormValue>({ gameId: '', playerName: '' });
+  private readonly pinFormSignal = signal<{ pin: string }>({ pin: '' });
+  private readonly newPersonFormSignal = signal<{ newPlayerName: string }>({ newPlayerName: '' });
 
-  // Request subjects for coalescing/cancelling
+  // Request subjects for coalescing/cancelling (keep these as observables for async operations)
   private readonly roomCodeRequests$ = new Subject<string>();
   private readonly nameCheckRequests$ = new Subject<{ roomCode: string; name: string }>();
 
-  // Public read-only streams
-  readonly step$ = this.state$.pipe(map((s) => s.step), distinctUntilChanged());
-  readonly roomStatus$ = this.state$.pipe(map((s) => s.room), distinctUntilChanged());
-  readonly nameCheck$ = this.state$.pipe(map((s) => s.nameCheck), distinctUntilChanged());
-  readonly isBusy$ = this.state$.pipe(map((s) => s.busy), distinctUntilChanged());
-  readonly error$ = this.state$.pipe(map((s) => s.error), distinctUntilChanged());
-  readonly jwtSession$ = this.state$.pipe(map((s) => s.jwt), distinctUntilChanged());
+  // Public read-only signals (computed from private signals)
+  readonly step = this.stepSignal.asReadonly();
+  readonly roomStatus = this.roomStatusSignal.asReadonly();
+  readonly nameCheck = this.nameCheckSignal.asReadonly();
+  readonly isBusy = this.busySignal.asReadonly();
+  readonly error = this.errorSignal.asReadonly();
+  readonly jwtSession = this.jwtSessionSignal.asReadonly();
 
-  readonly viewModel$: Observable<JoinViewModel> = this.state$.pipe(
-    map((s) => {
-      const accountForm: AccountFormValue = s.account ?? {
-        gameId: s.room.code ?? '',
-        playerName: s.jwt.player?.name ?? '',
-      };
-      return {
-        step: s.step,
-        room: s.room,
-        nameCheck: s.nameCheck,
-        busy: s.busy,
-        error: s.error,
-        jwt: s.jwt,
-        accountForm,
-        pinForm: { pin: '' },
-        newPersonForm: { newPlayerName: '' },
-        canSubmitAccount: !s.busy && s.room.status === 'valid' && !!(accountForm.playerName || '').trim(),
-        canVerifyPin: !s.busy,
-        canCreateNewPerson: !s.busy && s.nameCheck.available === true,
-      };
-    }),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
+  // Computed viewModel signal that replaces the complex observable pipeline
+  readonly viewModel = computed<JoinViewModel>(() => {
+    const accountForm: AccountFormValue = {
+      gameId: this.roomStatusSignal().code ?? '',
+      playerName: this.accountFormSignal().playerName || (this.jwtSessionSignal().player?.name ?? ''),
+    };
+
+    return {
+      step: this.stepSignal(),
+      room: this.roomStatusSignal(),
+      nameCheck: this.nameCheckSignal(),
+      busy: this.busySignal(),
+      error: this.errorSignal(),
+      jwt: this.jwtSessionSignal(),
+      accountForm,
+      pinForm: this.pinFormSignal(),
+      newPersonForm: this.newPersonFormSignal(),
+      canSubmitAccount: !this.busySignal() && this.roomStatusSignal().status === 'valid' && !!(accountForm.playerName || '').trim(),
+      canVerifyPin: !this.busySignal(),
+      canCreateNewPerson: !this.busySignal() && this.nameCheckSignal().available === true,
+    };
+  });
 
   constructor() {
+    // Initialize signals with initial state
+    const initialState = this.initialState();
+    this.stepSignal.set(initialState.step);
+    this.roomStatusSignal.set(initialState.room);
+    this.nameCheckSignal.set(initialState.nameCheck);
+    this.busySignal.set(initialState.busy);
+    this.errorSignal.set(initialState.error);
+    this.jwtSessionSignal.set(initialState.jwt);
+    this.accountFormSignal.set(initialState.account ?? { gameId: '', playerName: '' });
+    this.pinFormSignal.set({ pin: '' });
+    this.newPersonFormSignal.set({ newPlayerName: '' });
     // Wire room code validation pipeline (latest wins, min spinner time)
     this.roomCodeRequests$
       .pipe(
@@ -83,27 +101,28 @@ export class JoinFacadeService {
         })
       )
       .subscribe((result) => {
-        const prev = this.stateSubject.value;
+        const prevRoom = this.roomStatusSignal();
         const nextRoom: RoomStatus =
           result.ok && result.valid
-            ? { status: 'valid', message: null, code: prev.room.code }
+            ? { status: 'valid', message: null, code: prevRoom.code }
             : {
                 status: result.ok ? 'invalid' : 'invalid',
                 message: result.ok ? 'Invalid room code' : 'Error validating room code',
-                code: prev.room.code,
+                code: prevRoom.code,
               };
-        
+
+        this.roomStatusSignal.set(nextRoom);
+
         // When room is valid, also update the account gameId to preserve it across state changes
-        const nextAccount = result.ok && result.valid 
-          ? { ...(prev.account ?? { gameId: '', playerName: '' }), gameId: prev.room.code ?? '' }
-          : prev.account;
-          
-        this.stateSubject.next({
-          ...prev,
-          room: nextRoom,
-          account: nextAccount,
-          error: null,
-        });
+        if (result.ok && result.valid) {
+          const prevAccount = this.accountFormSignal();
+          this.accountFormSignal.set({
+            ...prevAccount,
+            gameId: prevRoom.code ?? ''
+          });
+        }
+
+        this.errorSignal.set(null);
       });
 
     // Wire name availability check pipeline (debounced, latest wins)
@@ -121,17 +140,20 @@ export class JoinFacadeService {
         )
       )
       .subscribe(({ available, error }) => {
-        const prev = this.stateSubject.value;
         const nameCheck: NameCheckState = {
           pending: false,
           available,
           error,
         };
-        this.stateSubject.next({ ...prev, nameCheck, error: null });
+        this.nameCheckSignal.set(nameCheck);
+        this.errorSignal.set(null);
       });
 
-    // Reflect step changes to query param (?step=...)
-    this.step$.subscribe((step) => this.persistStepToUrl(step));
+    // Reflect step changes to query param (?step=...) using effect
+    effect(() => {
+      const step = this.stepSignal();
+      this.persistStepToUrl(step);
+    });
   }
 
   // Public API
@@ -139,33 +161,27 @@ export class JoinFacadeService {
   setStepFromUrl(qp?: string | null): void {
     const step = this.safeStepFromParam(qp);
     if (!step) return;
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({ ...prev, step });
+    this.stepSignal.set(step);
   }
 
   validateRoom(roomCode: string): void {
     const code = (roomCode || '').toUpperCase();
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({
-      ...prev,
-      room: { status: 'pending', message: null, code },
-      error: null,
-    });
+    this.roomStatusSignal.set({ status: 'pending', message: null, code });
+    this.errorSignal.set(null);
     this.roomCodeRequests$.next(code);
   }
 
   updateAccountDraft(patch: Partial<AccountFormValue>): void {
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({
-      ...prev,
-      account: { ...(prev.account ?? { gameId: '', playerName: '' }), ...patch },
+    const prev = this.accountFormSignal();
+    this.accountFormSignal.set({
+      ...(prev ?? { gameId: '', playerName: '' }),
+      ...patch
     });
   }
 
   join(gameId: string, playerName: string): void {
-    const st = this.stateSubject.value;
-    if (st.busy) return;
-    if (st.room.status !== 'valid') return;
+    if (this.busySignal()) return;
+    if (this.roomStatusSignal().status !== 'valid') return;
 
     this.patchState({ busy: true, error: null });
 
@@ -185,21 +201,14 @@ export class JoinFacadeService {
           if (err instanceof HttpErrorResponse) {
             if (err.status === 404) {
               // Invalid room — reflect as room validation error
-              const prev = this.stateSubject.value;
-              this.stateSubject.next({
-                ...prev,
-                room: { ...prev.room, status: 'invalid', message: 'Invalid room code' },
-              });
+              const prevRoom = this.roomStatusSignal();
+              this.roomStatusSignal.set({ ...prevRoom, status: 'invalid', message: 'Invalid room code' });
               return;
             }
             if (err.status === 400 && (err.error?.code === 'NAME_CONFLICT')) {
               // Transition to conflict step
-              const prev = this.stateSubject.value;
-              this.stateSubject.next({
-                ...prev,
-                step: JoinStep.NameConflict,
-                error: null,
-              });
+              this.stepSignal.set(JoinStep.NameConflict);
+              this.errorSignal.set(null);
               return;
             }
             this.patchState({ error: err.error?.message || 'Join failed' });
@@ -211,8 +220,7 @@ export class JoinFacadeService {
   }
 
   verifyPin(roomCode: string, playerName: string, pin: string): void {
-    const st = this.stateSubject.value;
-    if (st.busy) return;
+    if (this.busySignal()) return;
 
     this.patchState({ busy: true, error: null });
 
@@ -247,19 +255,14 @@ export class JoinFacadeService {
   }
 
   checkNewName(roomCode: string, newName: string): void {
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({
-      ...prev,
-      nameCheck: { pending: true, available: null, error: null },
-      error: null,
-    });
+    this.nameCheckSignal.set({ pending: true, available: null, error: null });
+    this.errorSignal.set(null);
     this.nameCheckRequests$.next({ roomCode, name: newName });
   }
 
   createNewPlayer(roomCode: string, newName: string): void {
-    const st = this.stateSubject.value;
-    if (st.busy) return;
-    if (st.nameCheck.available !== true) return;
+    if (this.busySignal()) return;
+    if (this.nameCheckSignal().available !== true) return;
 
     this.patchState({ busy: true, error: null });
 
@@ -286,26 +289,22 @@ export class JoinFacadeService {
   }
 
   continueExistingGame(): void {
-    const st = this.stateSubject.value;
-    const gid = st.jwt.gameId;
-    if (st.jwt.hasValid && gid) {
+    const jwt = this.jwtSessionSignal();
+    const gid = jwt.gameId;
+    if (jwt.hasValid && gid) {
       this.router.navigate(['/lobby', gid]);
     }
   }
 
   switchToNewPerson(): void {
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({ ...prev, step: JoinStep.NewPerson, error: null });
+    this.stepSignal.set(JoinStep.NewPerson);
+    this.errorSignal.set(null);
   }
 
   resetConflictFlow(): void {
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({
-      ...prev,
-      step: JoinStep.AccountRoom,
-      nameCheck: { pending: false, available: null, error: null },
-      error: null,
-    });
+    this.stepSignal.set(JoinStep.AccountRoom);
+    this.nameCheckSignal.set({ pending: false, available: null, error: null });
+    this.errorSignal.set(null);
   }
 
   // URL reflection
@@ -342,9 +341,15 @@ export class JoinFacadeService {
     };
   }
 
+  // Replace patchState with individual signal updates
   private patchState(patch: Partial<JoinState>): void {
-    const prev = this.stateSubject.value;
-    this.stateSubject.next({ ...prev, ...patch });
+    if (patch.step !== undefined) this.stepSignal.set(patch.step);
+    if (patch.room !== undefined) this.roomStatusSignal.set(patch.room);
+    if (patch.nameCheck !== undefined) this.nameCheckSignal.set(patch.nameCheck);
+    if (patch.busy !== undefined) this.busySignal.set(patch.busy);
+    if (patch.error !== undefined) this.errorSignal.set(patch.error);
+    if (patch.jwt !== undefined) this.jwtSessionSignal.set(patch.jwt);
+    if (patch.account !== undefined) this.accountFormSignal.set(patch.account ?? { gameId: '', playerName: '' });
   }
 
   private stepToParam(step: JoinStep): string | null {
