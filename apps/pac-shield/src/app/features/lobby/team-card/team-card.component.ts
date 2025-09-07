@@ -6,7 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-import { Team, Player, Game } from '../../../generated';
+import { MembersListComponent } from '../teams-tab/components/members-list/members-list.component';
+import { Team, Player } from '../../../generated';
 
 export interface RoleGroup {
   role: string;
@@ -23,7 +24,8 @@ export interface RoleGroup {
     MatIconModule,
     MatTooltipModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    MembersListComponent
   ],
   template: `
     <mat-card class="md-elevation-1">
@@ -78,49 +80,16 @@ export interface RoleGroup {
 
       <mat-card-content [class.dense]="dense">
         <!-- Role-grouped roster -->
-        @for (roleGroup of roleGroups; track roleGroup.role) {
-        @if (roleGroup.players.length > 0) {
-        <div class="mb-3">
-          <h5 class="md-typescale-label-medium md-sys-color-primary font-medium mb-2">
-            {{ roleGroup.role }} ({{ roleGroup.players.length }})
-          </h5>
-          <div class="space-y-2">
-            @for (player of roleGroup.players; track player.id) {
-            <div
-              class="flex items-center justify-between p-2 md-sys-bg-surface-variant md-shape-corner-sm"
-              [class.py-1]="dense"
-            >
-              <div class="flex items-center gap-2">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                  [class.w-6]="dense"
-                  [class.h-6]="dense"
-                  [style.background-color]="teamTypeInfo.color"
-                >
-                  {{ player.name.charAt(0).toUpperCase() }}
-                </div>
-                <span class="font-medium" [class.text-sm]="dense">
-                  {{ player.name }}
-                </span>
-              </div>
-
-              <!-- GM Player Menu -->
-              @if (showGMTools) {
-              <button
-                mat-icon-button
-                size="small"
-                [matMenuTriggerFor]="playerMenu"
-                [matMenuTriggerData]="{player: player, teams: allTeams}"
-              >
-                <mat-icon fontIcon="more_vert"></mat-icon>
-              </button>
-              }
-            </div>
-            }
-          </div>
-        </div>
-        }
-        }
+        <app-members-list
+          [roleGroups]="roleGroups"
+          [color]="teamTypeInfo.color"
+          [showGMTools]="showGMTools"
+          [dense]="dense"
+          (changeRole)="changeRole.emit($event)"
+          (moveToTeam)="moveToTeam.emit($event)"
+          (removeFromTeam)="removeFromTeam.emit($event)"
+          (removeFromGame)="removeFromGame.emit($event)"
+        ></app-members-list>
 
         <!-- Join Button -->
         @if (currentPlayer && !showGMTools) {
@@ -152,36 +121,6 @@ export interface RoleGroup {
       </mat-card-content>
     </mat-card>
 
-    <!-- Player Context Menu Template -->
-    <mat-menu #playerMenu="matMenu">
-      <ng-template matMenuContent let-player="player" let-teams="teams">
-        <h6 class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</h6>
-        <mat-divider></mat-divider>
-
-        <button mat-menu-item (click)="changeRole.emit(player)">
-          <mat-icon fontIcon="person"></mat-icon>
-          <span>Change Role</span>
-        </button>
-
-        <button mat-menu-item (click)="moveToTeam.emit(player)">
-          <mat-icon fontIcon="group"></mat-icon>
-          <span>Move to Team</span>
-        </button>
-
-        @if (player.teamId) {
-        <button mat-menu-item (click)="removeFromTeam.emit(player)">
-          <mat-icon fontIcon="logout"></mat-icon>
-          <span>Remove from Team</span>
-        </button>
-        }
-
-        <mat-divider></mat-divider>
-        <button mat-menu-item (click)="removeFromGame.emit(player)" class="md-sys-color-error">
-          <mat-icon fontIcon="delete" class="md-sys-color-error"></mat-icon>
-          <span>Remove from Game</span>
-        </button>
-      </ng-template>
-    </mat-menu>
   `
 })
 export class TeamCardComponent {

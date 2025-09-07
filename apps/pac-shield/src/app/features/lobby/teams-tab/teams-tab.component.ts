@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { FilterBarComponent, FilterOptions } from '../filter-bar/filter-bar.component';
-import { TeamCardComponent, RoleGroup } from '../team-card/team-card.component';
-import { Team, Player, Game } from '../../../generated';
+import { RoleGroup } from '../team-card/team-card.component';
+import { TeamListComponent } from './components/team-list/team-list.component';
+import { Team, Player } from '../../../generated';
 
 @Component({
   selector: 'app-teams-tab',
@@ -14,7 +15,7 @@ import { Team, Player, Game } from '../../../generated';
     MatExpansionModule,
     MatIconModule,
     FilterBarComponent,
-    TeamCardComponent
+    TeamListComponent
   ],
   template: `
     <div class="p-6">
@@ -38,27 +39,24 @@ import { Team, Player, Game } from '../../../generated';
             </mat-panel-title>
           </mat-expansion-panel-header>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            @for (team of mobTeams; track team.id) {
-            <app-team-card
-              [team]="team"
-              [roleGroups]="getRoleGroupsForTeam(team)"
-              [teamTypeInfo]="getTeamTypeInfo(team)"
-              [currentPlayer]="currentPlayer"
-              [allTeams]="allTeams"
-              [showGMTools]="showGMTools"
-              [dense]="filters.dense"
-              [unassignedCount]="unassignedCount"
-              (joinTeam)="joinTeam.emit(team)"
-              (assignOneUnassigned)="assignOneUnassigned.emit(team.id!)"
-              (toggleLock)="toggleTeamLock.emit(team)"
-              (changeRole)="changeRole.emit($event)"
-              (moveToTeam)="moveToTeam.emit($event)"
-              (removeFromTeam)="removeFromTeam.emit($event)"
-              (removeFromGame)="removeFromGame.emit($event)"
-            ></app-team-card>
-            }
-          </div>
+          <app-team-list
+            [teams]="mobTeams"
+            [currentPlayer]="currentPlayer"
+            [allTeams]="allTeams"
+            [showGMTools]="showGMTools"
+            [dense]="filters.dense"
+            [unassignedCount]="unassignedCount"
+            [gridClass]="'grid grid-cols-1 lg:grid-cols-2 gap-4'"
+            [getTeamTypeInfo]="getTeamTypeInfo"
+            [groupPlayersByRole]="groupPlayersByRole"
+            (joinTeam)="joinTeam.emit($event)"
+            (assignOneUnassigned)="assignOneUnassigned.emit($event.id!)"
+            (toggleLock)="toggleTeamLock.emit($event)"
+            (changeRole)="changeRole.emit($event)"
+            (moveToTeam)="moveToTeam.emit($event)"
+            (removeFromTeam)="removeFromTeam.emit($event)"
+            (removeFromGame)="removeFromGame.emit($event)"
+          ></app-team-list>
         </mat-expansion-panel>
         }
 
@@ -72,27 +70,24 @@ import { Team, Player, Game } from '../../../generated';
             </mat-panel-title>
           </mat-expansion-panel-header>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @for (team of commandControlTeams; track team.id) {
-            <app-team-card
-              [team]="team"
-              [roleGroups]="getRoleGroupsForTeam(team)"
-              [teamTypeInfo]="getTeamTypeInfo(team)"
-              [currentPlayer]="currentPlayer"
-              [allTeams]="allTeams"
-              [showGMTools]="showGMTools"
-              [dense]="filters.dense"
-              [unassignedCount]="unassignedCount"
-              (joinTeam)="joinTeam.emit(team)"
-              (assignOneUnassigned)="assignOneUnassigned.emit(team.id!)"
-              (toggleLock)="toggleTeamLock.emit(team)"
-              (changeRole)="changeRole.emit($event)"
-              (moveToTeam)="moveToTeam.emit($event)"
-              (removeFromTeam)="removeFromTeam.emit($event)"
-              (removeFromGame)="removeFromGame.emit($event)"
-            ></app-team-card>
-            }
-          </div>
+          <app-team-list
+            [teams]="commandControlTeams"
+            [currentPlayer]="currentPlayer"
+            [allTeams]="allTeams"
+            [showGMTools]="showGMTools"
+            [dense]="filters.dense"
+            [unassignedCount]="unassignedCount"
+            [gridClass]="'grid grid-cols-1 md:grid-cols-2 gap-4'"
+            [getTeamTypeInfo]="getTeamTypeInfo"
+            [groupPlayersByRole]="groupPlayersByRole"
+            (joinTeam)="joinTeam.emit($event)"
+            (assignOneUnassigned)="assignOneUnassigned.emit($event.id!)"
+            (toggleLock)="toggleTeamLock.emit($event)"
+            (changeRole)="changeRole.emit($event)"
+            (moveToTeam)="moveToTeam.emit($event)"
+            (removeFromTeam)="removeFromTeam.emit($event)"
+            (removeFromGame)="removeFromGame.emit($event)"
+          ></app-team-list>
         </mat-expansion-panel>
         }
 
@@ -106,27 +101,24 @@ import { Team, Player, Game } from '../../../generated';
             </mat-panel-title>
           </mat-expansion-panel-header>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @for (team of supportTeams; track team.id) {
-            <app-team-card
-              [team]="team"
-              [roleGroups]="getRoleGroupsForTeam(team)"
-              [teamTypeInfo]="getTeamTypeInfo(team)"
-              [currentPlayer]="currentPlayer"
-              [allTeams]="allTeams"
-              [showGMTools]="showGMTools"
-              [dense]="filters.dense"
-              [unassignedCount]="unassignedCount"
-              (joinTeam)="joinTeam.emit(team)"
-              (assignOneUnassigned)="assignOneUnassigned.emit(team.id!)"
-              (toggleLock)="toggleTeamLock.emit(team)"
-              (changeRole)="changeRole.emit($event)"
-              (moveToTeam)="moveToTeam.emit($event)"
-              (removeFromTeam)="removeFromTeam.emit($event)"
-              (removeFromGame)="removeFromGame.emit($event)"
-            ></app-team-card>
-            }
-          </div>
+          <app-team-list
+            [teams]="supportTeams"
+            [currentPlayer]="currentPlayer"
+            [allTeams]="allTeams"
+            [showGMTools]="showGMTools"
+            [dense]="filters.dense"
+            [unassignedCount]="unassignedCount"
+            [gridClass]="'grid grid-cols-1 md:grid-cols-2 gap-4'"
+            [getTeamTypeInfo]="getTeamTypeInfo"
+            [groupPlayersByRole]="groupPlayersByRole"
+            (joinTeam)="joinTeam.emit($event)"
+            (assignOneUnassigned)="assignOneUnassigned.emit($event.id!)"
+            (toggleLock)="toggleTeamLock.emit($event)"
+            (changeRole)="changeRole.emit($event)"
+            (moveToTeam)="moveToTeam.emit($event)"
+            (removeFromTeam)="removeFromTeam.emit($event)"
+            (removeFromGame)="removeFromGame.emit($event)"
+          ></app-team-list>
         </mat-expansion-panel>
         }
       </mat-accordion>
@@ -177,7 +169,4 @@ export class TeamsTabComponent {
     this.filtersChange.emit(filters);
   }
 
-  getRoleGroupsForTeam(team: Team): RoleGroup[] {
-    return this.groupPlayersByRole(team);
-  }
 }
