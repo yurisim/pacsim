@@ -1,0 +1,31 @@
+<mat-card class="md-sys-bg-primary-container md-shape-corner-lg md-padding-lg" data-testid="continue-session-card">
+  <div class="flex items-center gap-4 mb-4">
+    <div
+      class="w-12 h-12 md-shape-corner-full md-sys-bg-primary flex items-center justify-center"
+      aria-hidden="true"
+    >
+      <span class="md-typescale-title-medium md-sys-color-on-primary font-semibold">
+        {{ initial }}
+      </span>
+    </div>
+    <div class="text-left">
+      <div class="md-typescale-title-medium md-sys-color-on-primary-container font-medium">
+        Welcome back, {{ player?.name }}!
+      </div>
+      <div class="md-typescale-body-small md-sys-color-on-primary-container opacity-90">
+        Continue your game session
+      </div>
+    </div>
+  </div>
+
+  <button
+    matButton="filled"
+    color="primary"
+    (click)="onContinue()"
+    data-testid="continue-session-button"
+    aria-label="Continue game"
+  >
+    <mat-icon fontIcon="arrow_forward" class="mr-2" aria-hidden="true"></mat-icon>
+    <span class="md-typescale-label-large">Continue Game</span>
+  </button>
+</mat-card>

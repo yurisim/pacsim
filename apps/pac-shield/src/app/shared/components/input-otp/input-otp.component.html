@@ -4,7 +4,7 @@
     class="otp-input md-sys-bg-surface-container md-sys-color-on-surface"
     [type]="mask ? 'password' : 'text'"
     [value]="values[i]"
-    [disabled]="disabled"
+    [readonly]="disabled"
     [placeholder]="placeholder"
     [attr.data-otp-index]="i"
     [attr.aria-label]="ariaLabel + ' digit ' + (i + 1)"

@@ -1,0 +1,31 @@
+<div class="ea-content">
+  <span class="ea-icon" aria-hidden="true" *ngIf="computedIconText as ico">{{ ico }}</span>
+  <ng-container *ngIf="iconTemplate as tpl">
+    <ng-container [ngTemplateOutlet]="tpl"></ng-container>
+  </ng-container>
+
+  <div class="ea-text">
+    <ng-container *ngIf="title">
+      <h3 class="ea-title md-typescale-title-small md-sys-color-on-surface">{{ title }}</h3>
+    </ng-container>
+
+    <ng-container [ngSwitch]="isMessageArray">
+      <ul *ngSwitchCase="true" class="ea-list list-disc pl-5">
+        <li *ngFor="let line of arrayMessage">{{ line }}</li>
+      </ul>
+      <p *ngSwitchDefault class="ea-message">{{ message }}</p>
+    </ng-container>
+
+    <ng-content></ng-content>
+  </div>
+
+  <button
+    *ngIf="dismissible"
+    type="button"
+    class="ea-close md-typescale-label-small"
+    aria-label="Close alert"
+    (click)="onDismiss()"
+  >
+    ×
+  </button>
+</div>

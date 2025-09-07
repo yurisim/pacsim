@@ -1,0 +1,99 @@
+<div class="md-sys-bg-background min-h-[calc(100vh-64px)] flex justify-center items-center md-padding-lg">
+  <mat-card class="md-elevation-2 md-sys-bg-surface-container interactive-surface w-full max-w-lg" data-testid="join-shell-card">
+    <mat-card-header class="md-card-header-center">
+      <mat-card-title class="md-typescale-headline-medium md-sys-color-on-surface md-card-title-center">
+        Join Game
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="md-padding-lg">
+      <ng-container *ngIf="vm() as vm">
+        <!-- Continue session (JWT) -->
+        <div *ngIf="vm.jwt.hasValid && vm.jwt.player && vm.jwt.gameId" class="mb-6">
+          <app-continue-session-card
+            [player]="vm.jwt.player!"
+            [gameId]="vm.jwt.gameId!"
+            (continueClicked)="facade.continueExistingGame()"
+          ></app-continue-session-card>
+
+          <div class="flex items-center my-6">
+            <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
+            <span class="md-padding-sm md-typescale-body-small md-sys-color-on-surface-variant">
+              or join a different game
+            </span>
+            <div class="flex-1 h-px md-sys-color-outline opacity-20"></div>
+          </div>
+        </div>
+
+        <!-- Steps -->
+        <ng-container [ngSwitch]="vm.step">
+          <!-- Step: AccountRoom -->
+          <ng-container *ngSwitchCase="stepEnum.AccountRoom">
+            <app-account-room-form
+              [value]="vm.accountForm"
+              [roomStatus]="vm.room"
+              [canSubmit]="vm.canSubmitAccount"
+              [isBusy]="vm.busy"
+              (roomCodeComplete)="facade.validateRoom($event)"
+              (playerNameChanged)="facade.updateAccountDraft({ playerName: $event })"
+              (submitted)="facade.join($event.gameId, $event.playerName)"
+            ></app-account-room-form>
+
+            <app-error-alert
+              *ngIf="vm.error"
+              variant="error"
+              [message]="vm.error"
+              ariaLive="polite"
+              dataTestId="join-error"
+            ></app-error-alert>
+          </ng-container>
+
+          <!-- Step: NameConflict -->
+          <ng-container *ngSwitchCase="stepEnum.NameConflict">
+            <app-name-conflict-resolve
+              [roomCode]="vm.room.code || vm.accountForm.gameId"
+              [playerName]="vm.accountForm.playerName"
+              [isBusy]="vm.busy"
+              [errorMessage]="vm.error"
+              (backClicked)="facade.resetConflictFlow()"
+              (verifyPin)="facade.verifyPin(vm.room.code || vm.accountForm.gameId, vm.accountForm.playerName, $event.pin)"
+              (newPersonClicked)="facade.switchToNewPerson()"
+            ></app-name-conflict-resolve>
+          </ng-container>
+
+          <!-- Step: NewPerson -->
+          <ng-container *ngSwitchCase="stepEnum.NewPerson">
+            <app-new-person-form
+              [value]="vm.newPersonForm"
+              [nameCheck]="vm.nameCheck"
+              [isBusy]="vm.busy"
+              (backClicked)="facade.resetConflictFlow()"
+              (checkAvailability)="facade.checkNewName(vm.room.code || vm.accountForm.gameId, $event)"
+              (createNew)="facade.createNewPlayer(vm.room.code || vm.accountForm.gameId, $event)"
+            ></app-new-person-form>
+
+            <app-error-alert
+              *ngIf="vm.error"
+              variant="error"
+              [message]="vm.error"
+              ariaLive="polite"
+              dataTestId="new-person-error"
+            ></app-error-alert>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </mat-card-content>
+
+    <mat-card-actions class="flex gap-3 md-padding-lg justify-center mt-4">
+      <button
+        matButton="outlined"
+        color="primary"
+        (click)="onBackHome()"
+        data-testid="back-home"
+      >
+        <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
+        <span class="md-typescale-label-large">Back</span>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

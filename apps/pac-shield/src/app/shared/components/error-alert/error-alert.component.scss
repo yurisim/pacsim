@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+/* Layout container */
+.ea-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem; /* small icon/text spacing */
+}
+
+/* Icon styling (text icon by default) */
+.ea-icon {
+  line-height: 1;
+  margin-top: 0.125rem; /* nudge to align with text baseline */
+}
+
+/* Text block */
+.ea-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ea-title {
+  margin: 0 0 0.25rem 0;
+}
+
+.ea-message {
+  margin: 0;
+}
+
+.ea-list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+/* Close button (when dismissible) */
+.ea-close {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 0 0.25rem;
+  cursor: pointer;
+  margin-left: auto;
+  line-height: 1;
+}
+
+.ea-close:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

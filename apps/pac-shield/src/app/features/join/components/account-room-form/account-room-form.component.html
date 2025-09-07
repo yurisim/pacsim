@@ -1,0 +1,54 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-6" novalidate>
+  <!-- Room Code -->
+  <div class="flex flex-col items-center gap-2">
+    <div class="block md-typescale-body-medium md-sys-color-on-surface mt-4 text-center">
+      <span>Room Code</span>
+    </div>
+
+    <app-room-code-field
+      formControlName="gameId"
+      [length]="6"
+      ariaLabel="6-character Room Code"
+      (complete)="onRoomCodeComplete()"
+      data-testid="room-code-otp"
+    ></app-room-code-field>
+
+    <app-status-banner
+      [attr.id]="roomMessageId"
+      [state]="roomStatus.status === 'pending' ? 'checking' : roomStatus.status === 'valid' ? 'valid' : roomStatus.status === 'invalid' ? 'invalid' : 'idle'"
+      [message]="roomStatus.message"
+    ></app-status-banner>
+  </div>
+
+  <!-- Player Name (shown after room is valid) -->
+  <div *ngIf="isRoomValid">
+    <app-account-selector
+      [selectedAccount]="{ name: form.controls.playerName.value || '' }"
+      [disabled]="false"
+      [ariaDescribedById]="nameErrorId"
+      [errorText]="form.controls.playerName.invalid && form.controls.playerName.touched ? fieldError(form.controls.playerName) : null"
+      (accountChange)="onAccountChange($event)"
+    ></app-account-selector>
+  </div>
+
+  <!-- Submit -->
+  <div class="flex gap-3 justify-center mt-2">
+    <button
+      matButton="filled"
+      color="primary"
+      type="submit"
+      [disabled]="isBusy || !canSubmit || form.pending"
+      data-testid="join-submit-button"
+      aria-label="Join game"
+    >
+      <mat-icon
+        [fontIcon]="isBusy ? 'hourglass_top' : isRoomPending ? 'autorenew' : 'login'"
+        class="mr-2"
+        aria-hidden="true"
+      ></mat-icon>
+      <span class="md-typescale-label-large">
+        {{ isBusy ? 'Joining...' : isRoomPending ? 'Validating...' : 'Join' }}
+      </span>
+    </button>
+  </div>
+</form>

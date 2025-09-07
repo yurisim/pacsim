@@ -21,7 +21,8 @@
       "Bash(find:*)",
       "Bash(claude mcp add playwright:*)",
       "Bash(yarn)",
-      "mcp__playwright__browser_click"
+      "mcp__playwright__browser_click",
+      "mcp__wallaby__wallaby_allTestsForFile"
     ],
     "deny": [],
     "ask": []

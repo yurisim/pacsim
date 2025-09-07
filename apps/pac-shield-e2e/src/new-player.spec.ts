@@ -1,6 +1,14 @@
 import { test, expect, request } from '@playwright/test';
-import { fillRoomCodeOtp } from './test-utils';
+import { fillRoomCodeOtp, submitFormReliably, getElementReliably } from './test-utils';
 
+/**
+ * Test Suite: New Player Flow
+ *
+ * This suite tests the complete workflow for new players joining games,
+ * with focus on name conflict resolution and alternative player creation paths.
+ * Each test uses a pre-created game with existing players to simulate realistic
+ * conflict scenarios.
+ */
 test.describe('New Player Flow', () => {
   let roomCode: string;
 
@@ -28,6 +36,19 @@ test.describe('New Player Flow', () => {
     await apiContext.dispose();
   });
 
+  /**
+   * Test Intent: Verify the complete name conflict resolution workflow when a new user
+   * attempts to join with a name that's already taken, including the "I'm a new person"
+   * flow that allows them to create a unique player identity.
+   *
+   * This test validates:
+   * - Name conflict detection during join process
+   * - "I'm a new person" alternative flow activation
+   * - New player creation form and name availability checking
+   * - Duplicate name rejection with clear error messaging
+   * - Successful unique name acceptance and player creation
+   * - Final lobby navigation and player identity confirmation
+   */
   test('should allow a new user to choose a different name when their original choice is taken', async ({ page }) => {
     await page.goto('/');
 
@@ -36,8 +57,18 @@ test.describe('New Player Flow', () => {
 
     // Join with a name that will be taken
     await fillRoomCodeOtp(page, roomCode);
-    await page.fill('input[formControlName="playerName"]', 'DUPLICATE_NAME');
-    await page.click('button:has-text("Join")');
+    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
+
+    const nameInput = await getElementReliably(page, [
+      '[data-testid="player-name-input"]',
+      'input[formControlName="playerName"]'
+    ]);
+    await nameInput.fill('DUPLICATE_NAME');
+
+    await submitFormReliably(page, '[data-testid="join-submit-button"]', {
+      showsError: 'already exists in this game',
+      timeout: 10000
+    });
 
     // Expect to see the name conflict screen
     await expect(page.locator('text=A player named "DUPLICATE_NAME" already exists in this game')).toBeVisible();
@@ -46,26 +77,28 @@ test.describe('New Player Flow', () => {
     await page.getByRole('button', { name: /i'm a new person/i }).click();
 
     // Expect to see the new person flow
-    await expect(page.locator('text=Create a New Player')).toBeVisible();
+    await expect(page.getByText('New Player Name')).toBeVisible();
 
     // Try to create a player with the same name again
-    await page.fill('input[formControlName="newPlayerName"]', 'DUPLICATE_NAME');
-
-    await page.getByRole('textbox', { name: 'New Player Name' }).fill('DUPLICATE_NAME');
+    const newPlayerInput = await getElementReliably(page, [
+      '[data-testid="new-player-name-input"]',
+      'input[formControlName="newPlayerName"]'
+    ]);
+    await newPlayerInput.fill('DUPLICATE_NAME');
     await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.getByText('This name is already taken. Please choose another one.')).toBeVisible();
 
     // Enter a unique name
     const uniqueName = `NEW_PLAYER_${Date.now()}`;
-    await page.fill('input[formControlName="newPlayerName"]', uniqueName);
+    await newPlayerInput.fill(uniqueName);
     await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.locator('text=This name is available!')).toBeVisible();
 
     // Create the new player
-    await page.getByRole('button', { name: /create new player/i }).click();
-
-    // Expect to be redirected to the lobby and see the new player
-    await expect(page).toHaveURL(/\/lobby\//);
+    await submitFormReliably(page, 'button:has-text("Create new player")', {
+      navigatesTo: /\/lobby\//,
+      timeout: 20000
+    });
     await expect(page.getByText(roomCode)).toBeVisible();
     await expect(page.getByText(uniqueName)).not.toHaveCount(0);
   });

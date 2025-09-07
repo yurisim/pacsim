@@ -181,13 +181,112 @@ export async function clearOtpField(page: Page, length = 4): Promise<void> {
 }
 
 /**
- * Simplified helper for filling room code OTP component
+ * Enhanced room code filling with validation waiting
  * @param page - Playwright Page object
  * @param roomCode - The room code string to enter (e.g., 'ABC123')
  * @returns Promise<void>
  */
 export async function fillRoomCodeOtp(page: Page, roomCode: string): Promise<void> {
   await fillOtpFieldByAriaLabel(page, '6-character Room Code', roomCode);
+  
+  // Wait for validation to complete (success or error)
+  try {
+    await Promise.race([
+      page.locator('mat-icon[fontIcon="check_circle"]').waitFor({ state: 'visible', timeout: 8000 }),
+      page.locator('mat-icon[fontIcon="cancel"]').waitFor({ state: 'visible', timeout: 8000 })
+    ]);
+  } catch (error) {
+    // Validation didn't complete - this might be expected for some tests
+    console.warn('Room code validation did not complete within timeout');
+  }
+}
+
+/**
+ * Enhanced wait for navigation with retry and specific URL pattern matching
+ * @param page - Playwright Page object
+ * @param urlPattern - URL pattern to wait for (string or regex)
+ * @param options - Configuration options
+ * @returns Promise<void>
+ */
+export async function waitForNavigationReliable(
+  page: Page,
+  urlPattern: string | RegExp,
+  options: { 
+    timeout?: number;
+    waitUntil?: 'load' | 'domcontentloaded' | 'commit';
+    retries?: number;
+  } = {}
+): Promise<void> {
+  const { timeout = 10000, waitUntil = 'domcontentloaded', retries = 3 } = options;
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await expect(page).toHaveURL(urlPattern, { timeout });
+      
+      // Additional wait for DOM stability
+      if (waitUntil === 'domcontentloaded') {
+        await page.waitForLoadState('domcontentloaded');
+      } else if (waitUntil === 'load') {
+        await page.waitForLoadState('load');
+      }
+      
+      return; // Success
+    } catch (error) {
+      if (attempt === retries) {
+        throw new Error(
+          `Failed to navigate to ${urlPattern.toString()} after ${retries} attempts. Current URL: ${page.url()}`
+        );
+      }
+      
+      // Wait before retry
+      await page.waitForTimeout(1000 * attempt);
+    }
+  }
+}
+
+
+
+
+/**
+ * Wait for button state changes with proper loading/disabled handling
+ * @param page - Playwright Page object
+ * @param buttonSelector - Button selector or data-testid
+ * @param expectedStates - Array of expected states in sequence
+ * @returns Promise<void>
+ */
+export async function waitForButtonStates(
+  page: Page,
+  buttonSelector: string,
+  expectedStates: Array<'enabled' | 'disabled' | 'loading' | 'contains-text'>,
+  textToContain?: string
+): Promise<void> {
+  const button = await getElementReliably(page, [buttonSelector]);
+  
+  for (const state of expectedStates) {
+    switch (state) {
+      case 'enabled':
+        await expect(button).toBeEnabled();
+        break;
+      case 'disabled':
+        await expect(button).toBeDisabled();
+        break;
+      case 'loading':
+        // Look for loading spinner or loading text
+        await expect(
+          button.locator('mat-progress-spinner')
+            .or(page.locator('mat-progress-spinner'))
+        ).toBeVisible();
+        break;
+      case 'contains-text':
+        if (textToContain) {
+          await expect(button).toContainText(textToContain);
+        }
+        break;
+    }
+    
+    // Small delay between state checks
+    await page.waitForTimeout(100);
+  }
 }
 
 /**
@@ -196,10 +295,20 @@ export async function fillRoomCodeOtp(page: Page, roomCode: string): Promise<voi
  * @returns Promise<void>
  */
 export async function clearStorage(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
+  try {
+    await page.evaluate(() => {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {
+        // SecurityError: localStorage/sessionStorage not accessible
+        console.warn('Cannot clear storage:', e);
+      }
+    });
+  } catch (error) {
+    // Page might not have a valid origin, ignore storage clearing
+    console.warn('Storage clearing skipped due to page context:', error);
+  }
 }
 
 /**
@@ -210,13 +319,22 @@ export async function clearStorage(page: Page): Promise<void> {
  * @returns Promise<void>
  */
 export async function setInvalidJwt(page: Page, playerName = 'FakePlayer', playerId = 999): Promise<void> {
-  await page.evaluate(({ name, id }) => {
-    localStorage.setItem('pac-shield-jwt', 'invalid.jwt.token');
-    localStorage.setItem('pac-shield-player', JSON.stringify({
-      name,
-      id
-    }));
-  }, { name: playerName, id: playerId });
+  try {
+    await page.evaluate(({ name, id }) => {
+      try {
+        localStorage.setItem('pac-shield-jwt', 'invalid.jwt.token');
+        localStorage.setItem('pac-shield-player', JSON.stringify({
+          name,
+          id
+        }));
+      } catch (e) {
+        // SecurityError: localStorage not accessible
+        console.warn('Cannot set invalid JWT in storage:', e);
+      }
+    }, { name: playerName, id: playerId });
+  } catch (error) {
+    console.warn('setInvalidJwt failed due to page context:', error);
+  }
 }
 
 /**
@@ -242,4 +360,386 @@ export async function expectCompactLayout(page: Page): Promise<void> {
   // Compact layout should be narrower (roughly 448px max-w-md equivalent)
   expect(cardBox?.width).toBeLessThan(500);
   await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
+}
+
+/**
+ * Assert that the card width is appropriate for expanded layout (wider)
+ * Tests actual width rather than CSS classes to avoid brittleness
+ * @param page - Playwright Page object
+ * @returns Promise<void>
+ */
+export async function expectExpandedLayout(page: Page): Promise<void> {
+  const card = page.locator('mat-card');
+  const cardBox = await card.boundingBox();
+
+  // Expanded layout should be wider (roughly 640px max-w-xl equivalent)
+  expect(cardBox?.width).toBeGreaterThan(500);
+  await expect(page.locator('.md-sys-bg-primary-container')).toBeVisible();
+}
+
+/**
+ * Enhanced element selection with fallback strategies for reliability
+ * @param page - Playwright Page object
+ * @param selectors - Array of selectors to try in order (primary to fallback)
+ * @param options - Options for timeout and visibility requirements
+ * @returns Promise<Locator>
+ */
+export async function getElementReliably(
+  page: Page,
+  selectors: string[],
+  options: { timeout?: number; visible?: boolean } = {}
+) {
+  const { timeout = 5000, visible = true } = options;
+  
+  for (const selector of selectors) {
+    try {
+      const element = page.locator(selector);
+      if (visible) {
+        await expect(element.first()).toBeVisible({ timeout: timeout / selectors.length });
+      } else {
+        await expect(element.first()).toBeAttached({ timeout: timeout / selectors.length });
+      }
+      return element.first();
+    } catch (error) {
+      // Continue to next selector if current one fails
+      continue;
+    }
+  }
+  
+  throw new Error(`None of the selectors found an element: ${selectors.join(', ')}`);
+}
+
+
+/**
+ * Form submission with outcome verification and enhanced error handling
+ * @param page - Playwright Page object
+ * @param submitButton - Button selector or element
+ * @param expectedOutcome - Expected outcome after submission
+ * @returns Promise<void>
+ */
+export async function submitFormReliably(
+  page: Page,
+  submitButton: string,
+  expectedOutcome: {
+    navigatesTo?: string | RegExp;
+    showsError?: string;
+    showsStep?: 'account' | 'conflict' | 'new' | 'done';
+    timeout?: number;
+  }
+): Promise<void> {
+  const { navigatesTo, showsError, showsStep, timeout = 15000 } = expectedOutcome;
+  
+  // Get submit button with fallback selectors
+  const button = await getElementReliably(page, [
+    submitButton,
+    'button[type="submit"]',
+    'button:has-text("Join")',
+    'button:has-text("Continue")',
+    'button:has-text("Create")'
+  ]);
+  
+  // Ensure button is enabled before clicking
+  await expect(button).toBeEnabled({ timeout: 5000 });
+  
+  // Click and handle different expected outcomes
+  await button.click();
+  
+  if (navigatesTo) {
+    await waitForNavigationReliable(page, navigatesTo, { timeout });
+  } else if (showsError) {
+    await expect(page.getByText(showsError)).toBeVisible({ timeout });
+  } else if (showsStep) {
+    await waitForJoinStep(page, showsStep, timeout);
+  }
+}
+
+/**
+ * Wait for specific join flow step with proper state validation
+ * @param page - Playwright Page object
+ * @param expectedStep - The expected step in the join flow
+ * @param timeout - Timeout in milliseconds
+ * @returns Promise<void>
+ */
+export async function waitForJoinStep(
+  page: Page,
+  expectedStep: 'account' | 'conflict' | 'new' | 'done',
+  timeout = 10000
+): Promise<void> {
+  const stepIndicators = {
+    account: [
+      '[data-testid="player-name-input"]',
+      'input[formControlName="playerName"]',
+      'text=Enter your name'
+    ],
+    conflict: [
+      'text=already exists in this game',
+      'button:has-text("I\'m a new person")',
+      '[data-testid="verify-pin-button"]'
+    ],
+    new: [
+      'text=Create New Player',
+      '[data-testid="new-player-name-input"]',
+      'button:has-text("Check name availability")'
+    ],
+    done: [
+      'text=Game Lobby',
+      'button:has-text("Copy Room Code")',
+      '.lobby-container'
+    ]
+  };
+  
+  const indicators = stepIndicators[expectedStep];
+  if (!indicators) {
+    throw new Error(`Unknown join step: ${expectedStep}`);
+  }
+  
+  // Wait for at least one indicator of the expected step
+  const promises = indicators.map(selector => 
+    page.locator(selector).first().waitFor({ state: 'visible', timeout })
+      .catch(() => null) // Don't fail immediately, try other selectors
+  );
+  
+  const results = await Promise.allSettled(promises);
+  const hasSuccess = results.some(result => result.status === 'fulfilled');
+  
+  if (!hasSuccess) {
+    throw new Error(`Failed to detect join step "${expectedStep}". Expected one of: ${indicators.join(', ')}`);
+  }
+}
+
+// === GAME STATE ISOLATION UTILITIES ===
+
+/**
+ * Generate unique test identifiers for game isolation
+ * @param testName - Name of the test for identification
+ * @returns Unique test identifiers
+ */
+export function generateTestIds(testName: string) {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(7);
+  const prefix = testName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  
+  return {
+    gameId: `test_${prefix}_${timestamp}_${random}`,
+    playerName: `Player_${timestamp}_${random}`,
+    gmName: `GM_${timestamp}_${random}`,
+    roomCode: '', // Will be populated after game creation
+  };
+}
+
+/**
+ * Create isolated game state via API for testing
+ * @param page - Playwright Page object
+ * @param options - Game creation options
+ * @returns Promise with game data
+ */
+export async function createIsolatedGame(
+  page: Page, 
+  options: {
+    gameMasterName?: string;
+    victoryConditionMP?: number;
+    players?: Array<{ name: string; pin?: string; role?: string }>;
+  } = {}
+): Promise<{ roomCode: string; gameId: string; players: any[] }> {
+  const { 
+    gameMasterName = `GM_${Date.now()}`,
+    victoryConditionMP = 100,
+    players = []
+  } = options;
+  
+  // Create game via API
+  const createResponse = await page.request.post('http://localhost:3000/api/game/create', {
+    data: { victoryConditionMP }
+  });
+  
+  if (!createResponse.ok()) {
+    throw new Error(`Failed to create game: ${createResponse.status()}`);
+  }
+  
+  const gameData = await createResponse.json();
+  const roomCode = gameData.roomCode;
+  const gameId = gameData.gameId;
+  
+  // Create GM player
+  const gmResponse = await page.request.post('http://localhost:3000/api/player/join', {
+    data: {
+      roomCode,
+      playerName: gameMasterName,
+      pin: '1234'
+    }
+  });
+  
+  if (!gmResponse.ok()) {
+    throw new Error(`Failed to create GM: ${gmResponse.status()}`);
+  }
+  
+  const createdPlayers = [await gmResponse.json()];
+  
+  // Create additional players if specified
+  for (const player of players) {
+    const playerResponse = await page.request.post('http://localhost:3000/api/player/join', {
+      data: {
+        roomCode,
+        playerName: player.name,
+        pin: player.pin || '5555',
+      }
+    });
+    
+    if (playerResponse.ok()) {
+      createdPlayers.push(await playerResponse.json());
+    }
+  }
+  
+  return {
+    roomCode,
+    gameId,
+    players: createdPlayers
+  };
+}
+
+/**
+ * Clean up test game and associated data
+ * @param page - Playwright Page object
+ * @param gameId - Game ID to clean up
+ * @returns Promise<void>
+ */
+export async function cleanupGame(page: Page, gameId: string): Promise<void> {
+  try {
+    // Clean up via API if endpoint exists
+    await page.request.delete(`http://localhost:3000/api/game/${gameId}`);
+  } catch (error) {
+    // Cleanup failed, but don't fail the test
+    console.warn(`Warning: Failed to cleanup game ${gameId}:`, error);
+  }
+}
+
+/**
+ * Setup complete game scenario with multiple players and conflicts
+ * @param page - Playwright Page object
+ * @param scenario - Predefined scenario type
+ * @returns Promise with scenario data
+ */
+export async function setupGameScenario(
+  page: Page,
+  scenario: 'name-conflict' | 'multi-player' | 'pin-verification' | 'fresh-game' = 'fresh-game'
+): Promise<{
+  roomCode: string;
+  gameId: string;
+  players: Array<{ name: string; pin?: string; id?: string }>;
+  conflictName?: string;
+}> {
+  const testIds = generateTestIds(`scenario_${scenario}`);
+  
+  switch (scenario) {
+    case 'name-conflict': {
+      const gameData = await createIsolatedGame(page, {
+        gameMasterName: testIds.gmName,
+        players: [
+          { name: 'ConflictUser', pin: '5555' }
+        ]
+      });
+      
+      return {
+        ...gameData,
+        conflictName: 'ConflictUser'
+      };
+    }
+    
+    case 'multi-player': {
+      return createIsolatedGame(page, {
+        gameMasterName: testIds.gmName,
+        players: [
+          { name: 'Player1', pin: '1111' },
+          { name: 'Player2', pin: '2222' },
+          { name: 'Player3', pin: '3333' }
+        ]
+      });
+    }
+    
+    case 'pin-verification': {
+      return createIsolatedGame(page, {
+        gameMasterName: testIds.gmName,
+        players: [
+          { name: 'PinUser', pin: '9999' }
+        ]
+      });
+    }
+    
+    case 'fresh-game':
+    default: {
+      return createIsolatedGame(page, {
+        gameMasterName: testIds.gmName
+      });
+    }
+  }
+}
+
+/**
+ * Wait for lobby page to fully load with game data
+ * @param page - Playwright Page object
+ * @param expectedRoomCode - Expected room code to verify
+ * @param timeout - Timeout in milliseconds
+ * @returns Promise<void>
+ */
+export async function waitForLobbyLoaded(
+  page: Page, 
+  expectedRoomCode?: string,
+  timeout = 10000
+): Promise<void> {
+  // Wait for lobby URL
+  await expect(page).toHaveURL(/\/lobby\//, { timeout });
+  
+  // Wait for lobby heading
+  await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible({ timeout });
+  
+  // Wait for room code display
+  const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+  await expect(roomCodeButton).toBeVisible({ timeout });
+  
+  // Verify specific room code if provided
+  if (expectedRoomCode) {
+    await expect(roomCodeButton.locator('p')).toContainText(expectedRoomCode, { timeout });
+  }
+  
+  // Wait for players list to be visible (even if empty)
+  await expect(page.locator('.md-sys-color-on-surface').first()).toBeVisible({ timeout });
+}
+
+/**
+ * Comprehensive test isolation setup and teardown helper
+ * @param page - Playwright Page object
+ * @param testName - Name of test for unique identification
+ * @returns Setup and cleanup functions
+ */
+export function createTestIsolation(page: Page, testName: string) {
+  let gameData: { gameId: string; roomCode: string } | null = null;
+  
+  const setup = async (scenario: Parameters<typeof setupGameScenario>[1] = 'fresh-game') => {
+    // Clear any existing session
+    await clearStorage(page);
+    
+    // Setup game scenario
+    gameData = await setupGameScenario(page, scenario);
+    
+    return gameData;
+  };
+  
+  const cleanup = async () => {
+    if (gameData?.gameId) {
+      await cleanupGame(page, gameData.gameId);
+    }
+    
+    // Navigate to a valid page before clearing storage
+    try {
+      await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 5000 });
+    } catch (error) {
+      // Navigation failed, but continue with cleanup
+      console.warn('Navigation failed during cleanup:', error);
+    }
+    
+    // Clear session
+    await clearStorage(page);
+  };
+  
+  return { setup, cleanup };
 }

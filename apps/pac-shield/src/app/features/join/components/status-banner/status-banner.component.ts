@@ -1,0 +1,28 @@
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+
+@Component({
+  selector: 'app-status-banner',
+  standalone: true,
+  imports: [CommonModule, MatProgressSpinnerModule, MatIconModule],
+  templateUrl: './status-banner.component.html',
+  styleUrls: ['./status-banner.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'h-6 flex items-center justify-center gap-2 mt-2 transition-all duration-300 ease-out',
+    'aria-live': 'polite',
+    '[attr.data-testid]': 'dataTestId'
+  }
+})
+export class StatusBannerComponent {
+  @Input() state: 'idle' | 'checking' | 'valid' | 'invalid' = 'idle';
+  @Input() message: string | string[] | null | undefined = null;
+  @Input() dataTestId?: string;
+
+  asString(msg: string | string[] | null | undefined): string | null {
+    if (!msg) return null;
+    return Array.isArray(msg) ? msg.filter(Boolean).join(' ') : msg;
+  }
+}
