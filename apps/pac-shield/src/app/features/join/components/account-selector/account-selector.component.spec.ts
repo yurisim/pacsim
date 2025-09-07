@@ -22,7 +22,7 @@ describe('AccountSelectorComponent', () => {
 
     fixture.componentRef.setInput('disabled', true);
     fixture.detectChanges();
-    expect(input.disabled).toBe(true);
+    expect(input.readOnly).toBe(true);
   });
 
   it('emits accountChange with object when typing non-empty name', () => {

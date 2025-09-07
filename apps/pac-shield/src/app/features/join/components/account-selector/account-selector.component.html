@@ -4,7 +4,7 @@
   <input
     matInput
     [value]="selectedAccount?.name || ''"
-    [disabled]="disabled"
+    [readonly]="disabled"
     (input)="onNameInput($any($event.target).value)"
     (keydown.enter)="onNameInput($any($event.target).value)"
     [attr.aria-describedby]="ariaDescribedById"
