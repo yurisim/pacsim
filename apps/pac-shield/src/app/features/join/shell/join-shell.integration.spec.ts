@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { JoinShellComponent } from './join-shell.component';
 import { JoinFacadeService } from '../services/join-facade.service';
-import { BehaviorSubject } from 'rxjs';
 import { JoinStep, JoinViewModel } from '../models/join.models';
 import { AccountRoomFormComponent } from '../components/account-room-form/account-room-form.component';
 import { NameConflictResolveComponent } from '../components/name-conflict-resolve/name-conflict-resolve.component';
@@ -10,7 +10,7 @@ import { ContinueSessionCardComponent } from '../components/continue-session-car
 
 class MockJoinFacade {
   // Initial VM mirrors account-room step
-  private vmSubject = new BehaviorSubject<JoinViewModel>({
+  private vmSignal = signal<JoinViewModel>({
     step: JoinStep.AccountRoom,
     room: { status: 'idle', message: null, code: '' },
     nameCheck: { pending: false, available: null, error: null },
@@ -24,32 +24,32 @@ class MockJoinFacade {
     canVerifyPin: true,
     canCreateNewPerson: false,
   });
-  viewModel$ = this.vmSubject.asObservable();
+  viewModel = this.vmSignal.asReadonly();
 
   // Methods the shell binds to:
   setStepFromUrl = jest.fn(); // Add this method that was missing
   validateRoom = jest.fn();
   updateAccountDraft = jest.fn((patch: Partial<JoinViewModel['accountForm']>) => {
-    const current = this.vmSubject.value;
-    this.vmSubject.next({ ...current, accountForm: { ...current.accountForm, ...patch } });
+    const current = this.vmSignal();
+    this.vmSignal.set({ ...current, accountForm: { ...current.accountForm, ...patch } });
   });
   join = jest.fn();
   verifyPin = jest.fn();
   switchToNewPerson = jest.fn(() => {
-    const current = this.vmSubject.value;
-    this.vmSubject.next({ ...current, step: JoinStep.NewPerson });
+    const current = this.vmSignal();
+    this.vmSignal.set({ ...current, step: JoinStep.NewPerson });
   });
   checkNewName = jest.fn();
   createNewPlayer = jest.fn();
   resetConflictFlow = jest.fn(() => {
-    const current = this.vmSubject.value;
-    this.vmSubject.next({ ...current, step: JoinStep.AccountRoom });
+    const current = this.vmSignal();
+    this.vmSignal.set({ ...current, step: JoinStep.AccountRoom });
   });
   continueExistingGame = jest.fn();
 
   // Test helper to drive shell state
   setVm(vm: Partial<JoinViewModel>) {
-    this.vmSubject.next({ ...this.vmSubject.value, ...vm });
+    this.vmSignal.set({ ...this.vmSignal(), ...vm });
   }
 }
 

@@ -12,6 +12,7 @@ import { AccountRoomFormComponent } from '../components/account-room-form/accoun
 import { NameConflictResolveComponent } from '../components/name-conflict-resolve/name-conflict-resolve.component';
 import { NewPersonFormComponent } from '../components/new-person-form/new-person-form.component';
 import { ContinueSessionCardComponent } from '../components/continue-session-card/continue-session-card.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 
 @Component({
   selector: 'app-join-shell',
@@ -26,6 +27,7 @@ import { ContinueSessionCardComponent } from '../components/continue-session-car
     NameConflictResolveComponent,
     NewPersonFormComponent,
     ContinueSessionCardComponent,
+    ErrorAlertComponent,
   ],
   templateUrl: './join-shell.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,7 +36,7 @@ export class JoinShellComponent implements OnInit {
   protected readonly facade = inject(JoinFacadeService);
   private readonly router = inject(Router);
 
-  protected readonly vm$ = this.facade.viewModel$;
+  protected readonly vm = this.facade.viewModel;
   protected readonly stepEnum = JoinStep;
 
   ngOnInit(): void {

@@ -7,7 +7,7 @@
     </mat-card-header>
 
     <mat-card-content class="md-padding-lg">
-      <ng-container *ngIf="vm$ | async as vm">
+      <ng-container *ngIf="vm() as vm">
         <!-- Continue session (JWT) -->
         <div *ngIf="vm.jwt.hasValid && vm.jwt.player && vm.jwt.gameId" class="mb-6">
           <app-continue-session-card
@@ -39,14 +39,13 @@
               (submitted)="facade.join($event.gameId, $event.playerName)"
             ></app-account-room-form>
 
-            <div
+            <app-error-alert
               *ngIf="vm.error"
-              class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm mt-3"
-              aria-live="polite"
-              data-testid="join-error"
-            >
-              {{ vm.error }}
-            </div>
+              variant="error"
+              [message]="vm.error"
+              ariaLive="polite"
+              dataTestId="join-error"
+            ></app-error-alert>
           </ng-container>
 
           <!-- Step: NameConflict -->
@@ -73,14 +72,13 @@
               (createNew)="facade.createNewPlayer(vm.room.code || vm.accountForm.gameId, $event)"
             ></app-new-person-form>
 
-            <div
+            <app-error-alert
               *ngIf="vm.error"
-              class="md-typescale-body-small md-sys-color-on-error-container md-padding-sm md-sys-bg-error-container md-shape-corner-sm mt-3"
-              aria-live="polite"
-              data-testid="new-person-error"
-            >
-              {{ vm.error }}
-            </div>
+              variant="error"
+              [message]="vm.error"
+              ariaLive="polite"
+              dataTestId="new-person-error"
+            ></app-error-alert>
           </ng-container>
         </ng-container>
       </ng-container>
