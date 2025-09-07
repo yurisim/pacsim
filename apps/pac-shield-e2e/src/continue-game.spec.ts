@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { fillGameMasterPin, fillOtpField } from './test-utils';
+import {
+  fillGameMasterPin,
+  fillOtpField,
+  clearStorage,
+  setInvalidJwt,
+  expectExpandedLayout
+} from './test-utils';
 
 test.describe('Continue Game functionality', () => {
   test('should show continue game option for users with valid JWT', async ({ page }) => {
