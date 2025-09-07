@@ -213,7 +213,7 @@ export async function waitForNavigationReliable(
   urlPattern: string | RegExp,
   options: { 
     timeout?: number;
-    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit';
+    waitUntil?: 'load' | 'domcontentloaded' | 'commit';
     retries?: number;
   } = {}
 ): Promise<void> {
@@ -226,8 +226,8 @@ export async function waitForNavigationReliable(
       // Additional wait for DOM stability
       if (waitUntil === 'domcontentloaded') {
         await page.waitForLoadState('domcontentloaded');
-      } else if (waitUntil === 'networkidle') {
-        await page.waitForLoadState('networkidle');
+      } else if (waitUntil === 'load') {
+        await page.waitForLoadState('load');
       }
       
       return; // Success
