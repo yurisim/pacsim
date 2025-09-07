@@ -1,29 +1,25 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
 import { EMPTY, Observable, map, firstValueFrom } from 'rxjs';
 import { WebSocketService } from '../../shared/services/websocket.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { NotificationService } from '../../shared/services/notification.service';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
+import { RoomCodeDisplayComponent } from './room-code-display/room-code-display.component';
+import { CurrentPlayerActionsComponent } from './current-player-actions/current-player-actions.component';
+import { OverviewTabComponent } from './overview-tab/overview-tab.component';
+import { TeamsTabComponent } from './teams-tab/teams-tab.component';
+import { UnassignedTabComponent } from './unassigned-tab/unassigned-tab.component';
+import { AllPlayersTabComponent } from './all-players-tab/all-players-tab.component';
+import { GmPlayerMenusComponent } from './gm-player-menus/gm-player-menus.component';
+import { FilterOptions } from './filter-bar/filter-bar.component';
+import { RoleGroup } from './team-card/team-card.component';
 
 
 enum PlayerRole {
@@ -40,23 +36,16 @@ enum PlayerRole {
   standalone: true,
   imports: [
     CommonModule,
-    ClipboardModule,
-    ReactiveFormsModule,
-    FormsModule,
     MatCardModule,
-    MatButtonModule,
-    MatDividerModule,
     MatDialogModule,
-    MatIconModule,
     MatTabsModule,
-    MatExpansionModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    MatSidenavModule,
-    MatMenuModule,
-    MatTooltipModule,
+    RoomCodeDisplayComponent,
+    CurrentPlayerActionsComponent,
+    OverviewTabComponent,
+    TeamsTabComponent,
+    UnassignedTabComponent,
+    AllPlayersTabComponent,
+    GmPlayerMenusComponent,
   ],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
@@ -64,7 +53,6 @@ enum PlayerRole {
 export class LobbyComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
-  private clipboard = inject(Clipboard);
   private notification = inject(NotificationService);
   private webSocketService = inject(WebSocketService);
   private authService = inject(AuthService);
@@ -76,16 +64,16 @@ export class LobbyComponent implements OnInit {
 
   // UI State
   activeTabIndex = 0; // 0=Overview,1=Teams,2=Unassigned,3=Players
-  showFilters = false;
-  gmToolsOpened = false;
 
-  // Filters
-  searchTerm = '';
-  filterTeamType: 'ALL' | 'MOB' | 'CAOC' | 'CSPOC' | 'MEDCOM' | 'GM' = 'ALL';
-  filterRole: 'ALL' | 'PLAYER' | 'COMMANDER' | 'DEPUTY' | 'STRATEGIST' | 'GM' = 'ALL';
-  filterUnassignedOnly = false;
-  hideEmptyTeams = true;
-  dense = true; // density toggle
+  // Filters - centralized filter state
+  filters: FilterOptions = {
+    searchTerm: '',
+    filterTeamType: 'ALL',
+    filterRole: 'ALL',
+    filterUnassignedOnly: false,
+    hideEmptyTeams: true,
+    dense: true
+  };
 
   // Fixed role order for grouping
   readonly roleOrder: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'PLAYER'];
@@ -127,9 +115,9 @@ export class LobbyComponent implements OnInit {
     }
   }
 
-  copyRoomCode(roomCode: string): void {
-    this.clipboard.copy(roomCode);
-    this.notification.success('Room code copied to clipboard');
+  // Filter handlers
+  onFiltersChange(filters: FilterOptions): void {
+    this.filters = { ...filters };
   }
 
   openJoinTeamDialog(team: Team): void {
@@ -264,20 +252,20 @@ export class LobbyComponent implements OnInit {
     return currentPlayer?.teamId === team.id;
   }
 
-  // Existing helpers retained; additional filter-aware variants below.
+  // Team categorization helpers
   getMOBTeams(teams: Team[]): Team[] {
     const list = teams.filter(team => team.type?.startsWith('MOB_'));
-    return this.hideEmptyTeams ? list.filter(t => (t.players?.length || 0) > 0) : list;
+    return this.filters.hideEmptyTeams ? list.filter(t => (t.players?.length || 0) > 0) : list;
   }
 
   getCommandControlTeams(teams: Team[]): Team[] {
     const list = teams.filter(team => team.type === 'CAOC' || team.type === 'CSPOC');
-    return this.hideEmptyTeams ? list.filter(t => (t.players?.length || 0) > 0) : list;
+    return this.filters.hideEmptyTeams ? list.filter(t => (t.players?.length || 0) > 0) : list;
   }
 
   getSupportTeams(teams: Team[]): Team[] {
     const list = teams.filter(team => team.type === 'MEDCOM' || team.type === 'GM');
-    return this.hideEmptyTeams ? list.filter(t => (t.players?.length || 0) > 0) : list;
+    return this.filters.hideEmptyTeams ? list.filter(t => (t.players?.length || 0) > 0) : list;
   }
 
   // KPI helpers
@@ -291,30 +279,16 @@ export class LobbyComponent implements OnInit {
     return (game?.teams || []).filter(t => !(t.players || []).some(p => (p.role || '').toUpperCase() === 'COMMANDER')).length;
   }
 
-  // Filters
-  private matchesSearch(name: string): boolean {
-    if (!this.searchTerm?.trim()) return true;
-    return name.toLowerCase().includes(this.searchTerm.trim().toLowerCase());
-  }
-
-  private matchesRole(role: string | null | undefined): boolean {
-    if (this.filterRole === 'ALL') return true;
-    return (role || '').toUpperCase() === this.filterRole;
-  }
-
-  private matchesTeamType(team: Team | undefined): boolean {
-    if (this.filterTeamType === 'ALL') return true;
-    if (!team?.type) return false;
-    if (this.filterTeamType === 'MOB') return team.type.startsWith('MOB_');
-    return team.type === this.filterTeamType;
-  }
-
+  // Computed properties for sub-components
   filteredPlayers(game: Game | undefined): Player[] {
     const players = (game?.players || []);
     return players.filter(p => {
       const team = (game?.teams || []).find(t => t.id === p.teamId);
-      const unassignedOk = this.filterUnassignedOnly ? !p.teamId : true;
-      return this.matchesSearch(p.name) && this.matchesRole(p.role) && this.matchesTeamType(team) && unassignedOk;
+      const searchOk = !this.filters.searchTerm?.trim() || p.name.toLowerCase().includes(this.filters.searchTerm.trim().toLowerCase());
+      const roleOk = this.filters.filterRole === 'ALL' || (p.role || '').toUpperCase() === this.filters.filterRole;
+      const teamTypeOk = this.filters.filterTeamType === 'ALL' || this.matchesTeamType(team);
+      const unassignedOk = !this.filters.filterUnassignedOnly || !p.teamId;
+      return searchOk && roleOk && teamTypeOk && unassignedOk;
     });
   }
 
@@ -322,18 +296,27 @@ export class LobbyComponent implements OnInit {
     return this.filteredPlayers(game).filter(p => !p.teamId);
   }
 
+  private matchesTeamType(team: Team | undefined): boolean {
+    if (this.filters.filterTeamType === 'ALL') return true;
+    if (!team?.type) return false;
+    if (this.filters.filterTeamType === 'MOB') return team.type.startsWith('MOB_');
+    return team.type === this.filters.filterTeamType;
+  }
+
   // Group roster by role for a team, ordered by roleOrder
-  groupPlayersByRole(team: Team | undefined): { role: string; players: Player[] }[] {
-    const players = (team?.players || []).filter(p =>
-      this.matchesSearch(p.name) && this.matchesRole(p.role) && (!this.filterUnassignedOnly)
-    );
+  groupPlayersByRole = (team: Team | undefined): RoleGroup[] => {
+    const players = (team?.players || []).filter(p => {
+      const searchOk = !this.filters.searchTerm?.trim() || p.name.toLowerCase().includes(this.filters.searchTerm.trim().toLowerCase());
+      const roleOk = this.filters.filterRole === 'ALL' || (p.role || '').toUpperCase() === this.filters.filterRole;
+      return searchOk && roleOk && !this.filters.filterUnassignedOnly;
+    });
     const roleMap = new Map<string, Player[]>();
     for (const p of players) {
       const r = (p.role || 'PLAYER').toUpperCase();
       if (!roleMap.has(r)) roleMap.set(r, []);
       roleMap.get(r)!.push(p);
     }
-    const result: { role: string; players: Player[] }[] = [];
+    const result: RoleGroup[] = [];
     for (const r of this.roleOrder) {
       if (roleMap.has(r)) result.push({ role: r, players: roleMap.get(r)! });
     }
@@ -342,7 +325,7 @@ export class LobbyComponent implements OnInit {
       if (!this.roleOrder.includes(r)) result.push({ role: r, players: plist });
     }
     return result;
-  }
+  };
 
   // GM Functions
   isCurrentPlayerGM(game: Game | undefined): boolean {
@@ -352,27 +335,6 @@ export class LobbyComponent implements OnInit {
     return (currentPlayer?.role || '').toUpperCase() === 'GM';
   }
 
-  lockTeam(teamId: number): void {
-    this.apiService.lockTeam(teamId).subscribe({
-      next: () => {
-        this.notification.success('Team locked');
-      },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to lock team');
-      },
-    });
-  }
-
-  unlockTeam(teamId: number): void {
-    this.apiService.unlockTeam(teamId).subscribe({
-      next: () => {
-        this.notification.success('Team unlocked');
-      },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to unlock team');
-      },
-    });
-  }
 
   assignOneUnassigned(teamId: number): void {
     this.apiService.assignOneUnassigned(teamId).subscribe({
@@ -385,47 +347,53 @@ export class LobbyComponent implements OnInit {
     });
   }
 
-  updatePlayerRole(playerId: number, role: string): void {
-    this.apiService.updatePlayerRole(playerId.toString(), role).subscribe({
-      next: () => {
-        this.notification.success('Player role updated');
-      },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to update player role');
-      },
+  // GM Action Handlers - for structured events from GM menus
+  onChangeRole(event: {player: Player, role: string}): void {
+    this.apiService.updatePlayerRole(event.player.id!.toString(), event.role).subscribe({
+      next: () => this.notification.success('Player role updated'),
+      error: (err) => this.notification.error(err.error?.message || 'Failed to update player role')
     });
   }
 
-  removePlayerFromGame(playerId: number): void {
-    this.apiService.deletePlayer(playerId.toString()).subscribe({
-      next: () => {
-        this.notification.success('Player removed from game');
-      },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to remove player');
-      },
+  onMoveToTeam(event: {player: Player, team: Team}): void {
+    this.apiService.joinTeam(event.player.id!.toString(), event.team.id!).subscribe({
+      next: () => this.notification.success('Player moved to team'),
+      error: (err) => this.notification.error(err.error?.message || 'Failed to move player')
     });
   }
 
-  movePlayerToTeam(playerId: number, teamId: number): void {
-    this.apiService.joinTeam(playerId.toString(), teamId).subscribe({
-      next: () => {
-        this.notification.success('Player moved to team');
-      },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to move player');
-      },
+  // Simple handlers for direct Player events from sub-components
+  onPlayerChangeRole(player: Player): void {
+    // This would need to open a role selection dialog or use a default
+    // For now, we'll just emit an error since the role isn't specified
+    this.notification.error('Role selection not implemented for this action');
+  }
+
+  onPlayerMoveToTeam(player: Player): void {
+    // This would need to open a team selection dialog or use a default
+    // For now, we'll just emit an error since the team isn't specified
+    this.notification.error('Team selection not implemented for this action');
+  }
+
+  onRemoveFromTeam(player: Player): void {
+    this.apiService.leaveTeam(player.id!.toString()).subscribe({
+      next: () => this.notification.success('Player removed from team'),
+      error: (err) => this.notification.error(err.error?.message || 'Failed to remove player from team')
     });
   }
 
-  removePlayerFromTeam(playerId: number): void {
-    this.apiService.leaveTeam(playerId.toString()).subscribe({
-      next: () => {
-        this.notification.success('Player removed from team');
-      },
-      error: (err) => {
-        this.notification.error(err.error?.message || 'Failed to remove player from team');
-      },
+  onRemoveFromGame(player: Player): void {
+    this.apiService.deletePlayer(player.id!.toString()).subscribe({
+      next: () => this.notification.success('Player removed from game'),
+      error: (err) => this.notification.error(err.error?.message || 'Failed to remove player')
+    });
+  }
+
+  onToggleTeamLock(team: Team): void {
+    const action = team.locked ? this.apiService.unlockTeam(team.id!) : this.apiService.lockTeam(team.id!);
+    action.subscribe({
+      next: () => this.notification.success(`Team ${team.locked ? 'unlocked' : 'locked'}`),
+      error: (err) => this.notification.error(err.error?.message || `Failed to ${team.locked ? 'unlock' : 'lock'} team`)
     });
   }
 }

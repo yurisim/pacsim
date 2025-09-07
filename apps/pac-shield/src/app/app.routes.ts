@@ -5,7 +5,7 @@ export const appRoutes: Routes = [
   {
     path: 'join',
     loadComponent: () =>
-      import('./features/join/join.component').then((m) => m.JoinComponent),
+      import('./features/join/shell/join-shell.component').then((m) => m.JoinShellComponent),
   },
   {
     path: 'game/:id',
