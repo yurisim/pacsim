@@ -5,67 +5,30 @@
       <span>Room Code</span>
     </div>
 
-    <app-input-otp
-      [length]="6"
-      [integerOnly]="false"
+    <app-room-code-field
       formControlName="gameId"
+      [length]="6"
       ariaLabel="6-character Room Code"
-      (complete)="onOtpComplete($event)"
+      (complete)="onRoomCodeComplete()"
       data-testid="room-code-otp"
-    ></app-input-otp>
+    ></app-room-code-field>
 
-    <div class="h-6 flex items-center justify-center gap-2 mt-2 transition-all duration-300 ease-out" [attr.aria-live]="'polite'" [attr.id]="roomMessageId">
-      <mat-progress-spinner
-        *ngIf="isRoomPending"
-        mode="indeterminate"
-        [diameter]="16"
-        class="animate-in fade-in-0 zoom-in-95 duration-200"
-        role="status"
-        aria-label="Validating room code"
-      ></mat-progress-spinner>
-
-      <mat-icon
-        *ngIf="isRoomValid && !isRoomPending"
-        fontIcon="check_circle"
-        class="md-sys-color-secondary animate-in fade-in-0 zoom-in-50 duration-400"
-        aria-hidden="true"
-      ></mat-icon>
-
-      <mat-icon
-        *ngIf="isRoomInvalid && !isRoomPending"
-        fontIcon="cancel"
-        class="md-sys-color-error animate-in fade-in-0 zoom-in-50 duration-400"
-        aria-hidden="true"
-      ></mat-icon>
-
-      <span *ngIf="isRoomInvalid && roomStatus.message" class="md-typescale-body-small md-sys-color-error">
-        {{ roomStatus.message }}
-      </span>
-    </div>
+    <app-status-banner
+      [attr.id]="roomMessageId"
+      [state]="roomStatus.status === 'pending' ? 'checking' : roomStatus.status === 'valid' ? 'valid' : roomStatus.status === 'invalid' ? 'invalid' : 'idle'"
+      [message]="roomStatus.message"
+    ></app-status-banner>
   </div>
 
   <!-- Player Name (shown after room is valid) -->
   <div *ngIf="isRoomValid">
-    <mat-form-field appearance="outline" class="w-full">
-      <mat-label>Player Name</mat-label>
-      <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
-      <input
-        matInput
-        formControlName="playerName"
-        [attr.aria-describedby]="nameErrorId"
-        (input)="onPlayerNameInput(form.controls.playerName.value)"
-        (keydown.enter)="onSubmit()"
-        data-testid="player-name-input"
-      />
-    </mat-form-field>
-    <div
-      *ngIf="form.controls.playerName.invalid && form.controls.playerName.touched"
-      class="md-typescale-body-small md-sys-color-error mt-1"
-      [attr.id]="nameErrorId"
-      aria-live="polite"
-    >
-      {{ fieldError(form.controls.playerName) }}
-    </div>
+    <app-account-selector
+      [selectedAccount]="{ name: form.controls.playerName.value || '' }"
+      [disabled]="false"
+      [ariaDescribedById]="nameErrorId"
+      [errorText]="form.controls.playerName.invalid && form.controls.playerName.touched ? fieldError(form.controls.playerName) : null"
+      (accountChange)="onAccountChange($event)"
+    ></app-account-selector>
   </div>
 
   <!-- Submit -->

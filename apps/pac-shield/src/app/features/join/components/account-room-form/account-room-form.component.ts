@@ -4,12 +4,13 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
-import { InputOtpComponent } from '../../../../shared/components/input-otp/input-otp.component';
 import { AccountFormValue, RoomStatus } from '../../models/join.models';
 import { roomCodeValidator } from '../../validators/room-code.validator';
 import { mapFieldError } from '../../utils/error-presenter';
+import { RoomCodeFieldComponent } from '../room-code-field/room-code-field.component';
+import { StatusBannerComponent } from '../status-banner/status-banner.component';
+import { AccountSelectorComponent } from '../account-selector/account-selector.component';
 
 type AccountForm = FormGroup<{
   gameId: FormControl<string>;
@@ -25,9 +26,10 @@ type AccountForm = FormGroup<{
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    MatProgressSpinnerModule,
     MatButtonModule,
-    InputOtpComponent,
+    RoomCodeFieldComponent,
+    StatusBannerComponent,
+    AccountSelectorComponent,
   ],
   templateUrl: './account-room-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,10 +60,18 @@ export class AccountRoomFormComponent implements OnChanges {
     }
   }
 
+  // Legacy handler kept for spec compatibility
   onOtpComplete(code: string): void {
     const upper = (code || '').toUpperCase();
     this.form.controls.gameId.setValue(upper);
     this.roomCodeComplete.emit(upper);
+  }
+
+  // New handler for RoomCodeField (void "complete" event)
+  onRoomCodeComplete(): void {
+    const code = (this.form.controls.gameId.value || '').toUpperCase();
+    this.form.controls.gameId.setValue(code);
+    this.roomCodeComplete.emit(code);
   }
 
   onGameIdInput(value: string): void {
@@ -72,6 +82,13 @@ export class AccountRoomFormComponent implements OnChanges {
 
   onPlayerNameInput(value: string): void {
     this.playerNameChanged.emit(value);
+  }
+
+  // Adapter for AccountSelector output
+  onAccountChange(account: { name: string } | null): void {
+    const name = (account?.name ?? '').toString();
+    this.form.controls.playerName.setValue(name);
+    this.playerNameChanged.emit(name);
   }
 
   onSubmit(): void {

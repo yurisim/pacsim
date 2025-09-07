@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountRoomFormComponent } from './account-room-form.component';
 import { AccountFormValue, RoomStatus } from '../../models/join.models';
 import { By } from '@angular/platform-browser';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AccountRoomFormComponent', () => {
   let component: AccountRoomFormComponent;
@@ -14,7 +15,7 @@ describe('AccountRoomFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AccountRoomFormComponent],
+      imports: [NoopAnimationsModule, AccountRoomFormComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AccountRoomFormComponent);
@@ -31,7 +32,7 @@ describe('AccountRoomFormComponent', () => {
 
     // Ensure form is valid by patching values correctly
     component.form.patchValue({ gameId: 'ABC123', playerName: 'Bob' });
-    
+
     // Trigger submit
     component.onSubmit();
     expect(spy).toHaveBeenCalledWith({ gameId: 'ABC123', playerName: 'Bob' });
