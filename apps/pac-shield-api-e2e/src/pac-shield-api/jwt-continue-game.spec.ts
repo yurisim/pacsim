@@ -162,6 +162,40 @@ describe('JWT and Continue Game API E2E', () => {
         expect(error.response.data.message).toContain('no PIN set');
       }
     });
+
+    it('should test ConflictUser scenario like frontend E2E test', async () => {
+      // First, create ConflictUser with PIN '5555'
+      const firstJoin = await axios.post(`/api/player/join`, {
+        roomCode,
+        playerName: 'ConflictUser',
+        pin: '5555'
+      });
+      expect(firstJoin.status).toBe(201);
+      expect(firstJoin.data.player.name).toBe('ConflictUser');
+
+      // Try to rejoin with wrong PIN '9999'
+      try {
+        await axios.post(`/api/player/join`, {
+          roomCode,
+          playerName: 'ConflictUser',
+          pin: '9999'
+        });
+        fail('Should have thrown invalid PIN error');
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+        expect(error.response.data.code).toBe('INVALID_PIN');
+        expect(error.response.data.message).toContain('Invalid PIN');
+      }
+
+      // Try to rejoin with correct PIN '5555' 
+      const correctPinJoin = await axios.post(`/api/player/join`, {
+        roomCode,
+        playerName: 'ConflictUser',
+        pin: '5555'
+      });
+      expect(correctPinJoin.status).toBe(201);
+      expect(correctPinJoin.data.player.id).toBe(firstJoin.data.player.id); // Same player returned
+    });
   });
 
   describe('Player creation and basic functionality', () => {

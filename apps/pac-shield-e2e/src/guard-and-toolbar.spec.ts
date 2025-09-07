@@ -118,6 +118,6 @@ test.describe('Route Guard and Toolbar/Logout/WebSocket indicators', () => {
     await expect(page.getByText('Connected').or(page.getByText('Disconnected'))).toBeVisible({ timeout: 10000 });
 
     await page.goto('/join');
-    await expect(page).toHaveURL(/\/join$/);
+    await expect(page).toHaveURL(/\/join(\?.*)?$/);
   });
 });

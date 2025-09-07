@@ -102,16 +102,15 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(roomCodeButton).toBeVisible();
     const roomCode = (await roomCodeButton.locator('p').textContent())?.trim() ?? '';
 
-    // First, join as ConflictUser to create the player
-    await page.goto('/join');
-    await fillRoomCodeOtp(page, roomCode!);
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
-    await page.fill('input[formControlName="playerName"]', 'ConflictUser');
-    await page.getByRole('button', { name: /^join$/i }).click();
-
-    // Should successfully join the lobby
-    await expect(page).toHaveURL(/\/lobby\//);
-    await expect(page.getByText('ConflictUser')).toHaveCount(1);
+    // First, create ConflictUser via API with a PIN
+    const joinResponse = await page.request.post('http://localhost:3000/api/player/join', {
+      data: {
+        roomCode: roomCode,
+        playerName: 'ConflictUser',
+        pin: '5555'
+      }
+    });
+    expect(joinResponse.ok()).toBeTruthy();
 
     // Now clear session and try to join again with same name to trigger conflict
     await page.evaluate(() => localStorage.clear());
@@ -119,7 +118,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode!);
     await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
     await page.fill('input[formControlName="playerName"]', 'ConflictUser');
-    await page.getByRole('button', { name: /^join$/i }).click();
+    await page.getByTestId('join-submit-button').click();
 
     // Should trigger name conflict since ConflictUser already exists
     await expect(
@@ -136,8 +135,8 @@ test.describe('JWT Integration and Continue Game Flow', () => {
 
     // Should show error message for incorrect PIN
     await expect(
-      page.getByText(/PIN|incorrect|failed/i)
-    ).not.toHaveCount(0);
+      page.getByText(/incorrect|failed/i)
+    ).toBeVisible();
   });
 
   test('should handle "I\'m a new person" flow', async ({ page }) => {

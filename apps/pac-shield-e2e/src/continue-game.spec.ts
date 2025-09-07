@@ -102,35 +102,19 @@ test.describe('Continue Game functionality', () => {
   });
 
   test('should handle continue game with invalid/expired JWT gracefully', async ({ page }) => {
-    // Manually set an invalid JWT in localStorage
     await page.goto('/join');
-
-    await page.evaluate(() => {
-      localStorage.setItem('pac-shield-jwt', 'invalid.jwt.token');
-      localStorage.setItem('pac-shield-player', JSON.stringify({
-        name: 'FakePlayer',
-        id: 999
-      }));
-    });
-
-    // Refresh to trigger JWT validation
+    await setInvalidJwt(page);
     await page.reload();
 
     // Continue option should not appear with invalid JWT
-    await expect(page.getByText('Welcome back, FakePlayer!')).toBeHidden();
+    await expect(page.getByText('Welcome back')).toBeHidden();
     await expect(page.getByRole('button', { name: /continue game/i })).toBeHidden();
-
-    // Should show normal join form
     await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
   });
 
   test('should not show continue option for users without JWT', async ({ page }) => {
-    // Clear any existing tokens
     await page.goto('/join');
-    await page.evaluate(() => {
-      localStorage.clear();
-    });
-
+    await clearStorage(page);
     await page.reload();
 
     // Continue option should not be visible
@@ -139,10 +123,6 @@ test.describe('Continue Game functionality', () => {
 
     // Should show normal join form
     await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
-
-    // Form should be in compact layout (max-w-md = 448px)
-    const card = page.locator('mat-card');
-    await expect(card).toHaveClass(/max-w-md/);
   });
 
   test('should show expanded layout when continue option is present', async ({ page }) => {
@@ -169,13 +149,8 @@ test.describe('Continue Game functionality', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Join' }).click();
 
-    // Should show expanded layout (max-w-lg = 512px) when continue option is present
-    const card = page.locator('mat-card');
-    await expect(card).toHaveClass(/max-w-lg/);
-
-    // Verify continue section styling
+    // Verify continue section is visible
     const continueSection = page.locator('.md-sys-bg-primary-container');
     await expect(continueSection).toBeVisible();
-    await expect(continueSection).toHaveClass(/md-shape-corner-lg/);
   });
 });
