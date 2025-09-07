@@ -311,7 +311,7 @@ export class JoinFacadeService {
 
   persistStepToUrl(step: JoinStep): void {
     const stepParam = this.stepToParam(step);
-    const qp: any = stepParam ? { step: stepParam } : {};
+    const qp = stepParam ? { step: stepParam } : {};
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: qp,
