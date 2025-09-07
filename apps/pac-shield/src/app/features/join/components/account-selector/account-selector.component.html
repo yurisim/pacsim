@@ -1,0 +1,22 @@
+<mat-form-field appearance="outline" class="w-full">
+  <mat-label>Player Name</mat-label>
+  <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
+  <input
+    matInput
+    [value]="selectedAccount?.name || ''"
+    [disabled]="disabled"
+    (input)="onNameInput($any($event.target).value)"
+    (keydown.enter)="onNameInput($any($event.target).value)"
+    [attr.aria-describedby]="ariaDescribedById"
+    data-testid="player-name-input"
+  />
+</mat-form-field>
+
+<div
+  *ngIf="errorText"
+  class="md-typescale-body-small md-sys-color-error mt-1"
+  [attr.id]="ariaDescribedById"
+  aria-live="polite"
+>
+  {{ errorText }}
+</div>
