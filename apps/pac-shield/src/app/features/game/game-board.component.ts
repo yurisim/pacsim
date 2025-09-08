@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Map, NavigationControl, StyleSpecification } from 'maplibre-gl';
+import { Map, NavigationControl } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
@@ -137,25 +137,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Center on Hainan Island, China
     const hainanCenter = [109.5, 18.2] as [number, number]; // Longitude, Latitude for Hainan
 
-    // Style with country names only (no cities)
-    const style: StyleSpecification = {
-      version: 8,
-      sources: {
-        'countries-tiles': {
-          type: 'raster',
-          tiles: ['https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
-        }
-      },
-      layers: [
-        {
-          id: 'countries-layer',
-          type: 'raster',
-          source: 'countries-tiles'
-        }
-      ]
-    };
+    // Use MapLibre demo style with built-in fonts and sprites
+    const style = 'https://demotiles.maplibre.org/style.json';
 
     this.map = new Map({
       container: this.mapContainer.nativeElement,
