@@ -211,12 +211,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'fill',
       source: 'hex-grid',
       paint: {
-        'fill-color': [
-          'case',
-          ['<', ['get', 'row'], 4], 'rgba(139, 69, 19, 0.2)', // Brown for land hexes (rows 1-3)
-          ['>', ['get', 'row'], 6], 'rgba(0, 100, 200, 0.2)', // Deep blue for ocean (rows 7-9)
-          'rgba(0, 150, 255, 0.2)' // Light blue for coastal areas (rows 4-6)
-        ],
+        'fill-color': 'rgba(0, 150, 255, 0.2)',
         'fill-opacity': 0.4
       }
     });
@@ -239,7 +234,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'symbol',
       source: 'hex-grid', // Use the same source as hex grid
       layout: {
-        'text-field': ['get', 'hexId'], // Get hexId from properties
+        'text-field': ['get', 'hexId'],
         'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
         'text-size': 14,
         'text-anchor': 'center'
