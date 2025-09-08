@@ -212,7 +212,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.fill('input[data-testid="player-name-input"]', 'OriginalUser');
     await page.getByTestId('join-submit-button').click();
 
-    // Should show name conflict (message enhanced with PrimeNG p-message)
+    // Should show name conflict (message enhanced with Angular Material v20)
     await expect(
       page.getByText('A player named "OriginalUser" already exists in this game')
     ).toBeVisible();

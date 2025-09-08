@@ -34,10 +34,10 @@ _This phase is about making key decisions, establishing the technical groundwork
       - [x] Define initial WebSocket namespaces (e.g., `/game`).
       - [x] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
 
-3.  **Frontend Setup (Angular/NgRx/PrimeNG):**
+3.  **Frontend Setup (Angular/NgRx):**
 
     - [x] Initialize a new Angular project using the CLI (`ng new`).
-    - [x] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
+    - [x] Install core dependencies: `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
     - [x] Install `socket.io-client` for WebSocket communication.
     - [x] **Establish Project Structure:**
       - [x] Create folders for `/core`, `/features`, `/shared`.
@@ -115,7 +115,7 @@ _This is where the game comes to life. The goal is to enable players to perform 
 
 1.  **Asset Movement:**
 
-        - [ ] Integrate PrimeNG Drag and Drop directives into `GameTokenComponent`.
+        - [ ] Integrate Angular Material Drag and Drop directives into `GameTokenComponent`.
 
     - [ ] When a token is dropped onto a valid target (a hex or another board area):
       - [ ] The component dispatches an NgRx action, e.g., `[Asset] Move Request ({ assetId, targetLocation })`.
@@ -134,7 +134,7 @@ _This is where the game comes to life. The goal is to enable players to perform 
 
 2.  **Air Tasking Order (ATO) Implementation:**
 
-        - [ ] Create an interactive `AtoTableComponent` using PrimeNG Table.
+        - [ ] Create an interactive `AtoTableComponent` using Angular Material Table.
 
     - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
     - [ ] **For MOB Players:**
@@ -232,9 +232,9 @@ _This phase focuses on finalizing the user experience, recreating rich data disp
 
     - [ ] Implement a `GameLogComponent` that displays a running text log of all major events.
     - [ ] Add a notification/toast service (`ngx-toastr`) for immediate feedback on actions.
-    - [ ] Add tooltips (using PrimeNG Tooltips) to explain complex UI elements.
+    - [ ] Add tooltips (using Angular Material Tooltips) to explain complex UI elements.
     - [ ] Refine all CSS for a clean, professional look.
-    - [x] Migrate UI from PrimeNG to Angular Material v20 with Material 3 theming
+    - [x] Migrate UI Angular Material v20 with Material 3 theming
     - [x] Migrate iconography to MatIcon and update E2E selectors
     - [x] Add dark/light ThemeToggle component and ThemeService
     - [x] Implement Logout button with conditional toolbar display

@@ -4,13 +4,13 @@
 
 ::ng-deep .p-dialog {
   @apply overflow-visible;
-  /* Retain important to ensure override of PrimeNG internals when needed */
+  /* Retain important to ensure override of Angular Material internals when needed */
   overflow: visible !important;
 }
 
 ::ng-deep .p-dialog-content {
   @apply overflow-visible;
-  /* Retain important to ensure override of PrimeNG internals when needed */
+  /* Retain important to ensure override of Angular Material internals when needed */
   overflow: visible !important;
 }
 

@@ -9,7 +9,7 @@ Based on evaluation of the milestones, design document, user guide, and game met
 ### Completed (Phase 0 - Foundation)
 - ✅ Monorepo setup with Git branching strategy
 - ✅ Backend (NestJS/Prisma/PostgreSQL) with complete schema
-- ✅ Frontend (Angular/NgRx/PrimeNG) with basic structure
+- ✅ Frontend (Angular/NgRx) with basic structure
 - ✅ WebSocket integration and authentication flow
 - ✅ Basic UI scaffolding and routing
 
@@ -40,7 +40,7 @@ Based on evaluation of the milestones, design document, user guide, and game met
    - Display aircraft, ground units, and threat tokens on board
 
 2. **Basic Asset Movement System**
-   - Implement drag-and-drop for asset tokens using PrimeNG
+   - Implement drag-and-drop for asset tokens
    - Create movement validation logic (range, political access)
    - Backend WebSocket handling for move requests
    - Real-time state updates across all clients
