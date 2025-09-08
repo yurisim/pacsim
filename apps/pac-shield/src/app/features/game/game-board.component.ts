@@ -13,7 +13,6 @@ import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
 import { ThemeService } from '../../shared/services/theme.service';
 import { effect } from '@angular/core';
 
-
 @Component({
   selector: 'app-game-board',
   standalone: true,
@@ -51,10 +50,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     effect(() => {
       // This will run whenever the theme changes
       this.themeService.isDarkMode();
-      
-      // Update hex colors if map is initialized
-      // Use setTimeout to ensure CSS variables have been updated
-      if (this.map && this.map.getSource('hex-grid')) {
+
+      // Update hex colors if map is initialized AND fully loaded
+      // FIXED: Added loaded() check and improved timing
+      if (this.map && this.map.loaded() && this.map.getSource('hex-grid')) {
         setTimeout(() => this.updateHexColors(), 0);
       }
     });
@@ -151,13 +150,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Add navigation controls
     this.map.addControl(new NavigationControl(), 'top-right');
 
+    // FIXED: Added delay to ensure style is completely ready
     this.map.on('style.load', () => {
       // Set globe projection after style loads
       this.map.setProjection({ type: 'globe' });
-      this.overlayHexGrid();
+      // Add delay to ensure style is completely ready
+      setTimeout(() => {
+        this.overlayHexGrid();
+      }, 100);
     });
   }
-
 
   private overlayHexGrid(): void {
     const hexFeatures: any[] = [];
