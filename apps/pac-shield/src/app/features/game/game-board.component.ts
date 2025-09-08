@@ -265,4 +265,58 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Generate coordinate labels for hexes with Hainan as 505
+   * @param centerH3Index - The H3 index of Hainan (center hex)
+   * @param h3Indices - All H3 indices in the grid
+   * @returns Map of H3 index to coordinate label
+   */
+  private generateHexCoordinates(centerH3Index: string, h3Indices: string[]): Record<string, string> {
+    const coordinates: Record<string, string> = {};
+
+    // Get center coordinates for each hex
+    const hexPositions: Record<string, { lat: number, lng: number }> = {};
+    h3Indices.forEach(h3Index => {
+      const [lat, lng] = cellToLatLng(h3Index);
+      hexPositions[h3Index] = { lat, lng };
+    });
+
+    const centerPos = hexPositions[centerH3Index];
+
+    // Calculate proper hex grid coordinates
+    h3Indices.forEach(h3Index => {
+      const pos = hexPositions[h3Index];
+
+      if (h3Index === centerH3Index) {
+        // Center hex is always 505
+        coordinates[h3Index] = '505';
+        return;
+      }
+
+      // Calculate distance and bearing from center
+      const deltaLat = pos.lat - centerPos.lat;
+      const deltaLng = pos.lng - centerPos.lng;
+
+      // Simple grid approximation - adjust these factors based on actual H3 spacing
+      const latStep = 7.5; // Approximate degrees per hex row at this resolution
+      const lngStep = 13.0; // Approximate degrees per hex column at this resolution
+
+      const rowOffset = Math.round(deltaLat / latStep);
+      const colOffset = Math.round(deltaLng / lngStep);
+
+      // Convert to coordinate system: Hainan is 505 (row 5, col 5)
+      const row = 5 - rowOffset; // North is negative row offset
+      const col = 5 + colOffset; // East is positive col offset
+
+      // Clamp to reasonable bounds and format
+      const clampedRow = Math.max(0, Math.min(9, row));
+      const clampedCol = Math.max(0, Math.min(99, col));
+
+      const coordLabel = `${clampedRow}${clampedCol.toString().padStart(2, '0')}`;
+      coordinates[h3Index] = coordLabel;
+    });
+
+    return coordinates;
+  }
+
 }
