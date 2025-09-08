@@ -161,7 +161,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const hexFeatures: any[] = [];
     const hainanLat = 18.2;
     const hainanLng = 109.5;
-    const h3Resolution = 2; // H3 resolution, defines the size of the hexes
+    const h3Resolution = 1; // H3 resolution, defines the size of the hexes
     const kRingSize = 7; // Radius of hexes around the center
 
     // Get the central H3 index
