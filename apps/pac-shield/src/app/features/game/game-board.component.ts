@@ -223,7 +223,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       source: 'hex-grid',
       paint: {
         'fill-color': '#000000', // Will be updated by updateHexColors
-        'fill-opacity': 0.4
+        'fill-opacity': 0.2
       }
     });
 
@@ -433,5 +433,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.map.getLayer('hex-grid-outline')) {
       this.map.setPaintProperty('hex-grid-outline', 'line-color', outlineColor);
     }
+
+    if (this.map.getLayer('hex-labels')) {
+      this.map.setPaintProperty('hex-labels', 'text-color', outlineColor);
+    }
+
   }
 }
