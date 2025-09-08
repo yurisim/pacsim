@@ -170,6 +170,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Get all hexes in a k-ring around the center
     const h3Indices = gridDisk(centerH3Index, kRingSize);
 
+    // Create coordinate mapping with Hainan as 505
+    const hexCoordinates = this.generateHexCoordinates(centerH3Index, h3Indices);
+
     h3Indices.forEach((h3Index: string) => {
       // Get the vertices of the hex
       const boundary = cellToBoundary(h3Index);
@@ -182,10 +185,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Get the center of the hex for labeling
       const [centerLat, centerLng] = cellToLatLng(h3Index);
 
+      // Get coordinate label for this hex
+      const coordLabel = hexCoordinates[h3Index] || h3Index;
+
       hexFeatures.push({
         type: 'Feature',
         properties: {
           hexId: h3Index, // Use H3 index as the unique ID
+          coordLabel: coordLabel, // Custom coordinate label
           centerLat: centerLat,
           centerLng: centerLng
         },
@@ -196,7 +203,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     });
 
-     // Add hex grid source and layer
+    // Add hex grid source and layer
     this.map.addSource('hex-grid', {
       type: 'geojson',
       data: {
@@ -234,7 +241,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'symbol',
       source: 'hex-grid', // Use the same source as hex grid
       layout: {
-        'text-field': ['get', 'hexId'],
+        'text-field': ['get', 'coordLabel'],
         'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
         'text-size': 14,
         'text-anchor': 'center'
