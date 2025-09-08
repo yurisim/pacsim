@@ -22,7 +22,8 @@
           }
         ],
         "styles": [
-          "apps/pac-shield/src/styles.scss"
+          "apps/pac-shield/src/styles.scss",
+          "node_modules/maplibre-gl/dist/maplibre-gl.css"
         ]
       },
       "configurations": {
