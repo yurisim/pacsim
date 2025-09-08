@@ -254,7 +254,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         'text-halo-width': 2,
         'text-halo-blur': 0.5
       }
-    });
+    }, 'top');
 
     // Add click handler for hexes
     this.map.on('click', 'hex-grid-fill', (e) => {
