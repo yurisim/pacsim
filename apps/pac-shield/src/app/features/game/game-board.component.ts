@@ -41,6 +41,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   game$ = this.store.select(selectGame);
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
+  selectedHexCoordinate: string | null = null;
 
   /**
    * Lifecycle Method Intent: Initialize component and load game data on component creation.
@@ -258,7 +259,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.map.on('click', 'hex-grid-fill', (e) => {
       if (e.features && e.features[0]) {
         const hexId = e.features[0].properties?.['hexId'];
-        console.log(`Clicked hex: ${hexId}`);
+        const coordLabel = e.features[0].properties?.['coordLabel'];
+        console.log(`Clicked hex: ${hexId}, Coordinate: ${coordLabel}`);
+        this.selectedHexCoordinate = coordLabel;
       }
     });
 
