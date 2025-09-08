@@ -120,21 +120,22 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Center on Hainan Island, China
     const hainanCenter = [109.5, 18.2] as [number, number]; // Longitude, Latitude for Hainan
 
-    // Simple style for the map
+    // Style with country names only (no cities)
     const style: StyleSpecification = {
       version: 8,
       sources: {
-        'osm-tiles': {
+        'countries-tiles': {
           type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256
+          tiles: ['https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
         }
       },
       layers: [
         {
-          id: 'osm-layer',
+          id: 'countries-layer',
           type: 'raster',
-          source: 'osm-tiles'
+          source: 'countries-tiles'
         }
       ]
     };
