@@ -300,13 +300,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const centerPos = hexPositions[centerH3Index];
 
-    // Calculate proper hex grid coordinates
+    // First pass: Calculate initial coordinates for all hexes
+    const initialCoordinates: Record<string, string> = {};
     h3Indices.forEach(h3Index => {
       const pos = hexPositions[h3Index];
 
       if (h3Index === centerH3Index) {
         // Center hex is always 505
-        coordinates[h3Index] = '505';
+        initialCoordinates[h3Index] = '505';
         return;
       }
 
@@ -330,7 +331,30 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       const clampedCol = Math.max(0, Math.min(99, col));
 
       const coordLabel = `${clampedRow}${clampedCol.toString().padStart(2, '0')}`;
-      coordinates[h3Index] = coordLabel;
+      initialCoordinates[h3Index] = coordLabel;
+    });
+
+    // Second pass: Group h3Indices by their coordinate labels to identify duplicates
+    const coordGroups: Record<string, string[]> = {};
+    Object.entries(initialCoordinates).forEach(([h3Index, coordLabel]) => {
+      if (!coordGroups[coordLabel]) {
+        coordGroups[coordLabel] = [];
+      }
+      coordGroups[coordLabel].push(h3Index);
+    });
+
+    // Third pass: Assign final coordinates with alphabetical suffixes for duplicates
+    Object.entries(coordGroups).forEach(([coordLabel, h3IndicesGroup]) => {
+      if (h3IndicesGroup.length === 1) {
+        // No duplicates, use original coordinate
+        coordinates[h3IndicesGroup[0]] = coordLabel;
+      } else {
+        // Handle duplicates by appending alphabetical suffixes
+        h3IndicesGroup.forEach((h3Index, index) => {
+          const suffix = String.fromCharCode(65 + index); // A, B, C, etc.
+          coordinates[h3Index] = `${coordLabel}${suffix}`;
+        });
+      }
     });
 
     return coordinates;
