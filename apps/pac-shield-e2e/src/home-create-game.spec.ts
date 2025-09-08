@@ -31,6 +31,17 @@ async function getLocalToken(page: Page): Promise<string | null> {
 }
 
 test.describe('Home create game flow', () => {
+  /**
+   * Test Intent: Verify that game creation works correctly even when a stale JWT
+   * exists from a previous session, ensuring proper token replacement and navigation.
+   *
+   * This test validates:
+   * - Game creation with existing stale authentication
+   * - JWT token replacement with new game credentials
+   * - Proper navigation to Game Master setup
+   * - Successful lobby access with new token
+   * - Session state management during game creation
+   */
   test('Start New Game succeeds even with stale JWT; proceeds to GM setup then lobby with new token', async ({ page }) => {
     const api = await request.newContext();
 
@@ -77,6 +88,17 @@ test.describe('Home create game flow', () => {
     await api.dispose();
   });
 
+  /**
+   * Test Intent: Verify proper error handling when game creation API fails,
+   * ensuring users see appropriate error messages and UI state is maintained.
+   *
+   * This test validates:
+   * - Error message display for failed game creation
+   * - Prevention of GM setup display on API failure
+   * - Button state management during error conditions
+   * - Graceful degradation when backend services fail
+   * - User feedback for unsuccessful operations
+   */
   test('Start New Game surfaces error when /api/game/create fails and does not show GM setup', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();
