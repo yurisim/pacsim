@@ -31,6 +31,19 @@ type PinForm = FormGroup<{
   templateUrl: './name-conflict-resolve.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+/**
+ * Component Intent: Handles player name conflict resolution by providing PIN verification
+ * for existing players or alternative creation of new player identities.
+ *
+ * This component provides:
+ * - PIN input form with OTP-style interface for existing player verification
+ * - Visual feedback for PIN validation and error states
+ * - Alternative "I'm a new person" option for conflict resolution
+ * - Back navigation to previous join steps
+ * - Loading states and error message display
+ * - Form validation with proper button state management
+ * - Integration with parent component for conflict resolution workflow
+ */
 export class NameConflictResolveComponent {
   private fb = inject(FormBuilder).nonNullable;
 
@@ -53,12 +66,34 @@ export class NameConflictResolveComponent {
     this.backClicked.emit();
   }
 
+  /**
+   * Method Intent: Handle PIN verification submission when form is valid,
+   * emitting the PIN value to parent component for server-side verification.
+   *
+   * This method handles:
+   * - Form validation before submission
+   * - PIN value extraction from form control
+   * - Event emission with PIN data for parent processing
+   * - Prevention of invalid PIN submissions
+   */
   onVerify(): void {
     if (this.pinForm.valid) {
       this.verifyPin.emit({ pin: this.pinForm.controls.pin.value });
     }
   }
 
+  /**
+   * Method Intent: Handle automatic PIN verification when user completes
+   * entering a 4-digit PIN through the OTP input component.
+   *
+   * This method handles:
+   * - PIN length validation (must be 4 digits)
+   * - Form value synchronization with OTP input
+   * - Delayed verification to allow UI feedback
+   * - Automatic submission when PIN is complete
+   *
+   * @param pin - The complete PIN string from OTP input
+   */
   onPinComplete(pin: string): void {
     if ((pin || '').length === 4) {
       this.pinForm.controls.pin.setValue(pin);
