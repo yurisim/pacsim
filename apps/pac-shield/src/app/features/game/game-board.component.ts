@@ -143,14 +143,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       container: this.mapContainer.nativeElement,
       style: style,
       center: hainanCenter,
-      zoom: 4, // Show Pacific region
+      zoom: 2, // Lower zoom for globe view
       attributionControl: false
     });
 
     // Add navigation controls
     this.map.addControl(new NavigationControl(), 'top-right');
 
-    this.map.on('load', () => {
+    this.map.on('style.load', () => {
+      // Set globe projection after style loads
+      this.map.setProjection({ type: 'globe' });
       this.overlayHexGrid();
     });
   }
@@ -192,8 +194,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const hexRadiusKm = hexWidthKm / Math.sqrt(3); // ~511 km
     const hexRadiusMeters = hexRadiusKm * 1000;
 
-    // For pointy-top hexes, we need to handle the offset grid properly
-    // In the reference image, odd columns are shifted up
+    // For globe projection, we still use Honeycomb Grid but with simpler coordinate conversion
+    // The key is to generate the hexes in a flat coordinate system first, then project to globe
     this.hexGrid.forEach(hex => {
       // Get the offset coordinates from the hex
       const gridCol = hex.col;
@@ -201,7 +203,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Map to game numbering system
       // Center hex at grid (0,0) should be 505
-      // For pointy hexes: columns go east-west, rows go north-south
       const gameCol = 5 + gridCol; // Column 05 at center, increases eastward
       const gameRow = 5 + gridRow; // Row 5 at center, increases southward
 
@@ -217,40 +218,26 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Get hex center in grid coordinates
       const hexCenter = hex.center;
 
-      // CRITICAL: For spherical projection, we need to calculate distances properly
-      // The hex grid spacing needs to account for the curvature of the Earth
-      // At different latitudes, the same angular distance represents different physical distances
-
-      // Convert using proper spherical calculations
-      // 1 degree of latitude = ~111 km everywhere
-      // 1 degree of longitude = ~111 km * cos(latitude)
+      // For globe projection, convert grid coordinates to geographic coordinates
+      // Use a simpler approach that works better with globe projection
       const metersPerDegreeLat = 111000;
+      const metersPerDegreeLng = 111000; // Globe projection handles longitude scaling
 
-      // Calculate latitude first (y-axis in grid)
+      // Calculate geographic coordinates from hex center
       const centerLat = hainanLat + (hexCenter.y / metersPerDegreeLat);
-
-      // Now calculate longitude using the actual latitude for proper scaling
-      const centerLatRad = centerLat * Math.PI / 180;
-      const metersPerDegreeLng = 111000 * Math.cos(centerLatRad);
       const centerLng = hainanLng + (hexCenter.x / metersPerDegreeLng);
 
-      // Check if hex is within 5500 mile radius
+      // Check if hex is within max distance
       const distance = this.calculateDistance(hainanLat, hainanLng, centerLat, centerLng);
       if (distance > maxDistanceKm) {
         return;
       }
 
-      // Convert hex corners to geographic coordinates
+      // Convert hex corners to geographic coordinates using the same simple conversion
       const corners = hex.corners.map((corner: any) => {
-        // Calculate corner latitude first
         const cornerLat = hainanLat + (corner.y / metersPerDegreeLat);
-
-        // Use the corner's latitude for longitude scaling
-        const cornerLatRad = cornerLat * Math.PI / 180;
-        const cornerMetersPerDegreeLng = 111000 * Math.cos(cornerLatRad);
-
-        const lng = hainanLng + (corner.x / cornerMetersPerDegreeLng);
-        return [lng, cornerLat];
+        const cornerLng = hainanLng + (corner.x / metersPerDegreeLng);
+        return [cornerLng, cornerLat];
       });
 
       // Close the polygon by adding the first corner at the end
@@ -264,10 +251,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           col: gameCol,
           centerLat: centerLat,
           centerLng: centerLng,
-          // Calculate bottom-right corner position for label placement
-          // For pointy-top hex, bottom-right is at angle -30 degrees from center
-          labelLat: centerLat - (hexRadiusMeters * 0.5 / metersPerDegreeLat), // Move down (sin(-30°) = -0.5)
-          labelLng: centerLng + (hexRadiusMeters * 0.866 / (111000 * Math.cos(centerLat * Math.PI / 180))) // Move right (cos(-30°) = 0.866)
+          labelLat: centerLat,
+          labelLng: centerLng
         },
         geometry: {
           type: 'Polygon',
