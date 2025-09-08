@@ -8,7 +8,7 @@ export const appRoutes: Routes = [
       import('./features/join/shell/join-shell.component').then((m) => m.JoinShellComponent),
   },
   {
-    path: 'game/:id',
+    path: 'game/:gameId',
     canActivate: [sessionAuthGuard],
     loadComponent: () =>
       import('./features/game/game-board.component').then((m) => m.GameBoardComponent),

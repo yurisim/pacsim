@@ -1,20 +1,35 @@
-<div class="game-board-container">
+<div class="game-board-container h-screen w-full relative">
+  <!-- Map container always present for ViewChild -->
+  <div #mapContainer class="map absolute inset-0 top-16 w-full"></div>
+  
+  <!-- Loading overlay -->
   @if (isLoading$ | async) {
-    <div class="loading-overlay">
+    <div class="loading-overlay absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-[1000]">
       <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      <p class="mt-4 text-base md-sys-color-on-surface">Loading game data...</p>
     </div>
   }
 
+  <!-- Error overlay -->
   @if (error$ | async; as error) {
-    <div class="error-message">
-      <p>Error loading game: {{ error }}</p>
+    <div class="error-overlay absolute inset-0 bg-white/90 flex items-center justify-center z-[1000]">
+      <div class="p-4 rounded-lg max-w-md text-center md-sys-bg-error-container md-sys-color-on-error-container">
+        <p>Error loading game: {{ error }}</p>
+      </div>
     </div>
   }
 
+  <!-- Game info overlay -->
   @if (game$ | async; as game) {
-    <div>
-      <h1>Game Board: {{ game.id }}</h1>
-      <pre>{{ game | json }}</pre>
+    <div class="game-info-overlay absolute top-0 left-0 right-0 z-[100] pointer-events-none">
+      <div class="game-info py-2 px-4 pointer-events-auto md-sys-bg-surface md-sys-color-on-surface">
+        <div class="game-info-content flex items-center gap-2">
+          <button mat-icon-button (click)="navigateToLobby()" class="back-button flex-shrink-0">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <h2 class="m-0 text-xl font-medium">Pacific Shield - Game: {{ game.id }}</h2>
+        </div>
+      </div>
     </div>
   }
 </div>

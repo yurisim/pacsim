@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../shared/services/api.service';
 import { Game, Player, Team } from '../../generated';
 import { EMPTY, Observable, map, firstValueFrom } from 'rxjs';
@@ -9,6 +9,8 @@ import { AuthService } from '../../shared/services/auth.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../shared/services/notification.service';
 import { PlayerSettingsDialogComponent, PlayerSettings } from './player-settings-dialog/player-settings-dialog.component';
 import { RoomCodeDisplayComponent } from './room-code-display/room-code-display.component';
@@ -39,6 +41,8 @@ enum PlayerRole {
     MatCardModule,
     MatDialogModule,
     MatTabsModule,
+    MatButtonModule,
+    MatIconModule,
     RoomCodeDisplayComponent,
     CurrentPlayerActionsComponent,
     OverviewTabComponent,
@@ -52,6 +56,7 @@ enum PlayerRole {
 })
 export class LobbyComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private apiService = inject(ApiService);
   private notification = inject(NotificationService);
   private webSocketService = inject(WebSocketService);
@@ -118,6 +123,14 @@ export class LobbyComponent implements OnInit {
   // Filter handlers
   onFiltersChange(filters: FilterOptions): void {
     this.filters = { ...filters };
+  }
+
+  // Navigation
+  navigateToMap(): void {
+    const gameId = this.route.snapshot.paramMap.get('gameId');
+    if (gameId) {
+      this.router.navigate(['/game', gameId]);
+    }
   }
 
   openJoinTeamDialog(team: Team): void {
