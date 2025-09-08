@@ -219,13 +219,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       const hexCenter = hex.center;
 
       // For globe projection, convert grid coordinates to geographic coordinates
-      // Use a simpler approach that works better with globe projection
+      // Account for longitudinal convergence with latitude
       const metersPerDegreeLat = 111000;
-      const metersPerDegreeLng = 111000; // Globe projection handles longitude scaling
 
       // Calculate geographic coordinates from hex center
       const centerLat = hainanLat + (hexCenter.y / metersPerDegreeLat);
-      const centerLng = hainanLng + (hexCenter.x / metersPerDegreeLng);
+      const latRadians = centerLat * Math.PI / 180;
+      const metersPerDegreeLngAtLat = 111000 * Math.cos(latRadians);
+      const centerLng = hainanLng + (hexCenter.x / metersPerDegreeLngAtLat);
 
       // Check if hex is within max distance
       const distance = this.calculateDistance(hainanLat, hainanLng, centerLat, centerLng);
@@ -233,10 +234,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
 
-      // Convert hex corners to geographic coordinates using the same simple conversion
+      // Convert hex corners to geographic coordinates using latitude-aware longitude scaling
       const corners = hex.corners.map((corner: any) => {
         const cornerLat = hainanLat + (corner.y / metersPerDegreeLat);
-        const cornerLng = hainanLng + (corner.x / metersPerDegreeLng);
+        const cornerLatRadians = cornerLat * Math.PI / 180;
+        const metersPerDegreeLngAtCorner = 111000 * Math.cos(cornerLatRadians);
+        const cornerLng = hainanLng + (corner.x / metersPerDegreeLngAtCorner);
         return [cornerLng, cornerLat];
       });
 
@@ -347,10 +350,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const R = 6371; // Earth radius in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
 }
