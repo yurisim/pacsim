@@ -6,63 +6,63 @@ _This phase is about making key decisions, establishing the technical groundwork
 
 1.  **Project Initialization & Version Control:**
 
-    - [X] Initialize a monorepo using Git to house both the frontend and backend projects.
-    - [X] Establish main, develop, and feature branching strategies.
-    - [X] Configure repository on GitHub/GitLab.
+    - [x] Initialize a monorepo using Git to house both the frontend and backend projects.
+    - [x] Establish main, develop, and feature branching strategies.
+    - [x] Configure repository on GitHub/GitLab.
 
 2.  **Backend Setup (Node.js/NestJS/Prisma/PostgreSQL):**
 
-    - [X] Initialize a Node.js project (`npm init`).
-    - [X] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
-    - [X] **Define the Prisma Schema (`schema.prisma`):**
-      - [X] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
-      - [X] Add `roomCode` field to the `Game` model.
-      - [X] Refine the `Player` model to represent a session-based identity.
-      - [X] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
-      - [X] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
-      - [X] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
-    - [X] **Create Database Service:**
-      - [X] Implement a service to connect to the PostgreSQL database.
-      - [X] Generate the Prisma Client.
-    - [X] **API Scaffolding:**
-      - [X] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
-      - [X] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
-      - [X] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
-      - [X] Set up basic routing structure.
-    - [X] **WebSocket Server Setup:**
-      - [X] Integrate Socket.IO with the NestJS server using a Gateway.
-      - [X] Define initial WebSocket namespaces (e.g., `/game`).
-      - [X] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
+    - [x] Initialize a Node.js project (`npm init`).
+    - [x] Install core dependencies: NestJS, Prisma, Socket.IO, JWT, Swagger
+    - [x] **Define the Prisma Schema (`schema.prisma`):**
+      - [x] Implement all models from the design document (`Game`, `Team`, `AircraftInstance`, `FOS`, `ATOLine`, etc.).
+      - [x] Add `roomCode` field to the `Game` model.
+      - [x] Refine the `Player` model to represent a session-based identity.
+      - [x] Add dedicated models for `SatelliteInstance`, `Hospital`, and `Patient` to support CSpOC and MEDCOM gameplay.
+      - [x] Define all required `enum` types (e.g., `GamePhase`, `RunwayStatus`, `SatelliteType`, `HospitalTask`).
+      - [x] Establish all relationships between models (e.g., `Game` to `Team`, `Team` to `AircraftInstance`).
+    - [x] **Create Database Service:**
+      - [x] Implement a service to connect to the PostgreSQL database.
+      - [x] Generate the Prisma Client.
+    - [x] **API Scaffolding:**
+      - [x] Create placeholder REST API endpoints for key actions (`/api/game`, `/api/auth`).
+      - [x] Create a `/api/game/create` endpoint for GMs to create a new game session and generate a `roomCode`.
+      - [x] Create a `/api/game/join` endpoint for players to join a game using a `roomCode`.
+      - [x] Set up basic routing structure.
+    - [x] **WebSocket Server Setup:**
+      - [x] Integrate Socket.IO with the NestJS server using a Gateway.
+      - [x] Define initial WebSocket namespaces (e.g., `/game`).
+      - [x] Create placeholder listeners for core game events (`connection`, `disconnect`, `action`).
 
 3.  **Frontend Setup (Angular/NgRx/PrimeNG):**
 
-    - [X] Initialize a new Angular project using the CLI (`ng new`).
-    - [X] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
-    - [X] Install `socket.io-client` for WebSocket communication.
-    - [X] **Establish Project Structure:**
-      - [X] Create folders for `/core`, `/features`, `/shared`.
-      - [X] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
-    - [X] **Define TypeScript Models:**
-      - [X] Create a TypeScript interface/class for every entity in the Prisma schema (`game.model.ts`, `team.model.ts`, etc.). This ensures type safety between frontend and backend.
-    - [X] **Set up NgRx Store:**
-      - [X] Define the root `AppState` interface.
-      - [X] Create an initial `game` feature slice with placeholder actions, reducers, and selectors.
-    - [X] **Create Core Services:**
-      - [X] `ApiService`: For handling all HTTP requests to the backend.
-      - [X] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
-        - [X] Implement robust reconnection logic (e.g., exponential backoff) to handle unstable network conditions.
-      - [X] `AuthService`: For handling game joining via room code and managing the session JWT.
+    - [x] Initialize a new Angular project using the CLI (`ng new`).
+    - [x] Install core dependencies: `primeng`, `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
+    - [x] Install `socket.io-client` for WebSocket communication.
+    - [x] **Establish Project Structure:**
+      - [x] Create folders for `/core`, `/features`, `/shared`.
+      - [x] Inside `/shared`, create subfolders for `/components`, `/models`, `/services`.
+    - [x] **Define TypeScript Models:**
+      - [x] Create a TypeScript interface/class for every entity in the Prisma schema (`game.model.ts`, `team.model.ts`, etc.). This ensures type safety between frontend and backend.
+    - [x] **Set up NgRx Store:**
+      - [x] Define the root `AppState` interface.
+      - [x] Create an initial `game` feature slice with placeholder actions, reducers, and selectors.
+    - [x] **Create Core Services:**
+      - [x] `ApiService`: For handling all HTTP requests to the backend.
+      - [x] `WebSocketService`: For managing the Socket.IO connection and dispatching received events as NgRx actions.
+        - [x] Implement robust reconnection logic (e.g., exponential backoff) to handle unstable network conditions.
+      - [x] `AuthService`: For handling game joining via room code and managing the session JWT.
 
 4.  **Initial UI Scaffolding:**
-    - [X] Set up Angular routing for a `/join` page (for entering a room code), a `/game/:id` page, and a `/lobby/:gameId` page.
-    - [X] Implement a basic `AppComponent` with a toolbar and a router outlet.
-    - [X] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
-    - [X] **Advanced Authentication Flow:**
-      - [X] Implement comprehensive player name conflict resolution with PIN system.
-      - [X] Add room code validation with real-time feedback.
-      - [X] Support JWT-based session persistence across browser sessions.
-      - [X] Create lobby system with team assignment and player settings management.
-      - [X] Implement Game Master setup flow with secure PIN generation.
+    - [x] Set up Angular routing for a `/join` page (for entering a room code), a `/game/:id` page, and a `/lobby/:gameId` page.
+    - [x] Implement a basic `AppComponent` with a toolbar and a router outlet.
+    - [x] Create placeholder components for the main game views: `GameBoardComponent`, `MobDashboardComponent`, `CaocDashboardComponent`.
+    - [x] **Advanced Authentication Flow:**
+      - [x] Implement comprehensive player name conflict resolution with PIN system.
+      - [x] Add room code validation with real-time feedback.
+      - [x] Support JWT-based session persistence across browser sessions.
+      - [x] Create lobby system with team assignment and player settings management.
+      - [x] Implement Game Master setup flow with secure PIN generation.
 
 ---
 
@@ -72,11 +72,11 @@ _Focus on creating the static visual elements of the game. At this stage, things
 
 1.  **Game Board Rendering:**
 
-    - [X] **Implement `GameBoardComponent`:**
-      - [X] Create basic component structure with proper routing.
-      - [ ] Integrate Leaflet.js to display a static map image.
+    - [x] **Implement `GameBoardComponent`:**
+      - [x] Create basic component structure with proper routing.
+      - [ ] Integrate Leaflet.js to display the pacific region
       - [ ] Implement or integrate a hex grid overlay library. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
-      - [ ] Write a function to render the DF-26 threat ring and country borders.
+      - [ ] Overlay the hex grid on top of the map.
     - [ ] **Create a `GameTokenComponent`:**
       - [ ] A generic component that takes an `asset` object as input.
       - [ ] Uses `ngSwitch` to render the correct image, text (strength), and team color based on the asset's type.
@@ -86,8 +86,8 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [ ] In `GameBoardComponent`, subscribe to these selectors and use `ngFor` to render a `GameTokenComponent` for each asset at its correct hex/airfield location.
 
 2.  **Dashboard and Side Panel Rendering:**
-    - [X] **Implement `MobDashboardComponent`:**
-      - [X] Create basic component structure.
+    - [x] **Implement `MobDashboardComponent`:**
+      - [x] Create basic component structure.
       - [ ] Create static UI layouts for the MOB board (On-Station Personnel, Commodities, etc.).
       - [ ] Use NgRx selectors to get the specific MOB's inventory.
       - [ ] Use `ngFor` and the `GameTokenComponent` to display all assets currently located at the MOB.
@@ -97,8 +97,8 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [ ] Use CSS classes (`.task-complete`, `.task-incomplete`) to style the task slots based on the FOS's `Completed_Tasks` array.
     - [ ] **Implement `ScoreboardComponent`:**
       - [ ] A simple component that subscribes to team-specific `missionPoints` and `demoralizationPoints` from the NgRx store and displays them.
-    - [X] **Implement `CaocDashboardComponent`:**
-      - [X] Create basic component structure.
+    - [x] **Implement `CaocDashboardComponent`:**
+      - [x] Create basic component structure.
       - [ ] Create a UI to render CAOC-specific functionality (ATO management, PPR approval).
     - [ ] **Implement `CSpOCBoardComponent`:**
       - [ ] Create a UI to render the orbital tracks (LEO, MEO, GEO).
@@ -180,11 +180,11 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
 
 1.  **Session Authentication & Authorization:**
 
-    - [X] Implement a `JoinGameComponent` with a form to submit a room code.
-    - [X] The `AuthService` sends the room code to an `/api/game/join` endpoint.
-    - [X] The backend validates the room code, checks for an available slot, and generates a session-specific JWT containing the `gameId` and assigned `role`.
-    - [X] The frontend stores the session JWT in `localStorage`.
-    - [X] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API and WebSocket requests.
+    - [x] Implement a `JoinGameComponent` with a form to submit a room code.
+    - [x] The `AuthService` sends the room code to an `/api/game/join` endpoint.
+    - [x] The backend validates the room code, checks for an available slot, and generates a session-specific JWT containing the `gameId` and assigned `role`.
+    - [x] The frontend stores the session JWT in `localStorage`.
+    - [x] Implement an `HttpInterceptor` to automatically attach the JWT to all outgoing API and WebSocket requests.
     - [ ] Implement Angular Route Guards (`SessionAuthGuard`, `RoleGuard`) to protect game routes.
       - [x] Implement SessionAuthGuard and apply to game and lobby routes
       - [ ] Implement RoleGuard
