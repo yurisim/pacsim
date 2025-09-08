@@ -37,7 +37,7 @@ _This phase is about making key decisions, establishing the technical groundwork
 3.  **Frontend Setup (Angular/NgRx):**
 
     - [x] Initialize a new Angular project using the CLI (`ng new`).
-    - [x] Install core dependencies: `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `leaflet`.
+    - [x] Install core dependencies: `@ngrx/store`, `@ngrx/effects`, `@ngrx/store-devtools`, `maplibre-gl`.
     - [x] Install `socket.io-client` for WebSocket communication.
     - [x] **Establish Project Structure:**
       - [x] Create folders for `/core`, `/features`, `/shared`.
@@ -74,8 +74,8 @@ _Focus on creating the static visual elements of the game. At this stage, things
 
     - [x] **Implement `GameBoardComponent`:**
       - [x] Create basic component structure with proper routing.
-      - [ ] Integrate Leaflet.js to display the pacific region
-      - [ ] Implement or integrate a hex grid overlay library. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
+      - [x] Integrate MapLibre GL to display the pacific region
+      - [x] Implement h3-js hex grid overlay. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
       - [ ] Overlay the hex grid on top of the map.
     - [ ] **Create a `GameTokenComponent`:**
       - [ ] A generic component that takes an `asset` object as input.
@@ -161,7 +161,7 @@ _This is where the game comes to life. The goal is to enable players to perform 
     - [ ] **Satellite Movement Logic (Backend):** Implement the end-of-turn logic to advance all LEO/MEO satellites one position along their tracks.
     - [ ] **"Look" Action:**
       - [ ] Allow CSpOC players to dispatch a `[CSpOC] Satellite Look Request` action.
-      - [ ] Backend logic should determine what is visible based on satellite type, orbit (single hex vs. honeycomb), and fidelity (one-pass vs. two-pass identification).
+      - [ ] Backend logic should determine what is visible based on satellite type, orbit (single hex vs. H3 resolution area), and fidelity (one-pass vs. two-pass identification).
       - [ ] Broadcast the revealed information to the CSpOC player.
 
 5.  **MEDCOM Gameplay Implementation:**

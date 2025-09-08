@@ -26,7 +26,7 @@ import { effect } from '@angular/core';
  *
  * This component provides:
  * - MapLibre GL map integration with Pacific region focus
- * - Honeycomb hex grid overlay with unique hex identification
+ * - H3 hex grid overlay with unique hex identification
  * - Real-time game state visualization from NgRx store
  * - Interactive hex selection and hover effects
  * - Navigation controls and responsive design
@@ -82,7 +82,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * This method handles:
    * - Ensuring DOM container is available before map initialization
    * - Setting up MapLibre GL map instance
-   * - Creating honeycomb hex grid overlay
+   * - Creating h3-js hex grid overlay
    * - Coordinating initialization sequence with proper timing
    */
   ngAfterViewInit(): void {

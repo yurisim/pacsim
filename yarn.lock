@@ -4500,13 +4500,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/leaflet@^1.9.20":
-  version "1.9.20"
-  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-1.9.20.tgz#a7feef4b0a4b36335dfc98456e76c0a86ab8462c"
-  integrity sha512-rooalPMlk61LCaLOvBF2VIf9M47HgMQqi5xQ9QRi7c8PkdIe0WrIi5IxXUXQjAdL0c+vcQ01mYWbthzmp9GHWw==
-  dependencies:
-    "@types/geojson" "*"
-
 "@types/mime@^1":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-1.3.5.tgz#1ef302e01cf7d2b5a0fa526790c9123bf1d06690"
@@ -7779,11 +7772,6 @@ homedir-polyfill@^1.0.1:
   integrity sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==
   dependencies:
     parse-passwd "^1.0.0"
-
-honeycomb-grid@^4.1.5:
-  version "4.1.5"
-  resolved "https://registry.yarnpkg.com/honeycomb-grid/-/honeycomb-grid-4.1.5.tgz#326c992cdd82ad87a13d147493351de8fce7d1b5"
-  integrity sha512-VrnQwu5dHuzqK3wFhLD9EURmLSyEWb0teiHhDJq6WdK0MrFsEtKNYT1HLzXOLe2X1acU8Y9hhK7wWfIiGK1G5w==
 
 hosted-git-info@^7.0.0:
   version "7.0.2"

@@ -14,13 +14,15 @@ Based on evaluation of the milestones, design document, user guide, and game met
 - ✅ Basic UI scaffolding and routing
 
 ### Partially Complete (Phase 1 - Visualization)
+
 - ✅ Basic game board component structure
-- ❌ Leaflet map integration
+- ❌ h3-js map integration
 - ❌ Hex grid overlay
 - ❌ GameTokenComponent for assets
 - ❌ Backend data integration for game state
 
 ### Pending (Phases 2-4)
+
 - ❌ Asset movement mechanics
 - ❌ ATO (Air Tasking Order) system
 - ❌ Combat adjudication
@@ -33,13 +35,15 @@ Based on evaluation of the milestones, design document, user guide, and game met
 ### P0 - Critical (Must Complete for Functional Game)
 
 1. **Complete Game Board Visualization**
-   - Integrate Leaflet.js for Pacific region map display
-   - Implement hex grid overlay with programmatic hex identification
+
+   - Integrate MapLibre GL for Pacific region map display
+   - Implement h3-js hex grid overlay with programmatic hex identification
    - Create GameTokenComponent with asset rendering logic
    - Integrate backend game state data via NgRx effects
    - Display aircraft, ground units, and threat tokens on board
 
 2. **Basic Asset Movement System**
+
    - Implement drag-and-drop for asset tokens
    - Create movement validation logic (range, political access)
    - Backend WebSocket handling for move requests

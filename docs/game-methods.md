@@ -169,6 +169,6 @@ The core logic that governs how actions and state changes are resolved.
 ### 4.4. CSpOC System
 *   **Orbital Effects:**
     *   **LEO:** High fidelity (full identification on first pass), narrow scope (one hex).
-    *   **MEO:** Lower fidelity (unidentified on first pass, identified on second pass), wider scope (honeycomb of hexes).
+    *   **MEO:** Lower fidelity (unidentified on first pass, identified on second pass), wider scope (h3-js hex grid).
     *   **GEO:** Stationary orbit, provides persistent effects over a large area.
 *   **Capabilities:** Each satellite type can only detect specific enemy asset types (e.g., Missile Warning sees ground-based missile threats; ISR sees airborne threats).
