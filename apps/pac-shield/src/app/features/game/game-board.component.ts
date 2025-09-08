@@ -6,7 +6,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Map, NavigationControl, StyleSpecification } from 'maplibre-gl';
-import { defineHex, Grid, rectangle } from 'honeycomb-grid';
+import { defineHex, Grid, rectangle, Orientation } from 'honeycomb-grid';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
@@ -117,8 +117,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * - Configuring initial zoom level for regional overview
    */
   private initializeMap(): void {
-    // Pacific region centered roughly on Kyushu, Japan
-    const pacificCenter = [131.0, 33.0] as [number, number]; // Longitude, Latitude for Kyushu
+    // Center on Hainan Island, China
+    const hainanCenter = [109.5, 18.2] as [number, number]; // Longitude, Latitude for Hainan
 
     // Simple style for the map
     const style: StyleSpecification = {
@@ -142,7 +142,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.map = new Map({
       container: this.mapContainer.nativeElement,
       style: style,
-      center: pacificCenter,
+      center: hainanCenter,
       zoom: 4, // Show Pacific region
       attributionControl: false
     });
@@ -156,45 +156,118 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private createHexGrid(): void {
-    // Create hex grid with Kyushu-sized hexes
-    // Kyushu is approximately 300km wide, so each hex should be ~200km radius
+    // Create hex grid with 550-mile hexes (885 km)
+    // Hex numbering: Row increases going south (1-9), column increases going east (01-99)
+    // Center hex 505 is at Hainan
+
+    // 550 miles = ~885 km
+    // For pointy-top hexes, we need to calculate the proper dimensions
+    const hexWidthKm = 885; // 550 miles in km
+    const hexRadiusKm = hexWidthKm / Math.sqrt(3); // ~511 km
+    const hexRadiusMeters = hexRadiusKm * 1000;
+
     const Hex = defineHex({
       dimensions: {
-        xRadius: 200000, // 200km in meters for map projection
-        yRadius: 200000
-      }
+        xRadius: hexRadiusMeters,
+        yRadius: hexRadiusMeters
+      },
+      orientation: Orientation.POINTY, // Pointy-top hexes
+      origin: { x: 0, y: 0 }, // Center origin
+      offset: 1 // Even rows are offset right
     });
 
-    // Create a rectangular grid covering the Pacific region
-    // Grid coordinates: row 2 = 200s, row 3 = 300s, etc.
-    // Grid coordinates: col 9 = x09, col 10 = x10, etc.
-    this.hexGrid = new Grid(Hex, rectangle({ width: 20, height: 15 }));
+    // Create grid with 7 hex radius from center, centered around (0,0)
+    // This creates a 15x15 grid from (-7,-7) to (7,7)
+    this.hexGrid = new Grid(Hex, rectangle({ width: 15, height: 15, start: { col: -7, row: -7 } }));
   }
 
   private overlayHexGrid(): void {
     const hexFeatures: any[] = [];
+    const hainanLat = 18.2;
+    const hainanLng = 109.5;
+    const maxDistanceKm = 550 * 7 * 1.60934; // 7 hex radius in km
 
-    // Convert honeycomb grid to GeoJSON features
+    // Calculate hex dimensions for label positioning
+    const hexWidthKm = 885; // 550 miles in km
+    const hexRadiusKm = hexWidthKm / Math.sqrt(3); // ~511 km
+    const hexRadiusMeters = hexRadiusKm * 1000;
+
+    // For pointy-top hexes, we need to handle the offset grid properly
+    // In the reference image, odd columns are shifted up
     this.hexGrid.forEach(hex => {
-      // Convert grid coordinates to hex ID format (e.g., 309, 310, 209)
-      const row = Math.floor(hex.row) + 2; // Start from row 2 (200s)
-      const col = Math.floor(hex.col) + 9; // Start from col 9 (x09)
-      const hexId = `${row}${col.toString().padStart(2, '0')}`;
+      // Get the offset coordinates from the hex
+      const gridCol = hex.col;
+      const gridRow = hex.row;
+
+      // Map to game numbering system
+      // Center hex at grid (0,0) should be 505
+      // For pointy hexes: columns go east-west, rows go north-south
+      const gameCol = 5 + gridCol; // Column 05 at center, increases eastward
+      const gameRow = 5 + gridRow; // Row 5 at center, increases southward
+
+      // Allow wider range for hexes - extend beyond just 1-9 and 01-10
+      // Skip hexes that would be completely outside reasonable game area
+      if (gameRow < -2 || gameRow > 12 || gameCol < -2 || gameCol > 12) {
+        return;
+      }
+
+      // Generate hex ID - handle negative coordinates gracefully
+      const hexId = `${gameRow >= 0 ? gameRow : 'N' + Math.abs(gameRow)}${gameCol >= 0 ? gameCol.toString().padStart(2, '0') : 'N' + Math.abs(gameCol).toString().padStart(2, '0')}`;
+
+      // Get hex center in grid coordinates
+      const hexCenter = hex.center;
+
+      // CRITICAL: For spherical projection, we need to calculate distances properly
+      // The hex grid spacing needs to account for the curvature of the Earth
+      // At different latitudes, the same angular distance represents different physical distances
+
+      // Convert using proper spherical calculations
+      // 1 degree of latitude = ~111 km everywhere
+      // 1 degree of longitude = ~111 km * cos(latitude)
+      const metersPerDegreeLat = 111000;
+
+      // Calculate latitude first (y-axis in grid)
+      const centerLat = hainanLat + (hexCenter.y / metersPerDegreeLat);
+
+      // Now calculate longitude using the actual latitude for proper scaling
+      const centerLatRad = centerLat * Math.PI / 180;
+      const metersPerDegreeLng = 111000 * Math.cos(centerLatRad);
+      const centerLng = hainanLng + (hexCenter.x / metersPerDegreeLng);
+
+      // Check if hex is within 5500 mile radius
+      const distance = this.calculateDistance(hainanLat, hainanLng, centerLat, centerLng);
+      if (distance > maxDistanceKm) {
+        return;
+      }
 
       // Convert hex corners to geographic coordinates
-      // This is a simplified conversion - in production you'd use proper projection
       const corners = hex.corners.map((corner: any) => {
-        const lng = 131.0 + (corner.x / 111320); // Rough conversion meters to degrees
-        const lat = 33.0 + (corner.y / 110540);
-        return [lng, lat];
+        // Calculate corner latitude first
+        const cornerLat = hainanLat + (corner.y / metersPerDegreeLat);
+
+        // Use the corner's latitude for longitude scaling
+        const cornerLatRad = cornerLat * Math.PI / 180;
+        const cornerMetersPerDegreeLng = 111000 * Math.cos(cornerLatRad);
+
+        const lng = hainanLng + (corner.x / cornerMetersPerDegreeLng);
+        return [lng, cornerLat];
       });
+
+      // Close the polygon by adding the first corner at the end
+      corners.push(corners[0]);
 
       hexFeatures.push({
         type: 'Feature',
         properties: {
           hexId: hexId,
-          row: row,
-          col: col
+          row: gameRow,
+          col: gameCol,
+          centerLat: centerLat,
+          centerLng: centerLng,
+          // Calculate bottom-right corner position for label placement
+          // For pointy-top hex, bottom-right is at angle -30 degrees from center
+          labelLat: centerLat - (hexRadiusMeters * 0.5 / metersPerDegreeLat), // Move down (sin(-30°) = -0.5)
+          labelLng: centerLng + (hexRadiusMeters * 0.866 / (111000 * Math.cos(centerLat * Math.PI / 180))) // Move right (cos(-30°) = 0.866)
         },
         geometry: {
           type: 'Polygon',
@@ -212,14 +285,19 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    // Add hex grid fill layer
+    // Add hex grid fill layer with semi-transparent blue
     this.map.addLayer({
       id: 'hex-grid-fill',
       type: 'fill',
       source: 'hex-grid',
       paint: {
-        'fill-color': 'rgba(100, 150, 255, 0.1)',
-        'fill-opacity': 0.3
+        'fill-color': [
+          'case',
+          ['<', ['get', 'row'], 4], 'rgba(139, 69, 19, 0.2)', // Brown for land hexes (rows 1-3)
+          ['>', ['get', 'row'], 6], 'rgba(0, 100, 200, 0.2)', // Deep blue for ocean (rows 7-9)
+          'rgba(0, 150, 255, 0.2)' // Light blue for coastal areas (rows 4-6)
+        ],
+        'fill-opacity': 0.4
       }
     });
 
@@ -229,27 +307,28 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'line',
       source: 'hex-grid',
       paint: {
-        'line-color': '#1976d2',
-        'line-width': 1.5,
+        'line-color': '#0066cc',
+        'line-width': 2,
         'line-opacity': 0.8
       }
     });
 
-    // Add hex labels
+    // Add hex labels layer using the hex centers for now (we can adjust positioning later)
     this.map.addLayer({
       id: 'hex-labels',
       type: 'symbol',
-      source: 'hex-grid',
+      source: 'hex-grid', // Use the same source as hex grid
       layout: {
-        'text-field': '{hexId}',
-        'text-font': ['Open Sans Regular'],
-        'text-size': 12,
+        'text-field': ['get', 'hexId'], // Get hexId from properties
+        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+        'text-size': 14,
         'text-anchor': 'center'
       },
       paint: {
-        'text-color': '#1976d2',
-        'text-halo-color': 'white',
-        'text-halo-width': 1
+        'text-color': '#000000',
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 2,
+        'text-halo-blur': 0.5
       }
     });
 
@@ -269,5 +348,24 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.map.on('mouseleave', 'hex-grid-fill', () => {
       this.map.getCanvas().style.cursor = '';
     });
+  }
+
+  /**
+   * Calculate distance between two points on Earth using Haversine formula
+   * @param lat1 Latitude of first point
+   * @param lng1 Longitude of first point
+   * @param lat2 Latitude of second point
+   * @param lng2 Longitude of second point
+   * @returns Distance in kilometers
+   */
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
   }
 }
