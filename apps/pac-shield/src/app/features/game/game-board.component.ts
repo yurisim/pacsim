@@ -10,6 +10,8 @@ import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
+import { ThemeService } from '../../shared/services/theme.service';
+import { effect } from '@angular/core';
 
 
 @Component({
@@ -36,12 +38,27 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private themeService = inject(ThemeService);
   private map!: Map;
 
   game$ = this.store.select(selectGame);
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedHexCoordinate: string | null = null;
+
+  constructor() {
+    // React to theme changes and update hex colors
+    effect(() => {
+      // This will run whenever the theme changes
+      this.themeService.isDarkMode();
+      
+      // Update hex colors if map is initialized
+      // Use setTimeout to ensure CSS variables have been updated
+      if (this.map && this.map.getSource('hex-grid')) {
+        setTimeout(() => this.updateHexColors(), 0);
+      }
+    });
+  }
 
   /**
    * Lifecycle Method Intent: Initialize component and load game data on component creation.
@@ -214,13 +231,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    // Add hex grid fill layer with semi-transparent blue
+    // Add hex grid fill layer
     this.map.addLayer({
       id: 'hex-grid-fill',
       type: 'fill',
       source: 'hex-grid',
       paint: {
-        'fill-color': 'rgba(0, 150, 255, 0.2)',
+        'fill-color': '#000000', // Will be updated by updateHexColors
         'fill-opacity': 0.4
       }
     });
@@ -231,11 +248,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'line',
       source: 'hex-grid',
       paint: {
-        'line-color': '#0066cc',
+        'line-color': '#000000', // Will be updated by updateHexColors
         'line-width': 2,
         'line-opacity': 0.8
       }
     });
+
+    // Set initial colors
+    this.updateHexColors();
 
     // Add hex labels layer using the hex centers for now (we can adjust positioning later)
     this.map.addLayer({
@@ -328,6 +348,28 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     return coordinates;
+  }
+
+  /**
+   * Update hex grid colors based on current theme
+   */
+  private updateHexColors(): void {
+    if (!this.map) return;
+
+    // Get current Material primary color from CSS variables
+    // Read from document.body since that's where the light-mode class is applied
+    const primaryColor = getComputedStyle(document.body)
+      .getPropertyValue('--mat-sys-primary').trim();
+
+    // Update hex grid fill color
+    if (this.map.getLayer('hex-grid-fill')) {
+      this.map.setPaintProperty('hex-grid-fill', 'fill-color', primaryColor + '33'); // 20% opacity
+    }
+
+    // Update hex grid outline color
+    if (this.map.getLayer('hex-grid-outline')) {
+      this.map.setPaintProperty('hex-grid-outline', 'line-color', primaryColor);
+    }
   }
 
 }
