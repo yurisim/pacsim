@@ -243,23 +243,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateHexColors();
 
     // Add hex labels layer using the hex centers for now (we can adjust positioning later)
-    // this.map.addLayer({
-    //   id: 'hex-labels',
-    //   type: 'symbol',
-    //   source: 'hex-grid',
-    //   layout: {
-    //     'text-field': ['get', 'coordLabel'],
-    //     'text-font': ['Open Sans Regular'], // ✅ Use single, simple font name
-    //     'text-size': 14,
-    //     'text-anchor': 'center'
-    //   },
-    //   paint: {
-    //     'text-color': '#000000',
-    //     'text-halo-color': '#ffffff',
-    //     'text-halo-width': 2,
-    //     'text-halo-blur': 0.5
-    //   }
-    // }, 'hex-grid-outline');
+    this.map.addLayer({
+      id: 'hex-labels',
+      type: 'symbol',
+      source: 'hex-grid',
+      layout: {
+        'text-field': ['get', 'coordLabel'],
+      },
+      paint: {
+        'text-color': '#000000',
+        'text-opacity': 0.4
+      }
+    }, 'hex-grid-outline');
 
 
     // Add click handler for hexes
