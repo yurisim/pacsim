@@ -54,7 +54,7 @@ const H3_RESOLUTION = 1;
 export const MOB_LOCATIONS: Record<string, StaticLocation> = {
   kadena: {
     id: 'kadena',
-    name: 'Kadena Air Base',
+    name: 'Kadena',
     coordinates: [127.768, 26.355],
     h3Index: latLngToCell(26.355, 127.768, H3_RESOLUTION),
     country: 'Japan',
@@ -62,7 +62,7 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
   },
   andersen: {
     id: 'andersen',
-    name: 'Andersen AFB',
+    name: 'Andersen',
     coordinates: [144.829, 13.584],
     h3Index: latLngToCell(13.584, 144.829, H3_RESOLUTION),
     country: 'Guam',
@@ -70,7 +70,7 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
   },
   yokota: {
     id: 'yokota',
-    name: 'Yokota AB',
+    name: 'Yokota',
     coordinates: [139.348, 35.748],
     h3Index: latLngToCell(35.748, 139.348, H3_RESOLUTION),
     country: 'Japan',
@@ -78,7 +78,7 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
   },
   osan: {
     id: 'osan',
-    name: 'Osan AB',
+    name: 'Osan',
     coordinates: [127.030, 37.091],
     h3Index: latLngToCell(37.091, 127.030, H3_RESOLUTION),
     country: 'South Korea',
@@ -86,7 +86,7 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
   },
   jbphh: {
     id: 'jbphh',
-    name: 'JB Pearl Harbor-Hickam',
+    name: 'JBPHH',
     coordinates: [-157.92, 21.35], // Corrected longitude to be negative
     h3Index: latLngToCell(21.35, -157.92, H3_RESOLUTION),
     country: 'USA',
