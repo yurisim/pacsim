@@ -89,7 +89,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       try {
         const darkStyle = './styles/dark-matter.json';
-        const lightStyle = 'https://demotiles.maplibre.org/globe.json';
+        const lightStyle = './styles/globe.json';
         const newStyle = isDarkMode ? darkStyle : lightStyle;
 
         // Log and handle style loading errors
@@ -320,7 +320,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Use different map styles based on theme - styles with country names only
     const darkStyle = './styles/dark-matter.json';
-    const lightStyle = 'https://demotiles.maplibre.org/globe.json';
+    const lightStyle = './styles/globe.json';
     const isDark = this.themeService.isDarkMode();
     const style = isDark ? darkStyle : lightStyle;
 
