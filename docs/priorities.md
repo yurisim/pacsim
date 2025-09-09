@@ -35,13 +35,17 @@ Based on evaluation of the milestones, design document, user guide, and game met
 
 ### P0 - Critical (Must Complete for Functional Game)
 
-1. **Complete Game Board Visualization**
+1. **Complete Civilization-Style Game Board Interface**
 
-   - Integrate MapLibre GL for Pacific region map display
-   - Implement h3-js hex grid overlay with programmatic hex identification
-   - Create GameTokenComponent with asset rendering logic
-   - Integrate backend game state data via NgRx effects
-   - Display aircraft, ground units, and threat tokens on board
+   - Implement responsive layout architecture (central map 75%, sidebar 25%, bottom panel 25%)
+   - Integrate MapLibre GL for Pacific region map display with enhanced visual styling
+   - Implement h3-js hex grid overlay with programmatic hex identification and hover states
+   - Create GameTokenComponent with NATO-standard military symbology and drag-and-drop functionality
+   - Build context-sensitive right sidebar with unit details and team resources
+   - Integrate backend game state data via NgRx effects with real-time synchronization
+   - Display aircraft, ground units, and threat tokens with visual status indicators
+   - Implement map layer toggle controls (political boundaries, threat zones, satellite coverage)
+   - Add interactive hex grid with context menus and range overlay visualization
 
 2. **Basic Asset Movement System**
 
@@ -51,12 +55,15 @@ Based on evaluation of the milestones, design document, user guide, and game met
    - Real-time state updates across all clients
    - Basic range and movement restrictions
 
-3. **Core ATO Implementation**
-   - Interactive AtoTableComponent for flight planning
-   - FlightPlannerDialogComponent for creating sorties
-   - Backend validation and storage of ATO lines
-   - PPR (Prior Permission Required) approval system
-   - Basic aircraft allocation from CAOC
+3. **Enhanced ATO Implementation (Civilization-style)**
+   - Interactive AtoTableComponent with visual status indicators and batch processing
+   - Comprehensive FlightPlannerDialogComponent with mission planning interface
+   - Aircraft selection with visual representation and status indicators
+   - Route planning with range validation, fuel calculations, and warning systems
+   - Mission loadout configuration (weapons, fuel, special equipment)
+   - Backend validation and storage of ATO lines with real-time updates
+   - PPR approval system with queue management and filtering capabilities
+   - CAOC command dashboard with theater status overview and asset allocation matrix
 
 ### P1 - High Priority (Essential Gameplay Features)
 
@@ -74,49 +81,59 @@ Based on evaluation of the milestones, design document, user guide, and game met
    - Asset destruction and state updates
    - Force packaging for multi-aircraft attacks
 
-6. **Role-Based Access Control**
+6. **Role-Specific Dashboard Overlays**
+   - MOB sliding panel with personnel tracking, equipment inventory, and FOS status
+   - CAOC full-screen command interface with tabbed sections (ATO, Resources, Intelligence)
+   - CSpOC orbital visualization with satellite tracks and intelligence collection results
+   - MEDCOM hospital network status board with patient tracking and supply management
+   - Context-sensitive UI adaptation based on player selection and role
+   - Real-time status updates and notification integration
+
+7. **Role-Based Access Control**
    - Conditional UI rendering based on player roles
    - Backend validation for role-specific actions
    - Team ownership restrictions
 
 ### P2 - Medium Priority (Enhanced Gameplay)
 
-7. **CSpOC Satellite System**
+8. **CSpOC Satellite System**
 
    - Satellite placement and movement mechanics
    - "Look" actions and information gathering
    - Orbital warfare capabilities
    - Cyber package deployment
 
-8. **MEDCOM Medical System**
+9. **MEDCOM Medical System**
 
    - Hospital management and patient tracking
    - MEDEVAC flight planning
    - Casualty generation and treatment
    - Medical supply logistics
 
-9. **End-of-Turn Automation**
+10. **End-of-Turn Automation**
    - Logistics tax calculation
    - Demoralization and mission point scoring
-   - Game turn advancement
+   - Game turn advancement with Civilization-style "Next Turn" interface
    - Automated satellite movement
 
 ### P3 - Low Priority (Polish and Advanced Features)
 
-10. **Advanced UI/UX**
+11. **Advanced UI/UX Enhancements**
 
-    - Game log component for event tracking
-    - Notification system for real-time feedback
-    - Tooltips and help systems
-    - Dark/light theme refinements
+    - Enhanced game log component with event filtering and search
+    - Advanced notification system with priority levels and persistence
+    - Context-sensitive tooltips and integrated help systems
+    - Dark/light theme refinements with military-appropriate color schemes
+    - Accessibility features (color-blind support, keyboard navigation)
 
-11. **Game Master Interface**
+12. **Game Master Interface**
 
-    - Manual state editing capabilities
-    - Event/Risk card triggering
-    - Game session management tools
+    - Comprehensive GM dashboard with manual state editing capabilities
+    - Event/Risk card triggering with visual card selection interface
+    - Advanced game session management tools
+    - Real-time game monitoring and intervention capabilities
 
-12. **Containerization and Deployment**
+13. **Containerization and Deployment**
     - Docker setup for development
     - CI/CD pipeline configuration
     - Production deployment preparation
@@ -135,11 +152,12 @@ To achieve a functional game where players can:
 
 **Must Complete Before MVG:**
 
-1. Game board visualization (P0 #1)
-2. Basic asset movement (P0 #2)
-3. Core ATO system (P0 #3)
-4. Basic combat (P1 #5)
-5. Role-based access (P1 #6)
+1. Civilization-style game board interface (P0 #1)
+2. Basic asset movement with drag-and-drop (P0 #2)
+3. Enhanced ATO system with mission planner (P0 #3)
+4. Role-specific dashboard overlays (P1 #6)
+5. Basic combat with enhanced dialog (P1 #5)
+6. Role-based access control (P1 #7)
 
 ### Technical Dependencies
 
@@ -167,11 +185,14 @@ To achieve a functional game where players can:
 
 ### Functional Game Milestones
 
-1. **Board Display:** Players can see complete game state on map
-2. **Basic Movement:** Assets can be moved with proper validation
-3. **Simple Combat:** Basic engagement resolution working
-4. **Multiplayer Sync:** Real-time updates across all players
-5. **Scoring:** Basic MP/DP tracking functional
+1. **Civilization-Style Interface:** Complete responsive layout with central map, sidebars, and role-specific overlays
+2. **Interactive Board Display:** Players can see complete game state with enhanced visual indicators and layer toggles
+3. **Asset Movement:** Drag-and-drop functionality with range validation and visual feedback
+4. **Mission Planning:** Comprehensive flight planner dialog with aircraft selection and loadout configuration
+5. **Combat Resolution:** Enhanced combat dialog with visual unit representations and detailed results
+6. **Role-Specific Dashboards:** Fully functional overlay interfaces for all four roles (MOB/CAOC/CSpOC/MEDCOM)
+7. **Real-Time Synchronization:** Seamless multiplayer updates across all connected clients
+8. **Turn Management:** Civilization-style phase progression with status tracking and confirmation dialogs
 
 ### Quality Gates
 

@@ -76,36 +76,68 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [x] Create basic component structure with proper routing.
       - [x] Integrate MapLibre GL to display the pacific region
       - [x] Implement h3-js hex grid overlay. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
-      - [ ] Overlay the hex grid on top of the map.
+      - [x] Overlay the hex grid on top of the map.
+    - [ ] **Implement Civilization-style Layout Components:**
+      - [ ] Create base layout with central map (75% width), right sidebar (25% width), and bottom panel (25% height)
+      - [ ] Implement responsive grid system for dashboard panels
+      - [ ] Create collapsible sidebar for mobile/tablet viewports
     - [ ] **Create a `GameTokenComponent`:**
       - [ ] A generic component that takes an `asset` object as input.
       - [ ] Uses `ngSwitch` to render the correct image, text (strength), and team color based on the asset's type.
+      - [ ] Implement NATO-standard military symbology for units
+      - [ ] Add hover states and selection highlighting
+      - [ ] Include drag-and-drop functionality with visual feedback
+    - [ ] **Implement Context-Sensitive Right Sidebar:**
+      - [ ] Create `UnitDetailsComponent` for selected asset information
+      - [ ] Build `TeamResourcesComponent` for inventory and personnel tracking
+      - [ ] Add adaptive layout that adjusts based on selection state
     - [ ] **Integrate Backend Data:**
       - [ ] Create a `[Game] Load Game` NgRx effect that fetches the full game state from the backend API when a player loads the game page.
       - [ ] Create NgRx selectors to get all aircraft, ground units, and threat tokens from the state.
       - [ ] In `GameBoardComponent`, subscribe to these selectors and use `ngFor` to render a `GameTokenComponent` for each asset at its correct hex/airfield location.
+      - [ ] Implement real-time state synchronization across all connected clients
 
-2.  **Dashboard and Side Panel Rendering:**
-    - [x] **Implement `MobDashboardComponent`:**
+2.  **Role-Specific Dashboard Overlays (Civilization-style):**
+    - [x] **Implement `MobDashboardComponent` (Sliding Panel Overlay):**
       - [x] Create basic component structure.
-      - [ ] Create static UI layouts for the MOB board (On-Station Personnel, Commodities, etc.).
-      - [ ] Use NgRx selectors to get the specific MOB's inventory.
-      - [ ] Use `ngFor` and the `GameTokenComponent` to display all assets currently located at the MOB.
-    - [ ] **Implement `FosDashboardComponent`:**
-      - [ ] Create a UI that visually represents the FOS board (RFI answers, 16 task slots).
-      - [ ] Use selectors to get the state of a specific FOS.
-      - [ ] Use CSS classes (`.task-complete`, `.task-incomplete`) to style the task slots based on the FOS's `Completed_Tasks` array.
-    - [ ] **Implement `ScoreboardComponent`:**
-      - [ ] A simple component that subscribes to team-specific `missionPoints` and `demoralizationPoints` from the NgRx store and displays them.
-    - [x] **Implement `CaocDashboardComponent`:**
+      - [ ] Design sliding panel from right (40% screen width)
+      - [ ] Create personnel assets section with location tracking
+      - [ ] Implement equipment & commodities inventory with visual indicators
+      - [ ] Build controlled FOSs status board with task completion progress
+      - [ ] Add available aircraft section with status and action buttons
+      - [ ] Use NgRx selectors to get the specific MOB's inventory and assets
+    - [ ] **Implement `FosDashboardComponent` (Tech Tree Style):**
+      - [ ] Create a UI that visually represents the FOS board with interconnected task nodes
+      - [ ] Implement task dependency visualization showing prerequisites
+      - [ ] Use selectors to get the state of a specific FOS
+      - [ ] Use CSS classes and progress indicators for task completion status
+      - [ ] Add RFI request interface with dice roll visualization
+    - [ ] **Implement `ScoreboardComponent` (Status Bar Integration):**
+      - [ ] Integrate into main layout's bottom panel status section
+      - [ ] Create visual MP/DP meters with progress toward victory
+      - [ ] Add turn/phase indicator with "Next Turn" Civilization-style button
+      - [ ] Display real-time resource counters (personnel, equipment, commodities)
+    - [x] **Implement `CaocDashboardComponent` (Full-Screen Command Interface):**
       - [x] Create basic component structure.
-      - [ ] Create a UI to render CAOC-specific functionality (ATO management, PPR approval).
-    - [ ] **Implement `CSpOCBoardComponent`:**
-      - [ ] Create a UI to render the orbital tracks (LEO, MEO, GEO).
-      - [ ] Subscribe to `satelliteInstances` from the NgRx store and render `GameTokenComponent`s for each satellite on its correct orbit/position.
-    - [ ] **Implement `MedcomDashboardComponent`:**
-      - [ ] Create a UI to display the status of the four main hospitals.
-      - [ ] Implement a `HospitalStatusComponent` to show bed space, completed tasks, and patient counts for a single hospital.
+      - [ ] Design full-screen modal with tabbed sections (ATO, Resources, Intel, Operations)
+      - [ ] Create interactive ATO table with bulk approval capabilities
+      - [ ] Implement PPR queue with status indicators and batch processing
+      - [ ] Build asset allocation matrix showing available aircraft
+      - [ ] Add theater status overview with operational metrics
+    - [ ] **Implement `CSpOCBoardComponent` (Orbital Visualization):**
+      - [ ] Create orbital track visualization (GEO ring, MEO/LEO tracks)
+      - [ ] Implement satellite positioning system with movement indicators
+      - [ ] Build intelligence collection results panel with actionable recommendations
+      - [ ] Add cyber warfare assets management interface
+      - [ ] Create Ground Based Radar (GBR) deployment controls
+      - [ ] Subscribe to `satelliteInstances` and render with orbital context
+    - [ ] **Implement `MedcomDashboardComponent` (Medical Network Status):**
+      - [ ] Design hospital network status board with bed capacity visualization
+      - [ ] Create patient triage and treatment protocol displays
+      - [ ] Implement active MEDEVAC operations tracking
+      - [ ] Build medical supply inventory management interface
+      - [ ] Add emergency protocol activation controls
+      - [ ] Create `HospitalStatusComponent` with visual bed occupancy and supply status
 
 ---
 
@@ -132,17 +164,23 @@ _This is where the game comes to life. The goal is to enable players to perform 
       - [ ] The `WebSocketService` on all clients receives the `Move Success` event and dispatches it to their local NgRx store.
       - [ ] The reducer updates the state, and the UI reactively moves the token on everyone's screen.
 
-2.  **Air Tasking Order (ATO) Implementation:**
+2.  **Air Tasking Order (ATO) Implementation with Civilization-style Interfaces:**
 
-        - [ ] Create an interactive `AtoTableComponent` using Angular Material Table.
-
+    - [ ] Create an interactive `AtoTableComponent` using Angular Material Table with enhanced visual design.
     - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
     - [ ] **For MOB Players:**
-      - [ ] Add a "New Flight Plan" button that opens a dialog (`FlightPlannerDialogComponent`).
-      - [ ] The dialog should contain forms (dropdowns, inputs) to select aircraft, start/end locations, and intent.
+      - [ ] Add a "New Flight Plan" button that opens a comprehensive `FlightPlannerDialogComponent`.
+      - [ ] Implement mission planner dialog with:
+        - [ ] Aircraft selection with visual representation and status indicators
+        - [ ] Route planning with range validation and fuel calculations
+        - [ ] Mission loadout configuration (weapons, fuel, special equipment)
+        - [ ] Mission parameters (time on station, altitude, ROE)
+        - [ ] Warning system for political clearances and weather advisories
       - [ ] On submit, dispatch a `[ATO] Create Line Request` action, which is sent to the backend.
     - [ ] **For CAOC Players:**
-      - [ ] The table should display "Approve PPR" / "Deny PPR" buttons for each pending ATO line.
+      - [ ] The table should display "Approve PPR" / "Deny PPR" buttons with batch processing capabilities.
+      - [ ] Implement PPR approval queue with status indicators and filtering.
+      - [ ] Add theater status overview showing operational metrics.
       - [ ] Clicking these buttons dispatches actions (`[ATO] Approve PPR Request`) to the backend.
 
 3.  **FOS Management:**
@@ -196,14 +234,21 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
       - `*ngIf="user.teamId === currentMob.id"` to prevent players from interacting with other teams' dashboards.
     - [ ] The backend must re-validate every single action against the user's role and team ownership. **Never trust the client.**
 
-3.  **Combat Adjudication (Conflict Phase):**
+3.  **Combat Adjudication with Enhanced UI (Conflict Phase):**
 
     - [ ] Add logic to the `GameLogicService` and backend to check if `gamePhase === 'CONFLICT'`.
-    - [ ] When a fighter is moved onto a hex with an enemy token, open a `CombatDialogComponent`.
-    - [ ] The dialog shows the attacker and defender. The player clicks "Engage."
-    - [ ] This triggers a `[Combat] Adjudicate Request` action.
+    - [ ] When a fighter is moved onto a hex with an enemy token, open an enhanced `CombatDialogComponent`.
+    - [ ] Implement comprehensive combat dialog featuring:
+      - [ ] Visual unit representations with detailed statistics
+      - [ ] Combat modifier calculations with explanations
+      - [ ] Force package options for coordinated attacks
+      - [ ] Real-time dice rolling with animation
+      - [ ] Detailed result explanation and damage assessment
+    - [ ] Add engagement confirmation with tactical overview.
+    - [ ] This triggers a `[Combat] Adjudicate Request` action with all combat parameters.
     - [ ] The backend performs the dice rolls, determines the outcome, updates/deletes the database documents for the involved units, and broadcasts the result.
-    - [ ] The result should be displayed to all players via a notification/toast and a log entry.
+    - [ ] The result should be displayed to all players via enhanced notifications and detailed combat log entries.
+    - [ ] Implement post-combat unit status updates and damage visualization on the map.
 
 4.  **Scoring and End-of-Turn Automation:**
 
@@ -228,7 +273,7 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
 
 _This phase focuses on finalizing the user experience, recreating rich data displays, and making the application production-ready._
 
-1.  **UI/UX Enhancements:**
+1.  **UI/UX Enhancements - Civilization-Inspired Interface:**
 
     - [ ] Implement a `GameLogComponent` that displays a running text log of all major events.
     - [ ] Add a notification/toast service (`ngx-toastr`) for immediate feedback on actions.
@@ -240,6 +285,21 @@ _This phase focuses on finalizing the user experience, recreating rich data disp
     - [x] Implement Logout button with conditional toolbar display
     - [x] Implement OTP input for room code on Join screen
     - [x] Add notification service using MatSnackBar (NotificationService) for user feedback
+    - [ ] Implement Civilization-style main interface layout:
+      - [ ] Create responsive grid layout with central map area (75%), side panel (25%), and bottom action bar
+      - [ ] Design and implement top toolbar with team badges and phase controls
+      - [ ] Create context-sensitive right sidebar for unit details and team resources
+      - [ ] Implement bottom panel with status indicators, ATO table, and notification feed
+    - [ ] Develop role-specific dashboard overlays:
+      - [ ] MOB sliding panel with personnel, equipment, and FOS status
+      - [ ] CAOC command dashboard with ATO management and resource allocation
+      - [ ] CSpOC operations console with orbital track visualization
+      - [ ] MEDCOM dashboard with hospital network status board
+    - [ ] Create Civilization-style interactive map components:
+      - [ ] Implement map layer toggle controls (political boundaries, threat zones, etc.)
+      - [ ] Add hover/click interactions for hexes and assets
+      - [ ] Design range and movement overlays with visual pathing
+      - [ ] Create context menus for unit-specific actions
 
 2.  **Game Master (GM) Interface:**
 
