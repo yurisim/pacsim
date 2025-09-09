@@ -181,7 +181,7 @@ export class ScoreboardComponent {
         </table>
       </div>
 
-      @if (!lines?.length) {
+      @if (!lines.length) {
         <div class="p-3 md-typescale-body-small md-sys-color-on-surface-variant">
           No ATO lines yet.
         </div>
@@ -217,7 +217,7 @@ export class AtoTableComponent {
           </a>
         }
       </mat-nav-list>
-      @if (!log?.length) {
+      @if (!log.length) {
         <div class="p-3 md-typescale-body-small md-sys-color-on-surface-variant">
           No events yet.
         </div>
