@@ -30,9 +30,9 @@
             </button>
             <h2 class="m-0 text-xl font-medium">Pacific Shield - Game: {{ game.id }}</h2>
           </div>
-          @if (selectedHexCoordinate) {
+          @if (selectedVisualHexCoord) {
             <div class="selected-hex-display px-3 py-1 rounded md-sys-bg-primary-container md-sys-color-on-primary-container">
-              <span class="text-sm font-medium">Selected Hex: {{ selectedHexCoordinate }}</span>
+              <span class="text-sm font-medium">Selected Hex: {{ selectedVisualHexCoord }}</span>
             </div>
           }
         </div>

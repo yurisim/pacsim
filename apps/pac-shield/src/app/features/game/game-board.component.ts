@@ -1,3 +1,4 @@
+
 import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -322,13 +323,25 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 'hex-grid-outline');
 
 
+    this.map.addLayer({
+      id: 'hex-grid-selected',
+      type: 'line',
+      source: 'hex-grid',
+      paint: {
+        'line-color': '#000000',
+        'line-width': 4,
+        'line-opacity': 1
+      },
+      filter: ['==', 'visualCoordLabel', '']
+    });
+
+
     // Add click handler for hexes
     this.map.on('click', 'hex-grid-fill', (e) => {
       if (e.features && e.features[0]) {
-        const h3InternalIndex = e.features[0].properties?.['h3InternalIndex'];
         const visualCoordLabel = e.features[0].properties?.['visualCoordLabel'];
-        console.log(`Clicked hex - H3 Internal: ${h3InternalIndex}, Visual Coordinate: ${visualCoordLabel}`);
         this.selectedVisualHexCoord = visualCoordLabel;
+        this.map.setFilter('hex-grid-selected', ['==', 'visualCoordLabel', visualCoordLabel]);
       }
     });
 
