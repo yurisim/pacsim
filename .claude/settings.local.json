@@ -31,7 +31,8 @@
       "Bash(curl:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "WebFetch(domain:docs.mapbox.com)"
+      "WebFetch(domain:docs.mapbox.com)",
+      "WebFetch(domain:demotiles.maplibre.org)"
     ],
     "deny": [],
     "ask": []
