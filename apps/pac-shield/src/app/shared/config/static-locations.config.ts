@@ -59,7 +59,6 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
     h3Index: latLngToCell(26.355, 127.768, H3_RESOLUTION),
     country: 'Japan',
     type: 'MOB',
-    capabilities: ['F-16', 'C-17', 'Mobility Hub'],
   },
   andersen: {
     id: 'andersen',
@@ -68,7 +67,6 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
     h3Index: latLngToCell(13.584, 144.829, H3_RESOLUTION),
     country: 'Guam',
     type: 'MOB',
-    capabilities: ['F-22', 'C-5', 'Strategic Hub'],
   },
   yokota: {
     id: 'yokota',
@@ -77,7 +75,6 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
     h3Index: latLngToCell(35.748, 139.348, H3_RESOLUTION),
     country: 'Japan',
     type: 'MOB',
-    capabilities: ['C-130', 'ISR', 'Communications'],
   },
   osan: {
     id: 'osan',
@@ -86,7 +83,6 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
     h3Index: latLngToCell(37.091, 127.030, H3_RESOLUTION),
     country: 'South Korea',
     type: 'MOB',
-    capabilities: ['F-16', 'C-17', 'Rapid Response'],
   },
   jbphh: {
     id: 'jbphh',
@@ -95,7 +91,6 @@ export const MOB_LOCATIONS: Record<string, StaticLocation> = {
     h3Index: latLngToCell(21.35, -157.92, H3_RESOLUTION),
     country: 'USA',
     type: 'MOB',
-    capabilities: ['C-17', 'Medical', 'Logistics'],
   },
 };
 
