@@ -343,37 +343,45 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Generate coordinate labels for hexes with Hainan as 505
-   * @param centerH3Index - The H3 index of Hainan (center hex)
-   * @param h3Indices - All H3 indices in the grid
-   * @returns Map of H3 index to coordinate label
+   * Dictionary Translation Method: Converts H3 internal indexes to visual hex coordinates
+   * 
+   * This method creates a mapping between:
+   * - H3 Internal Indexes: Cryptic strings like "81623ffffffffff" (used internally by H3-js library)
+   * - Visual Hex Coordinates: Human-readable labels like "505", "506A", "607" (displayed to users)
+   * 
+   * The center hex (Hainan Island) is always assigned visual coordinate "505"
+   * 
+   * @param centerH3InternalIndex - The H3 internal index of Hainan (center hex)
+   * @param h3InternalIndexes - All H3 internal indexes in the grid
+   * @returns Dictionary mapping H3 internal index → visual coordinate label
    */
-  private generateHexCoordinates(centerH3Index: string, h3Indices: string[]): Record<string, string> {
-    const coordinates: Record<string, string> = {};
+  private generateVisualHexCoordinates(centerH3InternalIndex: string, h3InternalIndexes: string[]): Record<string, string> {
+    // Dictionary: H3 Internal Index → Visual Coordinate Label
+    const h3IndexToVisualCoordDictionary: Record<string, string> = {};
 
-    // Get center coordinates for each hex
-    const hexPositions: Record<string, { lat: number, lng: number }> = {};
-    h3Indices.forEach(h3Index => {
-      const [lat, lng] = cellToLatLng(h3Index);
-      hexPositions[h3Index] = { lat, lng };
+    // Get geographic positions for each H3 internal index
+    const h3IndexToGeoPosition: Record<string, { lat: number, lng: number }> = {};
+    h3InternalIndexes.forEach(h3InternalIndex => {
+      const [lat, lng] = cellToLatLng(h3InternalIndex);
+      h3IndexToGeoPosition[h3InternalIndex] = { lat, lng };
     });
 
-    const centerPos = hexPositions[centerH3Index];
+    const centerGeoPosition = h3IndexToGeoPosition[centerH3InternalIndex];
 
-    // First pass: Calculate initial coordinates for all hexes
-    const initialCoordinates: Record<string, string> = {};
-    h3Indices.forEach(h3Index => {
-      const pos = hexPositions[h3Index];
+    // First pass: Calculate initial visual coordinates for all H3 internal indexes
+    const initialVisualCoords: Record<string, string> = {};
+    h3InternalIndexes.forEach(h3InternalIndex => {
+      const geoPos = h3IndexToGeoPosition[h3InternalIndex];
 
-      if (h3Index === centerH3Index) {
-        // Center hex is always 505
-        initialCoordinates[h3Index] = '505';
+      if (h3InternalIndex === centerH3InternalIndex) {
+        // Center hex (Hainan) is always visual coordinate 505
+        initialVisualCoords[h3InternalIndex] = '505';
         return;
       }
 
       // Calculate distance and bearing from center
-      const deltaLat = pos.lat - centerPos.lat;
-      const deltaLng = pos.lng - centerPos.lng;
+      const deltaLat = geoPos.lat - centerGeoPosition.lat;
+      const deltaLng = geoPos.lng - centerGeoPosition.lng;
 
       // Simple grid approximation - adjust these factors based on actual H3 spacing
       const latStep = 7.5; // Approximate degrees per hex row at this resolution
@@ -390,34 +398,34 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       const clampedRow = Math.max(0, Math.min(9, row));
       const clampedCol = Math.max(0, Math.min(99, col));
 
-      const coordLabel = `${clampedRow}${clampedCol.toString().padStart(2, '0')}`;
-      initialCoordinates[h3Index] = coordLabel;
+      const visualCoordLabel = `${clampedRow}${clampedCol.toString().padStart(2, '0')}`;
+      initialVisualCoords[h3InternalIndex] = visualCoordLabel;
     });
 
-    // Second pass: Group h3Indices by their coordinate labels to identify duplicates
-    const coordGroups: Record<string, string[]> = {};
-    Object.entries(initialCoordinates).forEach(([h3Index, coordLabel]) => {
-      if (!coordGroups[coordLabel]) {
-        coordGroups[coordLabel] = [];
+    // Second pass: Group H3 internal indexes by visual coordinates to identify duplicates
+    const visualCoordGroups: Record<string, string[]> = {};
+    Object.entries(initialVisualCoords).forEach(([h3InternalIndex, visualCoordLabel]) => {
+      if (!visualCoordGroups[visualCoordLabel]) {
+        visualCoordGroups[visualCoordLabel] = [];
       }
-      coordGroups[coordLabel].push(h3Index);
+      visualCoordGroups[visualCoordLabel].push(h3InternalIndex);
     });
 
-    // Third pass: Assign final coordinates with alphabetical suffixes for duplicates
-    Object.entries(coordGroups).forEach(([coordLabel, h3IndicesGroup]) => {
-      if (h3IndicesGroup.length === 1) {
-        // No duplicates, use original coordinate
-        coordinates[h3IndicesGroup[0]] = coordLabel;
+    // Third pass: Assign final visual coordinates with alphabetical suffixes for duplicates
+    Object.entries(visualCoordGroups).forEach(([visualCoordLabel, h3InternalIndexGroup]) => {
+      if (h3InternalIndexGroup.length === 1) {
+        // No duplicates, use original visual coordinate
+        h3IndexToVisualCoordDictionary[h3InternalIndexGroup[0]] = visualCoordLabel;
       } else {
-        // Handle duplicates by appending alphabetical suffixes
-        h3IndicesGroup.forEach((h3Index, index) => {
+        // Handle duplicates by appending alphabetical suffixes (e.g., 505A, 505B)
+        h3InternalIndexGroup.forEach((h3InternalIndex, index) => {
           const suffix = String.fromCharCode(65 + index); // A, B, C, etc.
-          coordinates[h3Index] = `${coordLabel}${suffix}`;
+          h3IndexToVisualCoordDictionary[h3InternalIndex] = `${visualCoordLabel}${suffix}`;
         });
       }
     });
 
-    return coordinates;
+    return h3IndexToVisualCoordDictionary;
   }
 
 }
