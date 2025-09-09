@@ -7,7 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { Map, NavigationControl } from 'maplibre-gl';
+import { Map, NavigationControl, Marker } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
@@ -441,84 +441,44 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * - Enabling hover effects for MOB location markers
    */
   private addMobLocations(): void {
-    // Create SVG home icon
-    const homeIconSvg = `
-<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#0000FF"><path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"/></svg>
-    `;
-
-    // Convert SVG to image and add to map
-    const img = new Image(32, 32);
-    img.onload = () => {
-      this.map.addImage('home-icon', img);
-      this.renderMobSymbols();
-    };
-    img.src = 'data:image/svg+xml;base64,' + btoa(homeIconSvg);
+    // Directly render MOB symbols with Material Design icons
+    this.renderMobSymbols();
   }
 
   /**
-   * Method Intent: Render MOB location symbols after icon is loaded.
+   * Method Intent: Render MOB location symbols using custom HTML markers with Material Design icons.
    */
   private renderMobSymbols(): void {
-    // Create GeoJSON features for all MOB locations
-    const mobFeatures = Object.values(MOB_LOCATIONS).map(mob => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: mob.coordinates // Already in [lng, lat] format for GeoJSON
-      },
-      properties: {
-        name: mob.name,
-        id: mob.id,
-        country: mob.country,
-        type: mob.type
-      }
-    }));
-
-    // Add MOB locations data source
-    this.map.addSource('mob-locations', {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection' as const,
-        features: mobFeatures
-      }
-    });
-
-    // Add MOB icons layer using SVG home icon
-    this.map.addLayer({
-      id: 'mob-icons',
-      type: 'symbol',
-      source: 'mob-locations',
-      layout: {
-        'icon-image': 'home-icon',
-        'icon-size': 1,
-        'icon-allow-overlap': true,
-        'icon-anchor': 'bottom'
-      }
-    });
-
-    // Add MOB labels layer
-    this.map.addLayer({
-      id: 'mob-labels',
-      type: 'symbol',
-      source: 'mob-locations',
-      layout: {
-        'text-field': ['get', 'name'],
-        'text-offset': [0, -1.5],
-        'text-anchor': 'bottom',
-        'text-allow-overlap': false
-      },
-      paint: {
-        'text-color': '#1976d2',
-      }
-    });
-
-    // Add hover effects for MOB locations
-    this.map.on('mouseenter', 'mob-icons', () => {
-      this.map.getCanvas().style.cursor = 'pointer';
-    });
-
-    this.map.on('mouseleave', 'mob-icons', () => {
-      this.map.getCanvas().style.cursor = '';
+    // Create custom HTML markers for each MOB location
+    Object.values(MOB_LOCATIONS).forEach(mob => {
+      // Create marker container
+      const markerElement = document.createElement('div');
+      markerElement.style.textAlign = 'center';
+      markerElement.style.cursor = 'pointer';
+      markerElement.className = 'mob-marker';
+      
+      // Create Material icon element using Google Material Icons font
+      const iconElement = document.createElement('span');
+      iconElement.className = 'material-icons';
+      iconElement.textContent = 'home';
+      iconElement.style.fontSize = '24px';
+      iconElement.style.color = 'var(--mat-sys-primary)';
+      
+      // Create label element
+      const labelElement = document.createElement('div');
+      labelElement.textContent = mob.name;
+      labelElement.style.fontSize = '12px';
+      labelElement.style.color = 'var(--mat-sys-primary)';
+      labelElement.style.marginTop = '2px';
+      
+      // Append elements
+      markerElement.appendChild(iconElement);
+      markerElement.appendChild(labelElement);
+      
+      // Create and add marker to map
+      new Marker({ element: markerElement })
+        .setLngLat(mob.coordinates)
+        .addTo(this.map);
     });
   }
 
