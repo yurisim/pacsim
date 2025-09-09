@@ -104,6 +104,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
             const preservedSources = ['hex-grid'];
             const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
 
+            const preservedLayerObjects = preservedLayers.map(layerId =>
+              previousStyle?.layers?.find((layer: any) => layer.id === layerId)
+            ).filter(Boolean);
+
             return {
               ...nextStyle,
               sources: {
@@ -119,9 +123,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
               layers: [
                 ...nextStyle.layers,
                 // Copy preserved layers from previous style
-                ...preservedLayers.map(layerId =>
-                  previousStyle?.layers?.find((layer: any) => layer.id === layerId)
-                ).filter(Boolean)
+                ...preservedLayerObjects
               ]
             };
           }
