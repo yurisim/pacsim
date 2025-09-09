@@ -303,66 +303,82 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     });
 
-    // Add hex grid source and layer
-    this.map.addSource('hex-grid', {
-      type: 'geojson',
-      data: {
+    // Add hex grid source and layer (check if source already exists)
+    if (!this.map.getSource('hex-grid')) {
+      this.map.addSource('hex-grid', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: hexFeatures
+        }
+      });
+    } else {
+      // Update existing source data
+      (this.map.getSource('hex-grid') as any).setData({
         type: 'FeatureCollection',
         features: hexFeatures
-      }
-    });
+      });
+    }
 
-    // Add hex grid fill layer
-    this.map.addLayer({
-      id: 'hex-grid-fill',
-      type: 'fill',
-      source: 'hex-grid',
-      paint: {
-        'fill-color': '#000000',
-        'fill-opacity': 0.025
-      }
-    });
+    // Add hex grid fill layer (check if layer already exists)
+    if (!this.map.getLayer('hex-grid-fill')) {
+      this.map.addLayer({
+        id: 'hex-grid-fill',
+        type: 'fill',
+        source: 'hex-grid',
+        paint: {
+          'fill-color': '#000000',
+          'fill-opacity': 0.025
+        }
+      });
+    }
 
-    // Add hex grid outline layer
-    this.map.addLayer({
-      id: 'hex-grid-outline',
-      type: 'line',
-      source: 'hex-grid',
-      paint: {
-        'line-color': '#000000',
-        'line-width': 2,
-        'line-opacity': 0.10,
-        'line-dasharray': [2, 2]
-      }
-    });
+    // Add hex grid outline layer (check if layer already exists)
+    if (!this.map.getLayer('hex-grid-outline')) {
+      this.map.addLayer({
+        id: 'hex-grid-outline',
+        type: 'line',
+        source: 'hex-grid',
+        paint: {
+          'line-color': '#000000',
+          'line-width': 2,
+          'line-opacity': 0.10,
+          'line-dasharray': [2, 2]
+        }
+      });
+    }
+
+    // Add hex labels layer using the hex centers for now (check if layer already exists)
+    if (!this.map.getLayer('hex-labels')) {
+      this.map.addLayer({
+        id: 'hex-labels',
+        type: 'symbol',
+        source: 'hex-grid',
+        layout: {
+          'text-field': ['get', 'visualCoordLabel'],
+        },
+        paint: {
+          'text-color': '#000000',
+          'text-opacity': 0.4
+        }
+      }, 'hex-grid-outline');
+    }
 
 
-    // Add hex labels layer using the hex centers for now (we can adjust positioning later)
-    this.map.addLayer({
-      id: 'hex-labels',
-      type: 'symbol',
-      source: 'hex-grid',
-      layout: {
-        'text-field': ['get', 'visualCoordLabel'],
-      },
-      paint: {
-        'text-color': '#000000',
-        'text-opacity': 0.4
-      }
-    }, 'hex-grid-outline');
-
-
-    this.map.addLayer({
-      id: 'hex-grid-selected',
-      type: 'line',
-      source: 'hex-grid',
-      paint: {
-        'line-color': '#000000',
-        'line-width': 4,
-        'line-opacity': 1
-      },
-      filter: ['==', 'visualCoordLabel', '']
-    });
+    // Add hex grid selected layer (check if layer already exists)
+    if (!this.map.getLayer('hex-grid-selected')) {
+      this.map.addLayer({
+        id: 'hex-grid-selected',
+        type: 'line',
+        source: 'hex-grid',
+        paint: {
+          'line-color': '#000000',
+          'line-width': 4,
+          'line-opacity': 1
+        },
+        filter: ['==', 'visualCoordLabel', '']
+      });
+    }
 
 
     // Add click handler for hexes
