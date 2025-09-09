@@ -131,14 +131,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // After the new style loads, just update colors and ensure projection
         this.map.once('style.load', () => {
+          console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
           this.map.setProjection({ type: 'globe' });
-          // Use requestAnimationFrame to ensure CSS variables are updated after theme change
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              this.updateHexGridColors();
-            });
-          });
+          this.updateHexGridColors();
           this.map.resize();
+        });
+
+        // Alternative approach: Use styledata event which is more reliable
+        this.map.once('styledata', () => {
+          console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
+          if (this.map.getLayer('hex-grid-selected')) {
+            this.updateHexGridColors();
+          }
         });
       } catch (error) {
         console.error('Error in theme change logic:', error);
