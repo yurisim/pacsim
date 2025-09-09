@@ -1,22 +1,50 @@
-import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
 import { Map, NavigationControl } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
 import { ThemeService } from '../../shared/services/theme.service';
-import { effect } from '@angular/core';
+
+// Stub UI components
+import {
+  ScoreboardComponent,
+  AtoTableComponent,
+  GameLogComponent,
+  MobDashboardComponent,
+  FosDashboardComponent,
+  CaocDashboardComponent,
+  CspocBoardComponent,
+  MedcomDashboardComponent,
+  GameTokenComponent
+} from './stubs/stub-components';
 
 @Component({
   selector: 'app-game-board',
   standalone: true,
-  imports: [CommonModule, MatProgressSpinnerModule, MatButtonModule, MatIconModule],
+  imports: [
+    CommonModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTabsModule,
+    ScoreboardComponent,
+    AtoTableComponent,
+    GameLogComponent,
+    MobDashboardComponent,
+    FosDashboardComponent,
+    CaocDashboardComponent,
+    CspocBoardComponent,
+    MedcomDashboardComponent,
+    GameTokenComponent
+  ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
 })
@@ -44,6 +72,33 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedHexCoordinate: string | null = null;
+
+  // ----- Stub demo data for UI panels (visual-only, no logic yet) -----
+  missionPoints = 12;
+  demoralizationPoints = 3;
+  resourcePoints = 2;
+  victoryTarget = 100;
+  gameTurn = 1;
+  gameDay = 1;
+  gamePhase: 'CRISIS' | 'CONFLICT' = 'CRISIS';
+
+  demoAtoLines = [
+    { callSign: 'KAD-01', type: 'C-17', origin: 'Kadena', destination: 'FOS 7', intent: 'Cargo', pprStatus: 'Pending' },
+    { callSign: 'AND-22', type: 'F-22', origin: 'Andersen', destination: 'Hex 407', intent: 'CAP', pprStatus: 'Approved' }
+  ];
+
+  demoLog: string[] = [
+    'Game created and players joined',
+    'Base access update: Philippines → Overflight Only',
+    'ATO line KAD-01 submitted'
+  ];
+
+  demoAssets = [
+    { id: 'a1', type: 'F-22', strength: 20, location: 'Andersen', status: 'Operational' },
+    { id: 'a2', type: 'C-17', range: 4, location: 'Kadena', status: 'Landed' },
+    { id: 'a3', type: 'Personnel - Refueling', location: 'FOS 7', status: 'On Task' },
+    { id: 'a4', type: 'PLA Threat 12', strength: 12, location: 'Hex 407', status: 'Detected' },
+  ];
 
   constructor() {
     // React to theme changes and update hex colors
