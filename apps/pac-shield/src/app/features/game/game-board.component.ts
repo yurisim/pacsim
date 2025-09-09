@@ -75,18 +75,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Setup theme change listener in injection context
     effect(() => {
       const isDarkMode = this.themeService.isDarkMode();
-      
+
       console.log('Theme change detected:', isDarkMode ? 'dark' : 'light', 'mapReady:', this.mapReady);
-      
+
       // Only update map style when theme changes and map is ready
       if (this.mapReady && this.map && this.map.isStyleLoaded()) {
-        const darkStyle = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-        const lightStyle = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+        const darkStyle = './styles/dark-matter.json';
+        const lightStyle = 'https://demotiles.maplibre.org/globe.json';
         const newStyle = isDarkMode ? darkStyle : lightStyle;
-        
+
         console.log('Updating map style to:', isDarkMode ? 'dark' : 'light');
         this.map.setStyle(newStyle);
-        
+
         // Reapply overlays after style change
         this.map.once('style.load', () => {
           this.map.setProjection({ type: 'globe' });
@@ -212,11 +212,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const hainanCenter = [109.5, 18.2] as [number, number]; // Longitude, Latitude for Hainan
 
     // Use different map styles based on theme - styles with country names only
-    const darkStyle = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-    const lightStyle = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+    const darkStyle = './styles/dark-matter.json';
+    const lightStyle = 'https://demotiles.maplibre.org/globe.json';
     const isDark = this.themeService.isDarkMode();
     const style = isDark ? darkStyle : lightStyle;
-    
+
     console.log('Initializing map with theme:', isDark ? 'dark' : 'light', 'style:', style);
 
     this.map = new Map({
