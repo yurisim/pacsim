@@ -24,7 +24,13 @@
       "mcp__playwright__browser_click",
       "mcp__wallaby__wallaby_allTestsForFile",
       "WebSearch",
-      "WebFetch(domain:maplibre.org)"
+      "WebFetch(domain:maplibre.org)",
+      "WebFetch(domain:openmaptiles.github.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
