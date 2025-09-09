@@ -96,6 +96,16 @@ npx nx lint pac-shield-api
 - **Form Labels**: Always use `<mat-label>` instead of placeholders for accessibility
 - **Theme Support**: Ensure components work in both light and dark themes
 
+#### Angular Material 20 Button Syntax
+Use the correct Material 20 button directives:
+- **Text buttons**: `<button matButton>Basic</button>`
+- **Elevated buttons**: `<button matButton="elevated">Basic</button>`
+- **Outlined buttons**: `<button matButton="outlined">Basic</button>`
+- **Filled buttons**: `<button matButton="filled">Basic</button>`
+- **Tonal buttons**: `<button matButton="tonal">Basic</button>`
+- **Icon buttons**: `<button matIconButton><mat-icon>icon</mat-icon></button>`
+- **FAB buttons**: `<button matFab><mat-icon>icon</mat-icon></button>`
+
 ### WebSocket Architecture
 - **Room Isolation**: Always use `gameId` as Socket.IO room identifier
 - **Event Naming**: Use consistent event naming conventions (`joinGame`, `gameEvent`)
