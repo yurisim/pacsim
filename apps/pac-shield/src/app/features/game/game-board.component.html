@@ -1,6 +1,6 @@
-<div class="game-board-container h-screen w-full relative">
+<div class="game-board-container fixed top-16 left-0 right-0 bottom-0 overflow-hidden">
   <!-- Map container always present for ViewChild -->
-  <div #mapContainer class="map absolute inset-0 top-16 w-full"></div>
+  <div #mapContainer class="map absolute inset-0"></div>
 
   <!-- Loading overlay -->
   @if (isLoading$ | async) {
@@ -40,7 +40,7 @@
     </div>
 
     <!-- Right side panel with stubbed dashboards -->
-    <div class="side-panel absolute top-16 right-2 z-[90] pointer-events-none">
+    <div class="side-panel absolute top-2 right-2 z-[90] pointer-events-none">
       <mat-tab-group dynamicHeight="true" class="pointer-events-auto">
         <mat-tab label="Score">
           <div class="p-3">
