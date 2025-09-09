@@ -19,19 +19,19 @@
     </div>
   }
 
-  <!-- Game info overlay -->
+  <!-- Game info overlay (Civ-style HUD) -->
   @if (game$ | async; as game) {
-    <div class="game-info-overlay absolute top-0 left-0 right-0 z-[100] pointer-events-none">
-      <div class="game-info py-2 px-4 pointer-events-auto md-sys-bg-surface md-sys-color-on-surface">
-        <div class="game-info-content flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <button mat-icon-button (click)="navigateToLobby()" class="back-button flex-shrink-0">
-              <mat-icon>arrow_back</mat-icon>
-            </button>
-            <h2 class="m-0 text-xl font-medium">Pacific Shield - Game: {{ game.id }}</h2>
-          </div>
+    <div class="game-hud-overlay absolute top-4 left-4 right-4 z-[100] pointer-events-none">
+      <div class="flex justify-between items-start">
+        <!-- Left side HUD info (future expansion) -->
+        <div class="game-hud-left pointer-events-auto">
+          <!-- Space for future game stats, turn info, etc. -->
+        </div>
+        
+        <!-- Right side HUD info -->
+        <div class="game-hud-right pointer-events-auto">
           @if (selectedVisualHexCoord) {
-            <div class="selected-hex-display px-3 py-1 rounded md-sys-bg-primary-container md-sys-color-on-primary-container">
+            <div class="selected-hex-display px-3 py-2 rounded-lg md-sys-bg-surface-container md-sys-color-on-surface md-elevation-2">
               <span class="text-sm font-medium">Selected Hex: {{ selectedVisualHexCoord }}</span>
             </div>
           }
