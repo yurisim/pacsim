@@ -164,21 +164,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  /**
-   * Method Intent: Navigate user back to the game lobby.
-   *
-   * This method handles:
-   * - Extracting current game ID from route parameters
-   * - Constructing navigation path to lobby with game context
-   * - Error handling for missing game ID
-   * - Maintaining game session continuity during navigation
-   */
-  navigateToLobby(): void {
-    const gameId = this.route.snapshot.paramMap.get('gameId');
-    if (gameId) {
-      this.router.navigate(['/lobby', gameId]);
-    }
-  }
 
   /**
    * Method Intent: Initialize the MapLibre GL map instance with Pacific region configuration.
