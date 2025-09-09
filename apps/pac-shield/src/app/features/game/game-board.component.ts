@@ -116,7 +116,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 'a4', type: 'PLA Threat 12', strength: 12, location: 'Hex 407', status: 'Detected' },
   ];
 
-
   /**
    * Lifecycle Method Intent: Initialize component and load game data on component creation.
    *
