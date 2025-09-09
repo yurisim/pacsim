@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy, effect } from '@angular/core';
+import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
@@ -11,7 +11,6 @@ import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
-import { ThemeService } from '../../shared/services/theme.service';
 
 // Stub UI components
 import {
@@ -65,7 +64,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private themeService = inject(ThemeService);
   private map!: Map;
 
   game$ = this.store.select(selectGame);
@@ -100,19 +98,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 'a4', type: 'PLA Threat 12', strength: 12, location: 'Hex 407', status: 'Detected' },
   ];
 
-  constructor() {
-    // React to theme changes and update hex colors
-    effect(() => {
-      // This will run whenever the theme changes
-      this.themeService.isDarkMode();
-
-      // Update hex colors if map is initialized AND fully loaded
-      // FIXED: Added loaded() check and improved timing
-      if (this.map && this.map.loaded() && this.map.getSource('hex-grid')) {
-        setTimeout(() => this.updateHexColors(), 0);
-      }
-    });
-  }
 
   /**
    * Lifecycle Method Intent: Initialize component and load game data on component creation.
@@ -410,88 +395,4 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     return coordinates;
   }
 
-  /**
-   * Parse CSS color (#rgb, #rrggbb, #rrggbbaa, rgb/rgba) to RGB
-   */
-  private parseCssColorToRgb(color: string): { r: number; g: number; b: number } | null {
-    const c = color.trim();
-    if (c.startsWith('#')) {
-      let hex = c.slice(1);
-      if (hex.length === 3) {
-        hex = hex.split('').map((ch) => ch + ch).join('');
-      }
-      if (hex.length === 6 || hex.length === 8) {
-        const r = parseInt(hex.slice(0, 2), 16);
-        const g = parseInt(hex.slice(2, 4), 16);
-        const b = parseInt(hex.slice(4, 6), 16);
-        return { r, g, b };
-      }
-      return null;
-    }
-    const m = c.match(/rgba?\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})/i);
-    if (m) {
-      return {
-        r: Math.max(0, Math.min(255, parseInt(m[1], 10))),
-        g: Math.max(0, Math.min(255, parseInt(m[2], 10))),
-        b: Math.max(0, Math.min(255, parseInt(m[3], 10))),
-      };
-    }
-    return null;
-  }
-
-  private rgbToHex(r: number, g: number, b: number): string {
-    const toHex = (v: number) => v.toString(16).padStart(2, '0');
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  }
-
-  private darkenColor(color: string, factor = 0.6): string {
-    const rgb = this.parseCssColorToRgb(color);
-    if (!rgb) return color;
-    const r = Math.round(rgb.r * factor);
-    const g = Math.round(rgb.g * factor);
-    const b = Math.round(rgb.b * factor);
-    return this.rgbToHex(r, g, b);
-  }
-
-  /**
-   * Update hex grid colors based on current theme with fallback
-   */
-  private updateHexColors(): void {
-    if (!this.map) return;
-
-    // Get current Material primary color from CSS variables with fallback
-    const primaryColor = getComputedStyle(document.body)
-      .getPropertyValue('--mat-sys-primary').trim();
-
-    // Fallback if variable is empty
-    const baseColor = primaryColor || '#2196F3';
-
-    const parsed = this.parseCssColorToRgb(baseColor);
-
-    // Fill: use 20% alpha of base
-    let fillColor: string;
-    if (baseColor.trim().startsWith('#')) {
-      fillColor = baseColor.length === 7 ? `${baseColor}33` : baseColor;
-    } else if (parsed) {
-      fillColor = `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, 0.2)`;
-    } else {
-      fillColor = '#2196F333';
-    }
-
-    // Outline: darker version of base
-    const outlineColor = this.darkenColor(baseColor, 0.6);
-
-    if (this.map.getLayer('hex-grid-fill')) {
-      this.map.setPaintProperty('hex-grid-fill', 'fill-color', fillColor);
-    }
-
-    if (this.map.getLayer('hex-grid-outline')) {
-      this.map.setPaintProperty('hex-grid-outline', 'line-color', outlineColor);
-    }
-
-    if (this.map.getLayer('hex-labels')) {
-      this.map.setPaintProperty('hex-labels', 'text-color', outlineColor);
-    }
-
-  }
 }
