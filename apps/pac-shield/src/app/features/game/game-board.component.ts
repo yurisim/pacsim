@@ -163,11 +163,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Try to get from body first (where theme classes are applied), then fall back to root
     const bodyStyle = getComputedStyle(document.body);
     const bodyValue = bodyStyle.getPropertyValue(variableName).trim();
-    
+
     if (bodyValue) {
       return bodyValue;
     }
-    
+
     const rootStyle = getComputedStyle(document.documentElement);
     return rootStyle.getPropertyValue(variableName).trim();
   }
@@ -185,9 +185,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const outlineVariant = this.getCSSVariableValue('--mat-sys-outline-variant') || '#666666';
     const onSurfaceVariant = this.getCSSVariableValue('--mat-sys-outline') || this.getCSSVariableValue('--mat-sys-on-surface-variant') || '#666666';
     const primary = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
-    
-    console.log('updateHexGridColors - Theme:', this.themeService.isDarkMode() ? 'dark' : 'light');
-    console.log('updateHexGridColors - CSS Variables:', { outlineVariant, onSurfaceVariant, primary });
 
     try {
       // Update hex grid fill colors
@@ -487,7 +484,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         paint: {
           'text-color': onSurfaceVariant,
-          'text-opacity': 0.6
+          'text-opacity': 0.75,
         }
       }, 'hex-grid-outline');
     }
