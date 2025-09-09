@@ -12,6 +12,7 @@ import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
+import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
 
 // Stub UI components
 import {
@@ -74,11 +75,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Dictionary Mapping Interface: H3 Internal Indexes ↔ Visual Hex Coordinates
-   * 
+   *
    * This mapping translates between:
    * - Key: H3 Internal Index (cryptic string like "81623ffffffffff")
    * - Value: Visual Hex Coordinate (human-readable like "505", "506A", "607")
-   * 
+   *
    * Example entries:
    * {
    *   "81623ffffffffff": "505",     // Hainan center hex
@@ -353,17 +354,20 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.map.on('mouseleave', 'hex-grid-fill', () => {
       this.map.getCanvas().style.cursor = '';
     });
+
+    // Add MOB locations with home icons
+    this.addMobLocations();
   }
 
   /**
    * Dictionary Translation Method: Converts H3 internal indexes to visual hex coordinates
-   * 
+   *
    * This method creates a mapping between:
    * - H3 Internal Indexes: Cryptic strings like "81623ffffffffff" (used internally by H3-js library)
    * - Visual Hex Coordinates: Human-readable labels like "505", "506A", "607" (displayed to users)
-   * 
+   *
    * The center hex (Hainan Island) is always assigned visual coordinate "505"
-   * 
+   *
    * @param centerH3InternalIndex - The H3 internal index of Hainan (center hex)
    * @param h3InternalIndexes - All H3 internal indexes in the grid
    * @returns Dictionary mapping H3 internal index → visual coordinate label
@@ -439,6 +443,98 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     return h3IndexToVisualCoordDictionary;
+  }
+
+  /**
+   * Method Intent: Add MOB locations to the map with SVG home icons.
+   *
+   * This method handles:
+   * - Creating GeoJSON data source from MOB_LOCATIONS config
+   * - Adding SVG home icon to map images
+   * - Adding symbol layer with home icon
+   * - Styling icons with proper theming and visibility
+   * - Enabling hover effects for MOB location markers
+   */
+  private addMobLocations(): void {
+    // Create SVG home icon
+    const homeIconSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#0000FF"><path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"/></svg>
+    `;
+
+    // Convert SVG to image and add to map
+    const img = new Image(32, 32);
+    img.onload = () => {
+      this.map.addImage('home-icon', img);
+      this.renderMobSymbols();
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(homeIconSvg);
+  }
+
+  /**
+   * Method Intent: Render MOB location symbols after icon is loaded.
+   */
+  private renderMobSymbols(): void {
+    // Create GeoJSON features for all MOB locations
+    const mobFeatures = Object.values(MOB_LOCATIONS).map(mob => ({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Point' as const,
+        coordinates: mob.coordinates // Already in [lng, lat] format for GeoJSON
+      },
+      properties: {
+        name: mob.name,
+        id: mob.id,
+        country: mob.country,
+        type: mob.type
+      }
+    }));
+
+    // Add MOB locations data source
+    this.map.addSource('mob-locations', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection' as const,
+        features: mobFeatures
+      }
+    });
+
+    // Add MOB icons layer using SVG home icon
+    this.map.addLayer({
+      id: 'mob-icons',
+      type: 'symbol',
+      source: 'mob-locations',
+      layout: {
+        'icon-image': 'home-icon',
+        'icon-size': 1,
+        'icon-allow-overlap': true,
+        'icon-anchor': 'bottom'
+      }
+    });
+
+    // Add MOB labels layer
+    this.map.addLayer({
+      id: 'mob-labels',
+      type: 'symbol',
+      source: 'mob-locations',
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-offset': [0, -1.5],
+        'text-anchor': 'bottom',
+        'text-allow-overlap': false
+      },
+      paint: {
+        'text-color': '#1976d2',
+      }
+    });
+
+    // Add hover effects for MOB locations
+    this.map.on('mouseenter', 'mob-icons', () => {
+      this.map.getCanvas().style.cursor = 'pointer';
+    });
+
+    this.map.on('mouseleave', 'mob-icons', () => {
+      this.map.getCanvas().style.cursor = '';
+    });
   }
 
 }
