@@ -69,7 +69,23 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   game$ = this.store.select(selectGame);
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
-  selectedHexCoordinate: string | null = null;
+  selectedVisualHexCoord: string | null = null;
+
+  /**
+   * Dictionary Mapping Interface: H3 Internal Indexes ↔ Visual Hex Coordinates
+   * 
+   * This mapping translates between:
+   * - Key: H3 Internal Index (cryptic string like "81623ffffffffff")
+   * - Value: Visual Hex Coordinate (human-readable like "505", "506A", "607")
+   * 
+   * Example entries:
+   * {
+   *   "81623ffffffffff": "505",     // Hainan center hex
+   *   "81627ffffffffff": "506A",    // Adjacent hex with duplicate resolution
+   *   "8162bffffffffff": "607"      // Another hex in the grid
+   * }
+   */
+  private h3IndexToVisualCoordDictionary: Record<string, string> = {};
 
   // ----- Stub demo data for UI panels (visual-only, no logic yet) -----
   missionPoints = 12;
@@ -171,6 +187,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * - Adding navigation controls for user interaction
    * - Setting up event listeners for map load completion
    * - Configuring initial zoom level for regional overview
+   * - Triggering hex grid overlay with H3-to-visual coordinate mapping
    */
   private initializeMap(): void {
     // Center on Hainan Island, China
@@ -201,6 +218,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Method Intent: Create H3 hex grid overlay with dual identifier system.
+   *
+   * This method generates a hexagonal grid where each hex has two identifiers:
+   * 1. H3 Internal Index: Cryptic string used internally by H3-js library (e.g., "81623ffffffffff")
+   * 2. Visual Hex Coordinate: Human-readable label displayed to users (e.g., "505", "506A")
+   *
+   * The mapping between these identifiers is stored in this.h3IndexToVisualCoordDictionary
+   * and enables translation between internal game logic and user interface display.
+   */
   private overlayHexGrid(): void {
     const hexFeatures: any[] = [];
     const hainanLat = 18.2;
