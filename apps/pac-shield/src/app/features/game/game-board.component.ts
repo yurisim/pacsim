@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDestroy, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,7 @@ import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
 import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
+import { ThemeService } from '../../shared/services/theme.service';
 
 // Stub UI components
 import {
@@ -179,8 +180,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Center on Hainan Island, China
     const hainanCenter = [109.5, 18.2] as [number, number]; // Longitude, Latitude for Hainan
 
-    // Use MapLibre demo style with built-in fonts and sprites
-    const style = 'https://demotiles.maplibre.org/style.json';
+    // Use different map styles based on theme - styles with country names only
+    const darkStyle = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+    const lightStyle = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+    const isDark = this.themeService.isDarkMode();
+    const style = isDark ? darkStyle : lightStyle;
+    
+    console.log('Initializing map with theme:', isDark ? 'dark' : 'light', 'style:', style);
 
     this.map = new Map({
       container: this.mapContainer.nativeElement,
