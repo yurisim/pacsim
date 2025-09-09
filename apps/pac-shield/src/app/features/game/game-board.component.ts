@@ -456,25 +456,25 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       markerElement.style.textAlign = 'center';
       markerElement.style.cursor = 'pointer';
       markerElement.className = 'mob-marker';
-      
+
       // Create Material icon element using Google Material Icons font
       const iconElement = document.createElement('span');
       iconElement.className = 'material-icons';
       iconElement.textContent = 'home';
-      iconElement.style.fontSize = '24px';
+      iconElement.style.fontSize = '26px';
       iconElement.style.color = 'var(--mat-sys-primary)';
-      
+
       // Create label element
       const labelElement = document.createElement('div');
       labelElement.textContent = mob.name;
-      labelElement.style.fontSize = '12px';
-      labelElement.style.color = 'var(--mat-sys-primary)';
+      labelElement.style.fontSize = '16px';
+      labelElement.style.color = 'var(--mat-sys-outline)';
       labelElement.style.marginTop = '2px';
-      
+
       // Append elements
       markerElement.appendChild(iconElement);
       markerElement.appendChild(labelElement);
-      
+
       // Create and add marker to map
       new Marker({ element: markerElement })
         .setLngLat(mob.coordinates)
