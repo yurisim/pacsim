@@ -17,14 +17,15 @@ body {
 
 // Define both dark and light themes
 $dark-theme: (
-  color-scheme: light dark,
-  color: (
-    primary: mat.$magenta-palette,
-    tertiary: mat.$green-palette,
-    theme-type: dark,
-  ),
+  // color-scheme: dark,
+  color:
+    (
+      primary: mat.$magenta-palette,
+      tertiary: mat.$green-palette,
+      theme-type: dark,
+    ),
   typography: Roboto,
-  density: 0,
+  density: 0
 );
 
 $light-theme: (
