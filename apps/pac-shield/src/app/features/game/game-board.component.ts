@@ -262,8 +262,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'fill',
       source: 'hex-grid',
       paint: {
-        'fill-color': '#000000', // Will be updated by updateHexColors
-        'fill-opacity': 0.2
+        'fill-color': '#000000',
+        'fill-opacity': 0.05
       }
     });
 
@@ -273,14 +273,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'line',
       source: 'hex-grid',
       paint: {
-        'line-color': '#000000', // Will be updated by updateHexColors
+        'line-color': '#000000',
         'line-width': 2,
-        'line-opacity': 0.8
+        'line-opacity': 0.10
       }
     });
 
-    // Set initial colors
-    this.updateHexColors();
 
     // Add hex labels layer using the hex centers for now (we can adjust positioning later)
     this.map.addLayer({
