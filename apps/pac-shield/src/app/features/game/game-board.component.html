@@ -1,7 +1,7 @@
 <div class="game-board-container h-screen w-full relative">
   <!-- Map container always present for ViewChild -->
   <div #mapContainer class="map absolute inset-0 top-16 w-full"></div>
-  
+
   <!-- Loading overlay -->
   @if (isLoading$ | async) {
     <div class="loading-overlay absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-[1000]">
