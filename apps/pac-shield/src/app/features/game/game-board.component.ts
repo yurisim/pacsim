@@ -292,7 +292,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       source: 'hex-grid',
       paint: {
         'fill-color': '#000000',
-        'fill-opacity': 0.05
+        'fill-opacity': 0.025
       }
     });
 
@@ -304,7 +304,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       paint: {
         'line-color': '#000000',
         'line-width': 2,
-        'line-opacity': 0.10
+        'line-opacity': 0.10,
+        'line-dasharray': [2, 2]
       }
     });
 
