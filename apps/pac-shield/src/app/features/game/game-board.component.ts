@@ -67,7 +67,37 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private themeService = inject(ThemeService);
   private map!: Map;
+  private mapReady = false;
+
+  constructor() {
+    // Setup theme change listener in injection context
+    effect(() => {
+      const isDarkMode = this.themeService.isDarkMode();
+      
+      console.log('Theme change detected:', isDarkMode ? 'dark' : 'light', 'mapReady:', this.mapReady);
+      
+      // Only update map style when theme changes and map is ready
+      if (this.mapReady && this.map && this.map.isStyleLoaded()) {
+        const darkStyle = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+        const lightStyle = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+        const newStyle = isDarkMode ? darkStyle : lightStyle;
+        
+        console.log('Updating map style to:', isDarkMode ? 'dark' : 'light');
+        this.map.setStyle(newStyle);
+        
+        // Reapply overlays after style change
+        this.map.once('style.load', () => {
+          this.map.setProjection({ type: 'globe' });
+          setTimeout(() => {
+            this.overlayHexGrid();
+            this.addMobLocations();
+          }, 100);
+        });
+      }
+    });
+  }
 
   game$ = this.store.select(selectGame);
   isLoading$ = this.store.select(selectGameLoading);
@@ -150,6 +180,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
+
   /**
    * Lifecycle Method Intent: Clean up resources when component is destroyed.
    *
@@ -206,7 +237,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Add delay to ensure style is completely ready
       setTimeout(() => {
         this.overlayHexGrid();
+        this.addMobLocations();
       }, 100);
+    });
+
+    // Mark map as ready for theme switching
+    this.map.on('load', () => {
+      this.mapReady = true;
     });
   }
 
