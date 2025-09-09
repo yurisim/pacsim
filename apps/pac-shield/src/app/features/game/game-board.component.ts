@@ -325,10 +325,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Add click handler for hexes
     this.map.on('click', 'hex-grid-fill', (e) => {
       if (e.features && e.features[0]) {
-        const hexId = e.features[0].properties?.['hexId'];
-        const coordLabel = e.features[0].properties?.['coordLabel'];
-        console.log(`Clicked hex: ${hexId}, Coordinate: ${coordLabel}`);
-        this.selectedHexCoordinate = coordLabel;
+        const h3InternalIndex = e.features[0].properties?.['h3InternalIndex'];
+        const visualCoordLabel = e.features[0].properties?.['visualCoordLabel'];
+        console.log(`Clicked hex - H3 Internal: ${h3InternalIndex}, Visual Coordinate: ${visualCoordLabel}`);
+        this.selectedVisualHexCoord = visualCoordLabel;
       }
     });
 
