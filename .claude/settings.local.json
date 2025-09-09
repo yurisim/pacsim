@@ -23,7 +23,8 @@
       "Bash(yarn)",
       "mcp__playwright__browser_click",
       "mcp__wallaby__wallaby_allTestsForFile",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:maplibre.org)"
     ],
     "deny": [],
     "ask": []
