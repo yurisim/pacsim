@@ -70,31 +70,76 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private themeService = inject(ThemeService);
   private map!: Map;
   private mapReady = false;
+  private mobMarkersAdded = false;
+
+  // Keep references to event handlers so we can reliably remove/rebind on style changes
+  private hexClickHandler?: (e: any) => void;
+  private hexMouseEnterHandler?: () => void;
+  private hexMouseLeaveHandler?: () => void;
 
   constructor() {
     // Setup theme change listener in injection context
     effect(() => {
       const isDarkMode = this.themeService.isDarkMode();
 
-      console.log('Theme change detected:', isDarkMode ? 'dark' : 'light', 'mapReady:', this.mapReady);
+      // If map isn't ready yet, do nothing
+      if (!this.mapReady || !this.map) {
+        return;
+      }
 
-      // Only update map style when theme changes and map is ready
-      if (this.mapReady && this.map && this.map.isStyleLoaded()) {
+      try {
         const darkStyle = './styles/dark-matter.json';
         const lightStyle = 'https://demotiles.maplibre.org/globe.json';
         const newStyle = isDarkMode ? darkStyle : lightStyle;
 
-        console.log('Updating map style to:', isDarkMode ? 'dark' : 'light');
-        this.map.setStyle(newStyle);
+        // Log and handle style loading errors
+        this.map.once('error', (e) => {
+          console.error('Map style loading error:', e);
+        });
 
-        // Reapply overlays after style change
+        // Change base style with transformStyle to preserve custom sources and layers
+        this.map.setStyle(newStyle, {
+          transformStyle: (previousStyle: any, nextStyle: any) => {
+            // Preserve our custom sources and layers from previous style
+            const preservedSources = ['hex-grid'];
+            const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
+
+            return {
+              ...nextStyle,
+              sources: {
+                ...nextStyle.sources,
+                // Copy preserved sources from previous style
+                ...preservedSources.reduce((acc, sourceId) => {
+                  if (previousStyle?.sources?.[sourceId]) {
+                    acc[sourceId] = previousStyle.sources[sourceId];
+                  }
+                  return acc;
+                }, {} as any)
+              },
+              layers: [
+                ...nextStyle.layers,
+                // Copy preserved layers from previous style
+                ...preservedLayers.map(layerId =>
+                  previousStyle?.layers?.find((layer: any) => layer.id === layerId)
+                ).filter(Boolean)
+              ]
+            };
+          }
+        });
+
+        // After the new style loads, just update colors and ensure projection
         this.map.once('style.load', () => {
           this.map.setProjection({ type: 'globe' });
-          setTimeout(() => {
-            this.overlayHexGrid();
-            this.addMobLocations();
-          }, 100);
+          // Use requestAnimationFrame to ensure CSS variables are updated after theme change
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.updateHexGridColors();
+            });
+          });
+          this.map.resize();
         });
+      } catch (error) {
+        console.error('Error in theme change logic:', error);
       }
     });
   }
@@ -103,6 +148,68 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedVisualHexCoord: string | null = null;
+
+  /**
+   * Helper method to resolve CSS custom properties to actual color values
+   * MapLibre GL requires actual color values, not CSS variables
+   */
+  private getCSSVariableValue(variableName: string): string {
+    // Try to get from body first (where theme classes are applied), then fall back to root
+    const bodyStyle = getComputedStyle(document.body);
+    const bodyValue = bodyStyle.getPropertyValue(variableName).trim();
+    
+    if (bodyValue) {
+      return bodyValue;
+    }
+    
+    const rootStyle = getComputedStyle(document.documentElement);
+    return rootStyle.getPropertyValue(variableName).trim();
+  }
+
+
+  /**
+   * Update hex grid colors to match current Material Design theme
+   * Called when theme changes to ensure colors stay consistent
+   */
+  private updateHexGridColors(): void {
+    if (!this.map || !this.map.getLayer('hex-grid-fill')) {
+      return;
+    }
+
+    const outlineVariant = this.getCSSVariableValue('--mat-sys-outline-variant') || '#666666';
+    const onSurfaceVariant = this.getCSSVariableValue('--mat-sys-outline') || this.getCSSVariableValue('--mat-sys-on-surface-variant') || '#666666';
+    const primary = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
+    
+    console.log('updateHexGridColors - Theme:', this.themeService.isDarkMode() ? 'dark' : 'light');
+    console.log('updateHexGridColors - CSS Variables:', { outlineVariant, onSurfaceVariant, primary });
+
+    try {
+      // Update hex grid fill colors
+      if (this.map.getLayer('hex-grid-fill')) {
+        this.map.setPaintProperty('hex-grid-fill', 'fill-color', outlineVariant);
+      }
+
+      // Update hex grid outline colors
+      if (this.map.getLayer('hex-grid-outline')) {
+        this.map.setPaintProperty('hex-grid-outline', 'line-color', outlineVariant);
+      }
+
+      // Update hex label colors
+      if (this.map.getLayer('hex-labels')) {
+        this.map.setPaintProperty('hex-labels', 'text-color', onSurfaceVariant);
+      }
+
+      // Update hex selection colors - keep selected hex solid black for visibility
+      if (this.map.getLayer('hex-grid-selected')) {
+        console.log('Updating hex-grid-selected color to primary:', primary);
+        this.map.setPaintProperty('hex-grid-selected', 'line-color', primary);
+        this.map.setPaintProperty('hex-grid-selected', 'line-width', 4);
+        this.map.setPaintProperty('hex-grid-selected', 'line-opacity', 1);
+      }
+    } catch (error) {
+      console.error('Error updating hex grid colors:', error);
+    }
+  }
 
   /**
    * Dictionary Mapping Interface: H3 Internal Indexes ↔ Visual Hex Coordinates
@@ -230,14 +337,20 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Add navigation controls
     this.map.addControl(new NavigationControl(), 'top-right');
 
-    // FIXED: Added delay to ensure style is completely ready
+    // Re-apply overlays whenever the base style loads (initial load and theme changes)
     this.map.on('style.load', () => {
       // Set globe projection after style loads
       this.map.setProjection({ type: 'globe' });
       // Add delay to ensure style is completely ready
       setTimeout(() => {
         this.overlayHexGrid();
-        this.addMobLocations();
+        if (!this.mobMarkersAdded) {
+          this.addMobLocations();
+          this.mobMarkersAdded = true;
+        }
+        this.updateHexGridColors();
+        // Ensure map draws correctly if container layout changed due to theme switch
+        requestAnimationFrame(() => this.map.resize());
       }, 100);
     });
 
@@ -258,6 +371,15 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * and enables translation between internal game logic and user interface display.
    */
   private overlayHexGrid(): void {
+    // Get current theme colors fresh each time
+    const primaryRaw = this.getCSSVariableValue('--mat-sys-primary');
+    const outlineVariantRaw = this.getCSSVariableValue('--mat-sys-outline-variant');
+    const onSurfaceVariantRaw = this.getCSSVariableValue('--mat-sys-on-surface-variant');
+
+    const outlineVariant = outlineVariantRaw || '#666666';
+    // Use outline instead of on-surface-variant for better contrast on labels
+    const onSurfaceVariant = this.getCSSVariableValue('--mat-sys-outline') || onSurfaceVariantRaw || '#666666';
+    const primary = primaryRaw;
     const hexFeatures: any[] = [];
     const hainanLat = 18.2;
     const hainanLng = 109.5;
@@ -327,8 +449,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         type: 'fill',
         source: 'hex-grid',
         paint: {
-          'fill-color': '#000000',
-          'fill-opacity': 0.025
+          'fill-color': outlineVariant,
+          'fill-opacity': 0.05
         }
       });
     }
@@ -340,10 +462,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         type: 'line',
         source: 'hex-grid',
         paint: {
-          'line-color': '#000000',
-          'line-width': 2,
-          'line-opacity': 0.10,
-          'line-dasharray': [2, 2]
+          'line-color': outlineVariant,
+          'line-width': 1.5,
+          'line-opacity': 0.4,
+          'line-dasharray': [3, 3]
         }
       });
     }
@@ -358,12 +480,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           'text-field': ['get', 'visualCoordLabel'],
         },
         paint: {
-          'text-color': '#000000',
-          'text-opacity': 0.4
+          'text-color': onSurfaceVariant,
+          'text-opacity': 0.6
         }
       }, 'hex-grid-outline');
     }
-
 
     // Add hex grid selected layer (check if layer already exists)
     if (!this.map.getLayer('hex-grid-selected')) {
@@ -381,26 +502,40 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
 
+    // Remove previous handlers if they exist (in case of style re-load)
+    if (this.hexClickHandler) {
+      this.map.off('click', 'hex-grid-fill', this.hexClickHandler);
+    }
+    if (this.hexMouseEnterHandler) {
+      this.map.off('mouseenter', 'hex-grid-fill', this.hexMouseEnterHandler);
+    }
+    if (this.hexMouseLeaveHandler) {
+      this.map.off('mouseleave', 'hex-grid-fill', this.hexMouseLeaveHandler);
+    }
+
     // Add click handler for hexes
-    this.map.on('click', 'hex-grid-fill', (e) => {
+    this.hexClickHandler = (e: any) => {
       if (e.features && e.features[0]) {
         const visualCoordLabel = e.features[0].properties?.['visualCoordLabel'];
         this.selectedVisualHexCoord = visualCoordLabel;
         this.map.setFilter('hex-grid-selected', ['==', 'visualCoordLabel', visualCoordLabel]);
       }
-    });
+    };
+    this.map.on('click', 'hex-grid-fill', this.hexClickHandler);
 
     // Change cursor on hover
-    this.map.on('mouseenter', 'hex-grid-fill', () => {
+    this.hexMouseEnterHandler = () => {
       this.map.getCanvas().style.cursor = 'pointer';
-    });
+    };
+    this.map.on('mouseenter', 'hex-grid-fill', this.hexMouseEnterHandler);
 
-    this.map.on('mouseleave', 'hex-grid-fill', () => {
+    this.hexMouseLeaveHandler = () => {
       this.map.getCanvas().style.cursor = '';
-    });
+    };
+    this.map.on('mouseleave', 'hex-grid-fill', this.hexMouseLeaveHandler);
 
-    // Add MOB locations with home icons
-    this.addMobLocations();
+    // MOB locations are HTML markers and persist across style changes, add once in style.load
+    // (no-op here)
   }
 
   /**
@@ -527,7 +662,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       const labelElement = document.createElement('div');
       labelElement.textContent = mob.name;
       labelElement.style.fontSize = '16px';
-      labelElement.style.color = 'var(--mat-sys-outline)';
+      labelElement.style.color = 'var(--mat-sys-primary)';
       labelElement.style.marginTop = '2px';
 
       // Append elements
