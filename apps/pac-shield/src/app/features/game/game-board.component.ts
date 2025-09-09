@@ -238,15 +238,15 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Get the central H3 index
     const centerH3Index = latLngToCell(hainanLat, hainanLng, h3Resolution);
 
-    // Get all hexes in a k-ring around the center
-    const h3Indices = gridDisk(centerH3Index, kRingSize);
+    // Get all hexes in a k-ring around the center (these are internal H3 string identifiers)
+    const h3InternalIndexes = gridDisk(centerH3Index, kRingSize);
 
-    // Create coordinate mapping with Hainan as 505
-    const hexCoordinates = this.generateHexCoordinates(centerH3Index, h3Indices);
+    // Create mapping from H3 internal indexes to visual hex coordinates (505, 506A, etc.)
+    this.h3IndexToVisualCoordDictionary = this.generateVisualHexCoordinates(centerH3Index, h3InternalIndexes);
 
-    h3Indices.forEach((h3Index: string) => {
+    h3InternalIndexes.forEach((h3InternalIndex: string) => {
       // Get the vertices of the hex
-      const boundary = cellToBoundary(h3Index);
+      const boundary = cellToBoundary(h3InternalIndex);
       // H3-js returns [lat, lon], but GeoJSON needs [lon, lat]
       const geoJsonBoundary = boundary.map((coord: number[]) => [coord[1], coord[0]]);
 
@@ -254,16 +254,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       geoJsonBoundary.push(geoJsonBoundary[0]);
 
       // Get the center of the hex for labeling
-      const [centerLat, centerLng] = cellToLatLng(h3Index);
+      const [centerLat, centerLng] = cellToLatLng(h3InternalIndex);
 
-      // Get coordinate label for this hex
-      const coordLabel = hexCoordinates[h3Index] || h3Index;
+      // Get visual coordinate label for this hex (e.g., "505", "506A")
+      const visualCoordLabel = this.h3IndexToVisualCoordDictionary[h3InternalIndex] || h3InternalIndex;
 
       hexFeatures.push({
         type: 'Feature',
         properties: {
-          hexId: h3Index, // Use H3 index as the unique ID
-          coordLabel: coordLabel, // Custom coordinate label
+          h3InternalIndex: h3InternalIndex, // Internal H3 string identifier
+          visualCoordLabel: visualCoordLabel, // Human-readable coordinate (505, 506A, etc.)
           centerLat: centerLat,
           centerLng: centerLng
         },
@@ -313,7 +313,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       type: 'symbol',
       source: 'hex-grid',
       layout: {
-        'text-field': ['get', 'coordLabel'],
+        'text-field': ['get', 'visualCoordLabel'],
       },
       paint: {
         'text-color': '#000000',
