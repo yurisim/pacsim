@@ -1,4 +1,6 @@
-# CLAUDE.md
+# WARP.md
+
+This file provides guidance to WARP (warp.dev) when working with code in this repository.
 
 ## Project Overview
 
@@ -131,17 +133,6 @@ npx nx lint pac-shield-api
 - Node.js/Yarn for package management
 - PostgreSQL for database persistence
 - Environment variables configured in `apps/pac-shield-api/src/prisma/.env`
-
-## Specialized Agent Guidance
-
-When working with specific aspects of this codebase, consider using specialized Claude agents:
-
-- **API Contract Changes**: Use `api-contract-sentinel` for schema/DTO validation
-- **E2E Test Issues**: Use `e2e-reliability-marshal` for Playwright reliability
-- **UI Consistency**: Use `material-tailwind-guardian` for Material 3 compliance
-- **State Management**: Use `ngrx-state-auditor` for NgRx patterns
-- **Security Reviews**: Use `security-hardening-officer` for auth/WebSocket security
-- **Real-time Issues**: Use `websocket-resilience-officer` for connection reliability
 
 ## File Structure Conventions
 
