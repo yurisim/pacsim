@@ -248,11 +248,23 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private setupStyleLoadHandlers(isDarkMode: boolean): void {
     let colorsUpdated = false; // Flag to prevent duplicate updates
 
+    // SECTION IS BRITTLE, TRY TO NOT CHANGE
     // WHY style.load: Fires when new style is completely loaded and applied
     this.map.once('style.load', () => {
       console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
       this.map.setProjection({ type: 'globe' }); // WHY: Theme change can reset projection
-      this.updateHexGridColors(); // WHY: Preserved layers use old theme colors
+
+      // Use HexGridComponent's updateColors method if available
+      if (this.hexGrid) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.hexGrid.updateColors();
+          });
+        });
+      } else {
+        this.updateHexGridColors(); // Fallback to old method
+      }
+
       this.updateMarkerColors();  // WHY: HTML markers need new theme colors (no recreation needed)
       this.map.resize();          // WHY: Container layout may have changed
       colorsUpdated = true;       // Mark colors as updated
@@ -262,10 +274,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.map.once('styledata', () => {
       console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
       if (!colorsUpdated && this.map.getLayer('hex-grid-selected')) {
-        this.updateHexGridColors(); // Only run if style.load didn't already do it
+        if (this.hexGrid) {
+          this.hexGrid.updateColors();
+        } else {
+          this.updateHexGridColors(); // Fallback to old method
+        }
         this.updateMarkerColors();  // Only run if style.load didn't already do it
       }
     });
+
+    // END BRITTLE AREA
   }
 
   /**
