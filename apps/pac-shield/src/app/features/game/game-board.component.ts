@@ -7,12 +7,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { Map, NavigationControl, Marker } from 'maplibre-gl';
+import { Map, Marker } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
-import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
+import { MOB_LOCATIONS, FOS_LOCATIONS } from '../../shared/config/static-locations.config';
 import { ThemeService } from '../../shared/services/theme.service';
 
 // Stub UI components
@@ -71,6 +71,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private map!: Map;
   private mapReady = false;
   private mobMarkersAdded = false;
+  private fosMarkersAdded = false;
 
   // Keep references to event handlers so we can reliably remove/rebind on style changes
   private hexClickHandler?: (e: any) => void;
@@ -348,6 +349,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!this.mobMarkersAdded) {
           this.addMobLocations();
           this.mobMarkersAdded = true;
+        }
+        if (!this.fosMarkersAdded) {
+          this.addFosLocations();
+          this.fosMarkersAdded = true;
         }
         this.updateHexGridColors();
         // Ensure map draws correctly if container layout changed due to theme switch
@@ -640,6 +645,20 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Method Intent: Add FOS locations to the map with camping icons and color coding.
+   *
+   * This method handles:
+   * - Creating custom HTML markers for each FOS location
+   * - Applying color coding based on FOS strategic value (green/yellow/red)
+   * - Using camping icon to distinguish from MOB locations
+   * - Positioning markers at correct geographic coordinates
+   */
+  private addFosLocations(): void {
+    // Directly render FOS symbols with Material Design camping icons
+    this.renderFosSymbols();
+  }
+
+  /**
    * Method Intent: Render MOB location symbols using custom HTML markers with Material Design icons.
    */
   private renderMobSymbols(): void {
@@ -672,6 +691,57 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Create and add marker to map
       new Marker({ element: markerElement })
         .setLngLat(mob.coordinates)
+        .addTo(this.map);
+    });
+  }
+
+  /**
+   * Method Intent: Render FOS location symbols using custom HTML markers with camping icons and color coding.
+   */
+  private renderFosSymbols(): void {
+    // Create custom HTML markers for each FOS location
+    Object.values(FOS_LOCATIONS).forEach(fos => {
+      // Create marker container
+      const markerElement = document.createElement('div');
+      markerElement.style.textAlign = 'center';
+      markerElement.style.cursor = 'pointer';
+      markerElement.className = 'fos-marker';
+
+      // Create Material icon element using Google Material Icons font
+      const iconElement = document.createElement('span');
+      iconElement.className = 'material-icons';
+      iconElement.textContent = 'festival';
+      iconElement.style.fontSize = '26px';
+
+      // Set color based on FOS color property with improved contrast for light/dark modes
+      let iconColor = 'var(--mat-sys-on-surface)'; // Default color
+      switch (fos.color) {
+        case 'green':
+          iconColor = '#4CAF50'; // Uses Material 3 tertiary color (adapts to theme)
+          break;
+        case 'yellow':
+          iconColor = '#FFC107'; // Uses Material 3 secondary color (adapts to theme)
+          break;
+        case 'red':
+          iconColor = '#F44336'; // Uses Material 3 error color (adapts to theme)
+          break;
+      }
+      iconElement.style.color = iconColor;
+
+      // Create label element
+      const labelElement = document.createElement('div');
+      labelElement.textContent = fos.name;
+      labelElement.style.fontSize = '12px';
+      labelElement.style.color = iconColor;
+      labelElement.style.marginTop = '1px';
+
+      // Append elements
+      markerElement.appendChild(iconElement);
+      markerElement.appendChild(labelElement);
+
+      // Create and add marker to map
+      new Marker({ element: markerElement })
+        .setLngLat(fos.coordinates)
         .addTo(this.map);
     });
   }
