@@ -294,7 +294,7 @@ export const FOS_LOCATIONS: Record<string, StaticLocation> = {
     name: 'FOS 14',
     coordinates: [115.0, 4.8],
     h3Index: latLngToCell(4.8, 115.0, H3_RESOLUTION),
-    country: 'Brunei',
+    country: 'Malaysia',
     type: 'FOS',
     color: 'yellow',
   },
