@@ -1,0 +1,157 @@
+<!-- Location Panel Widget -->
+<div class="location-panel md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2">
+  <!-- Header with selected hex info -->
+  <div class="panel-header flex items-center justify-between p-3 pb-2">
+    <div class="flex items-center gap-2">
+      <mat-icon class="md-sys-color-primary">location_on</mat-icon>
+      <div>
+        <div class="md-typescale-title-small">Location</div>
+        <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+          {{ selectedHex || 'No hex selected' }}
+        </div>
+      </div>
+    </div>
+    <button 
+      mat-icon-button 
+      (click)="toggleCollapsed()"
+      [matTooltip]="collapsed ? 'Expand' : 'Collapse'"
+      class="collapse-toggle">
+      <mat-icon>{{ collapsed ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+  </div>
+
+  @if (!collapsed) {
+    <mat-divider></mat-divider>
+    
+    <!-- Tabbed interface for different asset types -->
+    <mat-tab-group class="asset-tabs">
+      <!-- MOB Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span>MOB</span>
+        </ng-template>
+        <div class="tab-content">
+          @if (mobAssets.length > 0) {
+            @for (asset of mobAssets; track asset.id) {
+              <div class="asset-section">
+                <div class="asset-header">
+                  <mat-icon class="md-sys-color-primary">home</mat-icon>
+                  <div>
+                    <div class="md-typescale-label-medium">{{ asset.name }}</div>
+                    <div class="md-typescale-body-small md-sys-color-on-surface-variant">{{ asset.status }}</div>
+                  </div>
+                </div>
+                <div class="action-grid">
+                  @for (action of asset.actions; track action.id) {
+                    <button
+                      mat-raised-button
+                      [color]="action.color"
+                      [disabled]="action.disabled"
+                      [matTooltip]="action.tooltip || action.label"
+                      (click)="onActionClick(action, asset)"
+                      class="action-btn">
+                      <mat-icon>{{ action.icon }}</mat-icon>
+                      <span>{{ action.label }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="empty-state">
+              <mat-icon class="md-sys-color-on-surface-variant">home</mat-icon>
+              <p class="md-typescale-body-small md-sys-color-on-surface-variant">No MOBs on this tile</p>
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- FOS Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span>FOS</span>
+        </ng-template>
+        <div class="tab-content">
+          @if (fosAssets.length > 0) {
+            @for (asset of fosAssets; track asset.id) {
+              <div class="asset-section">
+                <div class="asset-header">
+                  <mat-icon class="md-sys-color-accent">festival</mat-icon>
+                  <div>
+                    <div class="md-typescale-label-medium">{{ asset.name }}</div>
+                    <div class="md-typescale-body-small md-sys-color-on-surface-variant">{{ asset.status }}</div>
+                  </div>
+                </div>
+                <div class="action-grid">
+                  @for (action of asset.actions; track action.id) {
+                    <button
+                      mat-raised-button
+                      [color]="action.color"
+                      [disabled]="action.disabled"
+                      [matTooltip]="action.tooltip || action.label"
+                      (click)="onActionClick(action, asset)"
+                      class="action-btn">
+                      <mat-icon>{{ action.icon }}</mat-icon>
+                      <span>{{ action.label }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="empty-state">
+              <mat-icon class="md-sys-color-on-surface-variant">festival</mat-icon>
+              <p class="md-typescale-body-small md-sys-color-on-surface-variant">No FOSs on this tile</p>
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Planes Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span>PLANES</span>
+        </ng-template>
+        <div class="tab-content">
+          @if (planeAssets.length > 0) {
+            @for (asset of planeAssets; track asset.id) {
+              <div class="asset-section">
+                <div class="asset-header">
+                  <mat-icon class="md-sys-color-tertiary">flight</mat-icon>
+                  <div>
+                    <div class="md-typescale-label-medium">{{ asset.name }}</div>
+                    <div class="md-typescale-body-small md-sys-color-on-surface-variant">{{ asset.status }}</div>
+                  </div>
+                </div>
+                <div class="action-grid">
+                  @for (action of asset.actions; track action.id) {
+                    <button
+                      mat-raised-button
+                      [color]="action.color"
+                      [disabled]="action.disabled"
+                      [matTooltip]="action.tooltip || action.label"
+                      (click)="onActionClick(action, asset)"
+                      class="action-btn">
+                      <mat-icon>{{ action.icon }}</mat-icon>
+                      <span>{{ action.label }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="empty-state">
+              <mat-icon class="md-sys-color-on-surface-variant">flight</mat-icon>
+              <p class="md-typescale-body-small md-sys-color-on-surface-variant">No planes on this tile</p>
+            </div>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  } @else {
+    <!-- Collapsed view - just show summary -->
+    <div class="collapsed-summary p-2 md-typescale-body-small md-sys-color-on-surface-variant text-center">
+      MOB: {{ mobAssets.length }} | FOS: {{ fosAssets.length }} | Planes: {{ planeAssets.length }}
+    </div>
+  }
+</div>
