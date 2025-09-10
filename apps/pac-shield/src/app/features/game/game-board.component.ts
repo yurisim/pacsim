@@ -267,15 +267,15 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Color sets optimized for contrast and accessibility
     const lightModeColors = {
-      green: '#2E7D32',   // Dark green - high contrast on light backgrounds
-      yellow: '#F57F17',  // Dark amber - high contrast on light backgrounds
-      red: '#C62828'      // Dark red - high contrast on light backgrounds
+      green: '#388E3C',  // A slightly less intense, yet clear green
+      yellow: '#FFA000', // A rich amber/gold for excellent contrast on light backgrounds
+      red: '#D32F2F'    // A strong, clear red that is less dark than the original
     };
 
     const darkModeColors = {
-      green: '#66BB6A',   // Light green - high contrast on dark backgrounds
-      yellow: '#FFCA28',  // Light amber - high contrast on dark backgrounds
-      red: '#EF5350'      // Light red - high contrast on dark backgrounds
+      green: '#81C784',  // A lighter, softer green that's clear on dark backgrounds
+      yellow: '#FFD54F', // A pleasant, lighter yellow that stands out well
+      red: '#E57373'    // A softer, less saturated red for better harmony in dark mode
     };
 
     const colorSet = isDarkMode ? darkModeColors : lightModeColors;
