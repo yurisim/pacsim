@@ -77,10 +77,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private mobMarkersAdded = false;
   private fosMarkersAdded = false;
   private hexGridCreated = false;
-
-  // Keep references to markers so we can update their colors on theme changes
-  private fosMarkers: { marker: Marker, fosData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
   private mobMarkers: { marker: Marker, mobData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
+  private fosMarkers: { marker: Marker, fosData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
 
   // Keep references to event handlers so we can reliably remove/rebind on style changes
   private hexClickHandler?: (e: any) => void;
@@ -155,7 +153,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.setupStyleLoadHandlers(isDarkMode);
 
-  // END BRITTLE AREA
+    // END BRITTLE AREA
   }
 
   /**
