@@ -181,6 +181,21 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Create markers once during initial map setup
+   * WHY ONCE: HTML markers persist across style changes, only need creation once
+   */
+  private createMarkersOnce(): void {
+    if (!this.mobMarkersAdded) {
+      this.addMobLocations();
+      this.mobMarkersAdded = true;
+    }
+    if (!this.fosMarkersAdded) {
+      this.addFosLocations();
+      this.fosMarkersAdded = true;
+    }
+  }
+
+  /**
    * Setup event handlers for style loading completion
    * 
    * DUAL HANDLERS WITH COORDINATION: Both events needed, but with flag to prevent double updates.
@@ -194,7 +209,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
       this.map.setProjection({ type: 'globe' }); // WHY: Theme change can reset projection
       this.updateHexGridColors(); // WHY: Preserved layers use old theme colors
-      this.updateMarkerColors();  // WHY: HTML markers need new theme colors
+      this.updateMarkerColors();  // WHY: HTML markers need new theme colors (no recreation needed)
       this.map.resize();          // WHY: Container layout may have changed
       colorsUpdated = true;       // Mark colors as updated
     });
@@ -459,21 +474,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       attributionControl: false
     });
 
-    // Re-apply overlays whenever the base style loads (initial load and theme changes)
+    // Initial setup when map first loads
     this.map.on('style.load', () => {
       // Set globe projection after style loads
       this.map.setProjection({ type: 'globe' });
       // Add delay to ensure style is completely ready
       setTimeout(() => {
         this.overlayHexGrid();
-        if (!this.mobMarkersAdded) {
-          this.addMobLocations();
-          this.mobMarkersAdded = true;
-        }
-        if (!this.fosMarkersAdded) {
-          this.addFosLocations();
-          this.fosMarkersAdded = true;
-        }
+        this.createMarkersOnce(); // Create markers only during initial setup
         this.updateHexGridColors();
         // Ensure map draws correctly if container layout changed due to theme switch
         requestAnimationFrame(() => this.map.resize());
