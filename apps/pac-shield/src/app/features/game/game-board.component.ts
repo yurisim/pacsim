@@ -220,20 +220,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Additional logic for hex selection can be added here
   }
 
-  /**
-   * Create markers once during initial map setup
-   * WHY ONCE: HTML markers persist across style changes, only need creation once
-   */
-  private createMarkersOnce(): void {
-    if (!this.mobMarkersAdded) {
-      this.addMobLocations();
-      this.mobMarkersAdded = true;
-    }
-    if (!this.fosMarkersAdded) {
-      this.addFosLocations();
-      this.fosMarkersAdded = true;
-    }
-  }
 
   /**
    * Setup event handlers for style loading completion
@@ -299,45 +285,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     return rootStyle.getPropertyValue(variableName).trim();
   }
 
-  /**
-   * Helper method to get theme-aware FOS colors with proper contrast ratios.
-   * Returns colors optimized for accessibility in both light and dark themes.
-   *
-   * Colors selected based on Adobe Color accessibility standards:
-   * - Light theme: Darker, more saturated colors for better contrast on light backgrounds
-   * - Dark theme: Brighter, less saturated colors for better contrast on dark backgrounds
-   * - All colors maintain minimum 4.5:1 contrast ratio with their respective backgrounds
-   */
-  private getThemeAwareFosColor(fosColor: string): string {
-    const isDarkMode = this.themeService.isDarkMode();
-
-    // Color sets optimized for contrast and accessibility
-    const lightModeColors = {
-      green: '#388E3C',  // A slightly less intense, yet clear green
-      yellow: '#FFA000', // A rich amber/gold for excellent contrast on light backgrounds
-      red: '#D32F2F'    // A strong, clear red that is less dark than the original
-    };
-
-    const darkModeColors = {
-      green: '#81C784',  // A lighter, softer green that's clear on dark backgrounds
-      yellow: '#FFD54F', // A pleasant, lighter yellow that stands out well
-      red: '#E57373'    // A softer, less saturated red for better harmony in dark mode
-    };
-
-    const colorSet = isDarkMode ? darkModeColors : lightModeColors;
-
-    switch (fosColor) {
-      case 'green':
-        return colorSet.green;
-      case 'yellow':
-        return colorSet.yellow;
-      case 'red':
-        return colorSet.red;
-      default:
-        // Fallback to theme's on-surface color for unknown colors
-        return this.getCSSVariableValue('--mat-sys-on-surface') || (isDarkMode ? '#E0E0E0' : '#1C1C1C');
-    }
-  }
 
 
   /**
@@ -345,19 +292,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * Called when theme changes to ensure HTML marker colors stay consistent
    */
   private updateMarkerColors(): void {
-    // Update FOS marker colors
-    this.fosMarkers.forEach(({ fosData, iconElement, labelElement }) => {
-      const newColor = this.getThemeAwareFosColor(fosData.color);
-      iconElement.style.color = newColor;
-      labelElement.style.color = newColor;
-    });
-
-    // Update MOB marker colors using Material Design primary color
-    const primaryColor = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
-    this.mobMarkers.forEach(({ iconElement, labelElement }) => {
-      iconElement.style.color = primaryColor;
-      labelElement.style.color = primaryColor;
-    });
+    // Delegate to the LocationMarkersComponent if it exists
+    if (this.locationMarkers) {
+      // The component handles theme changes internally via effect()
+      // No need to manually trigger updates
+    }
   }
 
   /**
@@ -489,15 +428,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * - Proper resource disposal for performance optimization
    */
   ngOnDestroy(): void {
-    // Clean up HTML markers
-    this.fosMarkers.forEach(({ marker }) => marker.remove());
-    this.mobMarkers.forEach(({ marker }) => marker.remove());
-    this.fosMarkers = [];
-    this.mobMarkers = [];
-
+    // LocationMarkersComponent handles its own cleanup via ngOnDestroy
+    
     // Reset flags for cleanup
-    this.mobMarkersAdded = false;
-    this.fosMarkersAdded = false;
     this.hexGridCreated = false;
 
     if (this.map) {
@@ -544,7 +477,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Add delay to ensure style is completely ready
       setTimeout(() => {
         this.initializeHexGrid(); // Initialize hex grid using HexGridComponent
-        this.createMarkersOnce(); // Create markers only during initial setup
+        // LocationMarkersComponent will be initialized via Angular's change detection
+        // when the map input is provided in the template
         // Ensure map draws correctly if container layout changed due to theme switch
         requestAnimationFrame(() => this.map.resize());
       }, 100);
@@ -819,136 +753,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     return h3IndexToVisualCoordDictionary;
   }
 
-  /**
-   * Method Intent: Add MOB locations to the map with SVG home icons.
-   *
-   * This method handles:
-   * - Creating GeoJSON data source from MOB_LOCATIONS config
-   * - Adding SVG home icon to map images
-   * - Adding symbol layer with home icon
-   * - Styling icons with proper theming and visibility
-   * - Enabling hover effects for MOB location markers
-   */
-  private addMobLocations(): void {
-    // Directly render MOB symbols with Material Design icons
-    this.renderMobSymbols();
-  }
-
-  /**
-   * Method Intent: Add FOS locations to the map with camping icons and color coding.
-   *
-   * This method handles:
-   * - Creating custom HTML markers for each FOS location
-   * - Applying color coding based on FOS strategic value (green/yellow/red)
-   * - Using camping icon to distinguish from MOB locations
-   * - Positioning markers at correct geographic coordinates
-   */
-  private addFosLocations(): void {
-    // Directly render FOS symbols with Material Design camping icons
-    this.renderFosSymbols();
-  }
-
-  /**
-   * Method Intent: Render MOB location symbols using custom HTML markers with Material Design icons.
-   */
-  private renderMobSymbols(): void {
-    // Clear existing MOB markers if any
-    this.mobMarkers.forEach(({ marker }) => marker.remove());
-    this.mobMarkers = [];
-
-    // Create custom HTML markers for each MOB location
-    Object.values(MOB_LOCATIONS).forEach(mob => {
-      // Create marker container
-      const markerElement = document.createElement('div');
-      markerElement.style.textAlign = 'center';
-      markerElement.style.cursor = 'pointer';
-      markerElement.className = 'mob-marker';
-
-      // Create Material icon element using Google Material Icons font
-      const iconElement = document.createElement('span');
-      iconElement.className = 'material-icons';
-      iconElement.textContent = 'home';
-      iconElement.style.fontSize = '26px';
-      // Use resolved color value instead of CSS variable for immediate application
-      const primaryColor = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
-      iconElement.style.color = primaryColor;
-
-      // Create label element
-      const labelElement = document.createElement('div');
-      labelElement.textContent = mob.name;
-      labelElement.style.fontSize = '16px';
-      labelElement.style.color = primaryColor;
-      labelElement.style.marginTop = '2px';
-
-      // Append elements
-      markerElement.appendChild(iconElement);
-      markerElement.appendChild(labelElement);
-
-      // Create and add marker to map
-      const marker = new Marker({ element: markerElement })
-        .setLngLat(mob.coordinates)
-        .addTo(this.map);
-
-      // Store reference for theme updates
-      this.mobMarkers.push({
-        marker,
-        mobData: mob,
-        iconElement,
-        labelElement
-      });
-    });
-  }
-
-  /**
-   * Method Intent: Render FOS location symbols using custom HTML markers with camping icons and color coding.
-   */
-  private renderFosSymbols(): void {
-    // Clear existing FOS markers if any
-    this.fosMarkers.forEach(({ marker }) => marker.remove());
-    this.fosMarkers = [];
-
-    // Create custom HTML markers for each FOS location
-    Object.values(FOS_LOCATIONS).forEach(fos => {
-      // Create marker container
-      const markerElement = document.createElement('div');
-      markerElement.style.textAlign = 'center';
-      markerElement.style.cursor = 'pointer';
-      markerElement.className = 'fos-marker';
-
-      // Create Material icon element using Google Material Icons font
-      const iconElement = document.createElement('span');
-      iconElement.className = 'material-icons';
-      iconElement.textContent = 'festival';
-      iconElement.style.fontSize = '26px';
-
-      // Set color based on FOS color property with proper light/dark mode contrast
-      const iconColor = this.getThemeAwareFosColor(fos.color!);
-      iconElement.style.color = iconColor;
-
-      // Create label element
-      const labelElement = document.createElement('div');
-      labelElement.textContent = fos.name;
-      labelElement.style.fontSize = '12px';
-      labelElement.style.color = iconColor;
-      labelElement.style.marginTop = '1px';
-
-      // Append elements
-      markerElement.appendChild(iconElement);
-      markerElement.appendChild(labelElement);
-
-      // Create and add marker to map
-      const marker = new Marker({ element: markerElement })
-        .setLngLat(fos.coordinates)
-        .addTo(this.map);
-
-      // Store reference for theme updates
-      this.fosMarkers.push({
-        marker,
-        fosData: fos,
-        iconElement,
-        labelElement
-      });
-    });
-  }
+  // MOB and FOS marker rendering is now handled by LocationMarkersComponent
+  // The component is initialized in the template with the map instance
 
 }
