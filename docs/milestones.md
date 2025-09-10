@@ -75,68 +75,68 @@ _This is where the game comes to life. The goal is to enable players to perform 
 
 1.  **Asset Movement:**
 
-        - [ ] Integrate Angular Material Drag and Drop directives into `GameTokenComponent`.
+         - [ ] Integrate Angular Material Drag and Drop directives into `GameTokenComponent`.
 
-    - [ ] When a token is dropped onto a valid target (a hex or another board area):
-      - [ ] The component dispatches an NgRx action, e.g., `[Asset] Move Request ({ assetId, targetLocation })`.
-    - [ ] **Create `AssetEffects` in NgRx:**
-      - [ ] The effect listens for `Move Request`.
-      - [ ] It calls a `GameLogicService` to validate the move (checking range, political access, etc.).
-      - [ ] If valid, it sends the action to the backend via the `WebSocketService`.
-    - [ ] **Backend Logic:**
-      - [ ] The WebSocket server receives the `[Asset] Move` action.
-      - [ ] It performs final server-side validation.
-      - [ ] It updates the asset's location in the MongoDB database.
-      - [ ] It broadcasts a `[Asset] Move Success ({ assetId, newLocation })` action to the specific game room.
-    - [ ] **Frontend Update:**
-      - [ ] The `WebSocketService` on all clients receives the `Move Success` event and dispatches it to their local NgRx store.
-      - [ ] The reducer updates the state, and the UI reactively moves the token on everyone's screen.
+     - [ ] When a token is dropped onto a valid target (a hex or another board area):
+       - [ ] The component dispatches an NgRx action, e.g., `[Asset] Move Request ({ assetId, targetLocation })`.
+     - [ ] **Create `AssetEffects` in NgRx:**
+       - [ ] The effect listens for `Move Request`.
+       - [ ] It calls a `GameLogicService` to validate the move (checking range, political access, etc.).
+       - [ ] If valid, it sends the action to the backend via the `WebSocketService`.
+     - [ ] **Backend Logic:**
+       - [ ] The WebSocket server receives the `[Asset] Move` action.
+       - [ ] It performs final server-side validation.
+       - [ ] It updates the asset's location in the MongoDB database.
+       - [ ] It broadcasts a `[Asset] Move Success ({ assetId, newLocation })` action to the specific game room.
+     - [ ] **Frontend Update:**
+       - [ ] The `WebSocketService` on all clients receives the `Move Success` event and dispatches it to their local NgRx store.
+       - [ ] The reducer updates the state, and the UI reactively moves the token on everyone's screen.
 
 2.  **Air Tasking Order (ATO) Implementation with Civilization-style Interfaces:**
 
-    - [ ] Create an interactive `AtoTableComponent` using Angular Material Table with enhanced visual design.
-    - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
-    - [ ] **For MOB Players:**
-      - [ ] Add a "New Flight Plan" button that opens a comprehensive `FlightPlannerDialogComponent`.
-      - [ ] Implement mission planner dialog with:
-        - [ ] Aircraft selection with visual representation and status indicators
-        - [ ] Route planning with range validation and fuel calculations
-        - [ ] Mission loadout configuration (weapons, fuel, special equipment)
-        - [ ] Mission parameters (time on station, altitude, ROE)
-        - [ ] Warning system for political clearances and weather advisories
-      - [ ] On submit, dispatch a `[ATO] Create Line Request` action, which is sent to the backend.
-    - [ ] **For CAOC Players:**
-      - [ ] The table should display "Approve PPR" / "Deny PPR" buttons with batch processing capabilities.
-      - [ ] Implement PPR approval queue with status indicators and filtering.
-      - [ ] Add theater status overview showing operational metrics.
-      - [ ] Clicking these buttons dispatches actions (`[ATO] Approve PPR Request`) to the backend.
+     - [ ] Create an interactive `AtoTableComponent` using Angular Material Table with enhanced visual design.
+     - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
+     - [ ] **For MOB Players:**
+       - [ ] Add a "New Flight Plan" button that opens a comprehensive `FlightPlannerDialogComponent`.
+       - [ ] Implement mission planner dialog with:
+         - [ ] Aircraft selection with visual representation and status indicators
+         - [ ] Route planning with range validation and fuel calculations
+         - [ ] Mission loadout configuration (weapons, fuel, special equipment)
+         - [ ] Mission parameters (time on station, altitude, ROE)
+         - [ ] Warning system for political clearances and weather advisories
+       - [ ] On submit, dispatch a `[ATO] Create Line Request` action, which is sent to the backend.
+     - [ ] **For CAOC Players:**
+       - [ ] The table should display "Approve PPR" / "Deny PPR" buttons with batch processing capabilities.
+       - [ ] Implement PPR approval queue with status indicators and filtering.
+       - [ ] Add theater status overview showing operational metrics.
+       - [ ] Clicking these buttons dispatches actions (`[ATO] Approve PPR Request`) to the backend.
 
 3.  **FOS Management:**
 
-    - [ ] **RFI Logic:**
-      - [ ] In the `FosDashboardComponent`, make the RFI slots clickable.
-      - [ ] Clicking an RFI dispatches a `[FOS] Request RFI` action.
-      - [ ] The backend processes this, simulates the dice roll, updates the `RFI_Answers` in the database for that FOS, and broadcasts the result.
-    - [ ] **Task Completion:**
-      - [ ] Implement drag-and-drop functionality to move personnel tokens onto the task slots.
-      - [ ] When a valid set of tokens is dropped on a task, a "Complete Task" button appears.
-      - [ ] Clicking it dispatches a `[FOS] Complete Task Request`, which is validated and broadcasted by the backend.
+     - [ ] **RFI Logic:**
+       - [ ] In the `FosDashboardComponent`, make the RFI slots clickable.
+       - [ ] Clicking an RFI dispatches a `[FOS] Request RFI` action.
+       - [ ] The backend processes this, simulates the dice roll, updates the `RFI_Answers` in the database for that FOS, and broadcasts the result.
+     - [ ] **Task Completion:**
+       - [ ] Implement drag-and-drop functionality to move personnel tokens onto the task slots.
+       - [ ] When a valid set of tokens is dropped on a task, a "Complete Task" button appears.
+       - [ ] Clicking it dispatches a `[FOS] Complete Task Request`, which is validated and broadcasted by the backend.
 
 4.  **CSpOC Gameplay Implementation:**
 
-    - [ ] **Satellite Movement Logic (Backend):** Implement the end-of-turn logic to advance all LEO/MEO satellites one position along their tracks.
-    - [ ] **"Look" Action:**
-      - [ ] Allow CSpOC players to dispatch a `[CSpOC] Satellite Look Request` action.
-      - [ ] Backend logic should determine what is visible based on satellite type, orbit (single hex vs. H3 resolution area), and fidelity (one-pass vs. two-pass identification).
-      - [ ] Broadcast the revealed information to the CSpOC player.
+     - [ ] **Satellite Movement Logic (Backend):** Implement the end-of-turn logic to advance all LEO/MEO satellites one position along their tracks.
+     - [ ] **"Look" Action:**
+       - [ ] Allow CSpOC players to dispatch a `[CSpOC] Satellite Look Request` action.
+       - [ ] Backend logic should determine what is visible based on satellite type, orbit (single hex vs. H3 resolution area), and fidelity (one-pass vs. two-pass identification).
+       - [ ] Broadcast the revealed information to the CSpOC player.
 
 5.  **MEDCOM Gameplay Implementation:**
-    - [ ] **Casualty Generation (Backend):** When a PLA strike on a FOS is successful, the `EndTurnService` must calculate casualties based on personnel present and create new `Patient` documents in the database.
-    - [ ] **MEDEVAC Flights:**
-      - [ ] The `FlightPlannerDialogComponent` must be updated to include a "MEDEVAC" configuration.
-      - [ ] When planning a MEDEVAC, the UI must allow the player to select casualties at a FOS to load onto the aircraft.
-      - [ ] The backend must validate that the MEDCOM player has the required commodity tokens (bandages, IV, etc.) to perform the flight.
-    - [ ] **Patient Triage & Treatment (Backend):** The `EndTurnService` must check hospital status. If the required tasks are complete, it should "cure" patients based on their casualty type and the turn they arrived (e.g., green patients cured in 1 turn).
+     - [ ] **Casualty Generation (Backend):** When a PLA strike on a FOS is successful, the `EndTurnService` must calculate casualties based on personnel present and create new `Patient` documents in the database.
+     - [ ] **MEDEVAC Flights:**
+       - [ ] The `FlightPlannerDialogComponent` must be updated to include a "MEDEVAC" configuration.
+       - [ ] When planning a MEDEVAC, the UI must allow the player to select casualties at a FOS to load onto the aircraft.
+       - [ ] The backend must validate that the MEDCOM player has the required commodity tokens (bandages, IV, etc.) to perform the flight.
+     - [ ] **Patient Triage & Treatment (Backend):** The `EndTurnService` must check hospital status. If the required tasks are complete, it should "cure" patients based on their casualty type and the turn they arrived (e.g., green patients cured in 1 turn).
 
 ---
 
