@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { InputOtpComponent } from '../../shared/components/input-otp/input-otp.component';
 
 export interface GameMasterInfo {
@@ -45,6 +46,7 @@ export interface GameMasterInfo {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     InputOtpComponent,
   ],
   templateUrl: './game-master-setup.component.html',
@@ -58,16 +60,6 @@ export class GameMasterSetupComponent {
 
   get isFormValid(): boolean {
     return this.lastName.trim().length > 0 && this.pin.length === 4;
-  }
-
-  onPinComplete(pin: string): void {
-    this.pin = pin;
-    // Auto-submit if last name is also filled
-    if (this.lastName.trim() && pin.length === 4) {
-      setTimeout(() => {
-        this.onSubmit();
-      }, 300); // Small delay for better UX
-    }
   }
 
   onSubmit(): void {

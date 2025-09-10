@@ -34,8 +34,8 @@
             [integerOnly]="true"
             [(ngModel)]="pin"
             ariaLabel="4-digit PIN for Game Master"
-            (complete)="onPinComplete($event)"
           ></app-input-otp>
+          <!-- (complete)="onPinComplete($event)" -->
         </div>
 
         <button
@@ -44,7 +44,8 @@
           (click)="onSubmit()"
           [disabled]="!isFormValid"
         >
-          Continue
+          <span class="">Continue</span>
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
         </button>
       </div>
     </mat-card-content>
