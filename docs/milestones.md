@@ -1,22 +1,5 @@
 # **Project Roadmap: Digital Operation Pacific Shield**
 
-## **Phase 0: Foundation & Architecture (Sprint 0)**
-
-_This phase is about making key decisions, establishing the technical groundwork, defining data structures, and preparing the development environment before writing any game-specific code._
-
-1.  **Project Initialization & Version Control:**
-
-2.  **Backend Setup (Node.js/NestJS/Prisma/PostgreSQL):**
-
-3.  **Frontend Setup (Angular/NgRx):**
-
-4.  **Initial UI Scaffolding:**
-
----
-
-## **Phase 1: Visualizing the Game State (Read-Only)**
-
-_Focus on creating the static visual elements of the game. At this stage, things don't need to be fully interactive yet. The goal is to render the entire game board and all its pieces based on data from the backend._
 
 1.  **Game Board Rendering:**
 
