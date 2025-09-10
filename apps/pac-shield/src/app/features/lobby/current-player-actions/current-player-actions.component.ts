@@ -14,12 +14,12 @@ import { Player } from '../../../generated';
       <mat-card-content class="md-padding-lg">
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
           <button matButton="filled" color="primary" (click)="editProfile.emit()">
-            <mat-icon fontIcon="edit" class="mr-2" aria-hidden="true"></mat-icon>
+            <mat-icon aria-hidden="true">edit</mat-icon>
             <span class="md-typescale-label-large">Edit Profile</span>
           </button>
           @if (currentPlayer && currentPlayer.teamId) {
           <button matButton="outlined" color="warn" (click)="leaveTeam.emit()">
-            <mat-icon fontIcon="logout" class="mr-2" aria-hidden="true"></mat-icon>
+            <mat-icon aria-hidden="true">logout</mat-icon>
             <span class="md-typescale-label-large">Leave Team</span>
           </button>
           }

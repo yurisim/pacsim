@@ -46,10 +46,8 @@
 
           <button matButton="filled" color="primary" (click)="onContinueGame()">
             <mat-icon
-              fontIcon="arrow_forward"
-              class="mr-2"
               aria-hidden="true"
-            ></mat-icon>
+            >arrow_forward</mat-icon>
             <span class="md-typescale-label-large">Continue Game</span>
           </button>
         </div>
@@ -91,17 +89,15 @@
 
             <mat-icon
               *ngIf="roomValidated && isRoomValid && !isValidatingRoom"
-              fontIcon="check_circle"
-              class="md-sys-color-secondary animate-in fade-in-0 zoom-in-50 duration-400 animate-pulse"
+              class="md-sys-color-secondary"
               aria-hidden="true"
-            ></mat-icon>
+            >check_circle</mat-icon>
 
             <mat-icon
               *ngIf="roomValidated && !isRoomValid && !isValidatingRoom"
-              fontIcon="cancel"
-              class="md-sys-color-error animate-in fade-in-0 zoom-in-50 duration-400 animate-bounce"
+              class="md-sys-color-error"
               aria-hidden="true"
-            ></mat-icon>
+            >cancel</mat-icon>
           </div>
         </div>
 
@@ -120,10 +116,8 @@
             <mat-label>Player Name</mat-label>
             <mat-icon
               matPrefix
-              fontIcon="person"
-              class="mr-2"
               aria-hidden="true"
-            ></mat-icon>
+            >person</mat-icon>
             <input
               matInput
               formControlName="playerName"
@@ -158,10 +152,8 @@
         class=""
       >
         <mat-icon
-          fontIcon="arrow_back"
-          class="mr-2"
           aria-hidden="true"
-        ></mat-icon>
+        >arrow_back</mat-icon>
         <span class="md-typescale-label-large">Back</span>
       </button>
 
@@ -173,16 +165,8 @@
         class=""
       >
         <mat-icon
-          [fontIcon]="
-            isLoading
-              ? 'hourglass_top'
-              : isValidatingRoom
-              ? 'autorenew'
-              : 'login'
-          "
-          class="mr-2"
           aria-hidden="true"
-        ></mat-icon>
+        >{{isLoading ? 'hourglass_top' : isValidatingRoom ? 'autorenew' : 'login'}}</mat-icon>
         <span class="md-typescale-label-large">
           {{
             isLoading
@@ -255,10 +239,8 @@
             class="mt-2 mx-auto"
           >
             <mat-icon
-              fontIcon="check_circle"
-              class="mr-2"
               aria-hidden="true"
-            ></mat-icon>
+            >check_circle</mat-icon>
             Verify PIN
           </button>
         </div>
@@ -294,10 +276,9 @@
             class="mx-auto"
           >
             <mat-icon
-              fontIcon="person_add"
               class=""
               aria-hidden="true"
-            ></mat-icon>
+            >person_add</mat-icon>
             I'm a New Person
           </button>
         </div>
@@ -320,10 +301,8 @@
         class="justify-center"
       >
         <mat-icon
-          fontIcon="arrow_back"
-          class="mr-2"
           aria-hidden="true"
-        ></mat-icon>
+        >arrow_back</mat-icon>
         Back
       </button>
     </mat-card-actions>
@@ -346,10 +325,8 @@
           <mat-label>New Player Name</mat-label>
           <mat-icon
             matPrefix
-            fontIcon="person"
-            class="mr-2"
             aria-hidden="true"
-          ></mat-icon>
+          >person</mat-icon>
           <input matInput formControlName="newPlayerName" />
         </mat-form-field>
 
@@ -361,10 +338,8 @@
             [disabled]="newPersonForm.invalid || isCheckingName"
           >
             <mat-icon
-              fontIcon="search"
-              class="mr-2"
               aria-hidden="true"
-            ></mat-icon>
+            >search</mat-icon>
             Check Name Availability
           </button>
           <mat-progress-spinner
@@ -398,10 +373,8 @@
         class="justify-center"
       >
         <mat-icon
-          fontIcon="arrow_back"
-          class="mr-2"
           aria-hidden="true"
-        ></mat-icon>
+        >arrow_back</mat-icon>
         Back
       </button>
 
@@ -412,10 +385,8 @@
         [disabled]="!isNameAvailable || isLoading"
       >
         <mat-icon
-          fontIcon="person_add"
-          class="mr-2"
           aria-hidden="true"
-        ></mat-icon>
+        >person_add</mat-icon>
         Create New Player
       </button>
     </mat-card-actions>

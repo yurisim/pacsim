@@ -47,9 +47,8 @@ import { Player, Team } from '../../../generated';
         @if (filteredUnassignedPlayers.length === 0) {
         <div class="col-span-full text-center md-padding-xl">
           <mat-icon
-            fontIcon="group_off"
             class="md-typescale-display-small md-sys-color-outline mb-2 opacity-50"
-          ></mat-icon>
+          >group_off</mat-icon>
           <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
             @if (filters.searchTerm || filters.filterRole !== 'ALL') {
               No unassigned players match your filters

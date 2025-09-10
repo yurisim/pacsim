@@ -19,7 +19,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-sm md-sys-bg-surface-container p-2">
       <div class="flex items-center gap-2">
-        <mat-icon [fontIcon]="icon"></mat-icon>
+        <mat-icon>{{icon}}</mat-icon>
         <div class="flex-1">
           <div class="md-typescale-title-medium">{{ label }}</div>
           <div class="md-typescale-body-small md-sys-color-on-surface-variant">
@@ -77,7 +77,7 @@ export class GameTokenComponent {
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <mat-icon fontIcon="leaderboard" class="md-sys-color-primary"></mat-icon>
+          <mat-icon class="md-sys-color-primary">leaderboard</mat-icon>
           <div class="md-typescale-title-medium">Scoreboard</div>
         </div>
         <div class="md-typescale-label-medium md-sys-color-on-surface-variant">
@@ -139,7 +139,7 @@ export class ScoreboardComponent {
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-2">
       <div class="flex items-center gap-2 p-2">
-        <mat-icon fontIcon="assignment"></mat-icon>
+        <mat-icon>assignment</mat-icon>
         <div class="md-typescale-title-medium">Air Tasking Order</div>
       </div>
 
@@ -203,14 +203,14 @@ export class AtoTableComponent {
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-2">
       <div class="flex items-center gap-2 p-2">
-        <mat-icon fontIcon="list_alt"></mat-icon>
+        <mat-icon>list_alt</mat-icon>
         <div class="md-typescale-title-medium">Game Log</div>
       </div>
       <mat-divider></mat-divider>
       <mat-nav-list>
         @for (entry of log; track $index) {
           <a mat-list-item>
-            <mat-icon matListItemIcon fontIcon="chevron_right"></mat-icon>
+            <mat-icon matListItemIcon>chevron_right</mat-icon>
             <div matListItemTitle>{{ entry }}</div>
             <div matListItemLine class="md-sys-color-on-surface-variant">Recent</div>
           </a>
@@ -238,7 +238,7 @@ export class GameLogComponent {
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
       <div class="flex items-center gap-2 mb-2">
-        <mat-icon fontIcon="domain"></mat-icon>
+        <mat-icon>domain</mat-icon>
         <div class="md-typescale-title-medium">MOB Dashboard</div>
       </div>
       <mat-divider></mat-divider>
@@ -293,7 +293,7 @@ export class MobDashboardComponent {}
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
       <div class="flex items-center gap-2 mb-2">
-        <mat-icon fontIcon="flight_takeoff"></mat-icon>
+        <mat-icon>flight_takeoff</mat-icon>
         <div class="md-typescale-title-medium">FOS Dashboard</div>
       </div>
       <mat-divider></mat-divider>
@@ -310,7 +310,7 @@ export class MobDashboardComponent {}
       <div class="mt-3">
         <div class="md-typescale-label-medium mb-1">MOG</div>
         <div class="flex items-center gap-2">
-          <mat-icon fontIcon="local_parking"></mat-icon>
+          <mat-icon>local_parking</mat-icon>
           <div class="md-typescale-body-medium">2 C-17 & 7 Fighters (placeholder)</div>
         </div>
       </div>
@@ -349,7 +349,7 @@ export class FosDashboardComponent {
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
       <div class="flex items-center gap-2 mb-2">
-        <mat-icon fontIcon="radar"></mat-icon>
+        <mat-icon>radar</mat-icon>
         <div class="md-typescale-title-medium">CAOC Dashboard</div>
       </div>
       <mat-divider></mat-divider>
@@ -379,7 +379,7 @@ export class CaocDashboardComponent {}
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
       <div class="flex items-center gap-2 mb-2">
-        <mat-icon fontIcon="satellite_alt"></mat-icon>
+        <mat-icon>satellite_alt</mat-icon>
         <div class="md-typescale-title-medium">CSpOC Board</div>
       </div>
       <mat-divider></mat-divider>
@@ -423,7 +423,7 @@ export class CspocBoardComponent {}
   template: `
     <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
       <div class="flex items-center gap-2 mb-2">
-        <mat-icon fontIcon="medical_services"></mat-icon>
+        <mat-icon>medical_services</mat-icon>
         <div class="md-typescale-title-medium">MEDCOM Dashboard</div>
       </div>
       <mat-divider></mat-divider>

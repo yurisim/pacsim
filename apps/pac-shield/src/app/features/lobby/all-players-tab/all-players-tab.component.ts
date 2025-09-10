@@ -50,9 +50,8 @@ import { Player, Team } from '../../../generated';
         @if (filteredPlayers.length === 0) {
         <div class="text-center md-padding-xl">
           <mat-icon
-            fontIcon="group_off"
-            class="md-typescale-display-small md-sys-color-outline mb-2 opacity-50"
-          ></mat-icon>
+            class="md-sys-color-outline"
+          >group_off</mat-icon>
           <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
             No players match your filters
           </p>

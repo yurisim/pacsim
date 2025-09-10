@@ -37,7 +37,7 @@ import { Player, Team } from '../../../generated';
             [matMenuTriggerFor]="playerMenu"
             [matMenuTriggerData]="{player: player, teams: allTeams}"
           >
-            <mat-icon fontIcon="more_vert"></mat-icon>
+            <mat-icon>more_vert</mat-icon>
           </button>
           }
         </div>
@@ -85,7 +85,7 @@ import { Player, Team } from '../../../generated';
             [matMenuTriggerFor]="playerMenu"
             [matMenuTriggerData]="{player: player, teams: allTeams}"
           >
-            <mat-icon fontIcon="more_vert"></mat-icon>
+            <mat-icon>more_vert</mat-icon>
           </button>
           }
         </div>
@@ -100,25 +100,25 @@ import { Player, Team } from '../../../generated';
         <mat-divider></mat-divider>
 
         <button mat-menu-item (click)="changeRole.emit(player)">
-          <mat-icon fontIcon="person"></mat-icon>
+          <mat-icon>person</mat-icon>
           <span>Change Role</span>
         </button>
 
         <button mat-menu-item (click)="moveToTeam.emit(player)">
-          <mat-icon fontIcon="group"></mat-icon>
+          <mat-icon>group</mat-icon>
           <span>Move to Team</span>
         </button>
 
         @if (player.teamId) {
         <button mat-menu-item (click)="removeFromTeam.emit(player)">
-          <mat-icon fontIcon="logout"></mat-icon>
+          <mat-icon>logout</mat-icon>
           <span>Remove from Team</span>
         </button>
         }
 
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="removeFromGame.emit(player)" class="md-sys-color-error">
-          <mat-icon fontIcon="delete" class="md-sys-color-error"></mat-icon>
+          <mat-icon class="md-sys-color-error">delete</mat-icon>
           <span>Remove from Game</span>
         </button>
       </ng-template>

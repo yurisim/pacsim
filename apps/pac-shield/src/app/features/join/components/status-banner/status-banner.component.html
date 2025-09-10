@@ -9,17 +9,15 @@
 
 <mat-icon
   *ngIf="state === 'valid'"
-  fontIcon="check_circle"
-  class="md-sys-color-secondary animate-in fade-in-0 zoom-in-50 duration-400"
+  class="md-sys-color-secondary"
   aria-hidden="true"
-></mat-icon>
+>check_circle</mat-icon>
 
 <mat-icon
   *ngIf="state === 'invalid'"
-  fontIcon="cancel"
-  class="md-sys-color-error animate-in fade-in-0 zoom-in-50 duration-400"
+  class="md-sys-color-error"
   aria-hidden="true"
-></mat-icon>
+>cancel</mat-icon>
 
 <span *ngIf="state === 'invalid' && asString(message)" class="md-typescale-body-small md-sys-color-error">
   {{ asString(message) }}

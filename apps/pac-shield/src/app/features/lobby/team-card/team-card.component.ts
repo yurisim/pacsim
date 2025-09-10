@@ -36,17 +36,16 @@ export interface RoleGroup {
               class="w-10 h-10 rounded-full flex items-center justify-center text-white"
               [style.background-color]="teamTypeInfo.color"
             >
-              <mat-icon [fontIcon]="teamTypeInfo.icon" class="text-lg"></mat-icon>
+              <mat-icon>{{teamTypeInfo.icon}}</mat-icon>
             </div>
             <div>
               <h4 class="md-typescale-title-medium font-bold m-0">
                 {{ team.name }}
                 @if (team.locked) {
                 <mat-icon
-                  fontIcon="lock"
-                  class="text-sm ml-1 md-sys-color-error"
-                  matTooltip="Team locked"
-                ></mat-icon>
+                                  class="md-sys-color-error"
+                                  matTooltip="Team locked"
+                                >lock</mat-icon>
                 }
               </h4>
               <p class="md-typescale-body-small md-sys-color-on-surface-variant m-0">
@@ -64,14 +63,14 @@ export interface RoleGroup {
               matTooltip="Assign one unassigned player"
               [disabled]="unassignedCount === 0"
             >
-              <mat-icon fontIcon="person_add"></mat-icon>
+              <mat-icon>person_add</mat-icon>
             </button>
             <button
               mat-icon-button
               (click)="toggleLock.emit()"
               [matTooltip]="team.locked ? 'Unlock team' : 'Lock team'"
             >
-              <mat-icon [fontIcon]="team.locked ? 'lock_open' : 'lock'"></mat-icon>
+              <mat-icon>{{team.locked ? 'lock_open' : 'lock'}}</mat-icon>
             </button>
           </div>
           }
@@ -99,16 +98,7 @@ export interface RoleGroup {
           [disabled]="isCurrentPlayerOnTeam || team.locked"
           class="w-full mt-4"
         >
-          <mat-icon
-            [fontIcon]="
-              isCurrentPlayerOnTeam
-                ? 'check_circle'
-                : team.locked
-                ? 'lock'
-                : 'add'
-            "
-            class="mr-2"
-          ></mat-icon>
+          <mat-icon>{{isCurrentPlayerOnTeam ? 'check_circle' : team.locked ? 'lock' : 'add'}}</mat-icon>
           {{
             isCurrentPlayerOnTeam
               ? 'Current Team'

@@ -42,10 +42,8 @@
       aria-label="Join game"
     >
       <mat-icon
-        [fontIcon]="isBusy ? 'hourglass_top' : isRoomPending ? 'autorenew' : 'login'"
-        class="mr-2"
         aria-hidden="true"
-      ></mat-icon>
+      >{{isBusy ? 'hourglass_top' : isRoomPending ? 'autorenew' : 'login'}}</mat-icon>
       <span class="md-typescale-label-large">
         {{ isBusy ? 'Joining...' : isRoomPending ? 'Validating...' : 'Join' }}
       </span>
