@@ -98,7 +98,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Handle theme changes - extracted from constructor for better organization
-   * 
+   *
    * WHY NEEDED: Angular's effect() fires immediately, but map may not be ready yet.
    * This guard prevents errors during component initialization.
    */
@@ -117,7 +117,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Switch map style with complex preservation logic
-   * 
+   *
    * WHY COMPLEX: MapLibre destroys ALL custom layers/sources when switching styles.
    * Simple setStyle() call would make hex grid disappear permanently.
    * The transformStyle approach is the ONLY way to preserve custom layers across style changes.
@@ -145,7 +145,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Preserve custom sources and layers when switching styles
-   * 
+   *
    * WHY NEEDED: MapLibre's transformStyle callback is the ONLY way to preserve custom layers.
    * Without this, hex grid disappears on every theme change.
    * This manually copies hex-grid source and all hex-related layers from old style to new style.
@@ -209,7 +209,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Setup event handlers for style loading completion
-   * 
+   *
    * DUAL HANDLERS WITH COORDINATION: Both events needed, but with flag to prevent double updates.
    * Sometimes only one fires, so we need both for reliability.
    */
