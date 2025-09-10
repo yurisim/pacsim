@@ -78,7 +78,7 @@ _Focus on creating the static visual elements of the game. At this stage, things
       - [x] Implement h3-js hex grid overlay. Each hex must be programmatically identifiable (e.g., `data-hex-id="407"`).
       - [x] Overlay the hex grid on top of the map.
     - [ ] **Implement Civilization-style Layout Components:**
-      - [ ] Create base layout with central map (75% width), right sidebar (25% width), and bottom panel (25% height)
+      - [ ] Create base layout with central map (75% width), right sidebar (25% width), and bottom panel (25% height), these panels should be overlays on top of the map. They need to be able to expand and close and be mobile friendly. 
       - [ ] Implement responsive grid system for dashboard panels
       - [ ] Create collapsible sidebar for mobile/tablet viewports
     - [ ] **Create a `GameTokenComponent`:**
