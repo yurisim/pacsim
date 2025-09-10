@@ -73,6 +73,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private mobMarkersAdded = false;
   private fosMarkersAdded = false;
 
+  // Keep references to markers so we can update their colors on theme changes
+  private fosMarkers: { marker: Marker, fosData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
+  private mobMarkers: { marker: Marker, mobData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
+
   // Keep references to event handlers so we can reliably remove/rebind on style changes
   private hexClickHandler?: (e: any) => void;
   private hexMouseEnterHandler?: () => void;
@@ -298,10 +302,17 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    *
    * This method handles:
    * - Removing MapLibre GL map instance to prevent memory leaks
+   * - Cleaning up HTML markers to prevent memory leaks
    * - Cleaning up event listeners and DOM references
    * - Proper resource disposal for performance optimization
    */
   ngOnDestroy(): void {
+    // Clean up HTML markers
+    this.fosMarkers.forEach(({ marker }) => marker.remove());
+    this.mobMarkers.forEach(({ marker }) => marker.remove());
+    this.fosMarkers = [];
+    this.mobMarkers = [];
+
     if (this.map) {
       this.map.remove();
     }
@@ -662,6 +673,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * Method Intent: Render MOB location symbols using custom HTML markers with Material Design icons.
    */
   private renderMobSymbols(): void {
+    // Clear existing MOB markers if any
+    this.mobMarkers.forEach(({ marker }) => marker.remove());
+    this.mobMarkers = [];
+
     // Create custom HTML markers for each MOB location
     Object.values(MOB_LOCATIONS).forEach(mob => {
       // Create marker container
@@ -689,9 +704,17 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       markerElement.appendChild(labelElement);
 
       // Create and add marker to map
-      new Marker({ element: markerElement })
+      const marker = new Marker({ element: markerElement })
         .setLngLat(mob.coordinates)
         .addTo(this.map);
+
+      // Store reference for theme updates
+      this.mobMarkers.push({
+        marker,
+        mobData: mob,
+        iconElement,
+        labelElement
+      });
     });
   }
 
@@ -699,6 +722,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * Method Intent: Render FOS location symbols using custom HTML markers with camping icons and color coding.
    */
   private renderFosSymbols(): void {
+    // Clear existing FOS markers if any
+    this.fosMarkers.forEach(({ marker }) => marker.remove());
+    this.fosMarkers = [];
+
     // Create custom HTML markers for each FOS location
     Object.values(FOS_LOCATIONS).forEach(fos => {
       // Create marker container
@@ -740,9 +767,17 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       markerElement.appendChild(labelElement);
 
       // Create and add marker to map
-      new Marker({ element: markerElement })
+      const marker = new Marker({ element: markerElement })
         .setLngLat(fos.coordinates)
         .addTo(this.map);
+
+      // Store reference for theme updates
+      this.fosMarkers.push({
+        marker,
+        fosData: fos,
+        iconElement,
+        labelElement
+      });
     });
   }
 
