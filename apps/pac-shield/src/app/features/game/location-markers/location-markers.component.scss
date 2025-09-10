@@ -1,0 +1,150 @@
+/**
+ * Location Markers Component Styles
+ * 
+ * These styles are applied to the marker elements created programmatically.
+ * The styles use CSS class names that are added to the DOM elements in TypeScript.
+ */
+
+// Container for the component (minimal as markers are rendered on the map)
+.location-markers-container {
+  position: relative;
+  pointer-events: none; // Don't interfere with map interactions
+}
+
+// Debug info panel (only shown in development)
+.marker-debug-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: auto;
+  z-index: 1000;
+
+  span {
+    margin: 0 8px;
+    
+    &:first-child {
+      margin-left: 0;
+    }
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+// Marker styles applied via DOM manipulation
+// These are global styles that will be applied to the programmatically created elements
+:global {
+  // MOB Marker styles
+  .mob-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease-in-out;
+    
+    &:hover {
+      transform: scale(1.1);
+      z-index: 100;
+    }
+
+    .mob-marker-label {
+      white-space: nowrap;
+      font-weight: 600;
+      text-shadow: 
+        1px 1px 2px rgba(0, 0, 0, 0.5),
+        -1px -1px 2px rgba(0, 0, 0, 0.5),
+        1px -1px 2px rgba(0, 0, 0, 0.5),
+        -1px 1px 2px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    // Material icon styling
+    .material-icons {
+      filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+      transition: filter 0.2s ease-in-out;
+      
+      &:hover {
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+      }
+    }
+  }
+
+  // FOS Marker styles
+  .fos-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease-in-out;
+    
+    &:hover {
+      transform: scale(1.1);
+      z-index: 100;
+    }
+
+    .fos-marker-label {
+      white-space: nowrap;
+      font-weight: 500;
+      text-shadow: 
+        1px 1px 2px rgba(0, 0, 0, 0.5),
+        -1px -1px 2px rgba(0, 0, 0, 0.5),
+        1px -1px 2px rgba(0, 0, 0, 0.5),
+        -1px 1px 2px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    // Material icon styling
+    .material-icons {
+      filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+      transition: filter 0.2s ease-in-out;
+      
+      &:hover {
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+      }
+    }
+  }
+
+  // Animation for marker appearance
+  @keyframes markerFadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  // Apply animation to all markers
+  .mob-marker,
+  .fos-marker {
+    animation: markerFadeIn 0.3s ease-out;
+  }
+}
+
+// Media query for smaller screens
+@media (max-width: 768px) {
+  :global {
+    .mob-marker-label,
+    .fos-marker-label {
+      font-size: 10px !important;
+    }
+
+    .mob-marker .material-icons,
+    .fos-marker .material-icons {
+      font-size: 20px !important;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .location-markers-container {
+    display: none;
+  }
+}
