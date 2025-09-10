@@ -90,7 +90,7 @@ export class OverviewTabComponent {
   @Input() unassignedCount = 0;
   @Input() teamsMissingCommander = 0;
   @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
-  
+
   @Output() joinTeam = new EventEmitter<Team>();
 
   isCurrentPlayerOnTeam(team: Team, currentPlayer: Player | undefined): boolean {
