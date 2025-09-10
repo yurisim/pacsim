@@ -1,4 +1,1 @@
-// Complex hover states that can't be done inline
-.mat-fieldset-legend:hover {
-  @apply md-sys-bg-surface-variant;
-}
+// Hover states now handled by Tailwind classes in the template
