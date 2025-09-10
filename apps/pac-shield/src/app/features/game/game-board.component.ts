@@ -72,6 +72,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private mapReady = false;
   private mobMarkersAdded = false;
   private fosMarkersAdded = false;
+  private hexGridCreated = false;
 
   // Keep references to markers so we can update their colors on theme changes
   private fosMarkers: { marker: Marker, fosData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
@@ -178,6 +179,17 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         ...preservedLayerObjects
       ]
     };
+  }
+
+  /**
+   * Create hex grid once during initial map setup
+   * WHY ONCE: Hex grid layers are preserved via transformStyle, only need creation once
+   */
+  private createHexGridOnce(): void {
+    if (!this.hexGridCreated) {
+      this.overlayHexGrid();
+      this.hexGridCreated = true;
+    }
   }
 
   /**
@@ -437,6 +449,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.fosMarkers = [];
     this.mobMarkers = [];
 
+    // Reset flags for cleanup
+    this.mobMarkersAdded = false;
+    this.fosMarkersAdded = false;
+    this.hexGridCreated = false;
+
     if (this.map) {
       this.map.remove();
     }
@@ -480,7 +497,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map.setProjection({ type: 'globe' });
       // Add delay to ensure style is completely ready
       setTimeout(() => {
-        this.overlayHexGrid();
+        this.createHexGridOnce(); // Create hex grid only during initial setup
         this.createMarkersOnce(); // Create markers only during initial setup
         this.updateHexGridColors();
         // Ensure map draws correctly if container layout changed due to theme switch
