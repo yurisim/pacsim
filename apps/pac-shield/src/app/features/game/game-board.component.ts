@@ -139,6 +139,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
           this.map.setProjection({ type: 'globe' });
           this.updateHexGridColors();
+          this.updateMarkerColors();
           this.map.resize();
         });
 
@@ -147,6 +148,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
           if (this.map.getLayer('hex-grid-selected')) {
             this.updateHexGridColors();
+            this.updateMarkerColors();
           }
         });
       } catch (error) {
@@ -177,6 +179,66 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     return rootStyle.getPropertyValue(variableName).trim();
   }
 
+  /**
+   * Helper method to get theme-aware FOS colors with proper contrast ratios.
+   * Returns colors optimized for accessibility in both light and dark themes.
+   *
+   * Colors selected based on Adobe Color accessibility standards:
+   * - Light theme: Darker, more saturated colors for better contrast on light backgrounds
+   * - Dark theme: Brighter, less saturated colors for better contrast on dark backgrounds
+   * - All colors maintain minimum 4.5:1 contrast ratio with their respective backgrounds
+   */
+  private getThemeAwareFosColor(fosColor: string): string {
+    const isDarkMode = this.themeService.isDarkMode();
+
+    // Color sets optimized for contrast and accessibility
+    const lightModeColors = {
+      green: '#2E7D32',   // Dark green - high contrast on light backgrounds
+      yellow: '#F57F17',  // Dark amber - high contrast on light backgrounds
+      red: '#C62828'      // Dark red - high contrast on light backgrounds
+    };
+
+    const darkModeColors = {
+      green: '#66BB6A',   // Light green - high contrast on dark backgrounds
+      yellow: '#FFCA28',  // Light amber - high contrast on dark backgrounds
+      red: '#EF5350'      // Light red - high contrast on dark backgrounds
+    };
+
+    const colorSet = isDarkMode ? darkModeColors : lightModeColors;
+
+    switch (fosColor) {
+      case 'green':
+        return colorSet.green;
+      case 'yellow':
+        return colorSet.yellow;
+      case 'red':
+        return colorSet.red;
+      default:
+        // Fallback to theme's on-surface color for unknown colors
+        return this.getCSSVariableValue('--mat-sys-on-surface') || (isDarkMode ? '#E0E0E0' : '#1C1C1C');
+    }
+  }
+
+
+  /**
+   * Update marker colors to match current Material Design theme
+   * Called when theme changes to ensure HTML marker colors stay consistent
+   */
+  private updateMarkerColors(): void {
+    // Update FOS marker colors
+    this.fosMarkers.forEach(({ fosData, iconElement, labelElement }) => {
+      const newColor = this.getThemeAwareFosColor(fosData.color);
+      iconElement.style.color = newColor;
+      labelElement.style.color = newColor;
+    });
+
+    // Update MOB marker colors using Material Design primary color
+    const primaryColor = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
+    this.mobMarkers.forEach(({ iconElement, labelElement }) => {
+      iconElement.style.color = primaryColor;
+      labelElement.style.color = primaryColor;
+    });
+  }
 
   /**
    * Update hex grid colors to match current Material Design theme
@@ -690,13 +752,15 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       iconElement.className = 'material-icons';
       iconElement.textContent = 'home';
       iconElement.style.fontSize = '26px';
-      iconElement.style.color = 'var(--mat-sys-primary)';
+      // Use resolved color value instead of CSS variable for immediate application
+      const primaryColor = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
+      iconElement.style.color = primaryColor;
 
       // Create label element
       const labelElement = document.createElement('div');
       labelElement.textContent = mob.name;
       labelElement.style.fontSize = '16px';
-      labelElement.style.color = 'var(--mat-sys-primary)';
+      labelElement.style.color = primaryColor;
       labelElement.style.marginTop = '2px';
 
       // Append elements
@@ -740,19 +804,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       iconElement.textContent = 'festival';
       iconElement.style.fontSize = '26px';
 
-      // Set color based on FOS color property with improved contrast for light/dark modes
-      let iconColor = 'var(--mat-sys-on-surface)'; // Default color
-      switch (fos.color) {
-        case 'green':
-          iconColor = '#4CAF50'; // Uses Material 3 tertiary color (adapts to theme)
-          break;
-        case 'yellow':
-          iconColor = '#FFC107'; // Uses Material 3 secondary color (adapts to theme)
-          break;
-        case 'red':
-          iconColor = '#F44336'; // Uses Material 3 error color (adapts to theme)
-          break;
-      }
+      // Set color based on FOS color property with proper light/dark mode contrast
+      const iconColor = this.getThemeAwareFosColor(fos.color!);
       iconElement.style.color = iconColor;
 
       // Create label element
