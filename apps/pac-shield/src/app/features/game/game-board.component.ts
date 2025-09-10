@@ -86,74 +86,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Setup theme change listener in injection context
     effect(() => {
       const isDarkMode = this.themeService.isDarkMode();
-
-      // If map isn't ready yet, do nothing
-      if (!this.mapReady || !this.map) {
-        return;
-      }
-
-      try {
-        const darkStyle = './styles/dark-matter.json';
-        const lightStyle = './styles/globe.json';
-        const newStyle = isDarkMode ? darkStyle : lightStyle;
-
-        // Log and handle style loading errors
-        this.map.once('error', (e) => {
-          console.error('Map style loading error:', e);
-        });
-
-        // Change base style with transformStyle to preserve custom sources and layers
-        this.map.setStyle(newStyle, {
-          transformStyle: (previousStyle: any, nextStyle: any) => {
-            // Preserve our custom sources and layers from previous style
-            const preservedSources = ['hex-grid'];
-            const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
-
-            const preservedLayerObjects = preservedLayers.map(layerId =>
-              previousStyle?.layers?.find((layer: any) => layer.id === layerId)
-            ).filter(Boolean);
-
-            return {
-              ...nextStyle,
-              sources: {
-                ...nextStyle.sources,
-                // Copy preserved sources from previous style
-                ...preservedSources.reduce((acc, sourceId) => {
-                  if (previousStyle?.sources?.[sourceId]) {
-                    acc[sourceId] = previousStyle.sources[sourceId];
-                  }
-                  return acc;
-                }, {} as any)
-              },
-              layers: [
-                ...nextStyle.layers,
-                // Copy preserved layers from previous style
-                ...preservedLayerObjects
-              ]
-            };
-          }
-        });
-
-        // After the new style loads, just update colors and ensure projection
-        this.map.once('style.load', () => {
-          console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
-          this.map.setProjection({ type: 'globe' });
-          this.updateHexGridColors();
-          this.updateMarkerColors();
-          this.map.resize();
-        });
-
-        // Alternative approach: Use styledata event which is more reliable
-        this.map.once('styledata', () => {
-          console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
-          if (this.map.getLayer('hex-grid-selected')) {
-            this.updateHexGridColors();
-            this.updateMarkerColors();
-          }
-        });
-      } catch (error) {
-        console.error('Error in theme change logic:', error);
-      }
+      this.handleThemeChange(isDarkMode);
     });
   }
 
@@ -161,6 +94,100 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedVisualHexCoord: string | null = null;
+
+  /**
+   * Handle theme changes - extracted from constructor for better organization
+   */
+  private handleThemeChange(isDarkMode: boolean): void {
+    // If map isn't ready yet, do nothing
+    if (!this.mapReady || !this.map) {
+      return;
+    }
+
+    try {
+      this.switchMapStyle(isDarkMode);
+    } catch (error) {
+      console.error('Error in theme change logic:', error);
+    }
+  }
+
+  /**
+   * Switch map style with complex preservation logic
+   */
+  private switchMapStyle(isDarkMode: boolean): void {
+    const darkStyle = './styles/dark-matter.json';
+    const lightStyle = './styles/globe.json';
+    const newStyle = isDarkMode ? darkStyle : lightStyle;
+
+    // Log and handle style loading errors
+    this.map.once('error', (e) => {
+      console.error('Map style loading error:', e);
+    });
+
+    // Change base style with transformStyle to preserve custom sources and layers
+    this.map.setStyle(newStyle, {
+      transformStyle: (previousStyle: any, nextStyle: any) => {
+        return this.preserveCustomLayers(previousStyle, nextStyle);
+      }
+    });
+
+    this.setupStyleLoadHandlers(isDarkMode);
+  }
+
+  /**
+   * Preserve custom sources and layers when switching styles
+   */
+  private preserveCustomLayers(previousStyle: any, nextStyle: any): any {
+    // Preserve our custom sources and layers from previous style
+    const preservedSources = ['hex-grid'];
+    const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
+
+    const preservedLayerObjects = preservedLayers.map(layerId =>
+      previousStyle?.layers?.find((layer: any) => layer.id === layerId)
+    ).filter(Boolean);
+
+    return {
+      ...nextStyle,
+      sources: {
+        ...nextStyle.sources,
+        // Copy preserved sources from previous style
+        ...preservedSources.reduce((acc, sourceId) => {
+          if (previousStyle?.sources?.[sourceId]) {
+            acc[sourceId] = previousStyle.sources[sourceId];
+          }
+          return acc;
+        }, {} as any)
+      },
+      layers: [
+        ...nextStyle.layers,
+        // Copy preserved layers from previous style
+        ...preservedLayerObjects
+      ]
+    };
+  }
+
+  /**
+   * Setup event handlers for style loading completion
+   */
+  private setupStyleLoadHandlers(isDarkMode: boolean): void {
+    // After the new style loads, just update colors and ensure projection
+    this.map.once('style.load', () => {
+      console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
+      this.map.setProjection({ type: 'globe' });
+      this.updateHexGridColors();
+      this.updateMarkerColors();
+      this.map.resize();
+    });
+
+    // Alternative approach: Use styledata event which is more reliable
+    this.map.once('styledata', () => {
+      console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
+      if (this.map.getLayer('hex-grid-selected')) {
+        this.updateHexGridColors();
+        this.updateMarkerColors();
+      }
+    });
+  }
 
   /**
    * Helper method to resolve CSS custom properties to actual color values
