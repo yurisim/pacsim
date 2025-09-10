@@ -5047,7 +5047,6 @@ __metadata:
     "@types/geojson": "npm:^7946.0.16"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:20.19.9"
-    "@types/socket.io-client": "npm:^3.0.0"
     "@typescript-eslint/utils": "npm:^8.29.0"
     angular-eslint: "npm:20.2.0"
     autoprefixer: "npm:^10.4.0"
@@ -6641,15 +6640,6 @@ __metadata:
     "@types/node": "npm:*"
     "@types/send": "npm:*"
   checksum: 10c0/8ad86a25b87da5276cb1008c43c74667ff7583904d46d5fcaf0355887869d859d453d7dc4f890788ae04705c23720e9b6b6f3215e2d1d2a4278bbd090a9268dd
-  languageName: node
-  linkType: hard
-
-"@types/socket.io-client@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@types/socket.io-client@npm:3.0.0"
-  dependencies:
-    socket.io-client: "npm:*"
-  checksum: 10c0/e9f6eedb5bb4621e73163fa5595eca789bc2e67e47a4bd907dbe8f5a9dcfbea35b1c4c05ede81f07d2b35487663bc41868af51208b979240d7dc5ec8d2ade63a
   languageName: node
   linkType: hard
 
@@ -16691,7 +16681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"socket.io-client@npm:*, socket.io-client@npm:^4.8.1":
+"socket.io-client@npm:^4.8.1":
   version: 4.8.1
   resolution: "socket.io-client@npm:4.8.1"
   dependencies:

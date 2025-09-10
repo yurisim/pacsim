@@ -72,7 +72,6 @@
     "@types/geojson": "^7946.0.16",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
-    "@types/socket.io-client": "^3.0.0",
     "@typescript-eslint/utils": "^8.29.0",
     "angular-eslint": "20.2.0",
     "autoprefixer": "^10.4.0",
