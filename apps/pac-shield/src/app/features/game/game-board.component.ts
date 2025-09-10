@@ -185,11 +185,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const outlineVariant = this.getCSSVariableValue('--mat-sys-outline-variant') || '#666666';
     const onSurfaceVariant = this.getCSSVariableValue('--mat-sys-outline') || this.getCSSVariableValue('--mat-sys-on-surface-variant') || '#666666';
     const primary = this.getCSSVariableValue('--mat-sys-primary') || '#0066CC';
+    const sysSurface = this.getCSSVariableValue('--mat-sys-surface') || '#FFFFFF';
 
     try {
       // Update hex grid fill colors
       if (this.map.getLayer('hex-grid-fill')) {
-        this.map.setPaintProperty('hex-grid-fill', 'fill-color', outlineVariant);
+        this.map.setPaintProperty('hex-grid-fill', 'fill-color', sysSurface);
       }
 
       // Update hex grid outline colors
@@ -375,14 +376,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private overlayHexGrid(): void {
     // Get current theme colors fresh each time
-    const primaryRaw = this.getCSSVariableValue('--mat-sys-primary');
     const outlineVariantRaw = this.getCSSVariableValue('--mat-sys-outline-variant');
     const onSurfaceVariantRaw = this.getCSSVariableValue('--mat-sys-on-surface-variant');
+    const sysSurface = this.getCSSVariableValue('--mat-sys-surface');
 
     const outlineVariant = outlineVariantRaw || '#666666';
     // Use outline instead of on-surface-variant for better contrast on labels
     const onSurfaceVariant = this.getCSSVariableValue('--mat-sys-outline') || onSurfaceVariantRaw || '#666666';
-    const primary = primaryRaw;
     const hexFeatures: any[] = [];
     const hainanLat = 18.2;
     const hainanLng = 109.5;
@@ -452,8 +452,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         type: 'fill',
         source: 'hex-grid',
         paint: {
-          'fill-color': outlineVariant,
-          'fill-opacity': 0.05
+          'fill-color': sysSurface,
+          'fill-opacity': 0.1
         }
       });
     }
@@ -467,7 +467,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         paint: {
           'line-color': outlineVariant,
           'line-width': 1.5,
-          'line-opacity': 0.4,
+          'line-opacity': 0.75,
           'line-dasharray': [3, 3]
         }
       });
