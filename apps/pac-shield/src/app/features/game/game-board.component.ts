@@ -338,9 +338,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       attributionControl: false
     });
 
-    // Add navigation controls
-    this.map.addControl(new NavigationControl(), 'top-right');
-
     // Re-apply overlays whenever the base style loads (initial load and theme changes)
     this.map.on('style.load', () => {
       // Set globe projection after style loads
