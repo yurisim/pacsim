@@ -1,0 +1,43 @@
+<fieldset
+  class="border md-sys-color-outline rounded-md md-sys-bg-surface md-sys-color-on-surface transition-all duration-200 ease-in-out w-full"
+  [class.opacity-60]="disabled"
+  [class.pointer-events-none]="disabled"
+>
+  <legend
+    class="flex items-center gap-2 px-3 py-2 md-sys-bg-surface md-sys-color-on-surface font-medium text-sm border-0 rounded-t-md w-full mat-fieldset-legend"
+    [class.cursor-pointer]="toggleable"
+  >
+    @if (toggleable) {
+    <button
+      type="button"
+      matIconButton
+      class="shrink-0 w-8 h-8"
+      [disabled]="disabled"
+      (click)="onToggle()"
+      [attr.aria-expanded]="!collapsed"
+      [attr.aria-label]="'Toggle ' + legend"
+    >
+      <mat-icon
+        class="md-sys-color-on-surface-variant transition-transform duration-200 ease-in-out hover:md-sys-color-on-surface"
+        >{{ collapsed ? 'expand_more' : 'expand_less' }}</mat-icon
+      >
+    </button>
+    }
+
+    <span class="flex-1 text-left md-sys-color-on-surface font-medium">{{
+      legend
+    }}</span>
+  </legend>
+
+  <div
+    class="p-4 md-sys-bg-surface border-t md-sys-color-outline transition-all duration-200 ease-in-out"
+    [class.max-h-0]="collapsed"
+    [class.max-h-none]="!collapsed"
+    [class.overflow-hidden]="collapsed"
+    [class.overflow-visible]="!collapsed"
+    [class.border-t-0]="collapsed"
+    [attr.aria-hidden]="collapsed"
+  >
+    <ng-content></ng-content>
+  </div>
+</fieldset>
