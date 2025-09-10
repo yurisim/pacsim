@@ -16,6 +16,7 @@ import { ThemeService } from '../../shared/services/theme.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
 import { GameStatsComponent, GameStatsService } from './game-stats';
+import { LocationPanelComponent } from './location-panel';
 
 // Stub UI components
 import {
@@ -26,8 +27,7 @@ import {
   FosDashboardComponent,
   CaocDashboardComponent,
   CspocBoardComponent,
-  MedcomDashboardComponent,
-  GameTokenComponent
+  MedcomDashboardComponent
 } from './stubs/stub-components';
 
 @Component({
@@ -47,10 +47,10 @@ import {
     CaocDashboardComponent,
     CspocBoardComponent,
     MedcomDashboardComponent,
-    GameTokenComponent,
     HexGridComponent,
     LocationMarkersComponent,
-    GameStatsComponent
+    GameStatsComponent,
+    LocationPanelComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
@@ -230,6 +230,95 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedVisualHexCoord = event.visualCoordinate;
     console.log('Hex selected:', event);
     // Additional logic for hex selection can be added here
+  }
+
+  /**
+   * Handle location panel actions
+   */
+  onLocationAction(action: any): void {
+    console.log('Location action:', action);
+    
+    // Handle different location actions
+    switch (action.id) {
+      case 'center-map':
+        // Center map on current location
+        if (this.map) {
+          this.map.flyTo({
+            center: [109.5, 18.2], // Hainan center
+            zoom: 4
+          });
+        }
+        break;
+        
+      case 'zoom-to-region':
+        // Zoom to regional view
+        if (this.map) {
+          this.map.flyTo({
+            center: [120, 15], // Pacific region center
+            zoom: 3
+          });
+        }
+        break;
+        
+      case 'show-mobs':
+        // Toggle MOB markers visibility
+        if (this.locationMarkers) {
+          // This would need to be implemented in LocationMarkersComponent
+          console.log('Toggle MOB visibility');
+        }
+        break;
+        
+      case 'show-fos':
+        // Toggle FOS markers visibility
+        if (this.locationMarkers) {
+          // This would need to be implemented in LocationMarkersComponent
+          console.log('Toggle FOS visibility');
+        }
+        break;
+        
+      case 'toggle-labels':
+        // Toggle location labels
+        console.log('Toggle location labels');
+        break;
+        
+      case 'measure-distance':
+        // Start distance measurement tool
+        console.log('Start measuring distance');
+        break;
+        
+      case 'find-location':
+        // Open location search
+        console.log('Open location search');
+        break;
+        
+      case 'add-marker':
+        // Add custom marker at current position
+        console.log('Add custom marker');
+        break;
+        
+      case 'navigate-route':
+        // Plan route between locations
+        console.log('Plan route');
+        break;
+        
+      case 'location-info':
+        // Show location details
+        console.log('Show location info');
+        break;
+        
+      case 'satellite-view':
+        // Toggle satellite imagery
+        console.log('Toggle satellite view');
+        break;
+        
+      case 'terrain-view':
+        // Show terrain features
+        console.log('Toggle terrain view');
+        break;
+        
+      default:
+        console.warn('Unknown location action:', action.id);
+    }
   }
 
 

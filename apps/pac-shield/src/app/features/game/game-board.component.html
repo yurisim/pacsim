@@ -113,15 +113,12 @@
     </div>
   }
 
-  <!-- Asset palette overlay -->
-  <div class="asset-palette absolute left-2 bottom-2 z-[95] pointer-events-auto">
-    <div class="md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2 p-2">
-      <div class="md-typescale-label-medium mb-2">Assets</div>
-      <div class="flex flex-wrap gap-2 max-w-[520px]">
-        @for (asset of gameAssets(); track asset.id) {
-          <app-game-token [asset]="asset" ></app-game-token>
-        }
-      </div>
-    </div>
+  <!-- Location panel overlay (bottom left corner) -->
+  <div class="location-panel-overlay absolute left-2 bottom-2 z-[95] pointer-events-auto">
+    <app-location-panel 
+      [selectedHex]="selectedVisualHexCoord"
+      (actionClicked)="onLocationAction($event)"
+      [collapsed]="false">
+    </app-location-panel>
   </div>
 </div>
