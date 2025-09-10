@@ -91,10 +91,12 @@ npx nx lint pac-shield-api
 
 ### UI Development Standards
 - **Material Components Only**: Use Angular Material components for all interactive elements
+- **Tailwind-First Styling**: ALWAYS use Tailwind CSS utility classes for styling - never write custom CSS unless absolutely necessary
 - **Token-Based Styling**: Use Material 3 CSS variables as in `styles.scss`, never hardcoded colors/hex values
 - **Button Sizing**: Buttons should size to content, not fill containers
 - **Form Labels**: Always use `<mat-label>` instead of placeholders for accessibility
 - **Theme Support**: Ensure components work in both light and dark themes
+- **Responsive Design**: Use Tailwind responsive prefixes (sm:, md:, lg:, xl:) for all layouts
 
 #### Angular Material 20 Button Syntax
 Use the correct Material 20 button directives:
