@@ -12,9 +12,9 @@ import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; // Still needed for old overlayHexGrid method
-import { MOB_LOCATIONS, FOS_LOCATIONS } from '../../shared/config/static-locations.config';
 import { ThemeService } from '../../shared/services/theme.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
+import { LocationMarkersComponent } from './location-markers/location-markers.component';
 
 // Stub UI components
 import {
@@ -47,7 +47,8 @@ import {
     CspocBoardComponent,
     MedcomDashboardComponent,
     GameTokenComponent,
-    HexGridComponent
+    HexGridComponent,
+    LocationMarkersComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
@@ -67,18 +68,15 @@ import {
 export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
   @ViewChild(HexGridComponent) hexGrid!: HexGridComponent;
+  @ViewChild(LocationMarkersComponent) locationMarkers!: LocationMarkersComponent;
 
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private themeService = inject(ThemeService);
-  private map!: Map;
+  map!: Map;  // Made public for template access
   private mapReady = false;
-  private mobMarkersAdded = false;
-  private fosMarkersAdded = false;
   private hexGridCreated = false;
-  private mobMarkers: { marker: Marker, mobData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
-  private fosMarkers: { marker: Marker, fosData: any, iconElement: HTMLElement, labelElement: HTMLElement }[] = [];
 
   // Keep references to event handlers so we can reliably remove/rebind on style changes
   private hexClickHandler?: (e: any) => void;
