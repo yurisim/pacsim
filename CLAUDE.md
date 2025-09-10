@@ -97,6 +97,7 @@ npx nx lint pac-shield-api
 - **Form Labels**: Always use `<mat-label>` instead of placeholders for accessibility
 - **Theme Support**: Ensure components work in both light and dark themes
 - **Responsive Design**: Use Tailwind responsive prefixes (sm:, md:, lg:, xl:) for all layouts
+- **Control Flow**: Use new Angular control flow syntax (`@if`, `@for`, `@switch`) instead of structural directives (`*ngIf`, `*ngFor`, `*ngSwitch`)
 
 #### Angular Material 20 Button Syntax
 Use the correct Material 20 button directives:
