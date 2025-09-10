@@ -183,11 +183,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Setup event handlers for style loading completion
    * 
-   * WHY DUAL HANDLERS: MapLibre style loading is unreliable - sometimes style.load fires,
-   * sometimes styledata fires, sometimes both. This ensures colors get updated regardless.
-   * THIS IS THE BUGGY PART - dual handlers cause redundant updates and timing issues.
+   * DUAL HANDLERS WITH COORDINATION: Both events needed, but with flag to prevent double updates.
+   * Sometimes only one fires, so we need both for reliability.
    */
   private setupStyleLoadHandlers(isDarkMode: boolean): void {
+    let colorsUpdated = false; // Flag to prevent duplicate updates
+
     // WHY style.load: Fires when new style is completely loaded and applied
     this.map.once('style.load', () => {
       console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
@@ -195,15 +196,15 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateHexGridColors(); // WHY: Preserved layers use old theme colors
       this.updateMarkerColors();  // WHY: HTML markers need new theme colors
       this.map.resize();          // WHY: Container layout may have changed
+      colorsUpdated = true;       // Mark colors as updated
     });
 
-    // WHY styledata: Alternative event that sometimes fires when style.load doesn't
-    // THIS CREATES RACE CONDITIONS AND DOUBLE UPDATES (the buggy behavior)
+    // WHY styledata: Backup handler in case style.load doesn't fire properly
     this.map.once('styledata', () => {
       console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
-      if (this.map.getLayer('hex-grid-selected')) { // WHY: Guard against layers not existing yet
-        this.updateHexGridColors(); // PROBLEM: This runs twice if style.load also fired
-        this.updateMarkerColors();  // PROBLEM: This runs twice if style.load also fired
+      if (!colorsUpdated && this.map.getLayer('hex-grid-selected')) {
+        this.updateHexGridColors(); // Only run if style.load didn't already do it
+        this.updateMarkerColors();  // Only run if style.load didn't already do it
       }
     });
   }
