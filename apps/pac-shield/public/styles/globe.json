@@ -351,9 +351,9 @@
         "text-font": ["Open Sans Semibold"],
         "text-size": {
           "stops": [
-            [2, 10],
-            [4, 12],
-            [6, 16]
+            [2, 12],
+            [4, 14],
+            [6, 18]
           ]
         },
         "text-field": {
