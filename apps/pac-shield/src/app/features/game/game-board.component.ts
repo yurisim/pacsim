@@ -11,9 +11,10 @@ import { Map, Marker } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
-import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from "h3-js";
+import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; // Still needed for old overlayHexGrid method
 import { MOB_LOCATIONS, FOS_LOCATIONS } from '../../shared/config/static-locations.config';
 import { ThemeService } from '../../shared/services/theme.service';
+import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
 
 // Stub UI components
 import {
@@ -45,7 +46,8 @@ import {
     CaocDashboardComponent,
     CspocBoardComponent,
     MedcomDashboardComponent,
-    GameTokenComponent
+    GameTokenComponent,
+    HexGridComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
@@ -64,6 +66,8 @@ import {
  */
 export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild(HexGridComponent) hexGrid!: HexGridComponent;
+
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -95,6 +99,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedVisualHexCoord: string | null = null;
+
+  // Hex grid configuration
+  hexGridConfig = {
+    centerLat: 18.2,  // Hainan Island
+    centerLng: 109.5,
+    h3Resolution: 1,
+    kRingSize: 7
+  };
 
   /**
    * Handle theme changes - extracted from constructor for better organization
