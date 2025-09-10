@@ -14,6 +14,9 @@
     [showFosMarkers]="true"
   ></app-location-markers>
 
+  <!-- Game Stats Component (manages game statistics and demo data) -->
+  <app-game-stats [loadDemoData]="true"></app-game-stats>
+
   <!-- Loading overlay -->
   @if (isLoading$ | async) {
     <div class="loading-overlay absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-[1000]">
@@ -57,13 +60,13 @@
         <mat-tab label="Score">
           <div class="p-3">
             <app-scoreboard
-              [missionPoints]="missionPoints"
-              [demoralizationPoints]="demoralizationPoints"
-              [resourcePoints]="resourcePoints"
-              [victoryTarget]="victoryTarget"
-              [gameTurn]="gameTurn"
-              [gameDay]="gameDay"
-              [gamePhase]="gamePhase"
+              [missionPoints]="gameStats().missionPoints"
+              [demoralizationPoints]="gameStats().demoralizationPoints"
+              [resourcePoints]="gameStats().resourcePoints"
+              [victoryTarget]="gameStats().victoryTarget"
+              [gameTurn]="gameStats().gameTurn"
+              [gameDay]="gameStats().gameDay"
+              [gamePhase]="gameStats().gamePhase"
             ></app-scoreboard>
           </div>
         </mat-tab>
@@ -72,7 +75,7 @@
           <div class="p-3">
             <app-caoc-dashboard ></app-caoc-dashboard>
             <div class="mt-3">
-              <app-ato-table [lines]="demoAtoLines" ></app-ato-table>
+              <app-ato-table [lines]="atoLines()" ></app-ato-table>
             </div>
           </div>
         </mat-tab>
@@ -103,7 +106,7 @@
 
         <mat-tab label="Log">
           <div class="p-3">
-            <app-game-log [log]="demoLog" ></app-game-log>
+            <app-game-log [log]="gameStatsService.getFormattedLog()" ></app-game-log>
           </div>
         </mat-tab>
       </mat-tab-group>
@@ -115,7 +118,7 @@
     <div class="md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2 p-2">
       <div class="md-typescale-label-medium mb-2">Assets</div>
       <div class="flex flex-wrap gap-2 max-w-[520px]">
-        @for (asset of demoAssets; track asset.id) {
+        @for (asset of gameAssets(); track asset.id) {
           <app-game-token [asset]="asset" ></app-game-token>
         }
       </div>
