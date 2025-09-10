@@ -15,6 +15,7 @@ import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; //
 import { ThemeService } from '../../shared/services/theme.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
+import { GameStatsComponent, GameStatsService } from './game-stats';
 
 // Stub UI components
 import {
@@ -48,7 +49,8 @@ import {
     MedcomDashboardComponent,
     GameTokenComponent,
     HexGridComponent,
-    LocationMarkersComponent
+    LocationMarkersComponent,
+    GameStatsComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
@@ -69,11 +71,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
   @ViewChild(HexGridComponent) hexGrid!: HexGridComponent;
   @ViewChild(LocationMarkersComponent) locationMarkers!: LocationMarkersComponent;
+  @ViewChild(GameStatsComponent) gameStatsComponent!: GameStatsComponent;
 
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private themeService = inject(ThemeService);
+  gameStatsService = inject(GameStatsService);  // Made public for template access
   map!: Map;  // Made public for template access
   private mapReady = false;
   private hexGridCreated = false;
@@ -95,6 +99,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedVisualHexCoord: string | null = null;
+
+  // Game statistics from service (reactive signals)
+  gameStats = this.gameStatsService.gameStats;
+  atoLines = this.gameStatsService.atoLines;
+  gameAssets = this.gameStatsService.gameAssets;
+  gameLog = this.gameStatsService.gameLog;
+  totalScore = this.gameStatsService.totalScore;
+  currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   // Hex grid configuration
   hexGridConfig = {
@@ -357,32 +369,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private h3IndexToVisualCoordDictionary: Record<string, string> = {};
 
-  // ----- Stub demo data for UI panels (visual-only, no logic yet) -----
-  missionPoints = 12;
-  demoralizationPoints = 3;
-  resourcePoints = 2;
-  victoryTarget = 100;
-  gameTurn = 1;
-  gameDay = 1;
-  gamePhase: 'CRISIS' | 'CONFLICT' = 'CRISIS';
-
-  demoAtoLines = [
-    { callSign: 'KAD-01', type: 'C-17', origin: 'Kadena', destination: 'FOS 7', intent: 'Cargo', pprStatus: 'Pending' },
-    { callSign: 'AND-22', type: 'F-22', origin: 'Andersen', destination: 'Hex 407', intent: 'CAP', pprStatus: 'Approved' }
-  ];
-
-  demoLog: string[] = [
-    'Game created and players joined',
-    'Base access update: Philippines → Overflight Only',
-    'ATO line KAD-01 submitted'
-  ];
-
-  demoAssets = [
-    { id: 'a1', type: 'F-22', strength: 20, location: 'Andersen', status: 'Operational' },
-    { id: 'a2', type: 'C-17', range: 4, location: 'Kadena', status: 'Landed' },
-    { id: 'a3', type: 'Personnel - Refueling', location: 'FOS 7', status: 'On Task' },
-    { id: 'a4', type: 'PLA Threat 12', strength: 12, location: 'Hex 407', status: 'Detected' },
-  ];
+  // Demo data is now managed by GameStatsService
 
   /**
    * Lifecycle Method Intent: Initialize component and load game data on component creation.
