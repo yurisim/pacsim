@@ -10,18 +10,24 @@
         <span class="hidden sm:inline">{{ title }}</span>
         <span class="sm:hidden">OPS</span>
       </h1>
-      @if (showGameBreadcrumb && currentGameId) {
-      <div class="flex items-center gap-1 md-sys-color-on-surface-variant">
-        <mat-icon fontIcon="chevron_right" class=""></mat-icon>
+      @if (currentGameId) {
+      <div class="flex items-center gap-2 ml-4">
         <button
-          matButton
+          matButton="tonal"
+          color="primary"
           (click)="navigateToLobby()"
-          class="text-sm font-normal"
+          class="text-sm"
         >
           Lobby
         </button>
-        <mat-icon fontIcon="chevron_right" class=""></mat-icon>
-        <span class="text-sm">Map</span>
+        <button
+          matButton="tonal"
+          color="primary"
+          (click)="navigateToMap()"
+          class="text-sm"
+        >
+          Map
+        </button>
       </div>
       }
     </div>

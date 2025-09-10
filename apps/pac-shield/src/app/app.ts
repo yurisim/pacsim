@@ -1,7 +1,7 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule, NavigationEnd, ActivatedRoute } from '@angular/router';
-import { filter, map } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { WebSocketService } from './shared/services/websocket.service';
 import { AuthService } from './shared/services/auth.service';
 import { ThemeService } from './shared/services/theme.service';
@@ -37,41 +37,44 @@ export class App implements OnInit {
   protected route = inject(ActivatedRoute);
   protected themeService = inject(ThemeService);
 
-  // Breadcrumb navigation state
+  // Navigation state
   protected currentGameId: string | null = null;
-  protected showGameBreadcrumb = false;
 
   ngOnInit(): void {
     this.ws.connect('lobby');
-    
-    // Listen for route changes to update breadcrumb
+
+    // Listen for route changes to update navigation
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.updateBreadcrumb();
+      this.updateNavigation();
     });
-    
-    // Initial breadcrumb update
-    this.updateBreadcrumb();
+
+    // Initial navigation update
+    this.updateNavigation();
   }
 
-  private updateBreadcrumb(): void {
+  private updateNavigation(): void {
     const url = this.router.url;
-    
+
     // Extract gameId from current route
-    const gameMatch = url.match(/\/(?:lobby|game)\/([^\/]+)/);
+    const gameMatch = url.match(/\/(?:lobby|game)\/([^\\/]+)/);
     if (gameMatch) {
       this.currentGameId = gameMatch[1];
-      this.showGameBreadcrumb = url.includes('/game/');
     } else {
       this.currentGameId = null;
-      this.showGameBreadcrumb = false;
     }
   }
 
   protected navigateToLobby(): void {
     if (this.currentGameId) {
       this.router.navigate(['/lobby', this.currentGameId]);
+    }
+  }
+
+  protected navigateToMap(): void {
+    if (this.currentGameId) {
+      this.router.navigate(['/game', this.currentGameId]);
     }
   }
 
