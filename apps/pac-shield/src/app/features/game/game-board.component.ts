@@ -202,14 +202,26 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Create hex grid once during initial map setup
-   * WHY ONCE: Hex grid layers are preserved via transformStyle, only need creation once
+   * Initialize hex grid using the HexGridComponent
    */
-  private createHexGridOnce(): void {
-    if (!this.hexGridCreated) {
-      this.overlayHexGrid();
-      this.hexGridCreated = true;
+  private initializeHexGrid(): void {
+    if (this.hexGrid && this.map) {
+      this.hexGrid.map = this.map;
+      this.hexGrid.centerLat = this.hexGridConfig.centerLat;
+      this.hexGrid.centerLng = this.hexGridConfig.centerLng;
+      this.hexGrid.h3Resolution = this.hexGridConfig.h3Resolution;
+      this.hexGrid.kRingSize = this.hexGridConfig.kRingSize;
+      this.hexGrid.initializeHexGrid();
     }
+  }
+
+  /**
+   * Handle hex selection events from HexGridComponent
+   */
+  onHexSelected(event: HexSelectionEvent): void {
+    this.selectedVisualHexCoord = event.visualCoordinate;
+    console.log('Hex selected:', event);
+    // Additional logic for hex selection can be added here
   }
 
   /**
@@ -517,9 +529,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map.setProjection({ type: 'globe' });
       // Add delay to ensure style is completely ready
       setTimeout(() => {
-        this.createHexGridOnce(); // Create hex grid only during initial setup
+        this.initializeHexGrid(); // Initialize hex grid using HexGridComponent
         this.createMarkersOnce(); // Create markers only during initial setup
-        this.updateHexGridColors();
         // Ensure map draws correctly if container layout changed due to theme switch
         requestAnimationFrame(() => this.map.resize());
       }, 100);
