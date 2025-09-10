@@ -97,6 +97,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Handle theme changes - extracted from constructor for better organization
+   * 
+   * WHY NEEDED: Angular's effect() fires immediately, but map may not be ready yet.
+   * This guard prevents errors during component initialization.
    */
   private handleThemeChange(isDarkMode: boolean): void {
     // If map isn't ready yet, do nothing
@@ -113,18 +116,23 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Switch map style with complex preservation logic
+   * 
+   * WHY COMPLEX: MapLibre destroys ALL custom layers/sources when switching styles.
+   * Simple setStyle() call would make hex grid disappear permanently.
+   * The transformStyle approach is the ONLY way to preserve custom layers across style changes.
    */
   private switchMapStyle(isDarkMode: boolean): void {
     const darkStyle = './styles/dark-matter.json';
     const lightStyle = './styles/globe.json';
     const newStyle = isDarkMode ? darkStyle : lightStyle;
 
-    // Log and handle style loading errors
+    // WHY NEEDED: Style loading can fail, need to catch and log errors
     this.map.once('error', (e) => {
       console.error('Map style loading error:', e);
     });
 
-    // Change base style with transformStyle to preserve custom sources and layers
+    // WHY TRANSFORM STYLE: Without this, hex grid gets destroyed on theme change
+    // This is the ONLY way to preserve custom sources/layers in MapLibre
     this.map.setStyle(newStyle, {
       transformStyle: (previousStyle: any, nextStyle: any) => {
         return this.preserveCustomLayers(previousStyle, nextStyle);
@@ -136,21 +144,27 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Preserve custom sources and layers when switching styles
+   * 
+   * WHY NEEDED: MapLibre's transformStyle callback is the ONLY way to preserve custom layers.
+   * Without this, hex grid disappears on every theme change.
+   * This manually copies hex-grid source and all hex-related layers from old style to new style.
    */
   private preserveCustomLayers(previousStyle: any, nextStyle: any): any {
-    // Preserve our custom sources and layers from previous style
+    // WHY THESE SPECIFIC IDs: These are the exact source/layer IDs created in overlayHexGrid()
     const preservedSources = ['hex-grid'];
     const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
 
+    // WHY FILTER: Find actual layer objects from previous style, ignore missing ones
     const preservedLayerObjects = preservedLayers.map(layerId =>
       previousStyle?.layers?.find((layer: any) => layer.id === layerId)
     ).filter(Boolean);
 
+    // WHY SPREAD SYNTAX: Merge new base style with preserved custom elements
     return {
       ...nextStyle,
       sources: {
         ...nextStyle.sources,
-        // Copy preserved sources from previous style
+        // WHY REDUCE: Copy each preserved source if it exists in previous style
         ...preservedSources.reduce((acc, sourceId) => {
           if (previousStyle?.sources?.[sourceId]) {
             acc[sourceId] = previousStyle.sources[sourceId];
@@ -160,7 +174,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       layers: [
         ...nextStyle.layers,
-        // Copy preserved layers from previous style
+        // WHY APPEND: Add preserved layers on top of new style's layers
         ...preservedLayerObjects
       ]
     };
@@ -168,23 +182,28 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Setup event handlers for style loading completion
+   * 
+   * WHY DUAL HANDLERS: MapLibre style loading is unreliable - sometimes style.load fires,
+   * sometimes styledata fires, sometimes both. This ensures colors get updated regardless.
+   * THIS IS THE BUGGY PART - dual handlers cause redundant updates and timing issues.
    */
   private setupStyleLoadHandlers(isDarkMode: boolean): void {
-    // After the new style loads, just update colors and ensure projection
+    // WHY style.load: Fires when new style is completely loaded and applied
     this.map.once('style.load', () => {
       console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
-      this.map.setProjection({ type: 'globe' });
-      this.updateHexGridColors();
-      this.updateMarkerColors();
-      this.map.resize();
+      this.map.setProjection({ type: 'globe' }); // WHY: Theme change can reset projection
+      this.updateHexGridColors(); // WHY: Preserved layers use old theme colors
+      this.updateMarkerColors();  // WHY: HTML markers need new theme colors
+      this.map.resize();          // WHY: Container layout may have changed
     });
 
-    // Alternative approach: Use styledata event which is more reliable
+    // WHY styledata: Alternative event that sometimes fires when style.load doesn't
+    // THIS CREATES RACE CONDITIONS AND DOUBLE UPDATES (the buggy behavior)
     this.map.once('styledata', () => {
       console.log('✅ styledata fired for', isDarkMode ? 'dark' : 'light');
-      if (this.map.getLayer('hex-grid-selected')) {
-        this.updateHexGridColors();
-        this.updateMarkerColors();
+      if (this.map.getLayer('hex-grid-selected')) { // WHY: Guard against layers not existing yet
+        this.updateHexGridColors(); // PROBLEM: This runs twice if style.load also fired
+        this.updateMarkerColors();  // PROBLEM: This runs twice if style.load also fired
       }
     });
   }
