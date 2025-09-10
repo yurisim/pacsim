@@ -127,6 +127,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const lightStyle = './styles/globe.json';
     const newStyle = isDarkMode ? darkStyle : lightStyle;
 
+    // THIS AREA IS VERY BRITTLE, TRY NOT TO EDIT
     // WHY NEEDED: Style loading can fail, need to catch and log errors
     this.map.once('error', (e) => {
       console.error('Map style loading error:', e);
@@ -141,6 +142,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.setupStyleLoadHandlers(isDarkMode);
+
+  // END BRITTLE AREA
   }
 
   /**
@@ -151,6 +154,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * This manually copies hex-grid source and all hex-related layers from old style to new style.
    */
   private preserveCustomLayers(previousStyle: any, nextStyle: any): any {
+
+    // THIS AREA IS VERY BRITTLE, TRY NOT TO EDIT
+
     // WHY THESE SPECIFIC IDs: These are the exact source/layer IDs created in overlayHexGrid()
     const preservedSources = ['hex-grid'];
     const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
@@ -179,6 +185,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         ...preservedLayerObjects
       ]
     };
+
+    // END BRITTLE AREA
   }
 
   /**
