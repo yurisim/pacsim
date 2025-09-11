@@ -21,7 +21,7 @@ test.describe('Player Settings in Lobby', () => {
     await page.goto('/');
 
     // Wait for WebSocket connection to be established
-    await expect(page.locator('mat-icon[fontIcon="wifi"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
     await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Start New Game' }).click();

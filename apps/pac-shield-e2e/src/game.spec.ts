@@ -19,7 +19,7 @@ test('should create a new game and navigate to the game board', async ({
   await page.goto('/');
 
   // Wait for WebSocket connection to be established
-  await expect(page.locator('mat-icon[fontIcon="wifi"]')).toBeVisible();
+  await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
   await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
 
   // Click the "Start New Game" button.

@@ -40,7 +40,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       // Fill room code with enhanced validation waiting
       await fillRoomCodeOtp(page, gameData.roomCode);
-      await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible({ timeout: 10000 });
 
       // Enter conflicting name
       const playerNameInput = await getElementReliably(page, [
@@ -140,7 +140,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
     await expect(page.locator('mat-progress-spinner')).toBeVisible({ timeout: 5000 });
 
     // Wait for error icon and message
-    await expect(page.locator('mat-icon[fontIcon="cancel"], mat-icon[fontIcon="error"], .error-icon')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('mat-icon:has-text("cancel"), mat-icon:has-text("error"), .error-icon')).toBeVisible({ timeout: 8000 });
     await expect(page.getByText('Invalid room code')).toBeVisible({ timeout: 3000 });
 
     // Test valid room code - clear and fill with valid code
@@ -150,7 +150,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
     }
 
     // Wait for success icon
-    await expect(page.locator('mat-icon[fontIcon="check_circle"], mat-icon[fontIcon="check"], .success-icon')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('mat-icon:has-text("check_circle"), mat-icon:has-text("check"), .success-icon')).toBeVisible({ timeout: 10000 });
 
     // Player name field should become visible
     await expect(page.locator('[data-testid="player-name-input"]')).toBeVisible({ timeout: 5000 });
@@ -181,7 +181,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       // Fill valid room code
       await fillRoomCodeOtp(page, gameData.roomCode);
-      await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible({ timeout: 8000 });
 
       // Button should still be disabled (no player name)
       await expect(joinButton).toBeDisabled();
@@ -236,7 +236,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       await fillRoomCodeOtp(page, gameData.roomCode);
 
       // Wait for validation
-      await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible({ timeout: 10000 });
 
       // Verify room code is still preserved after validation
       await expect(roomCodeInputs.nth(0)).toHaveValue(gameData.roomCode.charAt(0));
@@ -279,7 +279,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       // Enter room code and existing player name
       await fillRoomCodeOtp(page, gameData.roomCode);
-      await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible({ timeout: 8000 });
 
       const playerNameInput = await getElementReliably(page, [
         '[data-testid="player-name-input"]',

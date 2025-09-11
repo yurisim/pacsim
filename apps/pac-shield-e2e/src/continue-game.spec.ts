@@ -105,7 +105,7 @@ test.describe('Continue Game functionality', () => {
     await fillOtpField(page, roomCode);
 
     // Wait for room validation
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible();
 
     // Player name should appear
     await expect(page.getByTestId('player-name-input')).toBeVisible();

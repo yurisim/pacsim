@@ -17,7 +17,7 @@ test.describe('App Component', () => {
     await page.goto('/');
 
     // Wait for the connected status to appear
-    const connectedIcon = page.locator('mat-icon[fontIcon="wifi"]');
+    const connectedIcon = page.locator('mat-icon:has-text("wifi")');
     const connectedText = page.locator('span', { hasText: 'Connected' });
 
     // Assert that the connected icon and text are visible
