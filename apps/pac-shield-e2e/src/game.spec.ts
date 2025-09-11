@@ -1,6 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { fillGameMasterPin } from './test-utils';
 
+/**
+ * Test Intent: Verify the complete game creation flow from homepage to lobby,
+ * ensuring all critical steps work together for new game initialization.
+ *
+ * This test validates:
+ * - Homepage navigation and WebSocket connection display
+ * - Game creation button functionality
+ * - Game Master setup form display and completion
+ * - Successful navigation to game lobby
+ * - Proper lobby heading and UI elements
+ */
 test('should create a new game and navigate to the game board', async ({
   page,
 }) => {
@@ -8,7 +19,7 @@ test('should create a new game and navigate to the game board', async ({
   await page.goto('/');
 
   // Wait for WebSocket connection to be established
-  await expect(page.locator('mat-icon[fontIcon="wifi"]')).toBeVisible();
+  await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
   await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
 
   // Click the "Start New Game" button.

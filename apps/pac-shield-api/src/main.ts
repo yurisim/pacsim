@@ -16,7 +16,11 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }));
 
   const config = new DocumentBuilder()
     .setTitle('Pac-Shield API')

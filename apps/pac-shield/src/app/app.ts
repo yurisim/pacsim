@@ -1,6 +1,7 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { WebSocketService } from './shared/services/websocket.service';
 import { AuthService } from './shared/services/auth.service';
 import { ThemeService } from './shared/services/theme.service';
@@ -33,10 +34,48 @@ export class App implements OnInit {
   protected ws = inject(WebSocketService);
   protected auth = inject(AuthService);
   protected router = inject(Router);
+  protected route = inject(ActivatedRoute);
   protected themeService = inject(ThemeService);
+
+  // Navigation state
+  protected currentGameId: string | null = null;
 
   ngOnInit(): void {
     this.ws.connect('lobby');
+
+    // Listen for route changes to update navigation
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.updateNavigation();
+    });
+
+    // Initial navigation update
+    this.updateNavigation();
+  }
+
+  private updateNavigation(): void {
+    const url = this.router.url;
+
+    // Extract gameId from current route
+    const gameMatch = url.match(/\/(?:lobby|game)\/([^\\/]+)/);
+    if (gameMatch) {
+      this.currentGameId = gameMatch[1];
+    } else {
+      this.currentGameId = null;
+    }
+  }
+
+  protected navigateToLobby(): void {
+    if (this.currentGameId) {
+      this.router.navigate(['/lobby', this.currentGameId]);
+    }
+  }
+
+  protected navigateToMap(): void {
+    if (this.currentGameId) {
+      this.router.navigate(['/game', this.currentGameId]);
+    }
   }
 
   onLogout(): void {

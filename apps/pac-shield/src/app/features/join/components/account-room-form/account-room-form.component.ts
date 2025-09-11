@@ -34,6 +34,19 @@ type AccountForm = FormGroup<{
   templateUrl: './account-room-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+/**
+ * Component Intent: Main form component for game joining workflow, handling
+ * room code input, player name entry, and account selection with validation.
+ *
+ * This component provides:
+ * - Room code input with OTP-style interface and validation
+ * - Player name input with required validation
+ * - Account selector integration for returning players
+ * - Real-time form validation and error display
+ * - Status banner integration for room validation feedback
+ * - Event emission for parent component coordination
+ * - Form state management and change detection optimization
+ */
 export class AccountRoomFormComponent implements OnChanges {
   private fb = inject(FormBuilder).nonNullable;
 
@@ -52,6 +65,18 @@ export class AccountRoomFormComponent implements OnChanges {
     playerName: this.fb.control('', { validators: [Validators.required] }),
   });
 
+  /**
+   * Method Intent: Handle input property changes to synchronize form values
+   * with parent component state while preventing unnecessary event emissions.
+   *
+   * This method handles:
+   * - Reactive updates when parent changes form values
+   * - Form patching without triggering validation events
+   * - Null/undefined value handling for safe updates
+   * - Preventing circular event emission during synchronization
+   *
+   * @param changes - Angular SimpleChanges object containing changed properties
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['value'] && this.value) {
       const v = this.value;
@@ -91,6 +116,17 @@ export class AccountRoomFormComponent implements OnChanges {
     this.playerNameChanged.emit(name);
   }
 
+  /**
+   * Method Intent: Handle form submission with validation, extracting form values
+   * and emitting them to parent component for processing.
+   *
+   * This method handles:
+   * - Form validation before submission
+   * - Raw value extraction from form controls
+   * - Event emission with structured form data
+   * - Prevention of invalid form submissions
+   * - Type-safe data transformation for parent consumption
+   */
   onSubmit(): void {
     if (this.form.valid) {
       const val = this.form.getRawValue();

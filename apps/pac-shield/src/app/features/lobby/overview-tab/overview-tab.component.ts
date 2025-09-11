@@ -53,9 +53,8 @@ import { Game, Player, Team } from '../../../generated';
           <mat-card-content class="p-4">
             <div class="flex items-center gap-3 mb-2">
               <mat-icon
-                [fontIcon]="getTeamTypeInfo(team).icon"
                 [style.color]="getTeamTypeInfo(team).color"
-              ></mat-icon>
+              >{{getTeamTypeInfo(team).icon}}</mat-icon>
               <div>
                 <h4 class="md-typescale-title-medium font-bold m-0">{{ team.name }}</h4>
                 <p class="md-typescale-body-small md-sys-color-on-surface-variant m-0">
@@ -91,7 +90,7 @@ export class OverviewTabComponent {
   @Input() unassignedCount = 0;
   @Input() teamsMissingCommander = 0;
   @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
-  
+
   @Output() joinTeam = new EventEmitter<Team>();
 
   isCurrentPlayerOnTeam(team: Team, currentPlayer: Player | undefined): boolean {

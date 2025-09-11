@@ -217,12 +217,9 @@ export class JoinComponent {
   }
 
   onPinComplete(pin: string) {
-    // Auto-trigger PIN verification when all 4 digits are entered
+    // Update form with PIN but don't auto-verify - user must click Continue
     if (pin.length === 4) {
       this.pinForm.patchValue({ pin });
-      setTimeout(() => {
-        this.onVerifyPin();
-      }, 200); // Small delay for better UX
     }
   }
 

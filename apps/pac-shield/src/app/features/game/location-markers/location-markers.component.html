@@ -1,0 +1,15 @@
+<!-- Location Markers Component -->
+<!--
+  This component renders markers programmatically on the map.
+  The template is intentionally minimal as all marker rendering is done via TypeScript.
+  This preserves the separation of concerns while allowing for dynamic marker creation.
+-->
+<div class="location-markers-container">
+  <!-- Debug info (only shown in development mode) -->
+  @if(false) {
+  <div class="marker-debug-info">
+    <span>MOB Markers: {{ getMarkerCounts().mob }}</span>
+    <span>FOS Markers: {{ getMarkerCounts().fos }}</span>
+  </div>
+  }
+</div>

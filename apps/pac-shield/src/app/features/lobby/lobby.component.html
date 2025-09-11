@@ -17,10 +17,21 @@
     <!-- Room Code Section -->
     <app-room-code-display [roomCode]="game.roomCode"></app-room-code-display>
 
-    <p class="md-typescale-body-large md-sys-color-on-surface-variant mb-8">
+    <p class="md-typescale-body-large md-sys-color-on-surface-variant mb-4">
       Game ID:
       <span class="font-mono md-sys-color-secondary">{{ game.id }}</span>
     </p>
+
+    <!-- Map Navigation Button -->
+    <button 
+      mat-raised-button 
+      color="primary"
+      class="mb-8"
+      (click)="navigateToMap()"
+    >
+      <mat-icon>map</mat-icon>
+      View Pacific Map
+    </button>
 
     <!-- Current Player Actions Card -->
     <app-current-player-actions

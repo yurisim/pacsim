@@ -65,6 +65,7 @@ Here are some of the most common commands for managing the workspace.
 - **Build Backend:** `npx nx build pac-shield-api`
 - **Run API Tests:** `npx nx test pac-shield-api`
 - **Run Frontend E2E Tests:** `npx nx e2e pac-shield-e2e`
+= **Run E2E-API Tests:** `npx nx e2e pac-shield-api-e2e`
 
 #### Database (Prisma)
 All database commands are targeted at the `pac-shield-api` project.

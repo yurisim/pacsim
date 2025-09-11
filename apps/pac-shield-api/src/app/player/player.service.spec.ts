@@ -59,6 +59,17 @@ describe('PlayerService', () => {
     clsService = module.get(ClsService);
   });
 
+  /**
+   * Test Suite Intent: Validate player update functionality with role assignment,
+   * including name trimming, validation, role restrictions, and error handling.
+   *
+   * This suite tests:
+   * - Name whitespace trimming and validation
+   * - Role validation and GM team restrictions
+   * - Partial updates (name-only or role-only)
+   * - Error handling for invalid inputs and missing players
+   * - Database update operations and return values
+   */
   describe('updateWithRole', () => {
     it('should trim whitespace from name', async () => {
       const updateDto: UpdatePlayerWithRoleDto = {
@@ -199,6 +210,17 @@ describe('PlayerService', () => {
     });
   });
 
+  /**
+   * Test Suite Intent: Validate player name update functionality with proper
+   * validation, error handling, and WebSocket notifications.
+   *
+   * This suite tests:
+   * - Name trimming and validation logic
+   * - Error handling for empty/invalid names
+   * - WebSocket notifications for game updates
+   * - Database operations and error scenarios
+   * - Conditional WebSocket sending based on game association
+   */
   describe('updatePlayerName', () => {
     it('should trim whitespace from name', async () => {
       (prismaService.player.update as jest.Mock).mockResolvedValue({ ...mockPlayer, game: null });

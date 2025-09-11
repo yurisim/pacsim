@@ -27,6 +27,16 @@ async function createGameAndJoin(api: APIRequestContext, playerName: string) {
 }
 
 test.describe('Route Guard and Toolbar/Logout/WebSocket indicators', () => {
+  /**
+   * Test Intent: Verify that unauthenticated users attempting to access protected routes
+   * are properly redirected to the join page with the original destination preserved.
+   *
+   * This test validates:
+   * - Route guard functionality for protected pages
+   * - Proper redirect URL construction with query parameters
+   * - Session state checking for authentication
+   * - Graceful handling of unauthorized access attempts
+   */
   test('unauthenticated users are redirected to /join with redirect query param', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();
@@ -40,6 +50,16 @@ test.describe('Route Guard and Toolbar/Logout/WebSocket indicators', () => {
     expect(redirectedParam).toBe('/lobby/1234');
   });
 
+  /**
+   * Test Intent: Ensure authenticated users are redirected to their correct game lobby
+   * when attempting to access a different game's lobby, preventing cross-game access.
+   *
+   * This test validates:
+   * - Game ownership validation in route guards
+   * - Proper redirection to user's assigned game
+   * - JWT token validation for game access
+   * - Session integrity across different game contexts
+   */
   test('authenticated users are redirected to their own lobby when accessing a different gameId', async ({ page }) => {
     const api = await request.newContext();
 
@@ -60,6 +80,16 @@ test.describe('Route Guard and Toolbar/Logout/WebSocket indicators', () => {
     await api.dispose();
   });
 
+  /**
+   * Test Intent: Verify that authenticated users can successfully access their own
+   * game lobby without redirection, confirming proper authorization flow.
+   *
+   * This test validates:
+   * - Successful access to authorized game resources
+   * - Proper lobby page rendering for authenticated users
+   * - Game ID matching validation in route guards
+   * - Session persistence and lobby state loading
+   */
   test('authenticated users can access matching gameId lobby', async ({ page }) => {
     const api = await request.newContext();
 
@@ -76,6 +106,17 @@ test.describe('Route Guard and Toolbar/Logout/WebSocket indicators', () => {
     await api.dispose();
   });
 
+  /**
+   * Test Intent: Validate the logout functionality including UI visibility,
+   * session cleanup, and proper redirection to home page after logout.
+   *
+   * This test validates:
+   * - Logout button visibility based on authentication state
+   * - Session storage cleanup on logout
+   * - Proper redirection to home page
+   * - Connection status persistence after logout
+   * - UI state management during logout process
+   */
   test('toolbar shows Logout only when authenticated; clicking Logout clears session and returns to Home', async ({ page }) => {
     const api = await request.newContext();
     const { token, playerId } = await createGameAndJoin(api, 'GuardTester-Logout');
@@ -104,6 +145,17 @@ test.describe('Route Guard and Toolbar/Logout/WebSocket indicators', () => {
     await api.dispose();
   });
 
+  /**
+   * Test Intent: Ensure initial application navigation works correctly without
+   * redirect loops and displays proper connection status indicators.
+   *
+   * This test validates:
+   * - Clean initial page loads without authentication redirects
+   * - Proper home page rendering and content display
+   * - Connection status indicator visibility and functionality
+   * - Navigation between home and join pages
+   * - Absence of infinite redirect loops
+   */
   test('initial navigation loads Home and Join without redirect loops; connection status visible', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();

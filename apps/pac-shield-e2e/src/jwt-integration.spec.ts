@@ -151,7 +151,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.evaluate(() => localStorage.clear());
     await page.goto('/join');
     await fillRoomCodeOtp(page, roomCode);
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible(); // Wait for validation
     await page.fill('input[data-testid="player-name-input"]', 'ConflictUser');
     await page.getByTestId('join-submit-button').click();
 
@@ -208,11 +208,11 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await page.goto('/join');
 
     await fillRoomCodeOtp(page, roomCode);
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible();
     await page.fill('input[data-testid="player-name-input"]', 'OriginalUser');
     await page.getByTestId('join-submit-button').click();
 
-    // Should show name conflict (message enhanced with PrimeNG p-message)
+    // Should show name conflict (message enhanced with Angular Material v20)
     await expect(
       page.getByText('A player named "OriginalUser" already exists in this game')
     ).toBeVisible();
@@ -260,14 +260,14 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Type less than 6 characters - no validation yet
     await fillRoomCodeOtp(page, 'ABCDE');
     await expect(page.locator('mat-progress-spinner')).toHaveCount(0, { timeout: 250 });
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toHaveCount(0, { timeout: 250 });
-    await expect(page.locator('mat-icon[fontIcon="cancel"]')).toHaveCount(0, { timeout: 250 });
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toHaveCount(0, { timeout: 250 });
+    await expect(page.locator('mat-icon:has-text("cancel")')).toHaveCount(0, { timeout: 250 });
 
     // Type 6 characters with invalid code
     await fillRoomCodeOtp(page, 'ABCDEF');
 
     // Should eventually show error
-    await expect(page.locator('mat-icon[fontIcon="cancel"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("cancel")')).toBeVisible();
     await expect(page.locator('mat-progress-spinner')).toHaveCount(0);
 
     // Error message should appear
@@ -330,7 +330,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode);
 
     // After validation succeeds
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible();
 
     // Player name should appear and join button should be enabled after filling name
     const nameInput = await getElementReliably(page, [
@@ -396,7 +396,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode);
 
     // After validation, room code should still be there
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible();
     await expect(roomInput).toHaveValue(roomCode.charAt(0));
 
     // Player name field appears and can be filled

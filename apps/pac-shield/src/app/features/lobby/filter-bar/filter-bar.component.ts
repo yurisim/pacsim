@@ -34,7 +34,7 @@ export interface FilterOptions {
       <mat-form-field appearance="outline" class="min-w-64">
         <mat-label>Search players...</mat-label>
         <input matInput [(ngModel)]="filters.searchTerm" (ngModelChange)="onFiltersChange()" />
-        <mat-icon matSuffix fontIcon="search"></mat-icon>
+        <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
       }
 

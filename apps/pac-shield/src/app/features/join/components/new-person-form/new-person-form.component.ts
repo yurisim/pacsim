@@ -28,6 +28,18 @@ type NewPersonForm = FormGroup<{
   templateUrl: './new-person-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+/**
+ * Component Intent: Handles the "I'm a new person" flow when a player name conflict occurs,
+ * allowing users to create a unique player identity with name availability checking.
+ *
+ * This component provides:
+ * - New player name input with validation (required, minimum length)
+ * - Real-time name availability checking with visual feedback
+ * - Form state management for name conflict resolution
+ * - Integration with parent component for conflict resolution workflow
+ * - Loading states and error handling for availability checks
+ * - Back navigation to previous conflict resolution step
+ */
 export class NewPersonFormComponent implements OnChanges {
   private fb = inject(FormBuilder).nonNullable;
 
@@ -43,6 +55,18 @@ export class NewPersonFormComponent implements OnChanges {
     newPlayerName: this.fb.control('', { validators: [Validators.required, Validators.minLength(2)] }),
   });
 
+  /**
+   * Method Intent: Handle input property changes to synchronize form values
+   * with parent component state while preventing unnecessary validation events.
+   *
+   * This method handles:
+   * - Reactive updates when parent changes the form value
+   * - Form patching without triggering validation cycles
+   * - Null/undefined value handling for safe updates
+   * - Preventing circular event emission during synchronization
+   *
+   * @param changes - Angular SimpleChanges object containing changed properties
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['value'] && this.value) {
       this.form.patchValue({ newPlayerName: this.value.newPlayerName ?? '' }, { emitEvent: false });
@@ -53,6 +77,15 @@ export class NewPersonFormComponent implements OnChanges {
     this.backClicked.emit();
   }
 
+  /**
+   * Method Intent: Trigger name availability checking for the entered player name.
+   *
+   * This method handles:
+   * - Form value extraction and whitespace trimming
+   * - Validation that a name is provided before checking
+   * - Event emission to parent component for availability verification
+   * - Preventing empty name checks
+   */
   onCheck(): void {
     const name = (this.form.controls.newPlayerName.value || '').trim();
     if (name) {
@@ -60,6 +93,16 @@ export class NewPersonFormComponent implements OnChanges {
     }
   }
 
+  /**
+   * Method Intent: Create a new player with the validated name when availability
+   * is confirmed and form is valid.
+   *
+   * This method handles:
+   * - Form value extraction and whitespace trimming
+   * - Validation that name is available before creation
+   * - Event emission to parent component for player creation
+   * - Preventing creation with unavailable or invalid names
+   */
   onCreate(): void {
     const name = (this.form.controls.newPlayerName.value || '').trim();
     if (name && this.nameCheck.available === true) {

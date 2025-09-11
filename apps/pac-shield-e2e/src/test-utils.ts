@@ -192,8 +192,8 @@ export async function fillRoomCodeOtp(page: Page, roomCode: string): Promise<voi
   // Wait for validation to complete (success or error)
   try {
     await Promise.race([
-      page.locator('mat-icon[fontIcon="check_circle"]').waitFor({ state: 'visible', timeout: 8000 }),
-      page.locator('mat-icon[fontIcon="cancel"]').waitFor({ state: 'visible', timeout: 8000 })
+      page.locator('mat-icon:has-text("check_circle")').waitFor({ state: 'visible', timeout: 8000 }),
+      page.locator('mat-icon:has-text("cancel")').waitFor({ state: 'visible', timeout: 8000 })
     ]);
   } catch (error) {
     // Validation didn't complete - this might be expected for some tests

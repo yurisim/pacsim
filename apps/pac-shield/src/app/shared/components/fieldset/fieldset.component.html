@@ -1,0 +1,18 @@
+<fieldset
+  class="border md-sys-color-outline rounded-md md-sys-bg-surface md-sys-color-on-surface transition-all duration-200 ease-in-out w-full"
+  [class.opacity-60]="disabled"
+  [class.pointer-events-none]="disabled"
+>
+  <legend
+    class="px-3 py-2 md-sys-bg-surface md-sys-color-on-surface font-medium text-sm"
+  >
+    <span
+      class="flex-1 text-left md-sys-color-on-surface font-medium"
+      data-testid="legend-text"
+      >{{ legend }}</span
+    >
+  </legend>
+  <div class="p-4 md-sys-bg-surface border-t md-sys-color-outline">
+    <ng-content></ng-content>
+  </div>
+</fieldset>

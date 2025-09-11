@@ -578,13 +578,13 @@ The overall objective of CSpOC is for the CFSCC/MC to effectively and efficientl
 There will be an initial allocation of 14 satellites and 1 cyber package to be placed by the MC during planning: 1x Missile Warning (MEO), 1x Space Domain Awareness (LEO), 2x Space Domain Awareness (MEO), 1x Communications (LEO), 1x Communications (GEO), 2x ISR (LEO), 1x ISR (MEO), 1x Weather (LEO), 1x Weather (GEO), 1x Orbital Warfare (LEO), 1x GPS (LEO), 1x GPS (MEO), and 1 cyber package (not in orbit). The assessing instructor will position a mixture of no less than 10x PRC and civilian satellites into various orbits, which remain unknown until identified with a SDA satellite.
 
 - **6.4.1.** All satellites must have a unique orbital (alpha-numeric) position to prevent satellite collisions.
-- **6.4.2.** MW, ISR, WX, & COMM satellites can be deployed in LEO, MEO, or GEO orbits. While SDA, GPS, & Dual-Use satellites can only be deployed in LEO or MEO orbits. If a GPS satellite is placed in MEO orbit, the effects will only apply to a single selected hex picked within the honeycomb.
+- **6.4.2.** MW, ISR, WX, & COMM satellites can be deployed in LEO, MEO, or GEO orbits. While SDA, GPS, & Dual-Use satellites can only be deployed in LEO or MEO orbits. If a GPS satellite is placed in MEO orbit, the effects will only apply to a single selected hex picked within the h3-js hex grid.
 - **6.4.3. LEO Capabilities.**
   - **6.4.3.1. Stare:** Only hex directly under satellite.
   - **6.4.3.2. Fidelity:** Able to identify targets fully on first pass (based on satellite type).
 - **6.4.4. MEO Capabilities.** (Corrected from "HEO" in original text for consistency)
-  - **6.4.4.1. Stare:** Honeycomb scope, but MC limited to selecting only one hex in honeycomb.
-  - **6.4.4.2. Fidelity:** Identifies targets as “unidentified” on first pass and fully-identifies targets on second pass (based on satellite type).
+- **6.4.4.1. Stare:** h3-js hex grid scope, but MC limited to selecting only one hex in grid.
+- **6.4.4.2. Fidelity:** Identifies targets as "unidentified" on first pass and fully-identifies targets on second pass (based on satellite type).
 - **6.4.5.** U.S. Missile Warning satellites can identify 10-based targets and U.S. Space Domain Awareness satellites can identify space jammers on first pass, regardless of assigned orbit.
 
 
@@ -647,7 +647,7 @@ Orbital Warfare satellites can be used to attack either an identified PRC satell
 
 ### 6.12. U.S. Ground Based Radar (GBR)
 
-The GBR starts at Hickam AFB and takes eight pallet positions on a mobility aircraft to transport. CSpOC must coordinate with U.S. forces at Hickam to deploy the GBR to a FOS in the OPS AOR. Once employed to a FOS, any satellites in that GEO ZONE will have MEO scope (honeycomb stare but MC still must pick a single hex within that honeycomb) with LEO fidelity (one-pass to identify targets fully). CSpOC can coordinate to relocate GBR as desired during gameplay. NOTE: There may be one or two GBRs to utilize during gameplay. The assessing instructor will inject when/if desired based on gameplay.
+The GBR starts at Hickam AFB and takes eight pallet positions on a mobility aircraft to transport. CSpOC must coordinate with U.S. forces at Hickam to deploy the GBR to a FOS in the OPS AOR. Once employed to a FOS, any satellites in that GEO ZONE will have MEO scope (h3-js hex grid stare but MC still must pick a single hex within that grid) with LEO fidelity (one-pass to identify targets fully). CSpOC can coordinate to relocate GBR as desired during gameplay. NOTE: There may be one or two GBRs to utilize during gameplay. The assessing instructor will inject when/if desired based on gameplay.
 
 ### 6.13. Event cards
 

@@ -1,7 +1,7 @@
 <form [formGroup]="form" class="flex flex-col gap-4 w-full max-w-md mx-auto" novalidate>
   <mat-form-field appearance="outline" class="w-full">
     <mat-label>New Player Name</mat-label>
-    <mat-icon matPrefix fontIcon="person" class="mr-2" aria-hidden="true"></mat-icon>
+    <mat-icon matPrefix aria-hidden="true">person</mat-icon>
     <input
       matInput
       formControlName="newPlayerName"
@@ -21,7 +21,7 @@
       data-testid="check-name-availability"
       aria-label="Check name availability"
     >
-      <mat-icon fontIcon="search" class="mr-2" aria-hidden="true"></mat-icon>
+      <mat-icon aria-hidden="true">search</mat-icon>
       Check Name Availability
     </button>
 
@@ -56,7 +56,7 @@
       data-testid="new-person-back"
       aria-label="Back"
     >
-      <mat-icon fontIcon="arrow_back" class="mr-2" aria-hidden="true"></mat-icon>
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
       Back
     </button>
 
@@ -69,7 +69,7 @@
       data-testid="create-new-player"
       aria-label="Create new player"
     >
-      <mat-icon fontIcon="person_add" class="mr-2" aria-hidden="true"></mat-icon>
+      <mat-icon aria-hidden="true">person_add</mat-icon>
       Create New Player
     </button>
   </div>

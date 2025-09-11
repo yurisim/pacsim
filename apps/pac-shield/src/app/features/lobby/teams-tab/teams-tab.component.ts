@@ -34,7 +34,7 @@ import { Team, Player } from '../../../generated';
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <mat-panel-title>
-              <mat-icon fontIcon="flag" class="mr-2"></mat-icon>
+              <mat-icon>flag</mat-icon>
               Main Operating Bases ({{ mobTeams.length }})
             </mat-panel-title>
           </mat-expansion-panel-header>
@@ -65,7 +65,7 @@ import { Team, Player } from '../../../generated';
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <mat-panel-title>
-              <mat-icon fontIcon="account_tree" class="mr-2"></mat-icon>
+              <mat-icon>account_tree</mat-icon>
               Command & Control ({{ commandControlTeams.length }})
             </mat-panel-title>
           </mat-expansion-panel-header>
@@ -96,7 +96,7 @@ import { Team, Player } from '../../../generated';
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <mat-panel-title>
-              <mat-icon fontIcon="favorite" class="mr-2"></mat-icon>
+              <mat-icon>favorite</mat-icon>
               Support Teams ({{ supportTeams.length }})
             </mat-panel-title>
           </mat-expansion-panel-header>

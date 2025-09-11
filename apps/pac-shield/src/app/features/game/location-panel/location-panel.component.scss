@@ -1,0 +1,193 @@
+/**
+ * Location Panel Component Styles
+ * 
+ * Provides tabbed interface with action buttons for selected tile assets
+ */
+
+.location-panel {
+  width: 580px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+
+  // Panel header styling
+  .panel-header {
+    // Flex shrink now handled by Tailwind shrink-0
+
+    .collapse-toggle {
+      // Width/height now handled by Tailwind w-8 h-8
+      
+      ::ng-deep .mat-mdc-button-touch-target {
+        width: 32px !important;
+        height: 32px !important;
+      }
+    }
+  }
+
+  // Tab group styling
+  .asset-tabs {
+    flex: 1;
+    overflow: hidden;
+    
+    ::ng-deep {
+      .mat-mdc-tab-body-wrapper {
+        flex: 1;
+        overflow: auto;
+      }
+
+      .mat-mdc-tab-header {
+        margin-bottom: 0;
+      }
+
+      .mat-mdc-tab-label {
+        min-width: 80px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  // Tab content styling
+  .tab-content {
+    // Padding, overflow, max-height now handled by Tailwind classes
+
+    // Asset selector for multiple assets
+    .asset-selector {
+      // Flex properties now handled by Tailwind classes
+
+      .asset-select-btn {
+        // Padding and border-radius now handled by Tailwind classes
+        background-color: var(--mat-sys-surface-container);
+        border: 1px solid var(--mat-sys-outline-variant);
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background-color: var(--mat-sys-surface-container-high);
+        }
+
+        &.selected {
+          background-color: var(--mat-sys-primary-container);
+          color: var(--mat-sys-on-primary-container);
+          border-color: var(--mat-sys-primary);
+        }
+      }
+    }
+
+    .asset-section {
+      // Margin now handled by Tailwind mb-4
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .asset-header {
+        // Flex properties now handled by Tailwind classes
+
+        mat-icon {
+          // Size handled inline and with Tailwind
+        }
+      }
+
+      // Action buttons grid
+      .action-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+
+        .action-btn {
+          height: 64px;
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          font-size: 11px;
+          line-height: 1.2;
+
+          mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+            margin: 0;
+          }
+
+          span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+          }
+
+          // Make buttons more square
+          ::ng-deep .mat-mdc-button-persistent-ripple {
+            border-radius: 8px;
+          }
+        }
+      }
+    }
+
+    // Empty state styling removed - now handled by Tailwind
+  }
+
+  // Collapsed summary - styles now handled by Tailwind
+  
+  // Empty hex state - styles now handled by Tailwind
+}
+
+// Dark mode adjustments
+:host-context(.dark-theme) {
+  .location-panel {
+    .location-action-btn {
+      background-color: var(--mat-sys-surface-variant);
+      
+      &:hover:not(:disabled) {
+        background-color: var(--mat-sys-surface-container-highest);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .location-panel {
+    width: 100%;
+    max-width: calc(100vw - 16px);
+    
+    .tab-content {
+      .asset-section {
+        .action-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .location-panel {
+    .tab-content {
+      .asset-section {
+        .action-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    }
+  }
+}
+
+// Animation for grid expansion/collapse
+@keyframes gridExpand {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.location-actions-grid {
+  animation: gridExpand 0.2s ease-out;
+}

@@ -35,11 +35,9 @@ import { NotificationService } from '../../../shared/services/notification.servi
           {{ roomCode }}
         </p>
         <mat-icon
-          fontIcon="content_copy"
-          class="text-3xl"
           style="color: var(--mat-sys-on-surface-variant)"
           aria-hidden="true"
-        ></mat-icon>
+        >content_copy</mat-icon>
       </div>
       <p class="text-sm mt-2" style="color: var(--mat-sys-on-surface-variant)">
         Click to copy to clipboard

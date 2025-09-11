@@ -21,7 +21,7 @@ test.describe('Player Settings in Lobby', () => {
     await page.goto('/');
 
     // Wait for WebSocket connection to be established
-    await expect(page.locator('mat-icon[fontIcon="wifi"]')).toBeVisible();
+    await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
     await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Start New Game' }).click();
@@ -40,6 +40,18 @@ test.describe('Player Settings in Lobby', () => {
     ).toBeVisible();
   });
 
+  /**
+   * Test Intent: Verify that the player settings dialog opens correctly when
+   * the edit profile button is clicked, displaying all necessary form fields.
+   *
+   * This test validates:
+   * - Profile edit button functionality
+   * - Dialog opening and visibility
+   * - Presence of name input field
+   * - Presence of role selection dropdown
+   * - Presence of Save and Cancel buttons
+   * - Proper dialog accessibility attributes
+   */
   test('should open player settings dialog when Edit Name & Role button is clicked', async ({
     page,
   }) => {
@@ -58,6 +70,18 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
   });
 
+  /**
+   * Test Intent: Verify that players can successfully update their display name
+   * through the settings dialog with proper form validation and UI updates.
+   *
+   * This test validates:
+   * - Settings dialog opening and form interaction
+   * - Name field input and validation
+   * - Save button functionality and form submission
+   * - Dialog closure after successful update
+   * - Updated name display in the lobby interface
+   * - Persistence of name changes across UI components
+   */
   test('should allow changing player name through settings dialog', async ({
     page,
   }) => {
@@ -81,6 +105,18 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.getByText('Name: Updated Player Name')).toBeVisible();
   });
 
+  /**
+   * Test Intent: Verify that players can change their assigned role through
+   * the settings dialog with proper dropdown selection and persistence.
+   *
+   * This test validates:
+   * - Role selection dropdown functionality
+   * - Option selection and form interaction
+   * - Save operation for role changes
+   * - Dialog closure after successful update
+   * - Updated role display in lobby interface
+   * - Role change persistence and validation
+   */
   test('should allow changing player role through settings dialog', async ({
     page,
   }) => {
@@ -101,6 +137,18 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.getByText('COMMANDER', { exact: true })).toBeVisible();
   });
 
+  /**
+   * Test Intent: Verify that players can update both name and role in a single
+   * settings dialog session with proper form validation and state management.
+   *
+   * This test validates:
+   * - Simultaneous name and role field updates
+   * - Form validation for multiple field changes
+   * - Save operation with combined changes
+   * - Proper persistence of both name and role
+   * - UI updates reflecting both changes
+   * - Form state management during multi-field updates
+   */
   test('should allow changing both name and role simultaneously', async ({
     page,
   }) => {
@@ -127,6 +175,18 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.getByText('Role: COMMANDER')).toBeVisible();
   });
 
+  /**
+   * Test Intent: Verify that canceling the settings dialog properly discards
+   * all unsaved changes and restores the original player information.
+   *
+   * This test validates:
+   * - Cancel button functionality and dialog closure
+   * - Prevention of unsaved changes from being applied
+   * - Restoration of original name and role values
+   * - Form state reset on cancel operation
+   * - No persistence of canceled changes
+   * - Proper dialog cleanup and state management
+   */
   test('should cancel changes and restore original values when Cancel is clicked', async ({
     page,
   }) => {
@@ -153,14 +213,23 @@ test.describe('Player Settings in Lobby', () => {
 
     // Wait for dialog to close
     await expect(page.locator('[role="dialog"]')).toBeHidden();
-
     // Verify original name is preserved in the lobby player list
-    const playerCard = page.getByText('Edit ProfileLeave TeamName:');
-    
-    await expect(playerCard).toBeVisible();
-    await expect(playerCard).toContainText(originalName);
+
+    await expect(page.getByText('Original Name')).toBeVisible();
   });
 
+  /**
+   * Test Intent: Verify that the Save button is properly disabled when required
+   * fields are empty, preventing invalid form submissions.
+   *
+   * This test validates:
+   * - Form validation for required name field
+   * - Save button state management based on form validity
+   * - Prevention of empty name submissions
+   * - Real-time validation feedback
+   * - Proper button enabling/disabling logic
+   * - User experience for form validation states
+   */
   test('should disable Save button when name field is empty', async ({
     page,
   }) => {

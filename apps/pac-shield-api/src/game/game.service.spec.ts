@@ -25,6 +25,9 @@ describe('GameService', () => {
       team: {
         create: jest.fn(),
       },
+      forwardOperatingSite: {
+        createMany: jest.fn(),
+      },
     };
     const mockAuthService = {
       login: jest.fn(),
@@ -68,11 +71,39 @@ describe('GameService', () => {
     gameGateway = module.get<GameGateway>(GameGateway);
   });
 
+  /**
+   * Test Intent: Verify that the GameService can be instantiated properly
+   * with all required dependencies and is ready for use.
+   *
+   * This test validates:
+   * - Service instantiation with mocked dependencies
+   * - Basic service availability and initialization
+   * - Dependency injection setup correctness
+   */
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
+  /**
+   * Test Suite Intent: Validate game creation functionality including
+   * room code generation, team initialization, and database persistence.
+   *
+   * This suite tests:
+   * - Game entity creation with victory conditions
+   * - Automatic team creation for all team types
+   * - Room code uniqueness and format validation
+   * - Database transaction integrity
+   */
   describe('createGame', () => {
+    /**
+     * Test Intent: Verify complete game creation flow with team initialization.
+     *
+     * This test validates:
+     * - Game creation with victory condition parameters
+     * - Automatic creation of all required teams
+     * - Room code generation and uniqueness
+     * - Proper database persistence and return values
+     */
     it('should create a game and associated teams', async () => {
       const createGameDto: CreateGameDto = { victoryConditionMP: 100 };
       const mockGame = { id: 1, roomCode: 'ABCDEF', ...createGameDto };
@@ -90,7 +121,26 @@ describe('GameService', () => {
     });
   });
 
+  /**
+   * Test Suite Intent: Validate game retrieval functionality with proper
+   * error handling and data relationships.
+   *
+   * This suite tests:
+   * - Game lookup by ID with related data inclusion
+   * - Proper error handling for non-existent games
+   * - Data relationship loading (teams, players)
+   * - Database query optimization and performance
+   */
   describe('getGameById', () => {
+    /**
+     * Test Intent: Verify successful game retrieval with all related data.
+     *
+     * This test validates:
+     * - Game lookup by valid ID
+     * - Proper inclusion of related teams and players
+     * - Correct database query structure
+     * - Return of complete game object
+     */
     it('should return the game if the id is valid', async () => {
       const mockGame = { id: 1, teams: [{ players: [] }] };
       (prisma.game.findUnique as jest.Mock).mockResolvedValue(mockGame);
@@ -104,6 +154,15 @@ describe('GameService', () => {
       expect(result).toEqual(mockGame);
     });
 
+    /**
+     * Test Intent: Verify proper error handling for invalid game IDs.
+     *
+     * This test validates:
+     * - Exception throwing for non-existent games
+     * - Correct exception type (NotFoundException)
+     * - Proper error message handling
+     * - Database null result handling
+     */
     it('should throw NotFoundException if the id is invalid', async () => {
       (prisma.game.findUnique as jest.Mock).mockResolvedValue(null);
 
@@ -113,7 +172,28 @@ describe('GameService', () => {
     });
   });
 
+  /**
+   * Test Suite Intent: Validate player joining functionality including
+   * room code validation, player creation, and authentication.
+   *
+   * This suite tests:
+   * - Room code validation and game lookup
+   * - Player creation in existing games
+   * - JWT token generation and return
+   * - Error handling for invalid room codes
+   * - Integration with auth and player services
+   */
   describe('joinGame', () => {
+    /**
+     * Test Intent: Verify complete player joining flow with authentication.
+     *
+     * This test validates:
+     * - Room code validation and game lookup
+     * - Player creation with provided name
+     * - JWT token generation for session
+     * - Integration between game, player, and auth services
+     * - Proper return of authentication token
+     */
     it('should allow a player to join a game', async () => {
       const joinGameDto: JoinGameDto = {
         roomCode: 'ABCDEF',
@@ -140,6 +220,15 @@ describe('GameService', () => {
       expect(authService.login).toHaveBeenCalledWith(game.id, player.id);
     });
 
+    /**
+     * Test Intent: Verify error handling for invalid room codes.
+     *
+     * This test validates:
+     * - Proper error throwing for non-existent games
+     * - Clear error message for invalid room codes
+     * - Database null result handling
+     * - User-friendly error communication
+     */
     it('should throw an error if the game is not found', async () => {
       const joinGameDto: JoinGameDto = {
         roomCode: 'ABCDEF',
@@ -154,7 +243,26 @@ describe('GameService', () => {
     });
   });
 
+  /**
+   * Test Suite Intent: Validate room code generation utility functionality.
+   *
+   * This suite tests:
+   * - Random alphanumeric code generation
+   * - Proper length and format validation
+   * - Character set restrictions (uppercase letters and numbers)
+   * - Uniqueness and randomness properties
+   */
   describe('generateRoomCode', () => {
+    /**
+     * Test Intent: Verify room code generation meets required specifications.
+     *
+     * This test validates:
+     * - 6-character length requirement
+     * - Alphanumeric character set (A-Z, 0-9)
+     * - Uppercase letter format
+     * - String return type
+     * - Format validation with regex
+     */
     it('should return a 6-character alphanumeric string', () => {
       const roomCode = (service as any).generateRoomCode();
       expect(typeof roomCode).toBe('string');

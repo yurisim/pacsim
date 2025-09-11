@@ -1,20 +1,124 @@
-<div class="game-board-container">
+<div class="fixed top-16 left-0 right-0 bottom-0 overflow-hidden">
+  <!-- Map container always present for ViewChild -->
+  <div #mapContainer class="absolute inset-0"></div>
+
+  <!-- Hex Grid Component (invisible, manages map layers) -->
+  <app-hex-grid (hexSelected)="onHexSelected($event)"></app-hex-grid>
+
+  <!-- Location Markers Component (manages MOB and FOS markers) -->
+  <app-location-markers
+    [map]="map"
+    [showMobMarkers]="true"
+    [showFosMarkers]="true"
+    [activeFosIds]="activeFosIds"
+  ></app-location-markers>
+
+  <!-- Game Stats Component (manages game statistics and demo data) -->
+  <app-game-stats [loadDemoData]="true"></app-game-stats>
+
+  <!-- Loading overlay -->
   @if (isLoading$ | async) {
-    <div class="loading-overlay">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    </div>
+  <div
+    class="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-[1000]"
+  >
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    <p class="mt-4 text-base md-sys-color-on-surface">Loading game data...</p>
+  </div>
   }
 
+  <!-- Error overlay -->
   @if (error$ | async; as error) {
-    <div class="error-message">
+  <div
+    class="absolute inset-0 bg-white/90 flex items-center justify-center z-[1000]"
+  >
+    <div
+      class="p-4 rounded-lg max-w-md text-center md-sys-bg-error-container md-sys-color-on-error-container"
+    >
       <p>Error loading game: {{ error }}</p>
     </div>
+  </div>
   }
 
+  <!-- Game info overlay (Civ-style HUD) -->
   @if (game$ | async; as game) {
-    <div>
-      <h1>Game Board: {{ game.id }}</h1>
-      <pre>{{ game | json }}</pre>
-    </div>
+
+  <!-- Right side panel with stubbed dashboards -->
+  <div class="absolute top-2 right-2 z-[90] pointer-events-none">
+    <mat-tab-group dynamicHeight="true" class="pointer-events-auto">
+      <mat-tab label="Score">
+        <div class="p-3">
+          <app-scoreboard
+            [missionPoints]="gameStats().missionPoints"
+            [demoralizationPoints]="gameStats().demoralizationPoints"
+            [resourcePoints]="gameStats().resourcePoints"
+            [victoryTarget]="gameStats().victoryTarget"
+            [gameTurn]="gameStats().gameTurn"
+            [gameDay]="gameStats().gameDay"
+            [gamePhase]="gameStats().gamePhase"
+          ></app-scoreboard>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="CAOC">
+        <div class="p-3">
+          <app-caoc-dashboard></app-caoc-dashboard>
+          <div class="mt-3">
+            <app-ato-table [lines]="atoLines()"></app-ato-table>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="MOB">
+        <div class="p-3">
+          <app-mob-dashboard></app-mob-dashboard>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="FOS">
+        <div class="p-3">
+          <app-fos-dashboard></app-fos-dashboard>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="CSpOC">
+        <div class="p-3">
+          <app-cspoc-board></app-cspoc-board>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="MEDCOM">
+        <div class="p-3">
+          <app-medcom-dashboard></app-medcom-dashboard>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Log">
+        <div class="p-3">
+          <app-game-log
+            [log]="gameStatsService.getFormattedLog()"
+          ></app-game-log>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
   }
+
+  <!-- Location panel overlay (bottom left corner) -->
+  <div class="absolute left-2 bottom-2 z-[95] pointer-events-auto">
+    <app-location-panel
+      [selectedHex]="selectedVisualHexCoord"
+      [selectedH3Index]="selectedH3Index"
+      [gameId]="(gameId$ | async) ?? null"
+      [currentTurn]="(currentTurn$ | async) ?? 1"
+      [availableTeams]="(availableTeams$ | async) ?? []"
+      [activeFosIds]="activeFosIds"
+      [fosMobAssignments]="fosMobAssignments"
+      [currentPlayerMob]="currentPlayerMob"
+      [isGameMaster]="isGameMaster"
+      (actionClicked)="onLocationAction($event)"
+      (fosStatusChanged)="onFosStatusChanged($event)"
+      [collapsed]="false"
+    >
+    </app-location-panel>
+  </div>
 </div>

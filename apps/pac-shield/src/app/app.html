@@ -1,10 +1,35 @@
 <mat-toolbar class="app-toolbar" role="banner">
   <div class="flex items-center gap-3">
-    <mat-icon fontIcon="security" class="md-sys-color-primary" aria-hidden="true"></mat-icon>
-    <h1 class="text-xl font-medium m-0 md-sys-color-on-surface">
-      <span class="hidden sm:inline">{{ title }}</span>
-      <span class="sm:hidden">OPS</span>
-    </h1>
+    <mat-icon
+          class="md-sys-color-primary"
+          aria-hidden="true"
+        >security</mat-icon>
+    <div class="flex items-center gap-2">
+      <h1 class="text-xl font-medium m-0 md-sys-color-on-surface">
+        <span class="hidden sm:inline">{{ title }}</span>
+        <span class="sm:hidden">OPS</span>
+      </h1>
+      @if (currentGameId) {
+      <div class="flex items-center gap-2 ml-4">
+        <button
+          matButton="tonal"
+          color="primary"
+          (click)="navigateToLobby()"
+          class="text-sm"
+        >
+          Lobby
+        </button>
+        <button
+          matButton="tonal"
+          color="primary"
+          (click)="navigateToMap()"
+          class="text-sm"
+        >
+          Map
+        </button>
+      </div>
+      }
+    </div>
   </div>
 
   <span class="toolbar-spacer"></span>
@@ -12,15 +37,15 @@
   <div class="flex items-center gap-2">
     <!-- Connection Status -->
     @if (ws.connectionStatus$ | async) {
-      <div class="flex items-center gap-2 md-sys-color-tertiary">
-        <mat-icon fontIcon="wifi" aria-hidden="true"></mat-icon>
-        <span class="text-sm hidden md:inline">Connected</span>
-      </div>
+    <div class="flex items-center gap-2 md-sys-color-tertiary">
+      <mat-icon aria-hidden="true">wifi</mat-icon>
+      <span class="text-sm hidden md:inline">Connected</span>
+    </div>
     } @else {
-      <div class="flex items-center gap-2 md-sys-color-error">
-        <mat-icon fontIcon="signal_wifi_off" aria-hidden="true"></mat-icon>
-        <span class="text-sm hidden md:inline">Disconnected</span>
-      </div>
+    <div class="flex items-center gap-2 md-sys-color-error">
+      <mat-icon aria-hidden="true">signal_wifi_off</mat-icon>
+      <span class="text-sm hidden md:inline">Disconnected</span>
+    </div>
     }
 
     <!-- Home Button -->
@@ -28,8 +53,9 @@
       matIconButton
       routerLink="/"
       aria-label="Navigate to home page"
-      matTooltip="Home">
-      <mat-icon fontIcon="home"></mat-icon>
+      matTooltip="Home"
+    >
+      <mat-icon>home</mat-icon>
     </button>
 
     <!-- Theme Toggle Button -->
@@ -37,15 +63,16 @@
 
     <!-- Logout Button -->
     @if (auth.isAuthenticated() && auth.getGameId()) {
-      <button
-        matButton="filled"
-        color="warn"
-        (click)="onLogout()"
-        class="ml-2"
-        aria-label="Logout from current game">
-        <mat-icon fontIcon="logout" class="mr-2"></mat-icon>
-        <span class="hidden md:inline">Logout</span>
-      </button>
+    <button
+      matButton="filled"
+      color="warn"
+      (click)="onLogout()"
+      class="ml-2"
+      aria-label="Logout from current game"
+    >
+      <mat-icon>logout</mat-icon>
+      <span class="hidden md:inline">Logout</span>
+    </button>
     }
   </div>
 </mat-toolbar>

@@ -57,7 +57,7 @@ test.describe('New Player Flow', () => {
 
     // Join with a name that will be taken
     await fillRoomCodeOtp(page, roomCode);
-    await expect(page.locator('mat-icon[fontIcon="check_circle"]')).toBeVisible(); // Wait for validation
+    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible(); // Wait for validation
 
     const nameInput = await getElementReliably(page, [
       '[data-testid="player-name-input"]',

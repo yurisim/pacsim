@@ -19,6 +19,20 @@ import { Subscription } from 'rxjs';
     },
   ],
 })
+/**
+ * Component Intent: Custom form control component for room code input using OTP-style
+ * interface with validation, accessibility, and reactive forms integration.
+ *
+ * This component provides:
+ * - OTP-style input for multi-character room codes
+ * - ControlValueAccessor implementation for reactive forms
+ * - Auto-focus and keyboard navigation support
+ * - Completion event emission for parent handling
+ * - Error state display and accessibility attributes
+ * - Automatic uppercase conversion and validation
+ * - Disabled state handling for form validation
+ * - Memory leak prevention with proper subscription cleanup
+ */
 export class RoomCodeFieldComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
   @Input() length = 6;
   @Input() placeholder = '';
@@ -38,6 +52,17 @@ export class RoomCodeFieldComponent implements ControlValueAccessor, AfterViewIn
   private onChange?: (val: string) => void;
   private onTouched?: () => void;
 
+  /**
+   * Method Intent: Handle component initialization after view is ready,
+   * implementing autofocus functionality for the first OTP input field.
+   *
+   * This method handles:
+   * - Delayed execution to ensure DOM is ready
+   * - First OTP input field selection and focus
+   * - Safe DOM querying with null checks
+   * - Keyboard navigation setup for accessibility
+   * - Preventing focus issues during component lifecycle
+   */
   ngAfterViewInit(): void {
     if (this.autofocus) {
       // Focus first OTP input after view init
@@ -74,6 +99,18 @@ export class RoomCodeFieldComponent implements ControlValueAccessor, AfterViewIn
   }
 
   // Event handlers
+  /**
+   * Method Intent: Handle OTP input completion by normalizing the value,
+   * updating the form control, and emitting completion events.
+   *
+   * This method handles:
+   * - Value normalization to uppercase for consistency
+   * - Form control synchronization with normalized value
+   * - Completion event emission for parent handling
+   * - Touch state marking for form validation
+   * - Event emission triggering for reactive forms
+   * - Maintaining backward compatibility with existing behavior
+   */
   onOtpComplete(): void {
     // Normalize to uppercase to mirror previous behavior
     const code = (this.inner.value || '').toUpperCase();

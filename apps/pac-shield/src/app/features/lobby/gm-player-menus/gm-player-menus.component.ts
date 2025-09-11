@@ -22,25 +22,25 @@ import { Player, Team } from '../../../generated';
         <mat-divider></mat-divider>
 
         <button mat-menu-item [matMenuTriggerFor]="roleSubmenu" [matMenuTriggerData]="{player: player}">
-          <mat-icon fontIcon="person"></mat-icon>
+          <mat-icon>person</mat-icon>
           <span>Change Role</span>
         </button>
 
         <button mat-menu-item [matMenuTriggerFor]="teamSubmenu" [matMenuTriggerData]="{player: player, teams: teams}">
-          <mat-icon fontIcon="group"></mat-icon>
+          <mat-icon>group</mat-icon>
           <span>Move to Team</span>
         </button>
 
         @if (player.teamId) {
         <button mat-menu-item (click)="removeFromTeam.emit(player)">
-          <mat-icon fontIcon="logout"></mat-icon>
+          <mat-icon>logout</mat-icon>
           <span>Remove from Team</span>
         </button>
         }
 
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="removeFromGame.emit(player)" class="md-sys-color-error">
-          <mat-icon fontIcon="delete" class="md-sys-color-error"></mat-icon>
+          <mat-icon class="md-sys-color-error">delete</mat-icon>
           <span>Remove from Game</span>
         </button>
       </ng-template>
@@ -62,10 +62,10 @@ import { Player, Team } from '../../../generated';
       <ng-template matMenuContent let-player="player" let-teams="teams">
         @for (team of teams; track team.id) {
         <button mat-menu-item (click)="moveToTeam.emit({player: player, team: team})" [disabled]="team.locked">
-          <mat-icon [fontIcon]="getTeamTypeInfo(team).icon" class="mr-2"></mat-icon>
+          <mat-icon>{{getTeamTypeInfo(team).icon}}</mat-icon>
           {{ team.name }}
           @if (team.locked) {
-          <mat-icon fontIcon="lock" class="ml-auto text-sm"></mat-icon>
+          <mat-icon>lock</mat-icon>
           }
         </button>
         }

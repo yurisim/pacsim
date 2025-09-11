@@ -17,6 +17,18 @@ export interface AccountSummary {
   styleUrls: ['./account-selector.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+/**
+ * Component Intent: Provides an input field for selecting or entering account/player names
+ * with autocomplete-like behavior and validation feedback.
+ *
+ * This component provides:
+ * - Text input for account name entry with real-time updates
+ * - Support for pre-populated account lists for selection
+ * - Error state display and accessibility attributes
+ * - Disabled state handling for form validation
+ * - Event emission for account selection changes
+ * - Null emission for empty input to clear selections
+ */
 export class AccountSelectorComponent {
   // Presentational inputs
   @Input() accounts: AccountSummary[] = [];
@@ -30,6 +42,19 @@ export class AccountSelectorComponent {
   // Presentation-only output
   @Output() accountChange = new EventEmitter<AccountSummary | null>();
 
+  /**
+   * Method Intent: Handle name input changes and emit account selection updates
+   * to parent component with proper null handling for empty inputs.
+   *
+   * This method handles:
+   * - Input value sanitization and null checking
+   * - Empty input detection and null emission
+   * - Account object construction with existing ID preservation
+   * - Event emission for parent component processing
+   * - Maintaining selected account state when updating name
+   *
+   * @param value - The input value from the name field
+   */
   onNameInput(value: string): void {
     const name = value ?? '';
     // Emit null when empty to allow container to treat as no selection/name
