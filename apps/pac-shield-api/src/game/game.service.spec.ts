@@ -25,6 +25,9 @@ describe('GameService', () => {
       team: {
         create: jest.fn(),
       },
+      forwardOperatingSite: {
+        createMany: jest.fn(),
+      },
     };
     const mockAuthService = {
       login: jest.fn(),

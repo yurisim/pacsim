@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
-import { TeamType } from '.prisma/client';
+import { TeamType, RunwayStatus, MOGLevel } from '.prisma/client';
 import { CreateGameDto, Game } from '../app/generated';
 import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
@@ -73,6 +73,26 @@ export class GameService {
         },
       });
     }
+
+    // Initialize Forward Operating Sites (FOSs) for the game
+    // Creating 30 FOSs as per the game design
+    const fosCount = 30;
+    const fosList = [];
+    
+    for (let i = 1; i <= fosCount; i++) {
+      fosList.push({
+        gameId: game.id,
+        fosIdNumber: i,
+        isActive: false,
+        parkingRampMOG: MOGLevel.TWO_C17_SEVEN_FIGHTERS, // Default MOG level
+        runwayStatus: RunwayStatus.OPERATIONAL,
+      });
+    }
+
+    // Create all FOSs in batch
+    await this.prisma.forwardOperatingSite.createMany({
+      data: fosList,
+    });
 
     return game;
   }

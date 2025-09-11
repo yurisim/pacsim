@@ -68,6 +68,7 @@ model Game {
   satellites SatelliteInstance[]
   hospitals  Hospital[]
   eventLog   GameEvent[]
+  fosSites   ForwardOperatingSite[]
 }
 
 model GameBoard {
@@ -144,10 +145,13 @@ model Player {
 
 model ForwardOperatingSite {
   id              Int  @id @default(autoincrement())
+  gameId          Int
+  game            Game @relation(fields: [gameId], references: [id])
   fosIdNumber     Int
-  teamId          Int
-  team            Team @relation(fields: [teamId], references: [id])
-  turnEstablished Int
+  isActive        Boolean @default(false)
+  teamId          Int?
+  team            Team? @relation(fields: [teamId], references: [id])
+  turnActivated   Int?
 
   answeredRFIs    AnsweredRFI[]
   isFullyAssessed Boolean       @default(false)
@@ -167,7 +171,7 @@ model ForwardOperatingSite {
   commodities            CommodityStock[]
   isPlaJammingWithin2Hex Boolean            @default(false)
 
-  @@unique([teamId, fosIdNumber])
+  @@unique([gameId, fosIdNumber])
 }
 
 model CommodityStock {
