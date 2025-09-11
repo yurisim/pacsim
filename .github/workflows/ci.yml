@@ -33,7 +33,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Configure Git
-        run: 	git config --global --add safe.directory /__w/pacsim/pacsim
+        run: git config --global --add safe.directory /__w/pacsim/pacsim
       - name: Fetch master branch
         run: git fetch origin master:master
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
