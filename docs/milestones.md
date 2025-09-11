@@ -169,8 +169,14 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
      - [ ] All state changes are broadcast to the relevant game room.
 
 5.  **MFR Logic Implementation:**
-     - [ ] Create API endpoints for submitting MFRs.
-     - [ ] Create a section in the GM Interface for approving/denying MFRs.
+      - [ ] Create API endpoints for submitting MFRs.
+      - [ ] Create a section in the GM Interface for approving/denying MFRs.
+
+6.  **Turn Management**
+      - [ ] Implement MOB commander ability to mark their own team as "done" for the current turn
+      - [ ] Implement GM authority to advance the turn after all teams are prepared
+      - [ ] Add turn progression controls with status tracking and confirmation dialogs
+      - [ ] Ensure orderly progression and coordination across all teams
 
 ---
 

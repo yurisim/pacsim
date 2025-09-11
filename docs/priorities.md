@@ -92,10 +92,14 @@
    - Medical supply logistics
 
 10. **End-of-Turn Automation**
-   - Logistics tax calculation
-   - Demoralization and mission point scoring
-   - Game turn advancement with Civilization-style "Next Turn" interface
-   - Automated satellite movement
+    - Logistics tax calculation
+    - Demoralization and mission point scoring
+    - Game turn advancement with Civilization-style "Next Turn" interface
+    - Automated satellite movement
+
+11. **Turn Management**
+    - MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions
+    - Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared
 
 ### P3 - Low Priority (Polish and Advanced Features)
 
