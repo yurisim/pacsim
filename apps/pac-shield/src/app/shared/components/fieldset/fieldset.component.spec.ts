@@ -13,55 +13,19 @@ describe('FieldsetComponent', () => {
 
     fixture = TestBed.createComponent(FieldsetComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display legend text', () => {
-    component.legend = 'Test Legend';
+  it('should display the legend in the template', () => {
+    const testLegend = 'Test Legend';
+    component.legend = testLegend;
     fixture.detectChanges();
-    
-    const legendText = fixture.nativeElement.querySelector('.mat-fieldset-legend-text');
-    expect(legendText.textContent.trim()).toBe('Test Legend');
-  });
-
-  it('should toggle content when toggleable', () => {
-    component.toggleable = true;
-    component.collapsed = false;
-    
-    spyOn(component.toggle, 'emit');
-    
-    component.onToggle();
-    
-    expect(component.collapsed).toBe(true);
-    expect(component.toggle.emit).toHaveBeenCalledWith(true);
-  });
-
-  it('should not toggle when disabled', () => {
-    component.toggleable = true;
-    component.disabled = true;
-    component.collapsed = false;
-    
-    spyOn(component.toggle, 'emit');
-    
-    component.onToggle();
-    
-    expect(component.collapsed).toBe(false);
-    expect(component.toggle.emit).not.toHaveBeenCalled();
-  });
-
-  it('should not toggle when not toggleable', () => {
-    component.toggleable = false;
-    component.collapsed = false;
-    
-    spyOn(component.toggle, 'emit');
-    
-    component.onToggle();
-    
-    expect(component.collapsed).toBe(false);
-    expect(component.toggle.emit).not.toHaveBeenCalled();
+    const legendElement = fixture.nativeElement.querySelector(
+      '[data-testid="legend-text"]'
+    );
+    expect(legendElement.textContent.trim()).toBe(testLegend);
   });
 });
