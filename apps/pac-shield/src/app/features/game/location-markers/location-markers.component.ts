@@ -35,6 +35,7 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
   @Input() showMobMarkers = true;
   @Input() showFosMarkers = true;
   @Input() markerConfig: Partial<MarkerStyleConfig> = {};
+  @Input() activeFosIds: Set<string> = new Set(); // Track which FOSs are active
 
   private themeService = inject(ThemeService);
   private mobMarkers: MobMarkerReference[] = [];
@@ -83,6 +84,10 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
 
     if (changes['markerConfig'] && this.markersInitialized) {
       this.updateMarkerStyles();
+    }
+
+    if (changes['activeFosIds'] && this.markersInitialized) {
+      this.updateFosActivationStatus();
     }
   }
 
@@ -218,6 +223,11 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
         markerElement.className = 'fos-marker';
         markerElement.style.textAlign = 'center';
         markerElement.style.cursor = 'pointer';
+        markerElement.style.transition = 'opacity 0.3s ease-in-out';
+        
+        // Set initial opacity based on activation status
+        const isActive = this.activeFosIds.has(fos.id);
+        markerElement.style.opacity = isActive ? '1' : '0.5';
 
         // Create Material icon element using Google Material Icons font
         const iconElement = document.createElement('span');
@@ -254,7 +264,9 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
           marker,
           fosData: fos,
           iconElement,
-          labelElement
+          labelElement,
+          markerElement,
+          isActive: this.activeFosIds.has(fos.id)
         });
       } catch (error) {
         console.error(`Error creating FOS marker for ${fos.name}:`, error);
@@ -284,6 +296,20 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
       this.fosMarkers.forEach(({ marker }) => marker.remove());
       this.fosMarkers = [];
     }
+  }
+
+  /**
+   * Update FOS activation status and apply opacity changes
+   */
+  private updateFosActivationStatus(): void {
+    this.fosMarkers.forEach(markerRef => {
+      const shouldBeActive = this.activeFosIds.has(markerRef.fosData.id);
+      
+      if (markerRef.isActive !== shouldBeActive) {
+        markerRef.isActive = shouldBeActive;
+        markerRef.markerElement.style.opacity = shouldBeActive ? '1' : '0.5';
+      }
+    });
   }
 
   /**
@@ -414,5 +440,83 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
       mob: this.mobMarkers.length,
       fos: this.fosMarkers.length
     };
+  }
+
+  /**
+   * Public method to activate a specific FOS
+   * @param fosId The ID of the FOS to activate
+   */
+  public activateFos(fosId: string): void {
+    if (!this.activeFosIds.has(fosId)) {
+      this.activeFosIds.add(fosId);
+      this.updateSingleFosActivation(fosId, true);
+    }
+  }
+
+  /**
+   * Public method to deactivate a specific FOS
+   * @param fosId The ID of the FOS to deactivate
+   */
+  public deactivateFos(fosId: string): void {
+    if (this.activeFosIds.has(fosId)) {
+      this.activeFosIds.delete(fosId);
+      this.updateSingleFosActivation(fosId, false);
+    }
+  }
+
+  /**
+   * Public method to toggle FOS activation status
+   * @param fosId The ID of the FOS to toggle
+   */
+  public toggleFosActivation(fosId: string): void {
+    if (this.activeFosIds.has(fosId)) {
+      this.deactivateFos(fosId);
+    } else {
+      this.activateFos(fosId);
+    }
+  }
+
+  /**
+   * Update a single FOS marker's activation status
+   * @param fosId The ID of the FOS to update
+   * @param isActive The new activation status
+   */
+  private updateSingleFosActivation(fosId: string, isActive: boolean): void {
+    const markerRef = this.fosMarkers.find(m => m.fosData.id === fosId);
+    if (markerRef) {
+      markerRef.isActive = isActive;
+      markerRef.markerElement.style.opacity = isActive ? '1' : '0.5';
+    }
+  }
+
+  /**
+   * Public method to get current activation status of all FOSs
+   * @returns Array of FOS IDs and their activation status
+   */
+  public getFosActivationStatus(): Array<{ id: string; name: string; isActive: boolean }> {
+    return this.fosMarkers.map(markerRef => ({
+      id: markerRef.fosData.id,
+      name: markerRef.fosData.name,
+      isActive: markerRef.isActive
+    }));
+  }
+
+  /**
+   * Public method to activate multiple FOSs at once
+   * @param fosIds Array of FOS IDs to activate
+   */
+  public activateMultipleFos(fosIds: string[]): void {
+    fosIds.forEach(id => this.activateFos(id));
+  }
+
+  /**
+   * Public method to deactivate all FOSs
+   */
+  public deactivateAllFos(): void {
+    this.activeFosIds.clear();
+    this.fosMarkers.forEach(markerRef => {
+      markerRef.isActive = false;
+      markerRef.markerElement.style.opacity = '0.5';
+    });
   }
 }

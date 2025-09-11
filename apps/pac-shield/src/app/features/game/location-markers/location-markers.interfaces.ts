@@ -29,6 +29,10 @@ export interface FosMarkerReference {
   iconElement: HTMLElement;
   /** Reference to the label DOM element for style updates */
   labelElement: HTMLElement;
+  /** Reference to the container element for opacity control */
+  markerElement: HTMLElement;
+  /** Track activation status of the FOS */
+  isActive: boolean;
 }
 
 /**
