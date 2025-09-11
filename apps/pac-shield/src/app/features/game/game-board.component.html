@@ -117,6 +117,7 @@
   <div class="location-panel-overlay absolute left-2 bottom-2 z-[95] pointer-events-auto">
     <app-location-panel 
       [selectedHex]="selectedVisualHexCoord"
+      [selectedH3Index]="selectedH3Index"
       (actionClicked)="onLocationAction($event)"
       [collapsed]="false">
     </app-location-panel>

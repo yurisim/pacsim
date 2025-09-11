@@ -99,6 +99,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
   selectedVisualHexCoord: string | null = null;
+  selectedH3Index: string | null = null;
 
   // Game statistics from service (reactive signals)
   gameStats = this.gameStatsService.gameStats;
@@ -228,6 +229,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onHexSelected(event: HexSelectionEvent): void {
     this.selectedVisualHexCoord = event.visualCoordinate;
+    this.selectedH3Index = event.h3Index;
     console.log('Hex selected:', event);
     // Additional logic for hex selection can be added here
   }
