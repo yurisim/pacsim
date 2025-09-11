@@ -237,7 +237,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onLocationAction(action: any): void {
     console.log('Location action:', action);
-    
+
     // Handle different location actions
     switch (action.id) {
       case 'center-map':
@@ -249,7 +249,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           });
         }
         break;
-        
+
       case 'zoom-to-region':
         // Zoom to regional view
         if (this.map) {
@@ -259,7 +259,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           });
         }
         break;
-        
+
       case 'show-mobs':
         // Toggle MOB markers visibility
         if (this.locationMarkers) {
@@ -267,7 +267,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Toggle MOB visibility');
         }
         break;
-        
+
       case 'show-fos':
         // Toggle FOS markers visibility
         if (this.locationMarkers) {
@@ -275,47 +275,47 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Toggle FOS visibility');
         }
         break;
-        
+
       case 'toggle-labels':
         // Toggle location labels
         console.log('Toggle location labels');
         break;
-        
+
       case 'measure-distance':
         // Start distance measurement tool
         console.log('Start measuring distance');
         break;
-        
+
       case 'find-location':
         // Open location search
         console.log('Open location search');
         break;
-        
+
       case 'add-marker':
         // Add custom marker at current position
         console.log('Add custom marker');
         break;
-        
+
       case 'navigate-route':
         // Plan route between locations
         console.log('Plan route');
         break;
-        
+
       case 'location-info':
         // Show location details
         console.log('Show location info');
         break;
-        
+
       case 'satellite-view':
         // Toggle satellite imagery
         console.log('Toggle satellite view');
         break;
-        
+
       case 'terrain-view':
         // Show terrain features
         console.log('Toggle terrain view');
         break;
-        
+
       default:
         console.warn('Unknown location action:', action.id);
     }
@@ -505,7 +505,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   ngOnDestroy(): void {
     // LocationMarkersComponent handles its own cleanup via ngOnDestroy
-    
+
     // Reset flags for cleanup
     this.hexGridCreated = false;
 
