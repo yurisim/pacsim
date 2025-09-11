@@ -33,7 +33,12 @@
       "Bash(mv:*)",
       "WebFetch(domain:docs.mapbox.com)",
       "WebFetch(domain:demotiles.maplibre.org)",
-      "Read(//c/Users/yuras/Pictures/Screenshots/**)"
+      "Read(//c/Users/yuras/Pictures/Screenshots/**)",
+      "Bash(npx nx prisma-generate:*)",
+      "Bash(npx nx prisma-db-push:*)",
+      "Bash(npx nx serve:*)",
+      "Bash(sed:*)",
+      "Bash(dir \"C:\\pacsim\\apps\\pac-shield-api\\src\\app\\generated\"\")"
     ],
     "deny": [],
     "ask": []
