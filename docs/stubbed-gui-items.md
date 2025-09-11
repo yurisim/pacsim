@@ -4,8 +4,6 @@ This document outlines the comprehensive GUI and visual elements required to imp
 
 ## **Design Philosophy**
 
-### **Civilization-Inspired Principles**
-- **Strategic Overview**: Central Pacific Theater map dominates the interface, providing comprehensive situational awareness
 - **Contextual Information**: Adaptive side panels that respond to user selections and role-based access
 - **Progressive Disclosure**: Complex information revealed through layered interactions and modal dialogs
 - **Visual Hierarchy**: Clear distinction between primary actions, supporting information, and background data
