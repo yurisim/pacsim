@@ -127,6 +127,9 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
     await page.goto('/join');
 
+    // wait for join page to load
+    await expect(page.getByText('Join Game')).toBeVisible({ timeout: 5000 });
+
     // Test invalid room code first - fill each OTP input directly
     const inputs = await page.locator('input[data-otp-index]').all();
     await inputs[0].fill('I');
