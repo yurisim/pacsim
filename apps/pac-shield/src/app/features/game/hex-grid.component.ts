@@ -262,8 +262,8 @@ export class HexGridComponent implements OnDestroy {
         type: 'fill',
         source: this.SOURCE_ID,
         paint: {
-          'fill-color': colors.outlineVariant,
-          'fill-opacity': 0.05
+          'fill-color': colors.primary,
+          'fill-opacity': 0.1
         }
       });
     }
@@ -275,9 +275,9 @@ export class HexGridComponent implements OnDestroy {
         type: 'line',
         source: this.SOURCE_ID,
         paint: {
-          'line-color': colors.outlineVariant,
-          'line-width': 1.5,
-          'line-opacity': 0.4,
+          'line-color': colors.primary,
+          'line-width': 2,
+          'line-opacity': 1,
           'line-dasharray': [3, 3]
         }
       });
@@ -325,7 +325,7 @@ export class HexGridComponent implements OnDestroy {
     return {
       outlineVariant: computedStyle.getPropertyValue('--mat-sys-outline-variant').trim() || '#666666',
       onSurfaceVariant: computedStyle.getPropertyValue('--mat-sys-outline').trim() ||
-                       computedStyle.getPropertyValue('--mat-sys-on-surface-variant').trim() || '#666666',
+        computedStyle.getPropertyValue('--mat-sys-on-surface-variant').trim() || '#666666',
       primary: computedStyle.getPropertyValue('--mat-sys-primary').trim() || '#0066CC'
     };
   }
