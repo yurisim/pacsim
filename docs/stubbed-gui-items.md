@@ -301,6 +301,11 @@ This document outlines the comprehensive GUI and visual elements required to imp
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
+#### **Turn Management Rules**
+
+- MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
+- Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.
+
 ### **8. Shared UI Components**
 
 #### **Score and Status Displays**
