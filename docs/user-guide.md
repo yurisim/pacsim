@@ -555,9 +555,17 @@ The following paragraphs will describe items found on the MOB board.
     - **5.3.8.2.7.** (02:15-02:30) Seventh Look
   - **5.3.8.3. 30 Minutes Hotwash/Debrief/Feedback (02:30-03:00)**
     - **5.3.8.3.1.** 10 mins Hotwash / 10 mins Debrief to Instructor / 10 mins Instructor Feedback
-
-
-## Chapter 6: CSpOC SPECIFIC INFORMATION
+ 
+ 
+ ### 5.4. Turn Management
+ 
+ #### 5.4.1. Turn Management Rules
+ 
+ - MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
+ - Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.
+ 
+ 
+ ## Chapter 6: CSpOC SPECIFIC INFORMATION
 
 ### 6.1. Introduction
 

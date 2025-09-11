@@ -383,6 +383,11 @@ This document outlines the user interface design for Operation Pacific Shield, d
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
+#### **Turn Management Rules**
+
+- MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
+- Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.
+
 ---
 
 ## **Visual Design Standards**

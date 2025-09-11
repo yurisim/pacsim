@@ -5,7 +5,6 @@
 
      - [ ] **Implement Civilization-style Layout Components:**
        - [ ] Create base layout with central map (75% width), right sidebar (25% width), and bottom panel (25% height), these panels should be overlays on top of the map. They need to be able to expand and close and be mobile friendly.
-       - [ ] Implement responsive grid system for dashboard panels
        - [ ] Create collapsible sidebar for mobile/tablet viewports
      - [ ] **Create a `GameTokenComponent`:**
        - [ ] A generic component that takes an `asset` object as input.
@@ -169,8 +168,14 @@ _This phase transforms the single-player prototype into a fully-fledged, multi-u
      - [ ] All state changes are broadcast to the relevant game room.
 
 5.  **MFR Logic Implementation:**
-     - [ ] Create API endpoints for submitting MFRs.
-     - [ ] Create a section in the GM Interface for approving/denying MFRs.
+      - [ ] Create API endpoints for submitting MFRs.
+      - [ ] Create a section in the GM Interface for approving/denying MFRs.
+
+6.  **Turn Management**
+      - [ ] Implement MOB commander ability to mark their own team as "done" for the current turn
+      - [ ] Implement GM authority to advance the turn after all teams are prepared
+      - [ ] Add turn progression controls with status tracking and confirmation dialogs
+      - [ ] Ensure orderly progression and coordination across all teams
 
 ---
 

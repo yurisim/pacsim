@@ -172,3 +172,8 @@ The core logic that governs how actions and state changes are resolved.
     *   **MEO:** Lower fidelity (unidentified on first pass, identified on second pass), wider scope (h3-js hex grid).
     *   **GEO:** Stationary orbit, provides persistent effects over a large area.
 *   **Capabilities:** Each satellite type can only detect specific enemy asset types (e.g., Missile Warning sees ground-based missile threats; ISR sees airborne threats).
+
+### 4.5. Turn Management
+
+- MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
+- Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.

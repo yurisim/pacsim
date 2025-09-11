@@ -2,13 +2,9 @@
 
 ## Executive Summary
 
-Based on evaluation of the milestones, design document, user guide, and game methods, the project has completed foundational setup (Phase 0) and made significant progress on Phase 1 visualization. The core map infrastructure with MapLibre GL and h3-js hex grid overlay is fully implemented, along with basic game board components. However, the Civilization-style UI layout and full backend data integration remain to be completed before moving to core gameplay mechanics in Phases 2-4.
-
 ## Current Status Assessment
 
 ### In Progress (Phase 1 - Visualization)
-- ❌ Civilization-style layout components (central map 75%, sidebar 25%, bottom panel)
-- ❌ Context-sensitive right sidebar with unit details
 - ❌ Backend data integration for complete game state
 - ❌ Real-time state synchronization across clients
 
@@ -26,8 +22,6 @@ Based on evaluation of the milestones, design document, user guide, and game met
 ### P0 - Critical (Must Complete for Functional Game)
 
 1. **Complete Civilization-Style Game Board Interface**
-    - ❌ Implement responsive layout architecture (central map 75%, sidebar 25%, bottom panel 25%)
-    - ❌ Build context-sensitive right sidebar with unit details and team resources
     - ❌ Integrate backend game state data via NgRx effects with real-time synchronization
     - ❌ Display aircraft, ground units, and threat tokens with visual status indicators
     - ❌ Implement map layer toggle controls (political boundaries, threat zones, satellite coverage)
@@ -98,10 +92,14 @@ Based on evaluation of the milestones, design document, user guide, and game met
    - Medical supply logistics
 
 10. **End-of-Turn Automation**
-   - Logistics tax calculation
-   - Demoralization and mission point scoring
-   - Game turn advancement with Civilization-style "Next Turn" interface
-   - Automated satellite movement
+    - Logistics tax calculation
+    - Demoralization and mission point scoring
+    - Game turn advancement with Civilization-style "Next Turn" interface
+    - Automated satellite movement
+
+11. **Turn Management**
+    - MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions
+    - Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared
 
 ### P3 - Low Priority (Polish and Advanced Features)
 

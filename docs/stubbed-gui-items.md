@@ -1,11 +1,5 @@
 # **Civilization-Inspired GUI Components: Operation Pacific Shield**
 
-This document outlines the comprehensive GUI and visual elements required to implement the Civilization-inspired strategic command interface for Operation Pacific Shield. Drawing from Civilization series design principles, this interface provides intuitive situational awareness, contextual information panels, and progressive disclosure of complex military information.
-
-## **Design Philosophy**
-
-### **Civilization-Inspired Principles**
-- **Strategic Overview**: Central Pacific Theater map dominates the interface, providing comprehensive situational awareness
 - **Contextual Information**: Adaptive side panels that respond to user selections and role-based access
 - **Progressive Disclosure**: Complex information revealed through layered interactions and modal dialogs
 - **Visual Hierarchy**: Clear distinction between primary actions, supporting information, and background data
@@ -19,7 +13,6 @@ This document outlines the comprehensive GUI and visual elements required to imp
 
 ## **Layout Architecture**
 
-### **Primary Layout (100% viewport)**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -52,17 +45,9 @@ This document outlines the comprehensive GUI and visual elements required to imp
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### **Responsive Behavior**
-- **Desktop (1920x1080+)**: Full layout as described
-- **Tablet (1024x768)**: Collapsible sidebars, simplified overlays
-- **Mobile (768x1024)**: Single-pane interface with tabbed navigation
-
 ## **Core Game Board Components**
 
 ### **1. Main Game Board**
-- **Pacific Theater Map**: Interactive MapLibre GL base map with H3 hex grid overlay
-- **Asset Tokens**: Draggable NATO symbology representations for aircraft, personnel, equipment
-- **Location Markers**: Visual indicators for MOBs, FOSs (1-45), and strategic locations
 - **Threat Ring Display**: Dynamic visual representation of DF-26 ballistic missile threat range
 - **Political Access Indicators**: Color-coded overlays showing country access status (Full Access, Overflight Only, No Access)
 - **Aircraft Movement Paths**: Visual trails showing planned and executed flight routes with animation
@@ -303,6 +288,11 @@ This document outlines the comprehensive GUI and visual elements required to imp
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
+#### **Turn Management Rules**
+
+- MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
+- Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.
+
 ### **8. Shared UI Components**
 
 #### **Score and Status Displays**
@@ -333,10 +323,6 @@ This document outlines the comprehensive GUI and visual elements required to imp
 ### **10. Visual Design Standards**
 
 #### **Color Schemes**
-**Team Colors (NATO Standard)**
-- **Blue Force**: #4A90E2 (Primary), #7BB3F0 (Secondary)
-- **Red Force**: #E74C3C (Primary), #F1948A (Secondary)
-- **Neutral/Civilian**: #95A5A6 (Primary), #BDC3C7 (Secondary)
 
 **Status Indicators**
 - **Operational**: #27AE60 (Green)
@@ -374,25 +360,8 @@ This document outlines the comprehensive GUI and visual elements required to imp
 - **Error Handling**: Alert components for validation and system errors with recovery actions
 - **Loading States**: Progress indicators for async operations with cancellation support
 
-### **12. Technical Implementation Details**
-
-#### **Frontend Technology Stack**
-- **Framework**: Angular 18+ with Material Design components
-- **State Management**: NgRx for complex state synchronization
-- **Mapping**: MapLibre GL JS with H3 hex grid overlay
-- **Real-time**: Socket.IO for WebSocket communication
-- **Responsive**: Angular Flex Layout for adaptive design
-
-#### **Performance Considerations**
-- **Virtual Scrolling**: For large data tables (ATO, asset lists)
-- **Lazy Loading**: Route-based code splitting for role-specific modules
 - **Change Detection**: OnPush strategy for performance optimization
 - **Asset Optimization**: Compressed images, tree-shaken bundles
-
-#### **Browser Compatibility**
-- **Primary**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
-- **Mobile**: iOS Safari 14+, Chrome Mobile 90+
-- **Fallbacks**: Graceful degradation for older browsers
 
 #### **Component Architecture**
 - **AppLayoutComponent**: Primary application shell with responsive grid layout
@@ -403,7 +372,6 @@ This document outlines the comprehensive GUI and visual elements required to imp
 
 ### **13. Advanced Visual Features**
 - **Drag and Drop System**: For moving tokens between locations and assigning to tasks with validation
-- **Zoom and Pan Controls**: For navigating the game board with smooth animations
 - **Real-time Updates**: WebSocket-driven live state synchronization with conflict resolution
 - **Responsive Design**: Mobile-friendly layouts for different screen sizes with adaptive UI
 - **Animation System**: Smooth transitions for state changes, token movements, and UI interactions
