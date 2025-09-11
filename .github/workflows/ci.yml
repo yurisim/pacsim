@@ -43,6 +43,9 @@ jobs:
           node-version: 20
           cache: 'yarn'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - run: yarn install --immutable
 
       - run: npx prisma db push --schema apps/pac-shield-api/src/prisma/schema.prisma --accept-data-loss
