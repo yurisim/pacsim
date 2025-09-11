@@ -7,12 +7,10 @@ describe('StatusBannerComponent', () => {
   let fixture: ComponentFixture<StatusBannerComponent>;
   let component: StatusBannerComponent;
 
-  const getIconByFontIcon = (name: string) => {
+  const getIconByText = (iconText: string) => {
     const icons = fixture.debugElement.queryAll(By.css('mat-icon'));
-    return icons.find(de =>
-      (de.attributes['ng-reflect-font-icon'] || '').includes(name) ||
-      (de.attributes['fonticon'] || '').includes(name) ||
-      (de.nativeElement.getAttribute('fontIcon') || '').includes(name)
+    return icons.find(de => 
+      de.nativeElement.textContent.trim() === iconText
     );
   };
 
@@ -39,7 +37,7 @@ describe('StatusBannerComponent', () => {
     fixture.componentRef.setInput('state', 'valid');
     fixture.detectChanges();
 
-    const check = getIconByFontIcon('check_circle');
+    const check = getIconByText('check_circle');
     expect(check).toBeTruthy();
   });
 
@@ -48,7 +46,7 @@ describe('StatusBannerComponent', () => {
     fixture.componentRef.setInput('message', 'Invalid room code');
     fixture.detectChanges();
 
-    const cancel = getIconByFontIcon('cancel');
+    const cancel = getIconByText('cancel');
     expect(cancel).toBeTruthy();
 
     const msg = fixture.debugElement.query(By.css('span.md-sys-color-error'));

@@ -1,24 +1,29 @@
-<mat-progress-spinner
-  *ngIf="state === 'checking'"
-  mode="indeterminate"
-  [diameter]="16"
-  class="animate-in fade-in-0 zoom-in-95 duration-200"
-  role="status"
-  aria-label="Validating room code"
-></mat-progress-spinner>
+@if (state === 'checking') {
+  <mat-progress-spinner
+    mode="indeterminate"
+    [diameter]="16"
+    class="animate-in fade-in-0 zoom-in-95 duration-200"
+    role="status"
+    aria-label="Validating room code"
+  ></mat-progress-spinner>
+}
 
-<mat-icon
-  *ngIf="state === 'valid'"
-  class="md-sys-color-secondary"
-  aria-hidden="true"
->check_circle</mat-icon>
+@if (state === 'valid') {
+  <mat-icon
+    class="md-sys-color-secondary"
+    aria-hidden="true"
+  >check_circle</mat-icon>
+}
 
-<mat-icon
-  *ngIf="state === 'invalid'"
-  class="md-sys-color-error"
-  aria-hidden="true"
->cancel</mat-icon>
+@if (state === 'invalid') {
+  <mat-icon
+    class="md-sys-color-error"
+    aria-hidden="true"
+  >cancel</mat-icon>
+}
 
-<span *ngIf="state === 'invalid' && asString(message)" class="md-typescale-body-small md-sys-color-error">
-  {{ asString(message) }}
-</span>
+@if (state === 'invalid' && asString(message)) {
+  <span class="md-typescale-body-small md-sys-color-error">
+    {{ asString(message) }}
+  </span>
+}
