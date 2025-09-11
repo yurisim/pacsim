@@ -3,6 +3,7 @@ import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDest
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
+import { map } from 'rxjs/operators';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,7 @@ import { selectGame, selectGameError, selectGameLoading } from '../../core/store
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; // Still needed for old overlayHexGrid method
 import { ThemeService } from '../../shared/services/theme.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
+import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
 import { GameStatsComponent, GameStatsService } from './game-stats';
 import { LocationPanelComponent } from './location-panel';
@@ -98,8 +100,22 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   game$ = this.store.select(selectGame);
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
+  
+  // Computed properties from game data
+  gameId$ = this.game$.pipe(map(game => game?.id || null));
+  currentTurn$ = this.game$.pipe(map(game => game?.turn || 1));
+  availableTeams$ = this.game$.pipe(map(game => game?.teams || []));
+  
   selectedVisualHexCoord: string | null = null;
   selectedH3Index: string | null = null;
+  
+  // FOS activation tracking
+  activeFosIds = new Set<string>();
+  fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID (e.g., 'kadena')
+  
+  // Player identity (for demo purposes)
+  currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
+  isGameMaster = false; // Demo: set to true to see GM actions
 
   // Game statistics from service (reactive signals)
   gameStats = this.gameStatsService.gameStats;
@@ -237,11 +253,34 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Handle location panel actions
    */
-  onLocationAction(action: any): void {
-    console.log('Location action:', action);
+  onLocationAction(event: {action: any, asset: any}): void {
+    console.log('Location action:', event);
+    
+    const action = event.action;
+    const asset = event.asset;
 
     // Handle different location actions
     switch (action.id) {
+      case 'activate-fos':
+        // Activate FOS at current location
+        if (asset.id && asset.id.startsWith('fos-')) {
+          this.activateFos(asset.id);
+        }
+        break;
+
+      case 'deactivate-fos':
+        // Deactivate FOS at current location
+        if (asset.id && asset.id.startsWith('fos-')) {
+          this.deactivateFos(asset.id);
+        }
+        break;
+
+      case 'toggle-fos':
+        // Toggle FOS activation status
+        if (asset.id && asset.id.startsWith('fos-')) {
+          this.toggleFosActivation(asset.id);
+        }
+        break;
       case 'center-map':
         // Center map on current location
         if (this.map) {
@@ -323,6 +362,25 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Handle FOS status changes from location panel
+   */
+  onFosStatusChanged(event: {fosId: string, isActive: boolean, teamId?: number}): void {
+    console.log('FOS status changed:', event);
+    
+    if (event.isActive) {
+      this.activeFosIds.add(event.fosId);
+    } else {
+      this.activeFosIds.delete(event.fosId);
+    }
+
+    // Update MOB assignments if provided
+    if (event.teamId && event.isActive) {
+      // This would need proper mapping from teamId to MOB ID
+      // For now, just logging the change
+      console.log(`FOS ${event.fosId} assigned to team ${event.teamId}`);
+    }
+  }
 
   /**
    * Setup event handlers for style loading completion
@@ -492,6 +550,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Initialize map immediately since container is always available
     setTimeout(() => {
       this.initializeMap();
+      
+      // Initialize demo FOS activations after a slight delay to ensure markers are ready
+      setTimeout(() => {
+        this.initializeDemoFosActivations();
+      }, 1000);
     }, 0);
   }
 
@@ -834,4 +897,84 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   // MOB and FOS marker rendering is now handled by LocationMarkersComponent
   // The component is initialized in the template with the map instance
 
+  /**
+   * Activate a FOS (make it fully opaque) and assign to a MOB
+   * @param fosId The ID of the FOS to activate
+   * @param mobId Optional MOB ID to assign (defaults to current player's MOB)
+   */
+  activateFos(fosId: string, mobId?: string): void {
+    if (!this.activeFosIds.has(fosId)) {
+      this.activeFosIds.add(fosId);
+      
+      // Assign MOB ownership
+      const assignedMob = mobId || this.currentPlayerMob || 'unassigned';
+      this.fosMobAssignments[fosId] = assignedMob;
+      
+      // Update LocationMarkersComponent if it's available
+      if (this.locationMarkers) {
+        this.locationMarkers.activateFos(fosId);
+      }
+      
+      console.log(`FOS ${fosId} activated and assigned to MOB ${assignedMob}`);
+      
+      // Update game stats to reflect activation
+      const mobName = MOB_LOCATIONS[assignedMob]?.name || assignedMob;
+      this.gameStatsService.addLogEntry(
+        `FOS ${fosId} has been activated by ${mobName}`,
+        'action'
+      );
+    }
+  }
+
+  /**
+   * Deactivate a FOS (make it 50% transparent) and remove MOB assignment
+   * @param fosId The ID of the FOS to deactivate
+   */
+  deactivateFos(fosId: string): void {
+    if (this.activeFosIds.has(fosId)) {
+      this.activeFosIds.delete(fosId);
+      
+      // Remove MOB assignment
+      const previousMobId = this.fosMobAssignments[fosId];
+      delete this.fosMobAssignments[fosId];
+      
+      // Update LocationMarkersComponent if it's available
+      if (this.locationMarkers) {
+        this.locationMarkers.deactivateFos(fosId);
+      }
+      
+      console.log(`FOS ${fosId} deactivated`);
+      
+      // Update game stats to reflect deactivation
+      const previousMobName = previousMobId ? (MOB_LOCATIONS[previousMobId]?.name || previousMobId) : null;
+      this.gameStatsService.addLogEntry(
+        `FOS ${fosId} has been deactivated${previousMobName ? ` (was controlled by ${previousMobName})` : ''}`,
+        'warning'
+      );
+    }
+  }
+
+  /**
+   * Toggle FOS activation status
+   * @param fosId The ID of the FOS to toggle
+   */
+  toggleFosActivation(fosId: string): void {
+    if (this.activeFosIds.has(fosId)) {
+      this.deactivateFos(fosId);
+    } else {
+      this.activateFos(fosId);
+    }
+  }
+
+  /**
+   * Initialize some FOSs as active for demo purposes
+   */
+  private initializeDemoFosActivations(): void {
+    // Activate and assign FOSs to different MOBs for demo
+    this.activateFos('fos-01', 'kadena');    // Player's MOB (Kadena)
+    this.activateFos('fos-03', 'kadena');    // Player's MOB (Kadena)
+    this.activateFos('fos-06', 'andersen');  // Andersen MOB
+    this.activateFos('fos-08', 'yokota');    // Yokota MOB
+    this.activateFos('fos-10', 'osan');      // Osan MOB
+  }
 }
