@@ -5,7 +5,6 @@
 
      - [ ] **Implement Civilization-style Layout Components:**
        - [ ] Create base layout with central map (75% width), right sidebar (25% width), and bottom panel (25% height), these panels should be overlays on top of the map. They need to be able to expand and close and be mobile friendly.
-       - [ ] Implement responsive grid system for dashboard panels
        - [ ] Create collapsible sidebar for mobile/tablet viewports
      - [ ] **Create a `GameTokenComponent`:**
        - [ ] A generic component that takes an `asset` object as input.
