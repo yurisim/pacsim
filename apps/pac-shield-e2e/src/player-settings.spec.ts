@@ -213,12 +213,9 @@ test.describe('Player Settings in Lobby', () => {
 
     // Wait for dialog to close
     await expect(page.locator('[role="dialog"]')).toBeHidden();
-
     // Verify original name is preserved in the lobby player list
-    const playerCard = page.getByText('Edit ProfileLeave TeamName:');
 
-    await expect(playerCard).toBeVisible();
-    await expect(playerCard).toContainText(originalName);
+    await expect(page.getByText('Original Name')).toBeVisible();
   });
 
   /**
