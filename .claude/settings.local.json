@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx nx build:*)"
+      "Bash(npx nx build:*)",
+      "Bash(npx nx test:*)",
+      "Bash(npx nx lint:*)"
     ],
     "deny": [],
     "ask": []
