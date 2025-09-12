@@ -68,7 +68,7 @@ describe('HomeComponent', () => {
       const startButton = fixture.debugElement.query(
         By.css('button[matButton="filled"]')
       );
-      
+
       expect(startButton.nativeElement.disabled).toBe(true);
     });
 
@@ -80,7 +80,7 @@ describe('HomeComponent', () => {
       const startButton = fixture.debugElement.query(
         By.css('button[matButton="filled"]')
       );
-      
+
       expect(startButton.nativeElement.disabled).toBe(true);
     });
 
@@ -92,7 +92,7 @@ describe('HomeComponent', () => {
       const startButton = fixture.debugElement.query(
         By.css('button[matButton="filled"]')
       );
-      
+
       expect(startButton.nativeElement.disabled).toBe(true);
     });
 
@@ -104,7 +104,7 @@ describe('HomeComponent', () => {
       const startButton = fixture.debugElement.query(
         By.css('button[matButton="filled"]')
       );
-      
+
       expect(startButton.nativeElement.disabled).toBe(false);
     });
 
@@ -115,7 +115,7 @@ describe('HomeComponent', () => {
       const joinButton = fixture.debugElement.query(
         By.css('button[matButton="tonal"]')
       );
-      
+
       expect(joinButton.nativeElement.disabled).toBe(true);
     });
 
@@ -126,7 +126,7 @@ describe('HomeComponent', () => {
       const joinButton = fixture.debugElement.query(
         By.css('button[matButton="tonal"]')
       );
-      
+
       expect(joinButton.nativeElement.disabled).toBe(false);
     });
 
