@@ -18,6 +18,13 @@ import { FosModule } from './fos/fos.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? [
+            '.env.production',
+          ]
+          : ['.env'],
+      ignoreEnvFile: false,
     }),
     ClsModule.forRoot({
       global: true,
@@ -47,4 +54,4 @@ import { FosModule } from './fos/fos.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

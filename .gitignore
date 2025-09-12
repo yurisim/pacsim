@@ -49,3 +49,5 @@ libs/types/src/**
 apps/pac-shield/src/app/generated/**
 apps/pac-shield-api/src/app/generated/**
 
+.env.production
+

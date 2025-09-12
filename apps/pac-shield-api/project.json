@@ -93,12 +93,24 @@
         "cwd": "apps/pac-shield-api"
       }
     },
+    "prisma-migrate-dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx prisma migrate dev --schema src/prisma/schema.prisma",
+        "cwd": "apps/pac-shield-api"
+      }
+    },
 
     "prisma-db-push": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma db push --schema src/prisma/schema.prisma --accept-data-loss --force-reset",
+        "command": "npx prisma db push --schema src/prisma/schema.prisma",
         "cwd": "apps/pac-shield-api"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx prisma db push --schema src/prisma/schema.prisma"
+        }
       }
     },
     "prisma-db-reset": {
