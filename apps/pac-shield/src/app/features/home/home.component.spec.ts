@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -13,23 +13,36 @@ import { WebSocketService } from '../../shared/services/websocket.service';
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let mockApiService: jasmine.SpyObj<ApiService>;
-  let mockRouter: jasmine.SpyObj<Router>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockNotificationService: jasmine.SpyObj<NotificationService>;
-  let mockWebSocketService: jasmine.SpyObj<WebSocketService>;
+  let mockApiService: jest.Mocked<ApiService>;
+  let mockRouter: jest.Mocked<Router>;
+  let mockAuthService: jest.Mocked<AuthService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
+  let mockWebSocketService: jest.Mocked<WebSocketService>;
   let connectionStatus$: BehaviorSubject<boolean>;
 
   beforeEach(async () => {
     connectionStatus$ = new BehaviorSubject<boolean>(true);
-    
-    mockApiService = jasmine.createSpyObj('ApiService', ['post']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-    mockAuthService = jasmine.createSpyObj('AuthService', ['createGameMaster', 'getGameId']);
-    mockNotificationService = jasmine.createSpyObj('NotificationService', ['success']);
-    mockWebSocketService = jasmine.createSpyObj('WebSocketService', [], {
+
+    mockApiService = {
+      post: jest.fn()
+    } as unknown as jest.Mocked<ApiService>;
+
+    mockRouter = {
+      navigate: jest.fn()
+    } as unknown as jest.Mocked<Router>;
+
+    mockAuthService = {
+      createGameMaster: jest.fn(),
+      getGameId: jest.fn()
+    } as unknown as jest.Mocked<AuthService>;
+
+    mockNotificationService = {
+      success: jest.fn()
+    } as unknown as jest.Mocked<NotificationService>;
+
+    mockWebSocketService = {
       connectionStatus$: connectionStatus$
-    });
+    } as unknown as jest.Mocked<WebSocketService>;
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent, NoopAnimationsModule],
