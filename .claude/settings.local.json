@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx nx build:*)"
+      "Bash(npx nx build:*)",
+      "Bash(rm:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx nx lint:*)"
     ],
     "deny": [],
     "ask": []
