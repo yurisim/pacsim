@@ -21,12 +21,18 @@
         <button
           matButton="filled"
           (click)="createGame()"
-          [disabled]="isLoading"
+          [disabled]="isLoading || (websocketService.connectionStatus$ | async) === false"
         >
           <span *ngIf="!isLoading">Start New Game</span>
           <span *ngIf="isLoading">Starting...</span>
         </button>
-        <button matButton="tonal" (click)="navigateToJoin()">Join Game</button>
+        <button 
+          matButton="tonal" 
+          (click)="navigateToJoin()"
+          [disabled]="(websocketService.connectionStatus$ | async) === false"
+        >
+          Join Game
+        </button>
       </div>
 
       @if (errorMessage) {
