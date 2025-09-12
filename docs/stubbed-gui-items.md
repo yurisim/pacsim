@@ -330,10 +330,6 @@
 - **Non-Operational**: #E74C3C (Red)
 - **Unknown**: #95A5A6 (Gray)
 
-**UI Theme Integration**
-- **Light Theme**: Clean whites (#FFFFFF), subtle grays (#F8F9FA), accent blues
-- **Dark Theme**: Deep charcoals (#2C3E50), midnight blues (#34495E), bright accents
-
 #### **Typography Hierarchy**
 - **Headers**: Bold, 18-24px, high contrast
 - **Body Text**: Regular, 14-16px, readable contrast
