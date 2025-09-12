@@ -17,7 +17,6 @@ import { ThemeService } from '../../shared/services/theme.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
 import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
-import { GameStatsComponent, GameStatsService } from './game-stats';
 import { LocationPanelComponent } from './location-panel';
 
 // Stub UI components
@@ -31,6 +30,8 @@ import {
   CspocBoardComponent,
   MedcomDashboardComponent
 } from './stubs/stub-components';
+import { GameStatsComponent } from './game-stats/game-stats.component';
+import { GameStatsService } from './game-stats/game-stats.service';
 
 @Component({
   selector: 'app-game-board',

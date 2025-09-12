@@ -10,7 +10,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MOB_LOCATIONS, FOS_LOCATIONS, StaticLocation } from '../../../shared/config/static-locations.config';
-import { GameStatsService } from '../game-stats';
+import { GameStatsService } from '../game-stats/game-stats.service';
 import { FosService } from '../services/fos.service';
 import { ForwardOperatingSite, Team } from '../../../generated';
 import { FosActivationDialogComponent, FosActivationDialogData, FosActivationDialogResult } from './fos-activation-dialog.component';
