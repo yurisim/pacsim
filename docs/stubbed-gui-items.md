@@ -330,18 +330,6 @@
 - **Non-Operational**: #E74C3C (Red)
 - **Unknown**: #95A5A6 (Gray)
 
-#### **Typography Hierarchy**
-- **Headers**: Bold, 18-24px, high contrast
-- **Body Text**: Regular, 14-16px, readable contrast
-- **Labels**: Medium, 12-14px, secondary color
-- **Data Values**: Monospace where appropriate (coordinates, times, quantities)
-
-#### **Iconography Standards**
-- **Military Symbols**: NATO APP-6D standard where applicable
-- **UI Icons**: Material Design icons for consistency
-- **Asset Representations**: Distinctive silhouettes for easy recognition
-- **Status Icons**: Universal symbols (✓, ⚠, ✕, ⏸, ➤)
-
 ### **11. Supporting UI Elements**
 
 #### **Authentication and Lobby**
