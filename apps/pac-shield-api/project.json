@@ -91,6 +91,11 @@
       "options": {
         "command": "npx prisma generate --schema src/prisma/schema.prisma",
         "cwd": "apps/pac-shield-api"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx prisma generate --schema src/prisma/schema.prisma"
+        }
       }
     },
     "prisma-migrate-dev": {
