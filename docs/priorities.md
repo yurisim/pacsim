@@ -137,7 +137,6 @@ To achieve a functional game where players can:
 
 **Must Complete Before MVG:**
 
-1. Civilization-style game board interface (P0 #1)
 2. Basic asset movement with drag-and-drop (P0 #2)
 3. Enhanced ATO system with mission planner (P0 #3)
 4. Role-specific dashboard overlays (P1 #6)
