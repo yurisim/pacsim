@@ -4,7 +4,9 @@
       "Bash(npx nx build:*)",
       "Bash(npx nx test:*)",
       "Bash(npx nx lint:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

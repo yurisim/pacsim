@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { Map, Marker } from 'maplibre-gl';
+import { Map } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
@@ -99,19 +99,19 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   game$ = this.store.select(selectGame);
   isLoading$ = this.store.select(selectGameLoading);
   error$ = this.store.select(selectGameError);
-  
+
   // Computed properties from game data
   gameId$ = this.game$.pipe(map(game => game?.id || null));
   currentTurn$ = this.game$.pipe(map(game => game?.turn || 1));
   availableTeams$ = this.game$.pipe(map(game => game?.teams || []));
-  
+
   selectedVisualHexCoord: string | null = null;
   selectedH3Index: string | null = null;
-  
+
   // FOS activation tracking
   activeFosIds = new Set<string>();
   fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID (e.g., 'kadena')
-  
+
   // Player identity (for demo purposes)
   currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
   isGameMaster = false; // Demo: set to true to see GM actions
@@ -254,7 +254,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onLocationAction(event: {action: any, asset: any}): void {
     console.log('Location action:', event);
-    
+
     const action = event.action;
     const asset = event.asset;
 
@@ -366,7 +366,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onFosStatusChanged(event: {fosId: string, isActive: boolean, teamId?: number}): void {
     console.log('FOS status changed:', event);
-    
+
     if (event.isActive) {
       this.activeFosIds.add(event.fosId);
     } else {
@@ -549,7 +549,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Initialize map immediately since container is always available
     setTimeout(() => {
       this.initializeMap();
-      
+
       // Initialize demo FOS activations after a slight delay to ensure markers are ready
       setTimeout(() => {
         this.initializeDemoFosActivations();
@@ -904,18 +904,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   activateFos(fosId: string, mobId?: string): void {
     if (!this.activeFosIds.has(fosId)) {
       this.activeFosIds.add(fosId);
-      
+
       // Assign MOB ownership
       const assignedMob = mobId || this.currentPlayerMob || 'unassigned';
       this.fosMobAssignments[fosId] = assignedMob;
-      
+
       // Update LocationMarkersComponent if it's available
       if (this.locationMarkers) {
         this.locationMarkers.activateFos(fosId);
       }
-      
+
       console.log(`FOS ${fosId} activated and assigned to MOB ${assignedMob}`);
-      
+
       // Update game stats to reflect activation
       const mobName = MOB_LOCATIONS[assignedMob]?.name || assignedMob;
       this.gameStatsService.addLogEntry(
@@ -932,18 +932,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   deactivateFos(fosId: string): void {
     if (this.activeFosIds.has(fosId)) {
       this.activeFosIds.delete(fosId);
-      
+
       // Remove MOB assignment
       const previousMobId = this.fosMobAssignments[fosId];
       delete this.fosMobAssignments[fosId];
-      
+
       // Update LocationMarkersComponent if it's available
       if (this.locationMarkers) {
         this.locationMarkers.deactivateFos(fosId);
       }
-      
+
       console.log(`FOS ${fosId} deactivated`);
-      
+
       // Update game stats to reflect deactivation
       const previousMobName = previousMobId ? (MOB_LOCATIONS[previousMobId]?.name || previousMobId) : null;
       this.gameStatsService.addLogEntry(

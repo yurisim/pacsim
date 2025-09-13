@@ -5081,7 +5081,7 @@ __metadata:
     "@nx/webpack": "npm:21.5.1"
     "@nx/workspace": "npm:21.5.1"
     "@playwright/test": "npm:^1.36.0"
-    "@prisma/client": "npm:^6.16.0"
+    "@prisma/client": "npm:^6.16.1"
     "@schematics/angular": "npm:20.2.2"
     "@swc-node/register": "npm:~1.9.1"
     "@swc/core": "npm:~1.5.7"
@@ -5112,7 +5112,7 @@ __metadata:
     nx: "npm:21.5.1"
     postcss: "npm:^8.4.5"
     prettier: "npm:^2.6.2"
-    prisma: "npm:^6.16.0"
+    prisma: "npm:^6.16.1"
     reflect-metadata: "npm:^0.1.13"
     rxjs: "npm:~7.8.0"
     socket.io-client: "npm:^4.8.1"
@@ -5307,7 +5307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:^6.16.0":
+"@prisma/client@npm:^6.16.1":
   version: 6.16.1
   resolution: "@prisma/client@npm:6.16.1"
   peerDependencies:
@@ -15291,7 +15291,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prisma@npm:^6.16.0":
+"prisma@npm:^6.16.1":
   version: 6.16.1
   resolution: "prisma@npm:6.16.1"
   dependencies:
