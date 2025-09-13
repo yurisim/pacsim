@@ -98,6 +98,7 @@ npx nx lint pac-shield-api
 - **Theme Support**: Ensure components work in both light and dark themes
 - **Responsive Design**: Use Tailwind responsive prefixes (sm:, md:, lg:, xl:) for all layouts
 - **Control Flow**: Use new Angular control flow syntax (`@if`, `@for`, `@switch`) instead of structural directives (`*ngIf`, `*ngFor`, `*ngSwitch`)
+- **No Barrel Exports**: NEVER create `index.ts` files for barrel exports in Angular. Always import components directly from their specific file paths. Barrel exports hurt performance and tree-shaking in Angular applications.
 
 #### Angular Material 20 Button Syntax
 Use the correct Material 20 button directives:
