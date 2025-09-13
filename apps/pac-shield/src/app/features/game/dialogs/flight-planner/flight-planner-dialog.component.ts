@@ -64,10 +64,10 @@ export class FlightPlannerDialogComponent {
 
   // Location autocomplete data
   allLocationOptions: LocationOption[] = [];
-  filteredStartLocations$: Observable<LocationOption[]>;
-  filteredFinalDestinations$: Observable<LocationOption[]>;
-  filteredEnRouteDestinations$: Observable<LocationOption[]>;
-  filteredAlternateDestinations$: Observable<LocationOption[]>;
+  filteredStartLocations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
+  filteredFinalDestinations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
+  filteredEnRouteDestinations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
+  filteredAlternateDestinations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
 
   configurations = [
     { value: 'CARGO_ONLY', label: 'Cargo Only', icon: 'inventory' },
@@ -131,6 +131,7 @@ export class FlightPlannerDialogComponent {
   get submitButtonText(): string {
     return this.isEditMode ? 'Update Flight Plan' : 'Submit to ATO';
   }
+
 
   onCancel(): void {
     this.dialogRef.close();
@@ -228,7 +229,7 @@ export class FlightPlannerDialogComponent {
         country: location.country,
       })),
       // FOS locations
-      ...Object.entries(FOS_LOCATIONS).map(([id, location]) => ({
+      ...Object.entries(FOS_LOCATIONS).map(([_id, location]) => ({
         value: location.name,
         displayName: `${location.name} - ${location.country}`,
         type: 'FOS' as const,
