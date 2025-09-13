@@ -1,0 +1,33 @@
+<mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
+  <div class="flex items-center gap-2 mb-2">
+    <mat-icon>flight_takeoff</mat-icon>
+    <div class="md-typescale-title-medium">FOS Dashboard</div>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div class="mt-3">
+    <div class="md-typescale-label-medium mb-1">RFI Status</div>
+    <div class="flex flex-wrap gap-2">
+      @for (rfi of rfiCategories; track rfi) {
+        <mat-chip>{{ rfi }}: ?</mat-chip>
+      }
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <div class="md-typescale-label-medium mb-1">MOG</div>
+    <div class="flex items-center gap-2">
+      <mat-icon>local_parking</mat-icon>
+      <div class="md-typescale-body-medium">2 C-17 & 7 Fighters (placeholder)</div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <div class="md-typescale-label-medium mb-1">Airfield Tasks (16)</div>
+    <div class="grid grid-cols-2 gap-2">
+      @for (task of tasks; track task) {
+        <mat-chip class="interactive-surface">{{ task }}</mat-chip>
+      }
+    </div>
+  </div>
+</mat-card>

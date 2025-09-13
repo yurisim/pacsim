@@ -1,0 +1,28 @@
+<mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
+  <div class="flex items-center gap-2 mb-2">
+    <mat-icon>medical_services</mat-icon>
+    <div class="md-typescale-title-medium">MEDCOM Dashboard</div>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div class="mt-3 grid grid-cols-2 gap-3">
+    @for (h of hospitals; track h.name) {
+      <mat-card class="p-3 md-elevation-1">
+        <div class="md-typescale-label-medium">{{ h.name }}</div>
+        <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+          Beds: {{ h.beds }} • Patients: {{ h.patients }}
+        </div>
+      </mat-card>
+    }
+  </div>
+
+  <div class="mt-3">
+    <div class="md-typescale-label-medium mb-1">Medical Supplies</div>
+    <div class="flex flex-wrap gap-2">
+      <mat-chip>Bandages</mat-chip>
+      <mat-chip>Pharma</mat-chip>
+      <mat-chip>IVs</mat-chip>
+      <mat-chip>O2</mat-chip>
+    </div>
+  </div>
+</mat-card>

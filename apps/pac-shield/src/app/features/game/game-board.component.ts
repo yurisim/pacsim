@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { Map, Marker } from 'maplibre-gl';
+import { Map } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
@@ -17,21 +17,19 @@ import { ThemeService } from '../../shared/services/theme.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
 import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
-import { LocationPanelComponent } from './location-panel';
-
-// Stub UI components
-import {
-  ScoreboardComponent,
-  AtoTableComponent,
-  GameLogComponent,
-  MobDashboardComponent,
-  FosDashboardComponent,
-  CaocDashboardComponent,
-  CspocBoardComponent,
-  MedcomDashboardComponent
-} from './stubs/stub-components';
 import { GameStatsComponent } from './game-stats/game-stats.component';
 import { GameStatsService } from './game-stats/game-stats.service';
+import { LocationPanelComponent } from './location-panel';
+
+// Game stats components
+import { ScoreboardComponent } from './game-stats/scoreboard/scoreboard.component';
+import { AtoTableComponent } from './game-stats/ato-table/ato-table.component';
+import { GameLogComponent } from './game-stats/game-log/game-log.component';
+import { MobDashboardComponent } from './game-stats/mob-dashboard/mob-dashboard.component';
+import { FosDashboardComponent } from './game-stats/fos-dashboard/fos-dashboard.component';
+import { CaocDashboardComponent } from './game-stats/caoc-dashboard/caoc-dashboard.component';
+import { CspocBoardComponent } from './game-stats/cspoc-board/cspoc-board.component';
+import { MedcomDashboardComponent } from './game-stats/medcom-dashboard/medcom-dashboard.component';
 
 @Component({
   selector: 'app-game-board',

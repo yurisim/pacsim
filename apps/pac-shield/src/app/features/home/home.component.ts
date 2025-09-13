@@ -7,6 +7,7 @@ import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
 import { ApiService } from '../../shared/services/api.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
+import { WebSocketService } from '../../shared/services/websocket.service';
 import { CreateGameDto, Game } from '../../generated';
 import { GameMasterSetupComponent, GameMasterInfo } from '../game-master-setup/game-master-setup.component';
 
@@ -29,6 +30,7 @@ export class HomeComponent {
   private clipboard = inject(Clipboard);
   private notification = inject(NotificationService);
   private authService = inject(AuthService);
+  protected websocketService = inject(WebSocketService);
 
   isLoading = false;
   roomCode: string | null = null;
