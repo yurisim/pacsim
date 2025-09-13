@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx nx build:*)",
       "Bash(npx nx test:*)",
-      "Bash(npx nx lint:*)"
+      "Bash(npx nx lint:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
