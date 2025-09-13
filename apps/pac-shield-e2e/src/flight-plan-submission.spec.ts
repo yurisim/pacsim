@@ -44,12 +44,10 @@ test('should create and submit a flight plan that appears on the frontend', asyn
   await expect(page.getByText('Air Tasking Order')).toBeVisible();
 
   // Initially, the ATO should be empty
-  await expect(page.getByText('No flight plans in the ATO yet.')).toBeVisible();
+  await expect(page.getByText('No ATOs created')).toBeVisible();
 
-  // Click "Create First Flight Plan" or "Add Flight Plan" button
-  const addFlightPlanButton = page
-    .locator('button', { hasText: 'Create First Flight Plan' })
-    .or(page.locator('button', { hasText: 'Add Flight Plan' })).first();
+  // Click "Add Flight Plan" button
+  const addFlightPlanButton = page.locator('button', { hasText: 'Add Flight Plan' });
 
   await addFlightPlanButton.click();
 
@@ -132,7 +130,7 @@ test('should create and submit a flight plan that appears on the frontend', asyn
 
     // Verify flight planner dialog opens with existing data
     await expect(page.getByText('Edit Flight Plan')).toBeVisible();
-    await expect(page.getByDisplayValue('E2E-TEST-01')).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Aircraft Call Sign' })).toHaveValue('E2E-TEST-01');
 
     // Make a small change
     await page.getByLabel('Aircraft Call Sign').clear();
@@ -183,7 +181,7 @@ test('should handle multiple flight plans and display them correctly', async ({
   await expect(page.getByText('Game Board')).toBeVisible();
 
   // Create first flight plan
-  await page.locator('button', { hasText: 'Create First Flight Plan' }).click();
+  await page.locator('button', { hasText: 'Add Flight Plan' }).click();
   await page.getByLabel('Aircraft Call Sign').fill('MULTI-01');
   await page.getByLabel('Start Location').click();
   await page.getByRole('option', { name: 'Kadena AB' }).click();
@@ -244,7 +242,7 @@ test('should handle flight plan validation errors appropriately', async ({
   await expect(page.getByText('Game Board')).toBeVisible();
 
   // Try to create flight plan with same start and destination
-  await page.locator('button', { hasText: 'Create First Flight Plan' }).click();
+  await page.locator('button', { hasText: 'Add Flight Plan' }).click();
   await page.getByLabel('Aircraft Call Sign').fill('ERROR-01');
   await page.getByLabel('Start Location').click();
   await page.getByRole('option', { name: 'Kadena AB' }).click();
