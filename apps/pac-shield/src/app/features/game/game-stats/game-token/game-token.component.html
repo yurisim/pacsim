@@ -1,0 +1,16 @@
+<mat-card class="md-elevation-1 md-shape-corner-sm md-sys-bg-surface-container p-2">
+  <div class="flex items-center gap-2">
+    <mat-icon>{{icon}}</mat-icon>
+    <div class="flex-1">
+      <div class="md-typescale-title-medium">{{ label }}</div>
+      <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+        {{ subLabel }}
+      </div>
+    </div>
+    @if (badge) {
+      <mat-chip class="md-sys-bg-primary-container md-sys-color-on-primary-container">
+        {{ badge }}
+      </mat-chip>
+    }
+  </div>
+</mat-card>
