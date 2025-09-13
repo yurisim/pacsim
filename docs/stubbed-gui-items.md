@@ -145,7 +145,7 @@
 │ │ 🟢 12 Approved Today                         │ │ • C-130: 2 ready   │ │
 │ │ 🔴 1 Denied (Political Restriction)          │ │ • C-17: 1 maint    │ │
 │ │                                              │ │ • C-5: 3 en route  │ │
-│ │ [Approve All Valid] [Review Individual]      │ │ • KC-135: 4 ready  │ │
+│ │                                              │ │ • KC-135: 4 ready  │ │
 │ └──────────────────────────────────────────────┘ └─────────────────────┘ │
 │                                                                        │
 │ ┌─ Theater Status Overview ─────────────────────────────────────────────┐ │
