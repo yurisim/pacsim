@@ -1,0 +1,21 @@
+<mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-2">
+  <div class="flex items-center gap-2 p-2">
+    <mat-icon>list_alt</mat-icon>
+    <div class="md-typescale-title-medium">Game Log</div>
+  </div>
+  <mat-divider></mat-divider>
+  <mat-nav-list>
+    @for (entry of log; track $index) {
+      <a mat-list-item>
+        <mat-icon matListItemIcon>chevron_right</mat-icon>
+        <div matListItemTitle>{{ entry }}</div>
+        <div matListItemLine class="md-sys-color-on-surface-variant">Recent</div>
+      </a>
+    }
+  </mat-nav-list>
+  @if (!log.length) {
+    <div class="p-3 md-typescale-body-small md-sys-color-on-surface-variant">
+      No events yet.
+    </div>
+  }
+</mat-card>
