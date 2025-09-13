@@ -6,16 +6,27 @@
 
   <form [formGroup]="flightPlanForm" (ngSubmit)="onSubmit()">
     <mat-dialog-content class="space-y-6">
-
       <!-- Aircraft Identification -->
       <div class="form-section">
-        <h3 class="md-typescale-title-small mb-4">Aircraft Identification</h3>
+        <h3 class="md-typescale-title-small mb-4 flex items-center gap-2">
+          Aircraft Identification
+          <span class="text-red-500 text-sm">*</span>
+        </h3>
         <mat-form-field class="w-full">
-          <mat-label>Aircraft Call Sign</mat-label>
-          <input matInput formControlName="aircraftCallSign" placeholder="e.g., LIFT01, SCAR04">
+          <mat-label>Aircraft Call Sign *</mat-label>
+          <input
+            matInput
+            formControlName="aircraftCallSign"
+            placeholder="e.g., LIFT01, SCAR04"
+          />
           <mat-icon matSuffix>flight</mat-icon>
-          @if (flightPlanForm.get('aircraftCallSign')?.invalid && flightPlanForm.get('aircraftCallSign')?.touched) {
-            <mat-error>{{ callSignErrorMessage }}</mat-error>
+          <mat-hint
+            >Use 4-12 alphanumeric characters for aircraft
+            identification</mat-hint
+          >
+          @if (flightPlanForm.get('aircraftCallSign')?.invalid &&
+          flightPlanForm.get('aircraftCallSign')?.touched) {
+          <mat-error>{{ callSignErrorMessage }}</mat-error>
           }
         </mat-form-field>
       </div>
@@ -25,95 +36,162 @@
         <h3 class="md-typescale-title-small mb-4 flex items-center gap-2">
           <mat-icon>route</mat-icon>
           Route Planning
+          <span class="text-red-500 text-sm">*</span>
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <mat-form-field>
-            <mat-label>Start Location</mat-label>
-            <input matInput formControlName="startLocation" [matAutocomplete]="startLocationAuto" placeholder="Search locations...">
-            <mat-autocomplete #startLocationAuto="matAutocomplete" [displayWith]="displayLocationFn">
-              @for (option of filteredStartLocations$ | async; track option.value) {
-                <mat-option [value]="option.value">
-                  <div class="flex items-center justify-between w-full">
-                    <span>{{ option.displayName }}</span>
-                    <span class="text-sm md-sys-color-on-surface-variant">{{ option.type }}</span>
-                  </div>
-                </mat-option>
+            <mat-label>Start Location *</mat-label>
+            <input
+              matInput
+              formControlName="startLocation"
+              [matAutocomplete]="startLocationAuto"
+              placeholder="Search locations..."
+            />
+            <mat-autocomplete
+              #startLocationAuto="matAutocomplete"
+              [displayWith]="displayLocationFn"
+            >
+              @for (option of filteredStartLocations$ | async; track
+              option.value) {
+              <mat-option [value]="option.value">
+                <div class="flex items-center justify-between w-full">
+                  <span>{{ option.displayName }}</span>
+                  <span class="ml-2 text-sm md-sys-color-on-surface-variant">{{
+                    option.type
+                  }}</span>
+                </div>
+              </mat-option>
               }
             </mat-autocomplete>
             <mat-icon matSuffix>flight_takeoff</mat-icon>
-            @if (flightPlanForm.get('startLocation')?.invalid && flightPlanForm.get('startLocation')?.touched) {
-              <mat-error>Start location is required</mat-error>
+            <mat-hint>Select the departure airport or air base</mat-hint>
+            @if (flightPlanForm.get('startLocation')?.invalid &&
+            flightPlanForm.get('startLocation')?.touched) {
+            <mat-error>Start location is required</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field>
-            <mat-label>Final Destination</mat-label>
-            <input matInput formControlName="finalDestination" [matAutocomplete]="finalDestinationAuto" placeholder="Search destinations...">
-            <mat-autocomplete #finalDestinationAuto="matAutocomplete" [displayWith]="displayLocationFn">
-              @for (option of filteredFinalDestinations$ | async; track option.value) {
-                <mat-option [value]="option.value">
-                  <div class="flex items-center justify-between w-full">
-                    <span>{{ option.displayName }}</span>
-                    <span class="text-sm md-sys-color-on-surface-variant">{{ option.type }}</span>
-                  </div>
-                </mat-option>
+            <mat-label>Final Destination *</mat-label>
+            <input
+              matInput
+              formControlName="finalDestination"
+              [matAutocomplete]="finalDestinationAuto"
+              placeholder="Search destinations..."
+            />
+            <mat-autocomplete
+              #finalDestinationAuto="matAutocomplete"
+              [displayWith]="displayLocationFn"
+            >
+              @for (option of filteredFinalDestinations$ | async; track
+              option.value) {
+              <mat-option [value]="option.value">
+                <div class="flex items-center justify-between w-full">
+                  <span>{{ option.displayName }}</span>
+                  <span class="ml-2 text-sm md-sys-color-on-surface-variant">{{
+                    option.type
+                  }}</span>
+                </div>
+              </mat-option>
               }
             </mat-autocomplete>
             <mat-icon matSuffix>flight_land</mat-icon>
-            @if (flightPlanForm.get('finalDestination')?.invalid && flightPlanForm.get('finalDestination')?.touched) {
-              <mat-error>Final destination is required</mat-error>
+            <mat-hint>Select the primary landing destination</mat-hint>
+            @if (flightPlanForm.get('finalDestination')?.invalid &&
+            flightPlanForm.get('finalDestination')?.touched) {
+            <mat-error>Final destination is required</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field>
             <mat-label>En Route Stop (Optional)</mat-label>
-            <input matInput formControlName="enRouteDestination" [matAutocomplete]="enRouteAuto" placeholder="Search en route stops...">
-            <mat-autocomplete #enRouteAuto="matAutocomplete" [displayWith]="displayLocationFn">
-              @for (option of filteredEnRouteDestinations$ | async; track option.value) {
-                <mat-option [value]="option.value">
-                  <div class="flex items-center justify-between w-full">
-                    <span>{{ option.displayName }}</span>
-                    <span class="text-sm md-sys-color-on-surface-variant">{{ option.type }}</span>
-                  </div>
-                </mat-option>
+            <input
+              matInput
+              formControlName="enRouteDestination"
+              [matAutocomplete]="enRouteAuto"
+              placeholder="Search en route stops..."
+            />
+            <mat-autocomplete
+              #enRouteAuto="matAutocomplete"
+              [displayWith]="displayLocationFn"
+            >
+              @for (option of filteredEnRouteDestinations$ | async; track
+              option.value) {
+              <mat-option [value]="option.value">
+                <div class="flex items-center justify-between w-full">
+                  <span>{{ option.displayName }}</span>
+                  <span class="ml-2 text-sm md-sys-color-on-surface-variant">{{
+                    option.type
+                  }}</span>
+                </div>
+              </mat-option>
               }
             </mat-autocomplete>
             <mat-icon matSuffix>connecting_airports</mat-icon>
+            <mat-hint
+              >Optional intermediate stop for cargo download and
+              transfer</mat-hint
+            >
           </mat-form-field>
 
           <mat-form-field>
             <mat-label>Alternate Destination (Optional)</mat-label>
-            <input matInput formControlName="alternateDestination" [matAutocomplete]="alternateAuto" placeholder="Search alternate destinations...">
-            <mat-autocomplete #alternateAuto="matAutocomplete" [displayWith]="displayLocationFn">
-              @for (option of filteredAlternateDestinations$ | async; track option.value) {
-                <mat-option [value]="option.value">
-                  <div class="flex items-center justify-between w-full">
-                    <span>{{ option.displayName }}</span>
-                    <span class="text-sm md-sys-color-on-surface-variant">{{ option.type }}</span>
-                  </div>
-                </mat-option>
+            <input
+              matInput
+              formControlName="alternateDestination"
+              [matAutocomplete]="alternateAuto"
+              placeholder="Search alternate destinations..."
+            />
+            <mat-autocomplete
+              #alternateAuto="matAutocomplete"
+              [displayWith]="displayLocationFn"
+            >
+              @for (option of filteredAlternateDestinations$ | async; track
+              option.value) {
+              <mat-option [value]="option.value">
+                <div class="flex items-center justify-between w-full">
+                  <span>{{ option.displayName }}</span>
+                  <span class="ml-2 text-sm md-sys-color-on-surface-variant">{{
+                    option.type
+                  }}</span>
+                </div>
+              </mat-option>
               }
             </mat-autocomplete>
             <mat-icon matSuffix>alt_route</mat-icon>
+            <mat-hint
+              >Backup destination in case primary landing is
+              unavailable</mat-hint
+            >
           </mat-form-field>
         </div>
 
         <!-- Route Warnings -->
         @if (hasRouteWarnings) {
-          <div class="mt-4 p-3 md-sys-bg-error-container md-shape-corner-sm">
-            <div class="flex items-start gap-2">
-              <mat-icon class="md-sys-color-error text-sm mt-0.5">warning</mat-icon>
-              <div>
-                <div class="md-typescale-body-medium font-medium md-sys-color-error">Route Validation Warnings:</div>
-                <ul class="mt-2 space-y-1">
-                  @for (warning of routeValidationWarnings; track warning) {
-                    <li class="md-typescale-body-small md-sys-color-on-error-container">• {{ warning }}</li>
-                  }
-                </ul>
+        <div class="mt-4 p-3 md-sys-bg-error-container md-shape-corner-sm">
+          <div class="flex items-start gap-2">
+            <mat-icon class="md-sys-color-error text-sm mt-0.5"
+              >warning</mat-icon
+            >
+            <div>
+              <div
+                class="md-typescale-body-medium font-medium md-sys-color-error"
+              >
+                Route Validation Warnings:
               </div>
+              <ul class="mt-2 space-y-1">
+                @for (warning of routeValidationWarnings; track warning) {
+                <li
+                  class="md-typescale-body-small md-sys-color-on-error-container"
+                >
+                  {{ warning }}
+                </li>
+                }
+              </ul>
             </div>
           </div>
+        </div>
         }
       </div>
 
@@ -122,35 +200,50 @@
         <h3 class="md-typescale-title-small mb-4 flex items-center gap-2">
           <mat-icon>settings</mat-icon>
           Mission Configuration
+          <span class="text-red-500 text-sm">*</span>
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <mat-form-field>
-            <mat-label>Flight Intention</mat-label>
+            <mat-label>Flight Intention *</mat-label>
             <mat-select formControlName="intention">
               @for (intent of intentions; track intent.value) {
-                <mat-option [value]="intent.value">
-                  <div class="flex items-center gap-2">
-                    <mat-icon class="text-sm">{{ intent.icon }}</mat-icon>
-                    {{ intent.label }}
-                  </div>
-                </mat-option>
+              <mat-option [value]="intent.value">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-sm">{{ intent.icon }}</mat-icon>
+                  {{ intent.label }}
+                </div>
+              </mat-option>
               }
             </mat-select>
+            <mat-hint
+              >Whether the aircraft will land or continue en route</mat-hint
+            >
+            @if (flightPlanForm.get('intention')?.invalid &&
+            flightPlanForm.get('intention')?.touched) {
+            <mat-error>Flight intention is required</mat-error>
+            }
           </mat-form-field>
 
           <mat-form-field>
-            <mat-label>Aircraft Configuration</mat-label>
+            <mat-label>Aircraft Configuration *</mat-label>
             <mat-select formControlName="configuration">
               @for (config of configurations; track config.value) {
-                <mat-option [value]="config.value">
-                  <div class="flex items-center gap-2">
-                    <mat-icon class="text-sm">{{ config.icon }}</mat-icon>
-                    {{ config.label }}
-                  </div>
-                </mat-option>
+              <mat-option [value]="config.value">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-sm">{{ config.icon }}</mat-icon>
+                  {{ config.label }}
+                </div>
+              </mat-option>
               }
             </mat-select>
+            <mat-hint
+              >Type of cargo or personnel the aircraft will carry</mat-hint
+            >
+            @if (flightPlanForm.get('configuration')?.invalid &&
+            flightPlanForm.get('configuration')?.touched) {
+            <mat-error>Aircraft configuration is required</mat-error>
+            }
           </mat-form-field>
         </div>
 
@@ -162,8 +255,11 @@
               <span>Use Risk Token for this mission</span>
             </div>
           </mat-checkbox>
-          <div class="mt-2 md-typescale-body-small md-sys-color-on-surface-variant">
-            Risk tokens allow operations that would otherwise be restricted (e.g., landing at marginal airfields).
+          <div
+            class="mt-2 md-typescale-body-small md-sys-color-on-surface-variant"
+          >
+            Risk tokens allow operations that would otherwise be restricted
+            (e.g., landing at marginal airfields).
           </div>
         </div>
       </div>
@@ -173,18 +269,26 @@
         <h3 class="md-typescale-title-small mb-4">Mission Notes (Optional)</h3>
         <mat-form-field class="w-full">
           <mat-label>Additional mission details</mat-label>
-          <textarea matInput formControlName="missionNotes" rows="3"
-                    placeholder="Special instructions, cargo details, coordination requirements..."></textarea>
+          <textarea
+            matInput
+            formControlName="missionNotes"
+            rows="3"
+            placeholder="Special instructions, cargo details, coordination requirements..."
+          ></textarea>
+          <mat-hint
+            >Optional details for mission planning and coordination</mat-hint
+          >
         </mat-form-field>
       </div>
-
     </mat-dialog-content>
 
     <mat-dialog-actions class="flex justify-end gap-2 p-4">
-      <button matButton type="button" (click)="onCancel()">
-        Cancel
-      </button>
-      <button matButton="filled" type="submit" [disabled]="flightPlanForm.invalid">
+      <button matButton type="button" (click)="onCancel()">Cancel</button>
+      <button
+        matButton="filled"
+        type="submit"
+        [disabled]="flightPlanForm.invalid"
+      >
         <mat-icon>send</mat-icon>
         {{ submitButtonText }}
       </button>
