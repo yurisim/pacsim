@@ -1,49 +1,141 @@
 <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-2">
-  <div class="flex items-center gap-2 p-2">
-    <mat-icon>assignment</mat-icon>
-    <div class="md-typescale-title-medium">Air Tasking Order</div>
+  <div class="flex items-center justify-between gap-2 p-2">
+    <div class="flex items-center gap-2">
+      <mat-icon>assignment</mat-icon>
+      <div class="md-typescale-title-medium">Air Tasking Order</div>
+      @if (lines.length > 0) {
+        <div class="md-typescale-body-small md-sys-color-on-surface-variant">{{ lines.length }} flights</div>
+      }
+    </div>
+    <div class="flex gap-2">
+      @if (canCreateFlightPlan) {
+        <button matButton="filled" (click)="onCreateFlightPlan()">
+          <mat-icon>add</mat-icon>
+          Add Flight Plan
+        </button>
+      }
+    </div>
   </div>
 
   <div class="overflow-auto">
     <table mat-table [dataSource]="lines" class="w-full">
       <ng-container matColumnDef="callSign">
         <th mat-header-cell *matHeaderCellDef>Call Sign</th>
-        <td mat-cell *matCellDef="let l">{{ l.callSign || '—' }}</td>
+        <td mat-cell *matCellDef="let l" class="font-mono font-medium">
+          {{ l.aircraftCallSign || '—' }}
+          @if (l.riskTokenUsed) {
+            <mat-icon class="ml-1 text-sm md-sys-color-tertiary" matTooltip="Risk Token Used">casino</mat-icon>
+          }
+        </td>
       </ng-container>
 
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let l">{{ l.type || '—' }}</td>
+      <ng-container matColumnDef="aircraft">
+        <th mat-header-cell *matHeaderCellDef>Aircraft</th>
+        <td mat-cell *matCellDef="let l">
+          <div class="flex flex-col">
+            <span class="font-medium">{{ l.configuration || '—' }}</span>
+            <span class="text-xs md-sys-color-on-surface-variant">Turn {{ l.turn }}</span>
+          </div>
+        </td>
       </ng-container>
 
-      <ng-container matColumnDef="origin">
-        <th mat-header-cell *matHeaderCellDef>Origin</th>
-        <td mat-cell *matCellDef="let l">{{ l.origin || '—' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="destination">
-        <th mat-header-cell *matHeaderCellDef>Destination</th>
-        <td mat-cell *matCellDef="let l">{{ l.destination || '—' }}</td>
+      <ng-container matColumnDef="route">
+        <th mat-header-cell *matHeaderCellDef>Route</th>
+        <td mat-cell *matCellDef="let l" class="max-w-64">
+          <div class="text-sm font-mono truncate" [matTooltip]="formatRoute(l)">
+            {{ formatRoute(l) }}
+          </div>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="intent">
         <th mat-header-cell *matHeaderCellDef>Intent</th>
-        <td mat-cell *matCellDef="let l">{{ l.intent || '—' }}</td>
+        <td mat-cell *matCellDef="let l">
+          <mat-chip-set>
+            <mat-chip [class]="l.intention === 'LAND' ? 'md-sys-color-primary' : 'md-sys-color-secondary'">
+              {{ l.intention || '—' }}
+            </mat-chip>
+          </mat-chip-set>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="configuration">
+        <th mat-header-cell *matHeaderCellDef>Config</th>
+        <td mat-cell *matCellDef="let l">
+          <div class="text-sm">
+            {{ l.configuration?.replace('_', ' ') || '—' }}
+          </div>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="ppr">
-        <th mat-header-cell *matHeaderCellDef>PPR</th>
-        <td mat-cell *matCellDef="let l">{{ l.pprStatus || 'Pending' }}</td>
+        <th mat-header-cell *matHeaderCellDef>PPR Status</th>
+        <td mat-cell *matCellDef="let l">
+          <div class="flex items-center gap-2">
+            <mat-icon [class]="getPprStatusColor(l.pprStatus)" class="text-sm">
+              {{ getPprStatusIcon(l.pprStatus) }}
+            </mat-icon>
+            <span class="text-sm font-medium">{{ l.pprStatus || 'PENDING' }}</span>
+            @if (canApprovePpr && l.pprStatus === 'PENDING') {
+              <div class="flex gap-1 ml-2">
+                <button matIconButton="small" (click)="onApprovePpr(l)"
+                        matTooltip="Approve PPR" class="md-sys-color-primary">
+                  <mat-icon class="text-sm">check</mat-icon>
+                </button>
+                <button matIconButton="small" (click)="onDenyPpr(l)"
+                        matTooltip="Deny PPR" class="md-sys-color-error">
+                  <mat-icon class="text-sm">close</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let l">
+          <div class="flex gap-1">
+            @if (canEditFlightPlan(l)) {
+              <button matIconButton (click)="onEditFlightPlan(l)" matTooltip="Edit Flight Plan">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+            @if (canDeleteFlightPlan(l)) {
+              <button matIconButton (click)="onDeleteFlightPlan(l)"
+                      matTooltip="Delete Flight Plan" class="md-sys-color-error">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+            @if (l.executionResult) {
+              <button matIconButton matTooltip="View Execution Results">
+                <mat-icon>info</mat-icon>
+              </button>
+            }
+          </div>
+        </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [class.md-sys-bg-secondary-container]="row.pprStatus === 'PENDING'"
+          [class.md-sys-bg-tertiary-container]="row.pprStatus === 'APPROVED'"
+          [class.md-sys-bg-error-container]="row.pprStatus === 'DENIED'"></tr>
     </table>
   </div>
 
   @if (!lines.length) {
-    <div class="p-3 md-typescale-body-small md-sys-color-on-surface-variant">
-      No ATO lines yet.
+    <div class="flex flex-col items-center justify-center p-8 gap-4">
+      <mat-icon class="text-6xl md-sys-color-on-surface-variant">assignment</mat-icon>
+      <div class="md-typescale-body-large md-sys-color-on-surface-variant text-center">
+        No flight plans in the ATO yet.
+      </div>
+      @if (canCreateFlightPlan) {
+        <button matButton="filled" (click)="onCreateFlightPlan()">
+          <mat-icon>add</mat-icon>
+          Create First Flight Plan
+        </button>
+      }
     </div>
   }
 </mat-card>
