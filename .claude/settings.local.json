@@ -6,7 +6,14 @@
       "Bash(npx nx lint:*)",
       "Bash(mkdir:*)",
       "Bash(rm:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npx nx run:*)",
+      "mcp__wallaby__wallaby_failingTests",
+      "mcp__wallaby__wallaby_runtimeValues",
+      "mcp__wallaby__wallaby_testById",
+      "Bash(npx jest:*)",
+      "mcp__wallaby__wallaby_allTests",
+      "Bash(npx playwright test:*)"
     ],
     "deny": [],
     "ask": []
