@@ -14,6 +14,7 @@ import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; // Still needed for old overlayHexGrid method
 import { ThemeService } from '../../shared/services/theme.service';
+import { AuthService } from '../../shared/services/auth.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
 import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
@@ -78,6 +79,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private themeService = inject(ThemeService);
+  private authService = inject(AuthService);
   gameStatsService = inject(GameStatsService);  // Made public for template access
   map!: Map;  // Made public for template access
   private mapReady = false;
@@ -112,9 +114,36 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   activeFosIds = new Set<string>();
   fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID (e.g., 'kadena')
 
-  // Player identity (for demo purposes)
+  // Current player information from auth service and game state
+  currentPlayer = this.authService.getPlayer();
+  currentUserTeam$ = this.game$.pipe(
+    map(game => {
+      const authPlayer = this.authService.getPlayer();
+      if (!authPlayer?.id || !game?.players) return null;
+
+      // Find the player in the game's player list
+      const gamePlayer = game.players.find(p => p.sessionId === authPlayer.sessionId);
+      if (!gamePlayer?.teamId || !game?.teams) return null;
+
+      // Find the team by teamId
+      const team = game.teams.find(t => t.id === gamePlayer.teamId);
+      return team?.type || null;
+    })
+  );
+  currentUserRole$ = this.game$.pipe(
+    map(game => {
+      const authPlayer = this.authService.getPlayer();
+      if (!authPlayer?.id || !game?.players) return null;
+
+      // Find the player in the game's player list
+      const gamePlayer = game.players.find(p => p.sessionId === authPlayer.sessionId);
+      return gamePlayer?.role || null;
+    })
+  );
+
+  // Legacy properties for compatibility
   currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
-  isGameMaster = false; // Demo: set to true to see GM actions
+  isGameMaster = false; // Will be determined from live data
 
   // Game statistics from service (reactive signals)
   gameStats = this.gameStatsService.gameStats;
