@@ -41,6 +41,11 @@ describe('ATO Controller E2E', () => {
         configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
+      console.log('=== E2E Test: Sending ATO creation request ===');
+      console.log('Flight plan data:', JSON.stringify(flightPlan, null, 2));
+      console.log('Auth token:', authToken ? `${authToken.substring(0, 20)}...` : 'null');
+      console.log('Game ID:', gameId);
+
       let res;
       try {
         res = await axios.post('/api/ato', flightPlan, {
@@ -48,8 +53,18 @@ describe('ATO Controller E2E', () => {
             Authorization: `Bearer ${authToken}`,
           },
         });
+        console.log('=== E2E Test: ATO creation SUCCESS ===');
+        console.log('Response status:', res.status);
+        console.log('Response data:', JSON.stringify(res.data, null, 2));
       } catch (error) {
-        console.error('ATO creation failed:', error.response?.data);
+        console.error('=== E2E Test: ATO creation FAILED ===');
+        console.error('Error status:', error.response?.status);
+        console.error('Error statusText:', error.response?.statusText);
+        console.error('Error headers:', JSON.stringify(error.response?.headers, null, 2));
+        console.error('Error data:', JSON.stringify(error.response?.data, null, 2));
+        console.error('Full error object:', JSON.stringify(error.toJSON ? error.toJSON() : error, null, 2));
+        console.error('Error stack:', error.stack);
+        console.error('=== E2E Test: ATO creation ERROR END ===');
         throw error;
       }
 

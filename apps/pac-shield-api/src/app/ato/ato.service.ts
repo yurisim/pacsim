@@ -144,33 +144,52 @@ export class AtoService {
    * Create a new ATO line (flight plan)
    */
   async createAtoLine(createAtoLineDto: CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean }, user?: any): Promise<ATOLine> {
-    // Validate business rules including aircraft ownership
-    await this.validateFlightPlan(createAtoLineDto, user);
+    console.log('=== ATO Service: createAtoLine START ===');
+    console.log('Input DTO:', JSON.stringify(createAtoLineDto, null, 2));
+    console.log('User:', JSON.stringify(user, null, 2));
 
-    const atoLine = await this.prisma.aTOLine.create({
-      data: {
-        gameId: createAtoLineDto.gameId,
-        turn: createAtoLineDto.turn,
-        aircraftCallSign: createAtoLineDto.aircraftCallSign,
-        startLocation: createAtoLineDto.startLocation,
-        enRouteDestination: createAtoLineDto.enRouteDestination || null,
-        finalDestination: createAtoLineDto.finalDestination,
-        alternateDestination: createAtoLineDto.alternateDestination || null,
-        intention: createAtoLineDto.intention,
-        riskTokenUsed: createAtoLineDto.riskTokenUsed || false,
-        configuration: createAtoLineDto.configuration,
-        pprStatus: 'PENDING',
-        executionResult: null,
-      },
-      include: {
-        game: true,
-      },
-    });
+    try {
+      console.log('ATO Service: Starting flight plan validation...');
+      // Validate business rules including aircraft ownership
+      await this.validateFlightPlan(createAtoLineDto, user);
+      console.log('ATO Service: Flight plan validation passed');
 
-    // Broadcast creation event (disabled for debugging)
-    // this.gameGateway.broadcastAtoLineCreated(atoLine.gameId.toString(), atoLine);
+      console.log('ATO Service: Creating ATO line in database...');
+      const atoLine = await this.prisma.aTOLine.create({
+        data: {
+          gameId: createAtoLineDto.gameId,
+          turn: createAtoLineDto.turn,
+          aircraftCallSign: createAtoLineDto.aircraftCallSign,
+          startLocation: createAtoLineDto.startLocation,
+          enRouteDestination: createAtoLineDto.enRouteDestination || null,
+          finalDestination: createAtoLineDto.finalDestination,
+          alternateDestination: createAtoLineDto.alternateDestination || null,
+          intention: createAtoLineDto.intention,
+          riskTokenUsed: createAtoLineDto.riskTokenUsed || false,
+          configuration: createAtoLineDto.configuration,
+          pprStatus: 'PENDING',
+          executionResult: null,
+        },
+        include: {
+          game: true,
+        },
+      });
+      console.log('ATO Service: Database creation successful');
+      console.log('Created ATO Line:', JSON.stringify(atoLine, null, 2));
 
-    return atoLine;
+      // Broadcast creation event (disabled for debugging)
+      // this.gameGateway.broadcastAtoLineCreated(atoLine.gameId.toString(), atoLine);
+
+      console.log('=== ATO Service: createAtoLine SUCCESS ===');
+      return atoLine;
+    } catch (error) {
+      console.error('=== ATO Service: createAtoLine ERROR ===');
+      console.error('Error details:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error message:', error.message);
+      console.error('=== ATO Service: createAtoLine ERROR END ===');
+      throw error;
+    }
   }
 
   /**
@@ -399,39 +418,64 @@ export class AtoService {
   }
 
   private async validateFlightPlan(flightPlan: any, user?: any): Promise<void> {
-    // Validate aircraft ownership if user is provided
-    if (user && flightPlan.aircraftCallSign) {
-      await this.validateAircraftOwnership(flightPlan.aircraftCallSign, flightPlan.gameId, user);
+    console.log('=== ATO Service: validateFlightPlan START ===');
+    console.log('Flight plan to validate:', JSON.stringify(flightPlan, null, 2));
+    console.log('User for validation:', JSON.stringify(user, null, 2));
+
+    try {
+      // Validate aircraft ownership if user is provided
+      if (user && flightPlan.aircraftCallSign) {
+        console.log('ATO Service: Validating aircraft ownership...');
+        await this.validateAircraftOwnership(flightPlan.aircraftCallSign, flightPlan.gameId, user);
+        console.log('ATO Service: Aircraft ownership validation passed');
+      } else {
+        console.log('ATO Service: Skipping aircraft ownership validation - no user or call sign');
+      }
+
+      // Validate call sign uniqueness within game/turn
+      console.log('ATO Service: Validating call sign uniqueness...');
+      const whereClause: any = {
+        gameId: flightPlan.gameId,
+        turn: flightPlan.turn,
+        aircraftCallSign: flightPlan.aircraftCallSign,
+      };
+
+      // Exclude current record for updates
+      if (flightPlan.id) {
+        whereClause.id = { not: flightPlan.id };
+      }
+
+      console.log('ATO Service: Checking for existing call sign with query:', JSON.stringify(whereClause, null, 2));
+      const existingCallSign = await this.prisma.aTOLine.findFirst({
+        where: whereClause,
+      });
+
+      if (existingCallSign) {
+        console.log('ATO Service: Found existing call sign:', JSON.stringify(existingCallSign, null, 2));
+        throw new ForbiddenException(`Aircraft call sign '${flightPlan.aircraftCallSign}' is already in use for this turn`);
+      }
+      console.log('ATO Service: Call sign uniqueness validation passed');
+
+      // Validate destinations are different
+      console.log('ATO Service: Validating destination logic...');
+      if (flightPlan.startLocation === flightPlan.finalDestination) {
+        console.log('ATO Service: Start and final destinations are the same - validation failed');
+        throw new ForbiddenException('Start location and final destination cannot be the same');
+      }
+      console.log('ATO Service: Destination validation passed');
+
+      console.log('=== ATO Service: validateFlightPlan SUCCESS ===');
+      // Additional validation rules would go here:
+      // - Aircraft range validation
+      // - Political clearance checks
+      // - MOG limits at destinations
+      // - Resource availability checks
+    } catch (error) {
+      console.error('=== ATO Service: validateFlightPlan ERROR ===');
+      console.error('Validation error:', error);
+      console.error('Error message:', error.message);
+      console.error('=== ATO Service: validateFlightPlan ERROR END ===');
+      throw error;
     }
-    // Validate call sign uniqueness within game/turn
-    const whereClause: any = {
-      gameId: flightPlan.gameId,
-      turn: flightPlan.turn,
-      aircraftCallSign: flightPlan.aircraftCallSign,
-    };
-
-    // Exclude current record for updates
-    if (flightPlan.id) {
-      whereClause.id = { not: flightPlan.id };
-    }
-
-    const existingCallSign = await this.prisma.aTOLine.findFirst({
-      where: whereClause,
-    });
-
-    if (existingCallSign) {
-      throw new ForbiddenException(`Aircraft call sign '${flightPlan.aircraftCallSign}' is already in use for this turn`);
-    }
-
-    // Validate destinations are different
-    if (flightPlan.startLocation === flightPlan.finalDestination) {
-      throw new ForbiddenException('Start location and final destination cannot be the same');
-    }
-
-    // Additional validation rules would go here:
-    // - Aircraft range validation
-    // - Political clearance checks
-    // - MOG limits at destinations
-    // - Resource availability checks
   }
 }

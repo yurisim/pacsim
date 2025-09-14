@@ -63,7 +63,24 @@ export class AtoController {
     @Body() createAtoRequestDto: CreateATORequestDto,
     @Request() req: any
   ): Promise<ATOLine> {
-    return this.atoService.createAtoLine(createAtoRequestDto, req.user);
+    console.log('=== ATO Controller: createFlightPlan START ===');
+    console.log('Request body received:', JSON.stringify(createAtoRequestDto, null, 2));
+    console.log('Request user:', JSON.stringify(req.user, null, 2));
+    console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+
+    try {
+      const result = await this.atoService.createAtoLine(createAtoRequestDto, req.user);
+      console.log('ATO Controller: createFlightPlan SUCCESS');
+      console.log('Created ATO Line:', JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error('=== ATO Controller: createFlightPlan ERROR ===');
+      console.error('Error details:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error message:', error.message);
+      console.error('=== ATO Controller: createFlightPlan ERROR END ===');
+      throw error;
+    }
   }
 
   /**
