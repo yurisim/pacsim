@@ -19,29 +19,41 @@ import { of } from 'rxjs';
 describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
   let component: FlightPlannerDialogComponent;
   let fixture: ComponentFixture<FlightPlannerDialogComponent>;
-  let mockDialogRef: jest.Mocked<MatDialogRef<FlightPlannerDialogComponent>>;
-  let mockAuthService: jest.Mocked<AuthService>;
-  let mockApiService: jest.Mocked<ApiService>;
+  let mockDialogRef: any;
+  let mockAuthService: any;
+  let mockApiService: any;
 
   const mockAircraft: AircraftInstance[] = [
     {
       id: 1,
       callSign: 'TEST-01',
-      type: 'F16' as any,
-      status: 'FMC' as any,
-      currentLocation: 'Kadena AB',
-      gameId: 123,
-      teamId: 'team-1'
-    } as AircraftInstance,
+      type: 'F16',
+      strength: 100,
+      rangeHexes: 20,
+      status: 'FMC',
+      locationType: 'MOB',
+      locationFosId: null,
+      locationHex: 'AB1234',
+      teamId: 1,
+      payloadPersonnelCount: 0,
+      currentATOId: null,
+      allocationStatus: 'AVAILABLE'
+    },
     {
       id: 2,
       callSign: 'TEST-02',
-      type: 'C17' as any,
-      status: 'FMC' as any,
-      currentLocation: 'Andersen AFB',
-      gameId: 123,
-      teamId: 'team-1'
-    } as AircraftInstance
+      type: 'C17',
+      strength: 100,
+      rangeHexes: 25,
+      status: 'FMC',
+      locationType: 'MOB',
+      locationFosId: null,
+      locationHex: 'CD5678',
+      teamId: 1,
+      payloadPersonnelCount: 50,
+      currentATOId: null,
+      allocationStatus: 'AVAILABLE'
+    }
   ];
 
   const mockDialogData: FlightPlannerDialogData = {
@@ -53,15 +65,15 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
   beforeEach(async () => {
     mockDialogRef = {
       close: jest.fn()
-    } as jest.Mocked<MatDialogRef<FlightPlannerDialogComponent>>;
+    } as any;
 
     mockAuthService = {
       getPlayerId: jest.fn().mockReturnValue('player-123')
-    } as jest.Mocked<AuthService>;
+    } as any;
 
     mockApiService = {
       get: jest.fn().mockReturnValue(of([]))
-    } as jest.Mocked<ApiService>;
+    } as any;
 
     await TestBed.configureTestingModule({
       imports: [
