@@ -1,0 +1,180 @@
+.notification-badge-button {
+  position: relative;
+  transition: all 0.2s ease;
+
+  &.has-unread {
+    color: #2196f3;
+  }
+
+  &.has-urgent {
+    color: #f44336;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  // Icon animations
+  mat-icon {
+    transition: all 0.3s ease;
+
+    &.urgent-pulse {
+      animation: urgentPulse 2s infinite;
+      color: #f44336;
+    }
+  }
+}
+
+// Badge positioning and styling overrides
+:host ::ng-deep {
+  .mat-badge-content {
+    font-weight: 600;
+    font-size: 10px;
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+  }
+
+  .mat-badge-small .mat-badge-content {
+    font-size: 9px;
+    min-width: 14px;
+    height: 14px;
+    line-height: 14px;
+  }
+
+  .mat-badge-large .mat-badge-content {
+    font-size: 11px;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+  }
+
+  // Warning color for urgent notifications
+  .mat-badge-warn .mat-badge-content {
+    background: #f44336;
+    color: white;
+  }
+
+  // Accent color for unacknowledged notifications
+  .mat-badge-accent .mat-badge-content {
+    background: #ff9800;
+    color: white;
+  }
+}
+
+// Urgent notification pulse animation
+@keyframes urgentPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Size variants
+:host(.small) {
+  .notification-badge-button {
+    width: 32px;
+    height: 32px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+:host(.large) {
+  .notification-badge-button {
+    width: 48px;
+    height: 48px;
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .notification-badge-button {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    &.has-unread {
+      color: #64b5f6;
+    }
+
+    &.has-urgent {
+      color: #ef5350;
+    }
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .notification-badge-button {
+    border: 1px solid transparent;
+
+    &.has-unread {
+      border-color: #2196f3;
+    }
+
+    &.has-urgent {
+      border-color: #f44336;
+    }
+  }
+
+  :host ::ng-deep {
+    .mat-badge-content {
+      border: 1px solid;
+    }
+
+    .mat-badge-warn .mat-badge-content {
+      border-color: #f44336;
+    }
+
+    .mat-badge-accent .mat-badge-content {
+      border-color: #ff9800;
+    }
+  }
+}
+
+// Reduced motion preference
+@media (prefers-reduced-motion: reduce) {
+  .notification-badge-button mat-icon.urgent-pulse {
+    animation: none;
+  }
+
+  .notification-badge-button {
+    transition: none;
+  }
+
+  .notification-badge-button mat-icon {
+    transition: none;
+  }
+}
+
+// Focus styles for accessibility
+.notification-badge-button:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+// Print styles
+@media print {
+  .notification-badge-button {
+    display: none;
+  }
+}
