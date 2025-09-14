@@ -15,6 +15,9 @@ import { TeamModule } from './team/team.module';
 import { FosModule } from './fos/fos.module';
 import { AtoModule } from './ato/ato.module';
 import { AllocationModule } from './allocation/allocation.module';
+import { TestSeedModule } from './allocation/test-seed.module';
+
+const extraModules = process.env.E2E_TEST_MODE === 'true' ? [TestSeedModule] : [];
 
 @Module({
   imports: [
@@ -47,6 +50,7 @@ import { AllocationModule } from './allocation/allocation.module';
     FosModule,
     AtoModule,
     AllocationModule,
+    ...extraModules,
   ],
   controllers: [AppController],
   providers: [
