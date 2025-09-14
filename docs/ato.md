@@ -285,3 +285,17 @@ onCreateFlightPlan(): void {
 ---
 
 *Implementation completed: All core ATO functionality implemented with successful build validation and full dialog integration. Ready for module integration and end-to-end testing.*
+## API: ATO Endpoints Update
+
+### GET /api/ato/game/:gameId
+- Optional query parameters:
+  - `turn` (number): When provided, returns only ATO lines for the specified turn. When omitted, returns all ATO lines for the game.
+- Validation/transform:
+  - The query is validated and converted to a number via [GetAtoQueryDto.class()](apps/pac-shield-api/src/app/ato/dto/get-ato-query.dto.ts:1) using class-validator and class-transformer.
+- Server behavior:
+  - The service conditionally filters by `turn` only when it is defined.
+- Examples:
+  - All ATO lines for a game:
+    - GET `/api/ato/game/123`
+  - Only turn 2 for a game:
+    - GET `/api/ato/game/123?turn=2`

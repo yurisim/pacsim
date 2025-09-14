@@ -20,6 +20,7 @@ import { UpdateATORequestDto } from './dto/update-ato-request.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AircraftInstance } from '@prisma/client';
+import { GetAtoQueryDto } from './dto/get-ato-query.dto';
 
 /**
  * Controller for ATO (Air Tasking Order) operations.
@@ -90,10 +91,9 @@ export class AtoController {
   @Get('game/:gameId')
   async getAtoLinesByGame(
     @Param('gameId', ParseIntPipe) gameId: number,
-    @Query('turn') turn?: string
+    @Query() query: GetAtoQueryDto
   ): Promise<ATOLine[]> {
-    const turnNumber = turn ? parseInt(turn, 10) : undefined;
-    return this.atoService.getAtoLinesByGameAndTurn(gameId, turnNumber);
+    return this.atoService.getAtoLinesByGameAndTurn(gameId, query.turn);
   }
 
   /**
