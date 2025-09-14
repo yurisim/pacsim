@@ -322,3 +322,125 @@ mat-mdc-snack-bar-container.snack-error {
   text-align: center !important;
   display: block; /* full line for centering without forcing extra width */
 }
+
+/* ==========================================
+   Tabs: responsive, mobile-friendly behavior
+   - Constrain tab containers to viewport width
+   - Prevent label stretching; size-to-content with truncation
+   - Allow horizontal scroll on header when overflowing
+   - Ensure mobile tap targets and readable font sizes
+   - Preserve discoverable scrollbars and visible focus
+   ========================================== */
+
+:root {
+  --tab-label-gap: 8px;
+  --tab-focus-outline: color-mix(in srgb, var(--mat-sys-primary) 60%, transparent);
+}
+
+/* Never let any tab container exceed the viewport width */
+mat-tab-group,
+.mat-tab-group,
+.mat-mdc-tab-group {
+  max-width: 100vw;
+  width: min(100%, 100vw);
+}
+
+/* Header row should scroll horizontally on overflow; no page-level scroll */
+mat-tab-group .mat-tab-header,
+.mat-tab-group .mat-tab-header,
+.mat-mdc-tab-group .mat-mdc-tab-header {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  touch-action: pan-x;
+}
+
+/* Keep labels on a single line; add spacing between labels */
+mat-tab-group .mat-tab-labels,
+.mat-tab-group .mat-tab-labels,
+.mat-mdc-tab-group .mat-mdc-tab-labels {
+  flex-wrap: nowrap;
+  gap: var(--tab-label-gap);
+}
+
+/* Labels size-to-content, do not stretch equally */
+mat-tab-group .mat-tab-label,
+.mat-tab-group .mat-tab-label,
+.mat-mdc-tab-group .mat-mdc-tab {
+  flex: 0 0 auto;
+  min-height: 44px; /* mobile tap target */
+  padding: 0 12px;  /* comfortable touch area */
+  font-size: 16px;  /* readable on mobile */
+  line-height: 1.2;
+  max-width: 85vw; /* individual label must not exceed viewport */
+}
+
+/* Truncate long labels with ellipsis, never wrap */
+mat-tab-group .mat-tab-label .mat-tab-label-content,
+.mat-tab-group .mat-tab-label .mat-tab-label-content,
+.mat-mdc-tab-group .mat-mdc-tab .mdc-tab__content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Explicitly prevent "stretch tabs" layout if enabled anywhere */
+.mat-tab-group.mat-stretch-tabs .mat-tab-label,
+.mat-mdc-tab-group.mat-stretch-tabs .mat-mdc-tab {
+  flex: 0 0 auto;
+}
+
+/* Visible focus for keyboard users */
+mat-tab-group .mat-tab-label:focus-visible,
+.mat-tab-group .mat-tab-label:focus-visible,
+.mat-mdc-tab-group .mat-mdc-tab:focus-visible {
+  outline: 3px solid var(--tab-focus-outline);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Content area should not cause horizontal page scrolls */
+mat-tab-group .mat-tab-body-content,
+.mat-tab-group .mat-tab-body-content,
+.mat-mdc-tab-group .mat-mdc-tab-body-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Instance-specific fine-tuning for known tab groups */
+.mobile-tabs .mat-tab-label,
+.asset-tabs .mat-tab-label {
+  max-width: 80vw;
+}
+
+/* Reduce motion preference support */
+@media (prefers-reduced-motion: reduce) {
+  .mat-ink-bar,
+  .mat-mdc-tab .mdc-tab-indicator {
+    transition: none !important;
+  }
+}
+
+/* Tabs: MDC-specific refinements for spacing, truncation, and min font size */
+.mat-mdc-tab-group .mat-mdc-tab-header .mdc-tab {
+  margin-inline-end: var(--tab-label-gap);
+}
+
+.mat-mdc-tab-group .mdc-tab__text-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Ensure readable minimum font size across devices */
+  font-size: 16px;
+}
+.mat-mdc-tab-group .mdc-tab__text-label * {
+  font-size: 16px;
+}
+
+/* Legacy (pre-MDC) tabs min font-size */
+.mat-tab-group .mat-tab-label-content,
+.mat-tab-group .mat-tab-label-content * {
+  font-size: 16px;
+}

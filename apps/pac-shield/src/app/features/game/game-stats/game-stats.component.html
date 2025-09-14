@@ -1,7 +1,7 @@
-<mat-tab-group dynamicHeight="true" data-testid="game-stats-tabs">
+<mat-tab-group dynamicHeight="true" data-testid="game-stats-tabs" class="mobile-tabs h-full w-full">
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-scoreboard">Score</ng-template>
-    <div class="p-3" data-testid="tab-panel-scoreboard">
+    <ng-template mat-tab-label data-testid="tab-label-scoreboard"><span class="text-xs sm:text-sm md:text-base">Score</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-scoreboard">
       <app-scoreboard
         [missionPoints]="gameStats().missionPoints"
         [demoralizationPoints]="gameStats().demoralizationPoints"
@@ -15,18 +15,20 @@
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-caoc">CAOC</ng-template>
-    <div class="p-3" data-testid="tab-panel-caoc">
-      <div data-testid="caoc-dashboard-host">
-        <app-caoc-dashboard
-          [currentGameId]="currentGameId || 1"
-          [currentTurn]="gameStats().gameTurn"
-          [currentUserTeam]="currentUserTeam"
-          [currentUserRole]="currentUserRole"
-          [readonly]="false">
-        </app-caoc-dashboard>
+    <ng-template mat-tab-label data-testid="tab-label-caoc"><span class="text-xs sm:text-sm md:text-base">CAOC</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-caoc">
+      <div class="overflow-x-auto" data-testid="responsive-scroll-caoc">
+        <div data-testid="caoc-dashboard-host">
+          <app-caoc-dashboard
+            [currentGameId]="currentGameId || 1"
+            [currentTurn]="gameStats().gameTurn"
+            [currentUserTeam]="currentUserTeam"
+            [currentUserRole]="currentUserRole"
+            [readonly]="false">
+          </app-caoc-dashboard>
+        </div>
       </div>
-      <div class="mt-3">
+      <div class="mt-2 sm:mt-3 overflow-x-auto" data-testid="responsive-scroll-ato">
         <app-ato-table
           [lines]="atoLines()"
           [currentGameId]="currentGameId || 1"
@@ -40,41 +42,59 @@
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-mob">MOB</ng-template>
-    <div class="p-3" data-testid="tab-panel-mob">
-      <div data-testid="mob-dashboard-host">
-        <app-mob-dashboard></app-mob-dashboard>
+    <ng-template mat-tab-label data-testid="tab-label-mob"><span class="text-xs sm:text-sm md:text-base">MOB</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
+      <div class="overflow-x-auto" data-testid="responsive-scroll-mob">
+        <div data-testid="mob-dashboard-host">
+          <app-mob-dashboard></app-mob-dashboard>
+        </div>
       </div>
     </div>
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-fos">FOS</ng-template>
-    <div class="p-3" data-testid="tab-panel-fos">
-      <app-fos-dashboard></app-fos-dashboard>
+    <ng-template mat-tab-label data-testid="tab-label-fos"><span class="text-xs sm:text-sm md:text-base">FOS</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-fos">
+      <div class="overflow-x-auto" data-testid="responsive-scroll-fos">
+        <div data-testid="fos-dashboard-host">
+          <app-fos-dashboard></app-fos-dashboard>
+        </div>
+      </div>
     </div>
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-cspoc">CSpOC</ng-template>
-    <div class="p-3" data-testid="tab-panel-cspoc">
-      <app-cspoc-board></app-cspoc-board>
+    <ng-template mat-tab-label data-testid="tab-label-cspoc"><span class="text-xs sm:text-sm md:text-base">CSpOC</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-cspoc">
+      <div class="overflow-x-auto" data-testid="responsive-scroll-cspoc">
+        <div data-testid="cspoc-board-host">
+          <app-cspoc-board></app-cspoc-board>
+        </div>
+      </div>
     </div>
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-medcom">MEDCOM</ng-template>
-    <div class="p-3" data-testid="tab-panel-medcom">
-      <app-medcom-dashboard></app-medcom-dashboard>
+    <ng-template mat-tab-label data-testid="tab-label-medcom"><span class="text-xs sm:text-sm md:text-base">MEDCOM</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-medcom">
+      <div class="overflow-x-auto" data-testid="responsive-scroll-medcom">
+        <div data-testid="medcom-dashboard-host">
+          <app-medcom-dashboard></app-medcom-dashboard>
+        </div>
+      </div>
     </div>
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-log">Log</ng-template>
-    <div class="p-3" data-testid="tab-panel-log">
-      <app-game-log
-        [log]="gameStatsService.getFormattedLog()"
-      ></app-game-log>
+    <ng-template mat-tab-label data-testid="tab-label-log"><span class="text-xs sm:text-sm md:text-base">Log</span></ng-template>
+    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-log">
+      <div class="overflow-x-auto" data-testid="responsive-scroll-log">
+        <div data-testid="game-log-host">
+          <app-game-log
+            [log]="gameStatsService.getFormattedLog()"
+          ></app-game-log>
+        </div>
+      </div>
     </div>
   </mat-tab>
 </mat-tab-group>
