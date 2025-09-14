@@ -115,16 +115,22 @@ export class AtoService {
       throw new NotFoundException('Player not found');
     }
 
-    // GMs can access any aircraft
-    if (player.role === PlayerRole.GM) {
-      return;
-    }
-
     // Find the aircraft
     const aircraft = await this.prisma.aircraftInstance.findUnique({
       where: { callSign: aircraftCallSign },
       include: { team: true },
     });
+
+    if (player.role === PlayerRole.GM) {
+      // GM may bypass ownership but aircraft must exist and belong to the same game
+      if (!aircraft) {
+        throw new NotFoundException(`Aircraft with call sign '${aircraftCallSign}' not found`);
+      }
+      if (aircraft.team?.gameId !== gameId) {
+        throw new ForbiddenException(`Aircraft '${aircraftCallSign}' is not in this game`);
+      }
+      return;
+    }
 
     if (!aircraft) {
       throw new NotFoundException(`Aircraft with call sign '${aircraftCallSign}' not found`);
