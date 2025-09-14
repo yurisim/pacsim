@@ -96,6 +96,7 @@ describe('ATO Controller E2E', () => {
         expect(error.response.data.message).toContain('already in use');
       }
     });
+  });
 
   describe('GET /api/ato/game/:gameId', () => {
     it('should return all ATO lines for a game', async () => {
