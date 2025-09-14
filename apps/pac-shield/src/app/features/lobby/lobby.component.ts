@@ -361,14 +361,14 @@ export class LobbyComponent implements OnInit {
   }
 
   // GM Action Handlers - for structured events from GM menus
-  onChangeRole(event: {player: Player, role: string}): void {
+  onChangeRole(event: { player: Player, role: string }): void {
     this.apiService.updatePlayerRole(event.player.id!.toString(), event.role).subscribe({
       next: () => this.notification.success('Player role updated'),
       error: (err) => this.notification.error(err.error?.message || 'Failed to update player role')
     });
   }
 
-  onMoveToTeam(event: {player: Player, team: Team}): void {
+  onMoveToTeam(event: { player: Player, team: Team }): void {
     this.apiService.joinTeam(event.player.id!.toString(), event.team.id!).subscribe({
       next: () => this.notification.success('Player moved to team'),
       error: (err) => this.notification.error(err.error?.message || 'Failed to move player')
