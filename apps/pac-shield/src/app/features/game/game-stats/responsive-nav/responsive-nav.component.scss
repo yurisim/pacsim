@@ -9,83 +9,20 @@
   width: 100%;
 }
 
-/* Bottom Navigation Button Toggle Group Adjustments */
-.mat-button-toggle-group {
-  border: none !important;
-  box-shadow: none !important;
-
-  .mat-button-toggle {
-    border: none !important;
-    border-radius: 0 !important;
-    flex: 1;
-
-    .mat-button-toggle-label-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 4px;
-      min-height: 56px;
-      gap: 4px;
-    }
-
-    mat-icon {
-      font-size: 20px !important;
-      width: 20px;
-      height: 20px;
-    }
-
-    span {
-      font-size: 10px !important;
-      font-weight: 500;
-      line-height: 1;
-    }
-  }
-}
-
-/* Sidenav Container Adjustments */
-.sidenav-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 9998;
-  pointer-events: none;
-
-  mat-sidenav {
-    pointer-events: auto;
-  }
-}
-
-/* Side Navigation Button Adjustments */
-.mat-sidenav {
-  .mat-mdc-button {
-    width: 100%;
-    justify-content: flex-start;
-    text-align: left;
-    margin-bottom: 8px;
-    min-height: 48px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    .mat-icon {
-      margin-right: 12px;
-    }
-  }
-}
-
-/* Tab Navigation Adjustments */
+/* Tab Navigation: allow horizontal scroll on narrow screens, no custom colors */
 nav[mat-tab-nav-bar] {
-  .mat-mdc-tab-link {
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
 
-    mat-icon {
-      font-size: 20px;
-    }
-  }
+nav[mat-tab-nav-bar] .mat-mdc-tab-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+nav[mat-tab-nav-bar] mat-icon {
+  font-size: 20px;
 }
