@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { ATOLine } from '../../../pac-shield/src/app/generated/aTOLine/aTOLine.entity';
-import { CreateATOLineDto } from '../../../pac-shield/src/app/generated/aTOLine/create-aTOLine.dto';
-import { FlightIntention, AircraftConfiguration } from '../../../pac-shield/src/app/generated/enums';
+import { ATOLine } from '../../../pac-shield-api/src/app/generated/aTOLine/aTOLine.entity';
+import { CreateATOLineDto } from '../../../pac-shield-api/src/app/generated/aTOLine/create-aTOLine.dto';
+import { CreateATORequestDto } from '../../../pac-shield-api/src/app/ato/dto/create-ato-request.dto';
+import { FlightIntention, AircraftConfiguration } from '@prisma/client';
 
 describe('ATO Controller E2E', () => {
   let gameId: number;
