@@ -1,0 +1,80 @@
+<mat-tab-group dynamicHeight="true" data-testid="game-stats-tabs">
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-scoreboard">Score</ng-template>
+    <div class="p-3" data-testid="tab-panel-scoreboard">
+      <app-scoreboard
+        [missionPoints]="gameStats().missionPoints"
+        [demoralizationPoints]="gameStats().demoralizationPoints"
+        [resourcePoints]="gameStats().resourcePoints"
+        [victoryTarget]="gameStats().victoryTarget"
+        [gameTurn]="gameStats().gameTurn"
+        [gameDay]="gameStats().gameDay"
+        [gamePhase]="gameStats().gamePhase"
+      ></app-scoreboard>
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-caoc">CAOC</ng-template>
+    <div class="p-3" data-testid="tab-panel-caoc">
+      <div data-testid="caoc-dashboard-host">
+        <app-caoc-dashboard
+          [currentGameId]="currentGameId || 1"
+          [currentTurn]="gameStats().gameTurn"
+          [currentUserTeam]="currentUserTeam"
+          [currentUserRole]="currentUserRole"
+          [readonly]="false">
+        </app-caoc-dashboard>
+      </div>
+      <div class="mt-3">
+        <app-ato-table
+          [lines]="atoLines()"
+          [currentGameId]="currentGameId || 1"
+          [currentTurn]="gameStats().gameTurn"
+          [currentUserTeam]="currentUserTeam"
+          [currentUserRole]="currentUserRole"
+          [readonly]="false">
+        </app-ato-table>
+      </div>
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-mob">MOB</ng-template>
+    <div class="p-3" data-testid="tab-panel-mob">
+      <div data-testid="mob-dashboard-host">
+        <app-mob-dashboard></app-mob-dashboard>
+      </div>
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-fos">FOS</ng-template>
+    <div class="p-3" data-testid="tab-panel-fos">
+      <app-fos-dashboard></app-fos-dashboard>
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-cspoc">CSpOC</ng-template>
+    <div class="p-3" data-testid="tab-panel-cspoc">
+      <app-cspoc-board></app-cspoc-board>
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-medcom">MEDCOM</ng-template>
+    <div class="p-3" data-testid="tab-panel-medcom">
+      <app-medcom-dashboard></app-medcom-dashboard>
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label data-testid="tab-label-log">Log</ng-template>
+    <div class="p-3" data-testid="tab-panel-log">
+      <app-game-log
+        [log]="gameStatsService.getFormattedLog()"
+      ></app-game-log>
+    </div>
+  </mat-tab>
+</mat-tab-group>

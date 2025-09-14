@@ -1,35 +1,54 @@
 import { Component, inject, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatTabsModule } from '@angular/material/tabs';
 import { GameStatsService } from './game-stats.service';
 import { GameStatsConfig } from './game-stats.interfaces';
+import { ScoreboardComponent } from './scoreboard/scoreboard.component';
+import { CaocDashboardComponent } from './caoc-dashboard/caoc-dashboard.component';
+import { AtoTableComponent } from './ato-table/ato-table.component';
+import { MobDashboardComponent } from './mob-dashboard/mob-dashboard.component';
+import { FosDashboardComponent } from './fos-dashboard/fos-dashboard.component';
+import { CspocBoardComponent } from './cspoc-board/cspoc-board.component';
+import { MedcomDashboardComponent } from './medcom-dashboard/medcom-dashboard.component';
+import { GameLogComponent } from './game-log/game-log.component';
+import { TeamType, PlayerRole } from '../../../generated/enums';
 
 /**
- * Component Intent: Provides game statistics management and access for the game board.
- * 
- * This component serves as a facade for the GameStatsService, providing:
+ * Component Intent: Game statistics UI container that renders tabs with game dashboards.
+ *
+ * This component now serves as the UI container for game statistics, providing:
+ * - Tabbed interface for different game dashboards (Score, CAOC, MOB, FOS, etc.)
  * - Access to game statistics via signals
  * - Methods to update game state
  * - Demo data management for UI development
  * - Centralized state management for game metrics
- * 
- * The component is designed to be invisible (no UI) and acts as a data provider
- * for other components that need access to game statistics.
  */
 @Component({
   selector: 'app-game-stats',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <!-- This component is a data provider with no visual representation -->
-    <ng-content></ng-content>
-  `,
-  styles: [`:host { display: contents; }`]
+  imports: [
+    CommonModule,
+    MatTabsModule,
+    ScoreboardComponent,
+    CaocDashboardComponent,
+    AtoTableComponent,
+    MobDashboardComponent,
+    FosDashboardComponent,
+    CspocBoardComponent,
+    MedcomDashboardComponent,
+    GameLogComponent
+  ],
+  templateUrl: './game-stats.component.html',
+  styleUrls: ['./game-stats.component.scss']
 })
 export class GameStatsComponent implements OnInit {
   @Input() config: GameStatsConfig = {};
   @Input() loadDemoData = true;
+  @Input() currentGameId: number | null = null;
+  @Input() currentUserTeam: TeamType | null = null;
+  @Input() currentUserRole: PlayerRole | null = null;
 
-  private gameStatsService = inject(GameStatsService);
+  gameStatsService = inject(GameStatsService);
 
   // Expose service signals as public properties
   readonly gameStats = this.gameStatsService.gameStats;
