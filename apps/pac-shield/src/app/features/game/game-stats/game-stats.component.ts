@@ -53,28 +53,28 @@ import { TeamType, PlayerRole } from '../../../generated/enums';
   styleUrls: ['./game-stats.component.scss']
 })
 export class GameStatsComponent implements OnInit {
-@Input() config: GameStatsConfig = {};
-@Input() loadDemoData = true;
-@Input() currentGameId: number | null = null;
-@Input() currentUserTeam: TeamType | null = null;
-@Input() currentUserRole: PlayerRole | null = null;
-@Input() collapsed = false;
-@Output() collapsedChange = new EventEmitter<boolean>();
+  @Input() config: GameStatsConfig = {};
+  @Input() loadDemoData = true;
+  @Input() currentGameId: number | null = null;
+  @Input() currentUserTeam: TeamType | null = null;
+  @Input() currentUserRole: PlayerRole | null = null;
+  @Input() collapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
 
-navService = inject(ResponsiveNavService);
-gameStatsService = inject(GameStatsService);
+  navService = inject(ResponsiveNavService);
+  gameStatsService = inject(GameStatsService);
 
-activeTab$ = this.navService.activeTab$;
+  activeTab$ = this.navService.activeTab$;
 
-// Expose service signals as public properties
-readonly gameStats = this.gameStatsService.gameStats;
-readonly atoLines = this.gameStatsService.atoLines;
-readonly gameAssets = this.gameStatsService.gameAssets;
-readonly gameLog = this.gameStatsService.gameLog;
-readonly totalScore = this.gameStatsService.totalScore;
-readonly victoryProgress = this.gameStatsService.victoryProgress;
-readonly isVictory = this.gameStatsService.isVictory;
-readonly currentTurnLabel = this.gameStatsService.currentTurnLabel;
+  // Expose service signals as public properties
+  readonly gameStats = this.gameStatsService.gameStats;
+  readonly atoLines = this.gameStatsService.atoLines;
+  readonly gameAssets = this.gameStatsService.gameAssets;
+  readonly gameLog = this.gameStatsService.gameLog;
+  readonly totalScore = this.gameStatsService.totalScore;
+  readonly victoryProgress = this.gameStatsService.victoryProgress;
+  readonly isVictory = this.gameStatsService.isVictory;
+  readonly currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   ngOnInit(): void {
     // Load demo data if requested (for development)
