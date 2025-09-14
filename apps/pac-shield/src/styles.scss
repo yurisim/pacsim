@@ -297,6 +297,33 @@ mat-mdc-snack-bar-container.snack-error {
   @apply flex justify-center items-center;
 }
 
+/* Priority chip styles using Material 3 design tokens */
+.priority-chip-1 {
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border: 1px solid var(--mat-sys-error);
+}
+.priority-chip-2 {
+  background-color: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  border: 1px solid var(--mat-sys-tertiary);
+}
+.priority-chip-3 {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  border: 1px solid var(--mat-sys-primary);
+}
+.priority-chip-4 {
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border: 1px solid var(--mat-sys-secondary);
+}
+.priority-chip-5 {
+  background-color: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
 .md-layout-center-text {
   @apply text-center block w-full;
 }
@@ -443,4 +470,100 @@ mat-tab-group .mat-tab-body-content,
 .mat-tab-group .mat-tab-label-content,
 .mat-tab-group .mat-tab-label-content * {
   font-size: 16px;
+}
+
+
+/* Responsive table improvements */
+.mat-mdc-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.mat-mdc-header-cell.sticky {
+  position: sticky;
+  background: var(--mat-sys-surface-container);
+  z-index: 10;
+}
+
+.mat-mdc-cell.sticky {
+  position: sticky;
+  background: var(--mat-sys-surface);
+  z-index: 5;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell.sticky {
+  background: var(--mat-sys-surface-variant);
+}
+
+/* ==========================================
+   Priority Chip Styling - Material 3 Tokens
+   ========================================== */
+
+.priority-chip-1 {
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border: 1px solid var(--mat-sys-error);
+}
+
+.priority-chip-2 {
+  background-color: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  border: 1px solid var(--mat-sys-tertiary);
+}
+
+.priority-chip-3 {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  border: 1px solid var(--mat-sys-primary);
+}
+
+.priority-chip-4 {
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border: 1px solid var(--mat-sys-secondary);
+}
+
+.priority-chip-5 {
+  background-color: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+  border: 1px solid var(--mat-sys-outline);
+}
+
+/* ==========================================
+   Mobile Touch Improvements
+   ========================================== */
+
+/* Ensure all interactive elements meet 44px minimum */
+.mobile-touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Responsive utilities */
+@media (max-width: 639px) {
+  /* Tighter spacing on mobile */
+  .game-stats-content {
+    padding-left: 0 !important;
+  }
+
+  /* Ensure content doesn't get hidden behind top navigation */
+  .game-stats-content.pt-14 {
+    padding-top: 3.5rem !important;
+  }
+
+  /* Larger touch targets for mobile */
+  .mat-mdc-icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Responsive text sizing */
+  .mat-mdc-card-title {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
 }
