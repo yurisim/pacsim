@@ -114,7 +114,8 @@
       },
       "configurations": {
         "production": {
-          "command": "npx prisma db push --schema src/prisma/schema.prisma"
+          "command": "npx prisma db push --schema src/prisma/schema.prisma",
+          "envFile": ".env.production"
         }
       }
     },
