@@ -38,7 +38,7 @@
       <!-- Dynamic content based on active tab -->
       @switch (activeTab$ | async) {
         @case ('scoreboard') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-scoreboard">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-scoreboard">
             <app-scoreboard
               [missionPoints]="gameStats().missionPoints"
               [demoralizationPoints]="gameStats().demoralizationPoints"
@@ -52,7 +52,7 @@
         }
 
         @case ('caoc') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-caoc">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-caoc">
             <div class="space-y-3">
               <div class="overflow-x-auto" data-testid="responsive-scroll-caoc">
                 <div data-testid="caoc-dashboard-host">
@@ -82,7 +82,7 @@
         }
 
         @case ('mob') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
             <div data-testid="mob-dashboard-host">
               <app-mob-dashboard></app-mob-dashboard>
             </div>
@@ -90,7 +90,7 @@
         }
 
         @case ('fos') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-fos">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-fos">
             <div class="overflow-x-auto" data-testid="responsive-scroll-fos">
               <div data-testid="fos-dashboard-host">
                 <app-fos-dashboard></app-fos-dashboard>
@@ -100,7 +100,7 @@
         }
 
         @case ('cspoc') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-cspoc">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-cspoc">
             <div class="overflow-x-auto" data-testid="responsive-scroll-cspoc">
               <div data-testid="cspoc-board-host">
                 <app-cspoc-board></app-cspoc-board>
@@ -110,7 +110,7 @@
         }
 
         @case ('medcom') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-medcom">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-medcom">
             <div class="overflow-x-auto" data-testid="responsive-scroll-medcom">
               <div data-testid="medcom-dashboard-host">
                 <app-medcom-dashboard></app-medcom-dashboard>
@@ -120,7 +120,7 @@
         }
 
         @case ('log') {
-          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-log">
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-log">
             <div class="overflow-x-auto" data-testid="responsive-scroll-log">
               <div data-testid="game-log-host">
                 <app-game-log
