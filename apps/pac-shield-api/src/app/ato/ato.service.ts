@@ -24,7 +24,7 @@ export class AtoService {
   async getAircraftForTeam(teamId: number, user: any): Promise<AircraftInstance[]> {
     // Verify the user has access to this team
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true, game: true },
     });
 
@@ -54,7 +54,7 @@ export class AtoService {
   async getAllAircraftInGame(gameId: number, user: any): Promise<AircraftInstance[]> {
     // Verify the user is a GM
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true, game: true },
     });
 
@@ -96,14 +96,17 @@ export class AtoService {
    * Validate aircraft ownership for flight plan
    */
   async validateAircraftOwnership(aircraftCallSign: string, gameId: number, user: any): Promise<void> {
+    console.log('validateAircraftOwnership called with user:', JSON.stringify(user, null, 2));
+
     // Skip aircraft validation in test environment for call signs starting with 'TEST-'
     if (process.env.NODE_ENV === 'test' || aircraftCallSign.startsWith('TEST-')) {
+      console.log('Skipping aircraft validation for test case:', aircraftCallSign);
       return;
     }
 
     // Get the player making the request
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -227,7 +230,7 @@ export class AtoService {
 
     // Validate the updated flight plan
     const mergedData = { ...existingLine, ...updateAtoLineDto };
-    await this.validateFlightPlan(mergedData, { sub: userId });
+    await this.validateFlightPlan(mergedData, { sessionId: userId });
 
     const updatedLine = await this.prisma.aTOLine.update({
       where: { id },

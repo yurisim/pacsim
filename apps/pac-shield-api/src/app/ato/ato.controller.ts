@@ -126,7 +126,7 @@ export class AtoController {
     @Body() updateAtoRequestDto: UpdateATORequestDto,
     @Request() req: any
   ): Promise<ATOLine> {
-    return this.atoService.updateAtoLine(id, updateAtoRequestDto, req.user.sub);
+    return this.atoService.updateAtoLine(id, updateAtoRequestDto, req.user.sessionId);
   }
 
   /**
@@ -138,7 +138,7 @@ export class AtoController {
     @Param('id', ParseIntPipe) id: number,
     @Request() req: any
   ): Promise<{ success: boolean }> {
-    await this.atoService.deleteAtoLine(id, req.user.sub);
+    await this.atoService.deleteAtoLine(id, req.user.sessionId);
     return { success: true };
   }
 
