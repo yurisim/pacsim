@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -291,10 +291,8 @@ export class AllocationNotificationCenterComponent implements OnInit, OnDestroy 
   unacknowledgedNotifications$!: Observable<AllocationNotification[]>;
   processingNotification$!: Observable<boolean>;
 
-  constructor(
-    private store: Store,
-    private dialogRef: MatDialogRef<AllocationNotificationCenterComponent>
-  ) {}
+  private store = inject(Store);
+  private dialogRef = inject(MatDialogRef<AllocationNotificationCenterComponent>);
 
   ngOnInit(): void {
     // Initialize observables

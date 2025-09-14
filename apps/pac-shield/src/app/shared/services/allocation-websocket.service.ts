@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -30,7 +30,7 @@ export class AllocationWebSocketService implements OnDestroy {
   private connectionStatus$ = new BehaviorSubject<'disconnected' | 'connecting' | 'connected'>('disconnected');
   private destroy$ = new Subject<void>();
 
-  constructor(private store: Store) {}
+  private store = inject(Store);
 
   /**
    * Initialize WebSocket connection for allocation events
