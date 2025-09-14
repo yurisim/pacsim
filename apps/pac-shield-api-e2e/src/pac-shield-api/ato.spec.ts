@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { ATOLine } from '../../../pac-shield/src/app/generated/aTOLine/aTOLine.entity';
+import { CreateATOLineDto } from '../../../pac-shield/src/app/generated/aTOLine/create-aTOLine.dto';
+import { FlightIntention, AircraftConfiguration } from '../../../pac-shield/src/app/generated/enums';
 
 describe('ATO Controller E2E', () => {
   let gameId: number;
@@ -25,16 +28,16 @@ describe('ATO Controller E2E', () => {
 
   describe('POST /api/ato', () => {
     it('should create a new ATO line (flight plan)', async () => {
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number; riskTokenUsed: boolean } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'TEST-01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 7',
         alternateDestination: 'Andersen AFB',
-        intention: 'LAND',
+        intention: 'LAND' as FlightIntention,
         riskTokenUsed: false,
-        configuration: 'CARGO_ONLY'
+        configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
       let res;
@@ -65,14 +68,14 @@ describe('ATO Controller E2E', () => {
     });
 
     it('should reject duplicate aircraft call signs in same turn', async () => {
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'DUP-01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 7',
-        intention: 'LAND',
-        configuration: 'CARGO_ONLY'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
       // Create first flight plan
@@ -101,14 +104,14 @@ describe('ATO Controller E2E', () => {
   describe('GET /api/ato/game/:gameId', () => {
     it('should return all ATO lines for a game', async () => {
       // Create a test flight plan first
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'GET-TEST-01',
         startLocation: 'Andersen AFB',
         finalDestination: 'FOS 8',
-        intention: 'LAND',
-        configuration: 'MIXED'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'MIXED' as AircraftConfiguration
       };
 
       await axios.post('/api/ato', flightPlan, {
@@ -146,14 +149,14 @@ describe('ATO Controller E2E', () => {
 
     it('should return ATO lines filtered by turn', async () => {
       // Create flight plans for different turns
-      const turn2Plan = {
+      const turn2Plan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 2,
         aircraftCallSign: 'TURN2-01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 9',
-        intention: 'LAND',
-        configuration: 'CARGO_ONLY'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
       await axios.post('/api/ato', turn2Plan, {
@@ -207,14 +210,14 @@ describe('ATO Controller E2E', () => {
 
     beforeEach(async () => {
       // Create a flight plan to update
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'UPDATE-01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 10',
-        intention: 'LAND',
-        configuration: 'CARGO_ONLY'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
       const res = await axios.post('/api/ato', flightPlan, {
@@ -260,14 +263,14 @@ describe('ATO Controller E2E', () => {
 
     beforeEach(async () => {
       // Create a pending flight plan
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'PPR-TEST-01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 12',
-        intention: 'LAND',
-        configuration: 'CARGO_ONLY'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
       const res = await axios.post('/api/ato', flightPlan, {
@@ -295,14 +298,14 @@ describe('ATO Controller E2E', () => {
   describe('GET /api/ato/game/:gameId/ppr-queue', () => {
     it('should return pending PPR approvals', async () => {
       // Create a pending flight plan
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'PPR-QUEUE-01',
         startLocation: 'Andersen AFB',
         finalDestination: 'FOS 13',
-        intention: 'LAND',
-        configuration: 'MIXED'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'MIXED' as AircraftConfiguration
       };
 
       await axios.post('/api/ato', flightPlan, {
@@ -335,14 +338,14 @@ describe('ATO Controller E2E', () => {
   describe('DELETE /api/ato/:id', () => {
     it('should delete a pending flight plan', async () => {
       // Create a flight plan to delete
-      const flightPlan = {
+      const flightPlan: CreateATOLineDto & { gameId: number } = {
         gameId,
         turn: 1,
         aircraftCallSign: 'DELETE-01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 14',
-        intention: 'LAND',
-        configuration: 'CARGO_ONLY'
+        intention: 'LAND' as FlightIntention,
+        configuration: 'CARGO_ONLY' as AircraftConfiguration
       };
 
       const createRes = await axios.post('/api/ato', flightPlan, {
@@ -488,14 +491,14 @@ describe('ATO Controller E2E', () => {
 
     describe('Aircraft Ownership Validation', () => {
       it('should reject flight plan with unauthorized aircraft call sign', async () => {
-        const unauthorizedFlightPlan = {
+        const unauthorizedFlightPlan: CreateATOLineDto & { gameId: number } = {
           gameId,
           turn: 1,
           aircraftCallSign: 'UNAUTHORIZED-01', // Non-existent aircraft
           startLocation: 'Kadena AB',
           finalDestination: 'FOS 15',
-          intention: 'LAND',
-          configuration: 'CARGO_ONLY'
+          intention: 'LAND' as FlightIntention,
+          configuration: 'CARGO_ONLY' as AircraftConfiguration
         };
 
         try {
@@ -517,14 +520,14 @@ describe('ATO Controller E2E', () => {
       });
 
       it('should allow GM to use any aircraft call sign', async () => {
-        const gmFlightPlan = {
+        const gmFlightPlan: CreateATOLineDto & { gameId: number } = {
           gameId,
           turn: 1,
           aircraftCallSign: 'GM-AIRCRAFT-01',
           startLocation: 'Kadena AB',
           finalDestination: 'FOS 16',
-          intention: 'LAND',
-          configuration: 'CARGO_ONLY'
+          intention: 'LAND' as FlightIntention,
+          configuration: 'CARGO_ONLY' as AircraftConfiguration
         };
 
         try {
