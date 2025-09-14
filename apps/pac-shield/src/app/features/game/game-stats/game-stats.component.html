@@ -33,15 +33,8 @@
       data-testid="responsive-nav"
     ></app-responsive-nav>
 
-    <!-- Content Container with padding for mobile top nav -->
-    <div
-      id="game-stats-content"
-      class="game-stats-content"
-      [class.pt-14]="(navService.isMobile$ | async)"
-      [class.pl-0]="(navService.isTablet$ | async) === false"
-      [class.pl-64]="(navService.isTablet$ | async) && (navService.sideNavOpen$ | async)"
-      data-testid="game-stats-content"
-    >
+    <!-- Content Container -->
+    <div id="game-stats-content" class="game-stats-content" data-testid="game-stats-content">
       <!-- Dynamic content based on active tab -->
       @switch (activeTab$ | async) {
         @case ('scoreboard') {
