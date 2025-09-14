@@ -13,7 +13,13 @@
       "mcp__wallaby__wallaby_testById",
       "Bash(npx jest:*)",
       "mcp__wallaby__wallaby_allTests",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "mcp__nx-mcp__nx_project_details",
+      "Bash(npx nx e2e:*)",
+      "Bash(yarn nx run:*)",
+      "mcp__wallaby__wallaby_failingTestsForFile",
+      "Bash(npx nx prisma-generate:*)",
+      "Bash(npx nx prisma-db-push:*)"
     ],
     "deny": [],
     "ask": []
