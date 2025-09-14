@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -39,6 +40,7 @@ import { AllocationNotification } from '../../../../store/allocation/allocation.
   standalone: true,
   imports: [
     CommonModule,
+    ScrollingModule,
     MatCardModule,
     MatDividerModule,
     MatIconModule,
@@ -292,5 +294,12 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
    */
   onNotificationBadgeClick(): void {
     this.openNotificationCenter();
+  }
+
+  /**
+   * Track by function for virtual scrolling performance
+   */
+  trackByRequestId(index: number, item: AircraftRequest): number {
+    return item.id;
   }
 }

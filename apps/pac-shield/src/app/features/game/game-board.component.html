@@ -13,8 +13,6 @@
     [activeFosIds]="activeFosIds"
   ></app-location-markers>
 
-  <!-- Game Stats Component (manages game statistics and demo data) -->
-  <app-game-stats [loadDemoData]="true"></app-game-stats>
 
   <!-- Loading overlay -->
   @if (isLoading$ | async) {
@@ -44,75 +42,14 @@
 
   <!-- Right side panel with stubbed dashboards -->
   <div class="absolute top-2 right-2 z-[90] pointer-events-none">
-    <mat-tab-group dynamicHeight="true" class="pointer-events-auto">
-      <mat-tab label="Score">
-        <div class="p-3">
-          <app-scoreboard
-            [missionPoints]="gameStats().missionPoints"
-            [demoralizationPoints]="gameStats().demoralizationPoints"
-            [resourcePoints]="gameStats().resourcePoints"
-            [victoryTarget]="gameStats().victoryTarget"
-            [gameTurn]="gameStats().gameTurn"
-            [gameDay]="gameStats().gameDay"
-            [gamePhase]="gameStats().gamePhase"
-          ></app-scoreboard>
-        </div>
-      </mat-tab>
-
-      <mat-tab label="CAOC">
-        <div class="p-3">
-          <app-caoc-dashboard
-            [currentGameId]="(gameId$ | async) || 1"
-            [currentTurn]="gameStats().gameTurn"
-            [currentUserTeam]="currentUserTeam$ | async"
-            [currentUserRole]="currentUserRole$ | async"
-            [readonly]="false">
-          </app-caoc-dashboard>
-          <div class="mt-3">
-            <app-ato-table
-              [lines]="atoLines()"
-              [currentGameId]="(gameId$ | async) || 1"
-              [currentTurn]="gameStats().gameTurn"
-              [currentUserTeam]="currentUserTeam$ | async"
-              [currentUserRole]="currentUserRole$ | async"
-              [readonly]="false">
-            </app-ato-table>
-          </div>
-        </div>
-      </mat-tab>
-
-      <mat-tab label="MOB">
-        <div class="p-3">
-          <app-mob-dashboard></app-mob-dashboard>
-        </div>
-      </mat-tab>
-
-      <mat-tab label="FOS">
-        <div class="p-3">
-          <app-fos-dashboard></app-fos-dashboard>
-        </div>
-      </mat-tab>
-
-      <mat-tab label="CSpOC">
-        <div class="p-3">
-          <app-cspoc-board></app-cspoc-board>
-        </div>
-      </mat-tab>
-
-      <mat-tab label="MEDCOM">
-        <div class="p-3">
-          <app-medcom-dashboard></app-medcom-dashboard>
-        </div>
-      </mat-tab>
-
-      <mat-tab label="Log">
-        <div class="p-3">
-          <app-game-log
-            [log]="gameStatsService.getFormattedLog()"
-          ></app-game-log>
-        </div>
-      </mat-tab>
-    </mat-tab-group>
+    <div class="pointer-events-auto">
+      <app-game-stats
+        [currentGameId]="(gameId$ | async)"
+        [currentUserTeam]="(currentUserTeam$ | async)"
+        [currentUserRole]="(currentUserRole$ | async)"
+        [loadDemoData]="true">
+      </app-game-stats>
+    </div>
   </div>
   }
 

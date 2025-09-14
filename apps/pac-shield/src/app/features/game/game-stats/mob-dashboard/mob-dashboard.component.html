@@ -1,29 +1,32 @@
 <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container">
   <!-- Header -->
-  <div class="flex items-center justify-between p-3 pb-0">
-    <div class="flex items-center gap-2">
-      <mat-icon>domain</mat-icon>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 gap-4 sm:gap-2 pb-2">
+    <div class="flex items-center gap-3">
+      <mat-icon class="md-sys-color-primary">domain</mat-icon>
       <div class="md-typescale-title-medium">MOB Dashboard</div>
     </div>
-    <div class="flex items-center gap-2">
-      <!-- Notification Badge -->
-      <app-allocation-notification-badge
-        [unreadCount]="(unreadNotificationCount$ | async) || 0"
-        [hasUrgentNotifications]="(hasUrgentNotifications$ | async) || false"
-        [hasUnacknowledgedNotifications]="((unacknowledgedNotifications$ | async)?.length ?? 0) > 0"
-        (click)="onNotificationBadgeClick()"
-        size="medium"
-        tooltipPosition="below"
-      ></app-allocation-notification-badge>
+    <div class="flex items-center gap-3">
+      <!-- Notification Badge with better touch targets -->
+      <div class="p-2 -m-2">
+        <app-allocation-notification-badge
+          [unreadCount]="(unreadNotificationCount$ | async) || 0"
+          [hasUrgentNotifications]="(hasUrgentNotifications$ | async) || false"
+          [hasUnacknowledgedNotifications]="((unacknowledgedNotifications$ | async)?.length ?? 0) > 0"
+          (click)="onNotificationBadgeClick()"
+          size="medium"
+          tooltipPosition="below"
+        ></app-allocation-notification-badge>
+      </div>
 
       <button
-        mat-raised-button
+        matButton="filled"
         color="primary"
         (click)="openRequestDialog()"
-        class="flex items-center gap-2"
+        class="flex items-center gap-2 min-h-[44px] px-4"
       >
         <mat-icon>flight_takeoff</mat-icon>
-        Request Aircraft
+        <span class="hidden sm:inline">Request Aircraft</span>
+        <span class="sm:hidden">Request</span>
       </button>
     </div>
   </div>
@@ -32,44 +35,44 @@
   <mat-tab-group class="mt-2">
     <!-- Inventory Tab -->
     <mat-tab label="Inventory">
-      <div class="p-3">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-4 md:p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           <!-- On-Station Personnel -->
-          <div>
-            <div class="md-typescale-label-medium mb-2">On-Station Personnel</div>
+          <div class="space-y-3">
+            <div class="md-typescale-label-medium md-sys-color-on-surface">On-Station Personnel</div>
             <div class="flex flex-wrap gap-2">
-              <mat-chip>Refueling</mat-chip>
-              <mat-chip>Airfield Ops</mat-chip>
-              <mat-chip>Security Forces</mat-chip>
+              <mat-chip class="min-h-[32px]">Refueling</mat-chip>
+              <mat-chip class="min-h-[32px]">Airfield Ops</mat-chip>
+              <mat-chip class="min-h-[32px]">Security Forces</mat-chip>
             </div>
           </div>
 
           <!-- Commodities -->
-          <div>
-            <div class="md-typescale-label-medium mb-2">Commodities</div>
+          <div class="space-y-3">
+            <div class="md-typescale-label-medium md-sys-color-on-surface">Commodities</div>
             <div class="flex flex-wrap gap-2">
-              <mat-chip class="md-sys-bg-primary-container md-sys-color-on-primary-container">Fuel</mat-chip>
-              <mat-chip>Bomb</mat-chip>
-              <mat-chip>Missile</mat-chip>
-              <mat-chip>Food</mat-chip>
-              <mat-chip>Water</mat-chip>
+              <mat-chip class="md-sys-bg-primary-container md-sys-color-on-primary-container min-h-[32px]">Fuel</mat-chip>
+              <mat-chip class="min-h-[32px]">Bomb</mat-chip>
+              <mat-chip class="min-h-[32px]">Missile</mat-chip>
+              <mat-chip class="min-h-[32px]">Food</mat-chip>
+              <mat-chip class="min-h-[32px]">Water</mat-chip>
             </div>
           </div>
 
           <!-- Aircraft Inventory -->
-          <div>
-            <div class="md-typescale-label-medium mb-2">Aircraft Inventory</div>
+          <div class="space-y-3">
+            <div class="md-typescale-label-medium md-sys-color-on-surface">Aircraft Inventory</div>
             <div class="flex flex-wrap gap-2">
-              <mat-chip>F-16 x16</mat-chip>
-              <mat-chip>F-22 x16</mat-chip>
-              <mat-chip>C-17 x2</mat-chip>
+              <mat-chip class="min-h-[32px]">F-16 x16</mat-chip>
+              <mat-chip class="min-h-[32px]">F-22 x16</mat-chip>
+              <mat-chip class="min-h-[32px]">C-17 x2</mat-chip>
             </div>
           </div>
 
           <!-- Load Plans -->
-          <div>
-            <div class="md-typescale-label-medium mb-2">Load Plans</div>
-            <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+          <div class="space-y-3">
+            <div class="md-typescale-label-medium md-sys-color-on-surface">Load Plans</div>
+            <div class="md-typescale-body-small md-sys-color-on-surface-variant leading-relaxed">
               Placeholder for aircraft load planner summaries.
             </div>
           </div>
@@ -95,129 +98,215 @@
         </span>
       </ng-template>
 
-      <div class="p-3">
+      <div class="p-4 md:p-6">
         @if (isLoading$ | async) {
-          <div class="flex justify-center p-4">
+          <div class="flex justify-center p-8">
             <mat-spinner diameter="40"></mat-spinner>
           </div>
         } @else {
           @if (allRequests$ | async; as requests) {
             @if (requests.length === 0) {
               <!-- Empty State -->
-              <div class="text-center py-8">
-                <mat-icon class="md-sys-color-on-surface-variant text-6xl mb-4">flight_takeoff</mat-icon>
-                <div class="md-typescale-headline-small mb-2">No Aircraft Requests</div>
-                <div class="md-typescale-body-medium md-sys-color-on-surface-variant mb-4">
+              <div class="text-center py-12 px-4">
+                <mat-icon class="md-sys-color-on-surface-variant text-6xl mb-6">flight_takeoff</mat-icon>
+                <div class="md-typescale-headline-small mb-4">No Aircraft Requests</div>
+                <div class="md-typescale-body-medium md-sys-color-on-surface-variant mb-8 max-w-md mx-auto leading-relaxed">
                   Submit your first aircraft allocation request to get started.
                 </div>
                 <button
-                  mat-raised-button
+                  matButton="filled"
                   color="primary"
                   (click)="openRequestDialog()"
+                  class="min-h-[44px] px-6"
                 >
                   Request Aircraft
                 </button>
               </div>
             } @else {
-              <!-- Requests Table -->
-              <div class="overflow-x-auto">
-                <table mat-table [dataSource]="requests" class="w-full">
-                  <!-- Aircraft Type Column -->
-                  <ng-container matColumnDef="aircraftType">
-                    <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large">Aircraft Type</th>
-                    <td mat-cell *matCellDef="let request">
-                      <div class="flex items-center gap-2">
-                        <mat-icon>flight</mat-icon>
-                        {{ request.aircraftType }}
+              <!-- Responsive Requests Table with Virtual Scrolling -->
+              <div class="relative">
+                <!-- Mobile/Tablet: Sticky header with horizontal scroll -->
+                <div class="block lg:hidden">
+                  <div class="md-sys-bg-surface-container md-typescale-label-large p-3 sticky top-0 z-10 border-b border-[var(--mat-sys-outline-variant)]">
+                    Aircraft Requests
+                  </div>
+                  <cdk-virtual-scroll-viewport
+                    itemSize="120"
+                    class="h-[400px] overflow-x-auto">
+                    <div
+                      *cdkVirtualFor="let request of requests; trackBy: trackByRequestId"
+                      class="border-b border-[var(--mat-sys-outline-variant)] p-4 min-w-[640px]"
+                    >
+                      <div class="grid grid-cols-6 gap-3 items-center">
+                        <!-- Sticky Aircraft Type Column -->
+                        <div class="sticky left-0 z-20 md-sys-bg-surface pr-2">
+                          <div class="flex items-center gap-2">
+                            <mat-icon class="text-sm">flight</mat-icon>
+                            <span class="md-typescale-body-medium font-medium">{{ request.aircraftType }}</span>
+                          </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="text-center">
+                          <div class="md-typescale-label-small md-sys-color-on-surface-variant mb-1">Qty</div>
+                          <span class="md-typescale-body-medium font-medium">{{ request.quantityRequested }}</span>
+                          @if (request.quantityAllocated !== null && request.quantityAllocated !== request.quantityRequested) {
+                            <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+                              ({{ request.quantityAllocated }} alloc.)
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="text-center">
+                          <div class="md-typescale-label-small md-sys-color-on-surface-variant mb-1">Priority</div>
+                          <mat-chip [class]="'priority-chip-' + request.priority" class="text-xs">
+                            {{ formatPriority(request.priority) }}
+                          </mat-chip>
+                        </div>
+
+                        <!-- Mission (truncated) -->
+                        <div class="text-center">
+                          <div class="md-typescale-label-small md-sys-color-on-surface-variant mb-1">Mission</div>
+                          <div class="md-typescale-body-small max-w-[100px] truncate" [title]="request.missionJustification">
+                            {{ request.missionJustification }}
+                          </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="text-center">
+                          <div class="md-typescale-label-small md-sys-color-on-surface-variant mb-1">Status</div>
+                          <div class="flex items-center justify-center gap-1">
+                            <mat-icon [class]="getStatusColor(request.status)" class="text-sm">
+                              {{ getStatusIcon(request.status) }}
+                            </mat-icon>
+                            <span class="md-typescale-body-small capitalize">{{ request.status.toLowerCase() }}</span>
+                          </div>
+                        </div>
+
+                        <!-- Submitted -->
+                        <div class="text-center">
+                          <div class="md-typescale-label-small md-sys-color-on-surface-variant mb-1">Submitted</div>
+                          <span class="md-typescale-body-small md-sys-color-on-surface-variant">
+                            {{ formatDate(request.createdAt.toString() || '') }}
+                          </span>
+                        </div>
                       </div>
-                    </td>
-                  </ng-container>
+                    </div>
+                  </cdk-virtual-scroll-viewport>
+                </div>
 
-                  <!-- Quantity Column -->
-                  <ng-container matColumnDef="quantity">
-                    <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large">Quantity</th>
-                    <td mat-cell *matCellDef="let request">
-                      <span class="font-medium">{{ request.quantityRequested }}</span>
-                      @if (request.quantityAllocated !== null && request.quantityAllocated !== request.quantityRequested) {
-                        <span class="text-sm md-sys-color-on-surface-variant">
-                          ({{ request.quantityAllocated }} allocated)
-                        </span>
-                      }
-                    </td>
-                  </ng-container>
+                <!-- Desktop: Traditional table layout -->
+                <div class="hidden lg:block">
+                  <cdk-virtual-scroll-viewport itemSize="56" class="h-[400px]">
+                    <table mat-table [dataSource]="requests" class="w-full">
+                      <!-- Aircraft Type Column -->
+                      <ng-container matColumnDef="aircraftType">
+                        <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large sticky top-0 z-10 md-sys-bg-surface-container">
+                          Aircraft Type
+                        </th>
+                        <td mat-cell *matCellDef="let request" class="py-4">
+                          <div class="flex items-center gap-2">
+                            <mat-icon>flight</mat-icon>
+                            <span class="md-typescale-body-medium">{{ request.aircraftType }}</span>
+                          </div>
+                        </td>
+                      </ng-container>
 
-                  <!-- Priority Column -->
-                  <ng-container matColumnDef="priority">
-                    <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large">Priority</th>
-                    <td mat-cell *matCellDef="let request">
-                      <mat-chip
-                        [class]="'priority-' + request.priority"
-                        class="text-xs"
-                      >
-                        {{ formatPriority(request.priority) }}
-                      </mat-chip>
-                    </td>
-                  </ng-container>
+                      <!-- Quantity Column -->
+                      <ng-container matColumnDef="quantity">
+                        <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large sticky top-0 z-10 md-sys-bg-surface-container">
+                          Quantity
+                        </th>
+                        <td mat-cell *matCellDef="let request" class="py-4">
+                          <span class="md-typescale-body-medium font-medium">{{ request.quantityRequested }}</span>
+                          @if (request.quantityAllocated !== null && request.quantityAllocated !== request.quantityRequested) {
+                            <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+                              ({{ request.quantityAllocated }} allocated)
+                            </div>
+                          }
+                        </td>
+                      </ng-container>
 
-                  <!-- Justification Column -->
-                  <ng-container matColumnDef="justification">
-                    <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large">Mission</th>
-                    <td mat-cell *matCellDef="let request">
-                      <div class="max-w-xs truncate" [title]="request.missionJustification">
-                        {{ request.missionJustification }}
-                      </div>
-                    </td>
-                  </ng-container>
+                      <!-- Priority Column -->
+                      <ng-container matColumnDef="priority">
+                        <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large sticky top-0 z-10 md-sys-bg-surface-container">
+                          Priority
+                        </th>
+                        <td mat-cell *matCellDef="let request" class="py-4">
+                          <mat-chip [class]="'priority-chip-' + request.priority" class="text-xs">
+                            {{ formatPriority(request.priority) }}
+                          </mat-chip>
+                        </td>
+                      </ng-container>
 
-                  <!-- Status Column -->
-                  <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large">Status</th>
-                    <td mat-cell *matCellDef="let request">
-                      <div class="flex items-center gap-2">
-                        <mat-icon [class]="getStatusColor(request.status)">
-                          {{ getStatusIcon(request.status) }}
-                        </mat-icon>
-                        <span class="capitalize">{{ request.status.toLowerCase() }}</span>
-                      </div>
-                    </td>
-                  </ng-container>
+                      <!-- Justification Column -->
+                      <ng-container matColumnDef="justification">
+                        <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large sticky top-0 z-10 md-sys-bg-surface-container">
+                          Mission
+                        </th>
+                        <td mat-cell *matCellDef="let request" class="py-4">
+                          <div class="max-w-xs truncate md-typescale-body-medium" [title]="request.missionJustification">
+                            {{ request.missionJustification }}
+                          </div>
+                        </td>
+                      </ng-container>
 
-                  <!-- Submitted At Column -->
-                  <ng-container matColumnDef="submittedAt">
-                    <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large">Submitted</th>
-                    <td mat-cell *matCellDef="let request">
-                      <span class="text-sm md-sys-color-on-surface-variant">
-                        {{ formatDate(request.createdAt) }}
-                      </span>
-                    </td>
-                  </ng-container>
+                      <!-- Status Column -->
+                      <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large sticky top-0 z-10 md-sys-bg-surface-container">
+                          Status
+                        </th>
+                        <td mat-cell *matCellDef="let request" class="py-4">
+                          <div class="flex items-center gap-2">
+                            <mat-icon [class]="getStatusColor(request.status)">
+                              {{ getStatusIcon(request.status) }}
+                            </mat-icon>
+                            <span class="md-typescale-body-medium capitalize">{{ request.status.toLowerCase() }}</span>
+                          </div>
+                        </td>
+                      </ng-container>
 
-                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
+                      <!-- Submitted At Column -->
+                      <ng-container matColumnDef="submittedAt">
+                        <th mat-header-cell *matHeaderCellDef class="md-typescale-label-large sticky top-0 z-10 md-sys-bg-surface-container">
+                          Submitted
+                        </th>
+                        <td mat-cell *matCellDef="let request" class="py-4">
+                          <span class="md-typescale-body-small md-sys-color-on-surface-variant">
+                            {{ formatDate(request.createdAt?.toString() || '') }}
+                          </span>
+                        </td>
+                      </ng-container>
+
+                      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="sticky top-0 z-10"></tr>
+                      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:md-sys-bg-surface-variant transition-colors"></tr>
+                    </table>
+                  </cdk-virtual-scroll-viewport>
+                </div>
               </div>
 
               <!-- Summary Stats -->
-              <div class="mt-4 p-3 md-sys-bg-surface-variant rounded-lg">
-                <div class="md-typescale-label-medium mb-2">Request Summary</div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  <div>
+              <div class="mt-6 p-4 md-sys-bg-surface-variant md-shape-corner-md">
+                <div class="md-typescale-label-medium mb-4 md-sys-color-on-surface-variant">Request Summary</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                  <div class="space-y-2">
                     <div class="md-typescale-headline-small md-sys-color-primary">{{ requests.length }}</div>
                     <div class="md-typescale-body-small md-sys-color-on-surface-variant">Total</div>
                   </div>
-                  <div>
+                  <div class="space-y-2">
                     <div class="md-typescale-headline-small md-sys-color-secondary">
                       {{ (pendingRequests$ | async)?.length || 0 }}
                     </div>
                     <div class="md-typescale-body-small md-sys-color-on-surface-variant">Pending</div>
                   </div>
-                  <div>
+                  <div class="space-y-2">
                     <div class="md-typescale-headline-small md-sys-color-tertiary">
                       {{ countApprovedRequests(requests) }}
                     </div>
                     <div class="md-typescale-body-small md-sys-color-on-surface-variant">Approved</div>
                   </div>
-                  <div>
+                  <div class="space-y-2">
                     <div class="md-typescale-headline-small md-sys-color-error">
                       {{ countDeniedRequests(requests) }}
                     </div>
@@ -246,31 +335,3 @@
   </div>
 }
 
-<!-- Custom Styles -->
-<style>
-  .priority-1 {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 1px solid #ef5350;
-  }
-  .priority-2 {
-    background-color: #fff3e0;
-    color: #ef6c00;
-    border: 1px solid #ff9800;
-  }
-  .priority-3 {
-    background-color: #e3f2fd;
-    color: #1976d2;
-    border: 1px solid #2196f3;
-  }
-  .priority-4 {
-    background-color: #f3e5f5;
-    color: #7b1fa2;
-    border: 1px solid #9c27b0;
-  }
-  .priority-5 {
-    background-color: #f5f5f5;
-    color: #616161;
-    border: 1px solid #9e9e9e;
-  }
-</style>

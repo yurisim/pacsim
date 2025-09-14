@@ -1,0 +1,26 @@
+<!-- Unified Tab Navigation for all screen sizes -->
+<div class="responsive-nav-container">
+  <nav mat-tab-nav-bar class="mat-elevation-1">
+    @for (item of navItems; track item.id) {
+      <a
+        mat-tab-link
+        [active]="(activeTab$ | async) === item.id"
+        (click)="onTabSelect(item.id)"
+        (keyup.enter)="onTabSelect(item.id)"
+        tabindex="0"
+        class="!flex !items-center !gap-2"
+      >
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+        @if (item.badge && item.badge > 0) {
+          <span
+            matBadge="{{ item.badge }}"
+            matBadgeSize="small"
+            matBadgeColor="warn"
+            class="ml-1"
+          ></span>
+        }
+      </a>
+    }
+  </nav>
+</div>

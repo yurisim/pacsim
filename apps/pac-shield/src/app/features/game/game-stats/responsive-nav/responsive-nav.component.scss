@@ -1,0 +1,28 @@
+/* Responsive Navigation: unified Material Tab Nav across breakpoints */
+
+:host {
+  display: block;
+}
+
+.responsive-nav-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Tab Navigation: allow horizontal scroll on narrow screens, no custom colors */
+nav[mat-tab-nav-bar] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+nav[mat-tab-nav-bar] .mat-mdc-tab-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+nav[mat-tab-nav-bar] mat-icon {
+  font-size: 20px;
+}

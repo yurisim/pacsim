@@ -1,35 +1,70 @@
-import { Component, inject, OnInit, Input } from '@angular/core';
+import { Component, inject, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
 import { GameStatsService } from './game-stats.service';
+import { ResponsiveNavService } from './responsive-nav.service';
 import { GameStatsConfig } from './game-stats.interfaces';
+import { ScoreboardComponent } from './scoreboard/scoreboard.component';
+import { CaocDashboardComponent } from './caoc-dashboard/caoc-dashboard.component';
+import { AtoTableComponent } from './ato-table/ato-table.component';
+import { MobDashboardComponent } from './mob-dashboard/mob-dashboard.component';
+import { FosDashboardComponent } from './fos-dashboard/fos-dashboard.component';
+import { CspocBoardComponent } from './cspoc-board/cspoc-board.component';
+import { MedcomDashboardComponent } from './medcom-dashboard/medcom-dashboard.component';
+import { GameLogComponent } from './game-log/game-log.component';
+import { ResponsiveNavComponent } from './responsive-nav/responsive-nav.component';
+import { TeamType, PlayerRole } from '../../../generated/enums';
 
 /**
- * Component Intent: Provides game statistics management and access for the game board.
- * 
- * This component serves as a facade for the GameStatsService, providing:
+ * Component Intent: Game statistics UI container that renders tabs with game dashboards.
+ *
+ * This component now serves as the UI container for game statistics, providing:
+ * - Tabbed interface for different game dashboards (Score, CAOC, MOB, FOS, etc.)
  * - Access to game statistics via signals
  * - Methods to update game state
  * - Demo data management for UI development
  * - Centralized state management for game metrics
- * 
- * The component is designed to be invisible (no UI) and acts as a data provider
- * for other components that need access to game statistics.
  */
 @Component({
   selector: 'app-game-stats',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <!-- This component is a data provider with no visual representation -->
-    <ng-content></ng-content>
-  `,
-  styles: [`:host { display: contents; }`]
+  imports: [
+    CommonModule,
+    MatTabsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatDividerModule,
+    ResponsiveNavComponent,
+    ScoreboardComponent,
+    CaocDashboardComponent,
+    AtoTableComponent,
+    MobDashboardComponent,
+    FosDashboardComponent,
+    CspocBoardComponent,
+    MedcomDashboardComponent,
+    GameLogComponent
+  ],
+  templateUrl: './game-stats.component.html',
+  styleUrls: ['./game-stats.component.scss']
 })
 export class GameStatsComponent implements OnInit {
   @Input() config: GameStatsConfig = {};
   @Input() loadDemoData = true;
+  @Input() currentGameId: number | null = null;
+  @Input() currentUserTeam: TeamType | null = null;
+  @Input() currentUserRole: PlayerRole | null = null;
+  @Input() collapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
 
-  private gameStatsService = inject(GameStatsService);
+  navService = inject(ResponsiveNavService);
+  gameStatsService = inject(GameStatsService);
+
+  activeTab$ = this.navService.activeTab$;
 
   // Expose service signals as public properties
   readonly gameStats = this.gameStatsService.gameStats;
@@ -46,6 +81,15 @@ export class GameStatsComponent implements OnInit {
     if (this.loadDemoData) {
       this.gameStatsService.loadDemoData();
     }
+  }
+
+  onTabChange(tabId: string): void {
+    this.navService.setActiveTab(tabId);
+  }
+
+  toggleCollapsed(): void {
+    this.collapsed = !this.collapsed;
+    this.collapsedChange.emit(this.collapsed);
   }
 
   /**
