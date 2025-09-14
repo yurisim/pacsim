@@ -13,6 +13,8 @@ import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TeamModule } from './team/team.module';
 import { FosModule } from './fos/fos.module';
+import { AtoModule } from './ato/ato.module';
+import { AllocationModule } from './allocation/allocation.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { FosModule } from './fos/fos.module';
     LobbyModule,
     TeamModule,
     FosModule,
+    AtoModule,
+    AllocationModule,
   ],
   controllers: [AppController],
   providers: [

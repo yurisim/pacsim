@@ -1,3 +1,24 @@
+/**
+ * E2E: JWT and Continue Game flow
+ *
+ * Intent:
+ * - Create a fresh game and validate room codes (valid, invalid, malformed)
+ * - Exercise PIN-based player management:
+ *   - Join with PIN (new player) -> returns JWT
+ *   - Joining with existing name without PIN -> NAME_CONFLICT
+ *   - Existing player rejoins with correct PIN -> same player id, new JWT
+ *   - Wrong PIN -> INVALID_PIN
+ *   - Legacy players with no PIN -> NO_PIN_SET
+ * - Mirror frontend "ConflictUser" scenario (wrong PIN then correct)
+ * - Ensure player isolation across games (same name allowed in separate games)
+ * - Validate JWT structure (3-part token)
+ * - Robust error handling for invalid room codes, missing fields, empty names, null pin
+ * - Comprehensive /api/game/validate endpoint behavior for varied inputs
+ *
+ * This suite guarantees players can resume sessions securely using PINs and JWTs,
+ * prevents name collisions across and within games, and verifies consistent
+ * room-code validation behavior.
+ */
 import axios from 'axios';
 
 describe('JWT and Continue Game API E2E', () => {
@@ -41,7 +62,7 @@ describe('JWT and Continue Game API E2E', () => {
       const specialRes = await axios.get(`/api/game/validate/@#$%`);
       expect(specialRes.status).toBe(200);
       expect(specialRes.data.valid).toBe(false);
-      
+
       // Test with very short invalid code
       const shortRes = await axios.get(`/api/game/validate/X`);
       expect(shortRes.status).toBe(200);
@@ -62,7 +83,7 @@ describe('JWT and Continue Game API E2E', () => {
       expect(joinRes.data).toHaveProperty('player');
       expect(joinRes.data.player.name).toBe('TestPlayer');
       // PIN should be stored in the database
-      
+
       playerToken = joinRes.data.token;
       playerId = joinRes.data.player.id;
     });
@@ -187,7 +208,7 @@ describe('JWT and Continue Game API E2E', () => {
         expect(error.response.data.message).toContain('Invalid PIN');
       }
 
-      // Try to rejoin with correct PIN '5555' 
+      // Try to rejoin with correct PIN '5555'
       const correctPinJoin = await axios.post(`/api/player/join`, {
         roomCode,
         playerName: 'ConflictUser',
@@ -204,7 +225,7 @@ describe('JWT and Continue Game API E2E', () => {
         roomCode,
         playerName: 'LegacyPlayer'
       });
-      
+
       expect(joinRes.status).toBe(201);
       expect(joinRes.data).toHaveProperty('token');
       expect(joinRes.data).toHaveProperty('player');
@@ -212,27 +233,27 @@ describe('JWT and Continue Game API E2E', () => {
       expect(typeof joinRes.data.token).toBe('string');
       expect(joinRes.data.token).not.toBe('');
     });
-    
+
     it('should create player with PIN', async () => {
       const joinRes = await axios.post(`/api/player/join`, {
         roomCode,
         playerName: 'PinPlayer',
         pin: '4321'
       });
-      
+
       expect(joinRes.status).toBe(201);
       expect(joinRes.data).toHaveProperty('token');
       expect(joinRes.data).toHaveProperty('player');
       expect(joinRes.data.player.name).toBe('PinPlayer');
     });
-    
+
     it('should return proper JWT structure', async () => {
       const joinRes = await axios.post(`/api/player/join`, {
         roomCode,
         playerName: 'JWTPlayer',
         pin: '1234'
       });
-      
+
       expect(joinRes.status).toBe(201);
       const token = joinRes.data.token;
       expect(typeof token).toBe('string');
@@ -269,7 +290,7 @@ describe('JWT and Continue Game API E2E', () => {
         pin: '2222'
       });
       expect(secondJoin.status).toBe(201);
-      
+
       expect(firstJoin.data.player.id).not.toBe(secondJoin.data.player.id);
       expect(firstJoin.data.player.gameId).not.toBe(secondJoin.data.player.gameId);
     });
@@ -308,7 +329,7 @@ describe('JWT and Continue Game API E2E', () => {
         expect(error.response.data.message).toBe('Invalid room code');
       }
     });
-    
+
     it('should handle missing required fields', async () => {
       try {
         await axios.post(`/api/player/join`, {
@@ -320,7 +341,7 @@ describe('JWT and Continue Game API E2E', () => {
         expect(error.response.status).toBe(400);
       }
     });
-    
+
     it('should handle empty player names', async () => {
       try {
         await axios.post(`/api/player/join`, {
@@ -333,19 +354,19 @@ describe('JWT and Continue Game API E2E', () => {
         expect(error.response.status).toBe(400);
       }
     });
-    
+
     it('should handle null/undefined PIN values', async () => {
       const joinRes = await axios.post(`/api/player/join`, {
         roomCode,
         playerName: 'NoPin Player',
         pin: null
       });
-      
+
       expect(joinRes.status).toBe(201);
       expect(joinRes.data.player.name).toBe('NoPin Player');
     });
   });
-  
+
   describe('Game validation endpoint comprehensive tests', () => {
     it('should validate room codes correctly', async () => {
       // Test with valid room code
@@ -353,7 +374,7 @@ describe('JWT and Continue Game API E2E', () => {
       expect(validRes.status).toBe(200);
       expect(validRes.data.valid).toBe(true);
       expect(validRes.data.gameId).toBe(gameId);
-      
+
       // Test with invalid room code
       const invalidRes = await axios.get(`/api/game/validate/FAKE123`);
       expect(invalidRes.status).toBe(200);
@@ -366,12 +387,12 @@ describe('JWT and Continue Game API E2E', () => {
       const shortRes = await axios.get(`/api/game/validate/ABC`);
       expect(shortRes.status).toBe(200);
       expect(shortRes.data.valid).toBe(false);
-      
+
       // Test with long code
       const longRes = await axios.get(`/api/game/validate/VERYLONGCODE123`);
       expect(longRes.status).toBe(200);
       expect(longRes.data.valid).toBe(false);
-      
+
       // Test with special characters
       const specialRes = await axios.get(`/api/game/validate/ABC-123`);
       expect(specialRes.status).toBe(200);

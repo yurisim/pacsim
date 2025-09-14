@@ -98,7 +98,7 @@ export class PlayerService {
       }
 
       // PIN is correct, return existing player's token
-      const payload = { gameId: game.id, playerId: existingPlayer.id };
+      const payload = { gameId: game.id, playerId: existingPlayer.id, sessionId: existingPlayer.sessionId };
       const token = this.jwtService.sign(payload);
 
       return { token, player: existingPlayer };
@@ -146,7 +146,7 @@ export class PlayerService {
       }
     }
 
-    const payload = { gameId: game.id, playerId: player.id };
+    const payload = { gameId: game.id, playerId: player.id, sessionId: player.sessionId };
     const token = this.jwtService.sign(payload);
 
     const players = await this.prisma.player.findMany({

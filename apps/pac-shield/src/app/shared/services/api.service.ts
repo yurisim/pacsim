@@ -133,4 +133,19 @@ export class ApiService {
   deletePlayer(playerId: string): Observable<any> {
     return this.delete(`player/${playerId}`);
   }
+
+  /**
+   * Get ATO lines for a specific game and turn.
+   */
+  getAtoLinesByGame(gameId: number, turn?: number): Observable<any[]> {
+    const params = turn !== undefined ? new HttpParams().set('turn', turn.toString()) : undefined;
+    return this.get<any[]>(`ato/game/${gameId}`, params);
+  }
+
+  /**
+   * Get current turn ATO lines for a game.
+   */
+  getCurrentAtoLines(gameId: number): Observable<any[]> {
+    return this.get<any[]>(`ato/game/${gameId}/current`);
+  }
 }

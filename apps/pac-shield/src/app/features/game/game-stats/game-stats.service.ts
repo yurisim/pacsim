@@ -1,12 +1,17 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import {
   GameStats,
   GamePhase,
-  AtoLine,
   GameAsset,
   GameLogEntry,
   LogType
 } from './game-stats.interfaces';
+import { ATOLine } from '../../../generated/aTOLine/aTOLine.entity';
+import { PPRStatus } from '../../../generated/enums';
+import { ApiService } from '../../../shared/services/api.service';
+import { AuthService } from '../../../shared/services/auth.service';
+import { catchError, tap } from 'rxjs/operators';
+import { EMPTY } from 'rxjs';
 
 /**
  * Service Intent: Manages game statistics and demo data state.
@@ -25,6 +30,9 @@ import {
   providedIn: 'root'
 })
 export class GameStatsService {
+  private apiService = inject(ApiService);
+  private authService = inject(AuthService);
+
   // Core game statistics
   private readonly _gameStats = signal<GameStats>({
     missionPoints: 12,
@@ -36,25 +44,32 @@ export class GameStatsService {
     gamePhase: 'CRISIS'
   });
 
-  // ATO lines
-  private readonly _atoLines = signal<AtoLine[]>([
-    {
-      callSign: 'KAD-01',
-      type: 'C-17',
-      origin: 'Kadena',
-      destination: 'FOS 7',
-      intent: 'Cargo',
-      pprStatus: 'Pending'
-    },
-    {
-      callSign: 'AND-22',
-      type: 'F-22',
-      origin: 'Andersen',
-      destination: 'Hex 407',
-      intent: 'CAP',
-      pprStatus: 'Approved'
-    }
-  ]);
+  // ATO lines - now loaded from backend
+  private readonly _atoLines = signal<ATOLine[]>([]);
+  private readonly _isLoadingAtoLines = signal<boolean>(false);
+  private readonly _atoLinesError = signal<string | null>(null);
+
+  constructor() {
+    // Auto-load ATO lines when authentication state changes
+    effect(() => {
+      if (this.authService.isAuthenticated()) {
+        const playerId = this.authService.getPlayerIdFromToken();
+        if (playerId) {
+          const token = this.authService.getToken();
+          if (token) {
+            try {
+              const decodedToken = this.authService.getPlayerIdFromToken();
+              // For now, we'll need to get gameId differently
+              // This is a temporary solution until we have proper game context
+              console.log('Authentication detected, would load ATO lines for game');
+            } catch (error) {
+              console.error('Failed to decode token for game context:', error);
+            }
+          }
+        }
+      }
+    });
+  }
 
   // Game assets
   private readonly _gameAssets = signal<GameAsset[]>([
@@ -88,6 +103,8 @@ export class GameStatsService {
   readonly atoLines = this._atoLines.asReadonly();
   readonly gameAssets = this._gameAssets.asReadonly();
   readonly gameLog = this._gameLog.asReadonly();
+  readonly isLoadingAtoLines = this._isLoadingAtoLines.asReadonly();
+  readonly atoLinesError = this._atoLinesError.asReadonly();
 
   // Computed values
   readonly totalScore = computed(() => {
@@ -162,7 +179,6 @@ export class GameStatsService {
       gameDay: Math.floor((stats.gameTurn + 1) / 3) + 1 // Assuming 3 turns per day
     }));
 
-    const newStats = this._gameStats();
     this.addLogEntry(`Advanced to ${this.currentTurnLabel()}`, 'info');
 
     // Check for phase transitions
@@ -178,20 +194,59 @@ export class GameStatsService {
   }
 
   /**
-   * Add an ATO line
+   * Load ATO lines from the backend for a specific game
    */
-  addAtoLine(atoLine: AtoLine): void {
-    this._atoLines.update(lines => [...lines, atoLine]);
-    this.addLogEntry(`ATO line ${atoLine.callSign} added`, 'action');
+  loadAtoLines(gameId: number, turn?: number): void {
+    this._isLoadingAtoLines.set(true);
+    this._atoLinesError.set(null);
+
+    const request = turn !== undefined
+      ? this.apiService.getAtoLinesByGame(gameId, turn)
+      : this.apiService.getCurrentAtoLines(gameId);
+
+    request.pipe(
+      tap(lines => {
+        this._atoLines.set(lines);
+        this._isLoadingAtoLines.set(false);
+        this.addLogEntry(`Loaded ${lines.length} ATO lines from backend`, 'info');
+      }),
+      catchError(error => {
+        console.error('Failed to load ATO lines:', error);
+        this._atoLinesError.set('Failed to load ATO lines from server');
+        this._isLoadingAtoLines.set(false);
+        this.addLogEntry('Failed to load ATO lines from server', 'error');
+        return EMPTY;
+      })
+    ).subscribe();
   }
 
   /**
-   * Update ATO line status
+   * Refresh ATO lines from backend
    */
-  updateAtoLineStatus(callSign: string, status: AtoLine['pprStatus']): void {
+  refreshAtoLines(gameId?: number): void {
+    if (gameId) {
+      this.loadAtoLines(gameId);
+    } else {
+      // For now, caller needs to provide gameId
+      console.warn('RefreshAtoLines called without gameId - cannot refresh');
+    }
+  }
+
+  /**
+   * Add an ATO line (local update - for real-time events)
+   */
+  addAtoLine(atoLine: ATOLine): void {
+    this._atoLines.update(lines => [...lines, atoLine]);
+    this.addLogEntry(`ATO line ${atoLine.aircraftCallSign} added`, 'action');
+  }
+
+  /**
+   * Update ATO line status (local update - for real-time events)
+   */
+  updateAtoLineStatus(callSign: string, status: PPRStatus): void {
     this._atoLines.update(lines =>
       lines.map(line =>
-        line.callSign === callSign
+        line.aircraftCallSign === callSign
           ? { ...line, pprStatus: status }
           : line
       )
@@ -200,10 +255,10 @@ export class GameStatsService {
   }
 
   /**
-   * Remove an ATO line
+   * Remove an ATO line (local update - for real-time events)
    */
   removeAtoLine(callSign: string): void {
-    this._atoLines.update(lines => lines.filter(line => line.callSign !== callSign));
+    this._atoLines.update(lines => lines.filter(line => line.aircraftCallSign !== callSign));
     this.addLogEntry(`ATO line ${callSign} removed`, 'action');
   }
 
@@ -256,7 +311,7 @@ export class GameStatsService {
   /**
    * Add a log entry
    */
-  addLogEntry(message: string, type: LogType = 'info', metadata?: Record<string, any>): void {
+  addLogEntry(message: string, type: LogType = 'info', metadata?: Record<string, unknown>): void {
     const entry: GameLogEntry = {
       timestamp: new Date(),
       message,

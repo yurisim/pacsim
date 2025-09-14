@@ -10,5 +10,6 @@ import { PlayerModule } from '../app/player/player.module';
   imports: [PrismaModule, AuthModule, PlayerModule],
   providers: [GameService, GameGateway],
   controllers: [GameController],
+  exports: [GameGateway],
 })
 export class GameModule {}
