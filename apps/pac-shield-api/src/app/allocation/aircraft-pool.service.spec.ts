@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AircraftPoolService } from './aircraft-pool.service';
+import { AllocationNotificationService } from './allocation-notification.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { GameGateway } from '../../game/game.gateway';
 import { AircraftType } from '@prisma/client';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
@@ -17,9 +19,31 @@ const mockPrismaService = {
   },
 } as any;
 
+const mockAllocationNotificationService = {
+  notifyAllocationCycleCreated: jest.fn(),
+  notifyAllocationCycleStatusChanged: jest.fn(),
+  notifyAircraftRequestCreated: jest.fn(),
+  notifyAircraftRequestUpdated: jest.fn(),
+  notifyAircraftAllocated: jest.fn(),
+  notifyAircraftPoolUpdated: jest.fn(),
+};
+
+const mockGameGateway = {
+  broadcastAllocationCycleCreated: jest.fn(),
+  broadcastAllocationCycleStatusChanged: jest.fn(),
+  broadcastAircraftRequestCreated: jest.fn(),
+  broadcastAircraftRequestUpdated: jest.fn(),
+  broadcastAircraftRequestDeleted: jest.fn(),
+  broadcastAircraftRequestReviewed: jest.fn(),
+  broadcastAircraftAllocated: jest.fn(),
+  broadcastAircraftDeallocated: jest.fn(),
+};
+
 describe('AircraftPoolService', () => {
   let service: AircraftPoolService;
   let prismaService: any;
+  let allocationNotificationService: any;
+  let gameGateway: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,11 +53,21 @@ describe('AircraftPoolService', () => {
           provide: PrismaService,
           useValue: mockPrismaService,
         },
+        {
+          provide: AllocationNotificationService,
+          useValue: mockAllocationNotificationService,
+        },
+        {
+          provide: GameGateway,
+          useValue: mockGameGateway,
+        },
       ],
     }).compile();
 
     service = module.get<AircraftPoolService>(AircraftPoolService);
     prismaService = module.get(PrismaService);
+    allocationNotificationService = module.get(AllocationNotificationService);
+    gameGateway = module.get(GameGateway);
   });
 
   afterEach(() => {
