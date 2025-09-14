@@ -9,23 +9,59 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FlightPlannerDialogComponent, FlightPlannerDialogData } from './flight-planner-dialog.component';
+import { AuthService } from '../../../../shared/services/auth.service';
+import { ApiService } from '../../../../shared/services/api.service';
+import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraftInstance.entity';
+import { of } from 'rxjs';
 
 describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
   let component: FlightPlannerDialogComponent;
   let fixture: ComponentFixture<FlightPlannerDialogComponent>;
   let mockDialogRef: jest.Mocked<MatDialogRef<FlightPlannerDialogComponent>>;
+  let mockAuthService: jest.Mocked<AuthService>;
+  let mockApiService: jest.Mocked<ApiService>;
+
+  const mockAircraft: AircraftInstance[] = [
+    {
+      id: 1,
+      callSign: 'TEST-01',
+      type: 'F16' as any,
+      status: 'FMC' as any,
+      currentLocation: 'Kadena AB',
+      gameId: 123,
+      teamId: 'team-1'
+    } as AircraftInstance,
+    {
+      id: 2,
+      callSign: 'TEST-02',
+      type: 'C17' as any,
+      status: 'FMC' as any,
+      currentLocation: 'Andersen AFB',
+      gameId: 123,
+      teamId: 'team-1'
+    } as AircraftInstance
+  ];
 
   const mockDialogData: FlightPlannerDialogData = {
     currentTurn: 1,
     gameId: 123,
-    availableAircraft: ['TEST-01', 'TEST-02']
+    availableAircraft: mockAircraft
   };
 
   beforeEach(async () => {
     mockDialogRef = {
       close: jest.fn()
     } as jest.Mocked<MatDialogRef<FlightPlannerDialogComponent>>;
+
+    mockAuthService = {
+      getPlayerId: jest.fn().mockReturnValue('player-123')
+    } as jest.Mocked<AuthService>;
+
+    mockApiService = {
+      get: jest.fn().mockReturnValue(of([]))
+    } as jest.Mocked<ApiService>;
 
     await TestBed.configureTestingModule({
       imports: [
@@ -40,10 +76,13 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
         MatIconModule,
         MatAutocompleteModule,
         NoopAnimationsModule,
+        HttpClientTestingModule,
       ],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: mockDialogData },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: ApiService, useValue: mockApiService },
       ],
     }).compileComponents();
 
@@ -269,6 +308,7 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     it('should validate backend values in form submission', () => {
       // Set valid form values using backend-compatible location names
       component.flightPlanForm.patchValue({
+        selectedAircraft: mockAircraft[0], // Use the first mock aircraft
         aircraftCallSign: 'TEST01',
         startLocation: 'Kadena AB',
         finalDestination: 'FOS 7',
