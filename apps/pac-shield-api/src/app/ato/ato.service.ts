@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateATOLineDto } from '../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../generated/aTOLine/update-aTOLine.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';
-import { PPRStatus } from '@prisma/client';
+import { PPRStatus, AircraftInstance, PlayerRole, TeamType } from '@prisma/client';
 import { GameGateway } from '../../game/game.gateway';
 
 /**
@@ -19,11 +19,125 @@ export class AtoService {
   ) {}
 
   /**
+   * Get aircraft available for a specific team
+   */
+  async getAircraftForTeam(teamId: number, user: any): Promise<AircraftInstance[]> {
+    // Verify the user has access to this team
+    const player = await this.prisma.player.findUnique({
+      where: { sessionId: user.sub },
+      include: { team: true, game: true },
+    });
+
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+
+    // Check if user has access to this team (either same team or GM)
+    if (player.role !== PlayerRole.GM && player.teamId !== teamId) {
+      throw new ForbiddenException('Access denied to this team\'s aircraft');
+    }
+
+    return this.prisma.aircraftInstance.findMany({
+      where: {
+        teamId,
+      },
+      orderBy: [
+        { type: 'asc' },
+        { callSign: 'asc' },
+      ],
+    });
+  }
+
+  /**
+   * Get all aircraft in a game (GM access only)
+   */
+  async getAllAircraftInGame(gameId: number, user: any): Promise<AircraftInstance[]> {
+    // Verify the user is a GM
+    const player = await this.prisma.player.findUnique({
+      where: { sessionId: user.sub },
+      include: { team: true, game: true },
+    });
+
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+
+    if (player.role !== PlayerRole.GM) {
+      throw new ForbiddenException('Only Game Masters can access all aircraft');
+    }
+
+    // Verify the game exists
+    const game = await this.prisma.game.findUnique({
+      where: { id: gameId },
+    });
+
+    if (!game) {
+      throw new NotFoundException('Game not found');
+    }
+
+    return this.prisma.aircraftInstance.findMany({
+      where: {
+        team: {
+          gameId,
+        },
+      },
+      include: {
+        team: true,
+      },
+      orderBy: [
+        { team: { type: 'asc' } },
+        { type: 'asc' },
+        { callSign: 'asc' },
+      ],
+    });
+  }
+
+  /**
+   * Validate aircraft ownership for flight plan
+   */
+  async validateAircraftOwnership(aircraftCallSign: string, gameId: number, user: any): Promise<void> {
+    // Get the player making the request
+    const player = await this.prisma.player.findUnique({
+      where: { sessionId: user.sub },
+      include: { team: true },
+    });
+
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+
+    // GMs can access any aircraft
+    if (player.role === PlayerRole.GM) {
+      return;
+    }
+
+    // Find the aircraft
+    const aircraft = await this.prisma.aircraftInstance.findUnique({
+      where: { callSign: aircraftCallSign },
+      include: { team: true },
+    });
+
+    if (!aircraft) {
+      throw new NotFoundException(`Aircraft with call sign '${aircraftCallSign}' not found`);
+    }
+
+    // Verify the aircraft belongs to the player's team
+    if (aircraft.teamId !== player.teamId) {
+      throw new ForbiddenException(`Aircraft '${aircraftCallSign}' is not apportioned to your team`);
+    }
+
+    // Verify the aircraft is in the same game
+    if (aircraft.team.gameId !== gameId) {
+      throw new ForbiddenException(`Aircraft '${aircraftCallSign}' is not in this game`);
+    }
+  }
+
+  /**
    * Create a new ATO line (flight plan)
    */
-  async createAtoLine(createAtoLineDto: CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean }): Promise<ATOLine> {
-    // Validate business rules
-    await this.validateFlightPlan(createAtoLineDto);
+  async createAtoLine(createAtoLineDto: CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean }, user?: any): Promise<ATOLine> {
+    // Validate business rules including aircraft ownership
+    await this.validateFlightPlan(createAtoLineDto, user);
 
     const atoLine = await this.prisma.aTOLine.create({
       data: {
@@ -108,7 +222,7 @@ export class AtoService {
 
     // Validate the updated flight plan
     const mergedData = { ...existingLine, ...updateAtoLineDto };
-    await this.validateFlightPlan(mergedData);
+    await this.validateFlightPlan(mergedData, { sub: userId });
 
     const updatedLine = await this.prisma.aTOLine.update({
       where: { id },
@@ -276,7 +390,11 @@ export class AtoService {
     return updatedLine;
   }
 
-  private async validateFlightPlan(flightPlan: any): Promise<void> {
+  private async validateFlightPlan(flightPlan: any, user?: any): Promise<void> {
+    // Validate aircraft ownership if user is provided
+    if (user && flightPlan.aircraftCallSign) {
+      await this.validateAircraftOwnership(flightPlan.aircraftCallSign, flightPlan.gameId, user);
+    }
     // Validate call sign uniqueness within game/turn
     const whereClause: any = {
       gameId: flightPlan.gameId,

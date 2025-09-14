@@ -19,6 +19,7 @@ import { CreateATORequestDto } from './dto/create-ato-request.dto';
 import { UpdateATORequestDto } from './dto/update-ato-request.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AircraftInstance } from '@prisma/client';
 
 /**
  * Controller for ATO (Air Tasking Order) operations.
@@ -30,6 +31,30 @@ export class AtoController {
   constructor(private readonly atoService: AtoService) {}
 
   /**
+   * Get available aircraft for a specific team
+   * GET /ato/teams/:teamId/aircraft
+   */
+  @Get('teams/:teamId/aircraft')
+  async getAircraftForTeam(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Request() req: any
+  ): Promise<AircraftInstance[]> {
+    return this.atoService.getAircraftForTeam(teamId, req.user);
+  }
+
+  /**
+   * Get all aircraft in game (GM access)
+   * GET /ato/games/:gameId/aircraft
+   */
+  @Get('games/:gameId/aircraft')
+  async getAllAircraftInGame(
+    @Param('gameId', ParseIntPipe) gameId: number,
+    @Request() req: any
+  ): Promise<AircraftInstance[]> {
+    return this.atoService.getAllAircraftInGame(gameId, req.user);
+  }
+
+  /**
    * Create a new flight plan (ATO line)
    * POST /ato
    */
@@ -38,7 +63,7 @@ export class AtoController {
     @Body() createAtoRequestDto: CreateATORequestDto,
     @Request() req: any
   ): Promise<ATOLine> {
-    return this.atoService.createAtoLine(createAtoRequestDto);
+    return this.atoService.createAtoLine(createAtoRequestDto, req.user);
   }
 
   /**
