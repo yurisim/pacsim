@@ -1,0 +1,116 @@
+<!-- Responsive Navigation Container -->
+<div class="responsive-nav-container">
+  @if (navigationMode$ | async; as mode) {
+
+    <!-- Mobile: Bottom Navigation using Button Toggle Group -->
+    @if (mode === 'bottom') {
+      <div class="fixed bottom-0 left-0 right-0 z-[9999]">
+        <mat-button-toggle-group
+          [value]="activeTab$ | async"
+          (change)="onTabSelect($event.value)"
+          class="w-full h-14 flex"
+          hideSingleSelectionIndicator="true"
+        >
+          @for (item of navItems; track item.id) {
+            <mat-button-toggle
+              [value]="item.id"
+              class="flex-1 flex-col"
+              [matTooltip]="item.label"
+              matTooltipPosition="above"
+            >
+              <mat-icon class="!text-base !mb-1">{{ item.icon }}</mat-icon>
+              <span class="!text-[10px] !font-medium">{{ item.shortLabel || item.label }}</span>
+              @if (item.badge && item.badge > 0) {
+                <div
+                  class="absolute top-1 right-1 min-w-[16px] h-4 px-1 text-[10px] rounded-full flex items-center justify-center"
+                  matBadge="{{ item.badge }}"
+                  matBadgeSize="small"
+                  matBadgeColor="warn"
+                >
+                </div>
+              }
+            </mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </div>
+    }
+
+    <!-- Tablet: Side Navigation using Mat Sidenav -->
+    @if (mode === 'side') {
+      <mat-sidenav-container class="sidenav-container">
+        <!-- Sidenav Toggle Button -->
+        <button
+          matIconButton
+          class="fixed top-20 left-2 z-[9999]"
+          (click)="toggleSideNav()"
+          [matTooltip]="(navService.sideNavOpen$ | async) ? 'Close menu' : 'Open menu'"
+        >
+          <mat-icon>menu</mat-icon>
+        </button>
+
+        <!-- Side Navigation Drawer -->
+        <mat-sidenav
+          #sidenav
+          [opened]="navService.sideNavOpen$ | async"
+          mode="over"
+          position="start"
+          class="w-64"
+          (closedStart)="navService.closeSideNav()"
+        >
+          <div class="p-2">
+            @for (item of navItems; track item.id) {
+              <button
+                matButton="text"
+                class="w-full !justify-start !gap-3 !px-3 !py-3 !mb-2"
+                [class.mat-mdc-button-base]="(activeTab$ | async) === item.id"
+                (click)="onTabSelect(item.id)"
+              >
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span class="flex-1 text-left">{{ item.label }}</span>
+                @if (item.badge && item.badge > 0) {
+                  <span
+                    matBadge="{{ item.badge }}"
+                    matBadgeSize="small"
+                    matBadgeColor="warn"
+                  ></span>
+                }
+              </button>
+            }
+          </div>
+        </mat-sidenav>
+
+        <!-- Backdrop -->
+        <mat-sidenav-content>
+          <!-- Content will be projected here -->
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    }
+
+    <!-- Desktop: Tab Navigation using Mat Tab Nav Bar -->
+    @if (mode === 'tabs') {
+      <nav mat-tab-nav-bar class="mat-elevation-1">
+        @for (item of navItems; track item.id) {
+          <a
+            mat-tab-link
+            [active]="(activeTab$ | async) === item.id"
+            (click)="onTabSelect(item.id)"
+            (keyup.enter)="onTabSelect(item.id)"
+            tabindex="0"
+            class="!flex !items-center !gap-2"
+          >
+            <mat-icon>{{ item.icon }}</mat-icon>
+            <span>{{ item.label }}</span>
+            @if (item.badge && item.badge > 0) {
+              <span
+                matBadge="{{ item.badge }}"
+                matBadgeSize="small"
+                matBadgeColor="warn"
+                class="ml-1"
+              ></span>
+            }
+          </a>
+        }
+      </nav>
+    }
+  }
+</div>
