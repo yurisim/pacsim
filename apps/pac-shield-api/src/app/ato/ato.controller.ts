@@ -168,8 +168,8 @@ export class AtoController {
     @Param('id', ParseIntPipe) id: number,
     @Request() req: any
   ): Promise<ATOLine> {
-    // TODO: Add role-based authorization (CAOC only)
-    return this.atoService.approvePpr(id);
+    // GM-only authorization enforced in service
+    return this.atoService.approvePpr(id, req.user);
   }
 
   /**
@@ -181,8 +181,8 @@ export class AtoController {
     @Param('id', ParseIntPipe) id: number,
     @Request() req: any
   ): Promise<ATOLine> {
-    // TODO: Add role-based authorization (CAOC only)
-    return this.atoService.denyPpr(id);
+    // GM-only authorization enforced in service
+    return this.atoService.denyPpr(id, req.user);
   }
 
   /**
@@ -195,8 +195,8 @@ export class AtoController {
     @Body() body: { atoLineIds?: number[] },
     @Request() req: any
   ): Promise<ATOLine[]> {
-    // TODO: Add role-based authorization (CAOC only)
-    return this.atoService.bulkApprovePpr(gameId, body.atoLineIds);
+    // GM-only authorization enforced in service
+    return this.atoService.bulkApprovePpr(gameId, body.atoLineIds, req.user);
   }
 
   /**

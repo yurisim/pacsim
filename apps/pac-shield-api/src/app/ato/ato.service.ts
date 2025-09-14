@@ -303,21 +303,49 @@ export class AtoService {
   /**
    * Approve PPR for a flight plan (CAOC only)
    */
-  async approvePpr(id: number): Promise<ATOLine> {
+  async approvePpr(id: number, user: any): Promise<ATOLine> {
+    const player = await this.prisma.player.findUnique({
+      where: { id: user?.sub ?? user?.playerId },
+    });
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+    if (player.role !== PlayerRole.GM) {
+      throw new ForbiddenException('Only Game Masters can approve PPR');
+    }
     return this.updatePprStatus(id, 'APPROVED');
   }
 
   /**
    * Deny PPR for a flight plan (CAOC only)
    */
-  async denyPpr(id: number): Promise<ATOLine> {
+  async denyPpr(id: number, user: any): Promise<ATOLine> {
+    const player = await this.prisma.player.findUnique({
+      where: { id: user?.sub ?? user?.playerId },
+    });
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+    if (player.role !== PlayerRole.GM) {
+      throw new ForbiddenException('Only Game Masters can deny PPR');
+    }
     return this.updatePprStatus(id, 'DENIED');
   }
 
   /**
    * Bulk approve PPR for multiple pending flight plans
    */
-  async bulkApprovePpr(gameId: number, atoLineIds?: number[]): Promise<ATOLine[]> {
+  async bulkApprovePpr(gameId: number, atoLineIds: number[] | undefined, user: any): Promise<ATOLine[]> {
+    const player = await this.prisma.player.findUnique({
+      where: { id: user?.sub ?? user?.playerId },
+    });
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+    if (player.role !== PlayerRole.GM) {
+      throw new ForbiddenException('Only Game Masters can bulk approve PPR');
+    }
+
     const whereClause: any = {
       gameId,
       pprStatus: 'PENDING',
