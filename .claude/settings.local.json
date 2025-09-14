@@ -24,9 +24,7 @@
       "Bash(node:*)",
       "Bash(npx nx serve:*)",
       "Bash(npm test:*)",
-      "Bash(pkill:*)",
-      "Bash(E2E_TEST_MODE=true TEST_SEED_SECRET=test-secret npx jest --testNamePattern=\"should return pending PPR approvals\")",
-      "Bash(E2E_TEST_MODE=true TEST_SEED_SECRET=test-secret npx jest --testNamePattern=\"should return pending PPR approvals\" --verbose)"
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

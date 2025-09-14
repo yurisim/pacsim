@@ -98,12 +98,6 @@ export class AtoService {
   async validateAircraftOwnership(aircraftCallSign: string, gameId: number, user: any): Promise<void> {
     console.log('validateAircraftOwnership called with user:', JSON.stringify(user, null, 2));
 
-    // Skip aircraft validation only for unit tests, not for E2E
-    const isE2E = process.env.E2E_TEST_MODE === 'true';
-    if (!isE2E && (process.env.NODE_ENV === 'test' || aircraftCallSign.startsWith('TEST-'))) {
-      console.log('Skipping aircraft validation for test case:', aircraftCallSign);
-      return;
-    }
 
     // Get the player making the request
     const player = await this.prisma.player.findUnique({
