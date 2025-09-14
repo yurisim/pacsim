@@ -7,8 +7,7 @@ import { JwtAuthGuard } from '../app/auth/jwt-auth.guard';
 @Module({
   imports: [
     JwtModule.register({
-      // TODO: Move to environment variables
-      secret: 'super-secret-key',
+      secret: process.env.JWT_SECRET || 'fallback-secret-key',
       signOptions: { expiresIn: '1d' },
     }),
   ],
