@@ -15,15 +15,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { Observable, combineLatest, Subject, filter, takeUntil } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, Subject, filter, takeUntil, BehaviorSubject } from 'rxjs';
 
 import { AllocationNotificationBadgeComponent } from '../../notifications/allocation-notification-badge/allocation-notification-badge.component';
 import { AllocationNotificationCenterComponent } from '../../notifications/allocation-notification-center/allocation-notification-center.component';
 import { AllocationNotificationToastComponent } from '../../notifications/allocation-notification-toast/allocation-notification-toast.component';
 import { AllocationWebSocketService } from '../../../../shared/services/allocation-websocket.service';
+import { ResponsiveNavService } from '../responsive-nav.service';
 import * as AllocationActions from '../../../../store/allocation/allocation.actions';
 import * as AllocationSelectors from '../../../../store/allocation/allocation.selectors';
 import { AircraftRequest } from '../../../../generated/aircraftRequest/aircraftRequest.entity';
@@ -32,6 +33,13 @@ import { AircraftAllocation } from '../../../../generated/aircraftAllocation/air
 import { AllocationCycle } from '../../../../generated/allocationCycle/allocationCycle.entity';
 import { AllocationRequestStatus, AircraftType, TeamType, PlayerRole } from '../../../../generated/enums';
 import { AllocationNotification } from '../../../../store/allocation/allocation.state';
+
+interface CaocSection {
+  id: string;
+  label: string;
+  shortLabel: string;
+  icon: string;
+}
 
 /**
  * CAOC dashboard with CFACC aircraft allocation interface
@@ -57,6 +65,7 @@ import { AllocationNotification } from '../../../../store/allocation/allocation.
     MatTabsModule,
     MatTableModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatChipsModule,
     MatProgressSpinnerModule,
     MatSelectModule,
@@ -80,6 +89,7 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly webSocketService = inject(AllocationWebSocketService);
+  private readonly responsiveNavService = inject(ResponsiveNavService);
   private readonly destroy$ = new Subject<void>();
 
   // Observable streams from NgRx store
@@ -99,6 +109,21 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
 
   // Current displayed toast notification
   currentToastNotification: AllocationNotification | null = null;
+
+  // Responsive section management
+  readonly caocSections: CaocSection[] = [
+    { id: 'overview', label: 'Overview', shortLabel: 'Overview', icon: 'dashboard' },
+    { id: 'allocation', label: 'Aircraft Allocation', shortLabel: 'Aircraft', icon: 'flight' },
+    { id: 'strategic', label: 'Strategic Support', shortLabel: 'Strategic', icon: 'military_tech' }
+  ];
+
+  private currentSectionSubject = new BehaviorSubject<string>('overview');
+  currentSection$ = this.currentSectionSubject.asObservable();
+
+  // Responsive breakpoint observables
+  readonly isMobile$ = this.responsiveNavService.isMobile$;
+  readonly isTablet$ = this.responsiveNavService.isTablet$;
+  readonly isDesktop$ = this.responsiveNavService.isDesktop$;
 
   // Table configurations
   readonly requestsDisplayedColumns = ['team', 'aircraftType', 'quantity', 'priority', 'justification', 'submittedAt', 'status', 'actions'];
@@ -375,16 +400,16 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
   /**
    * Get aircraft count by type - helper for template
    */
-  getAircraftCountByType(analytics: any, type: string, property: 'allocated' | 'available' | 'utilization'): number {
+  getAircraftCountByType(analytics: { allocated: Record<string, number>; available: Record<string, number>; utilization: Record<string, number> }, type: string, property: 'allocated' | 'available' | 'utilization'): number {
     return analytics[property][type as AircraftType] || 0;
   }
 
   /**
    * Calculate total aircraft utilization
    */
-  calculateTotalUtilization(analytics: any): number {
-    const totalAvailable = analytics.available.C17 + analytics.available.C130 + analytics.available.C5;
-    const totalAllocated = analytics.allocated.C17 + analytics.allocated.C130 + analytics.allocated.C5;
+  calculateTotalUtilization(analytics: { allocated: Record<string, number>; available: Record<string, number> }): number {
+    const totalAvailable = analytics.available['C17'] + analytics.available['C130'] + analytics.available['C5'];
+    const totalAllocated = analytics.allocated['C17'] + analytics.allocated['C130'] + analytics.allocated['C5'];
     return totalAvailable > 0 ? (totalAllocated / totalAvailable * 100) : 0;
   }
 
@@ -468,5 +493,44 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
    */
   onNotificationBadgeClick(): void {
     this.openNotificationCenter();
+  }
+
+  /**
+   * Set the current active section
+   */
+  setCurrentSection(sectionId: string): void {
+    this.currentSectionSubject.next(sectionId);
+  }
+
+  /**
+   * Get the current active section
+   */
+  getCurrentSection(): string {
+    return this.currentSectionSubject.value;
+  }
+
+  /**
+   * Check if a section is currently active
+   */
+  isSectionActive(sectionId: string): boolean {
+    return this.getCurrentSection() === sectionId;
+  }
+
+  /**
+   * Get the index of the current section for tab navigation
+   */
+  getCurrentSectionIndex(): number {
+    const currentSection = this.getCurrentSection();
+    return this.caocSections.findIndex(section => section.id === currentSection);
+  }
+
+  /**
+   * Handle tab change in desktop mode
+   */
+  onTabChange(index: number): void {
+    const section = this.caocSections[index];
+    if (section) {
+      this.setCurrentSection(section.id);
+    }
   }
 }
