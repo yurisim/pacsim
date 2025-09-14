@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,13 +10,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { ATOLine } from '../../../../generated/aTOLine/aTOLine.entity';
 import { CreateATOLineDto } from '../../../../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../../../../generated/aTOLine/update-aTOLine.dto';
-import { AircraftConfiguration, FlightIntention } from '../../../../generated/enums';
+import { AircraftConfiguration, FlightIntention, AircraftType, AircraftStatus, PlayerRole } from '../../../../generated/enums';
+import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraftInstance.entity';
+import { Player } from '../../../../generated/player/player.entity';
 import { FOS_LOCATIONS, MOB_LOCATIONS } from '../../../../shared/config/static-locations.config';
+import { ApiService } from '../../../../shared/services/api.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 interface LocationOption {
   /** Backend value (e.g., 'Kadena AB', 'FOS 7') */
@@ -31,7 +35,7 @@ interface LocationOption {
 
 export interface FlightPlannerDialogData {
   existingFlightPlan?: ATOLine;
-  availableAircraft?: string[];
+  availableAircraft?: AircraftInstance[];
   currentTurn: number;
   gameId: number;
 }
@@ -58,9 +62,15 @@ export interface FlightPlannerDialogData {
   ],
   templateUrl: './flight-planner-dialog.component.html',
 })
-export class FlightPlannerDialogComponent {
+export class FlightPlannerDialogComponent implements OnInit {
   flightPlanForm: FormGroup;
   isEditMode: boolean;
+
+  // Aircraft selection data
+  availableAircraft: AircraftInstance[] = [];
+  isLoadingAircraft = false;
+  aircraftError: string | null = null;
+  currentPlayer: Player | null = null;
 
   // Location autocomplete data
   allLocationOptions: LocationOption[] = [];
@@ -84,20 +94,145 @@ export class FlightPlannerDialogComponent {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<FlightPlannerDialogComponent>);
   public data = inject(MAT_DIALOG_DATA) as FlightPlannerDialogData;
+  private apiService = inject(ApiService);
+  private authService = inject(AuthService);
 
   constructor() {
     this.isEditMode = !!this.data.existingFlightPlan;
     this.initializeLocationOptions();
     this.flightPlanForm = this.createForm();
     this.setupLocationAutocomplete();
+  }
 
-    if (this.isEditMode && this.data.existingFlightPlan) {
-      this.populateFormFromExisting(this.data.existingFlightPlan);
+  ngOnInit(): void {
+    // Note: We'll fetch the current player data from API instead of using cached data
+    // since we need the full Player entity with role information
+    this.loadAvailableAircraft();
+  }
+
+  /**
+   * Load available aircraft based on user role
+   */
+  private loadAvailableAircraft(): void {
+    if (this.data.availableAircraft) {
+      // Use pre-loaded aircraft if provided
+      this.availableAircraft = this.data.availableAircraft;
+      return;
     }
+
+    this.isLoadingAircraft = true;
+    this.aircraftError = null;
+
+    // First, get the current player to determine role and team
+    const gameId = this.data.gameId;
+    const playerId = this.authService.getPlayerId();
+
+    if (!playerId || !gameId) {
+      this.aircraftError = 'Unable to determine user authorization';
+      this.isLoadingAircraft = false;
+      return;
+    }
+
+    // Get current player information to determine role and team
+    this.apiService.get<Player>(`player/${playerId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching player data:', error);
+          this.aircraftError = 'Failed to load user information';
+          this.isLoadingAircraft = false;
+          return of(null);
+        })
+      )
+      .subscribe(player => {
+        if (!player) {
+          return;
+        }
+
+        this.currentPlayer = player;
+        this.fetchAircraftForRole(player, gameId);
+      });
+  }
+
+  /**
+   * Fetch aircraft based on player role (GM vs MOB team member)
+   */
+  private fetchAircraftForRole(player: Player, gameId: number): void {
+    let aircraftEndpoint: string;
+
+    if (player.role === 'GM') {
+      // GM can see all aircraft in the game
+      aircraftEndpoint = `ato/games/${gameId}/aircraft`;
+    } else if (player.teamId) {
+      // Regular player can only see their team's aircraft
+      aircraftEndpoint = `ato/teams/${player.teamId}/aircraft`;
+    } else {
+      this.aircraftError = 'Player not assigned to a team';
+      this.isLoadingAircraft = false;
+      return;
+    }
+
+    this.apiService.get<AircraftInstance[]>(aircraftEndpoint)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching aircraft:', error);
+          this.aircraftError = 'Failed to load available aircraft';
+          this.isLoadingAircraft = false;
+          return of([]);
+        })
+      )
+      .subscribe(aircraft => {
+        this.availableAircraft = aircraft;
+        this.isLoadingAircraft = false;
+
+        // Populate form from existing flight plan after aircraft are loaded
+        if (this.isEditMode && this.data.existingFlightPlan) {
+          this.populateFormFromExisting(this.data.existingFlightPlan);
+        }
+      });
+  }
+
+  /**
+   * Handle aircraft selection from dropdown
+   */
+  onAircraftSelected(event: any): void {
+    const selectedAircraft = event.value as AircraftInstance;
+    if (selectedAircraft) {
+      // Auto-populate the call sign when aircraft is selected
+      this.flightPlanForm.patchValue({
+        aircraftCallSign: selectedAircraft.callSign
+      });
+    }
+  }
+
+  /**
+   * Get icon for aircraft type
+   */
+  getAircraftTypeIcon(type: AircraftType): string {
+    const iconMap: Record<AircraftType, string> = {
+      'F16': 'military_tech',
+      'F22': 'military_tech',
+      'C17': 'local_shipping',
+      'C130': 'local_shipping',
+      'C5': 'local_shipping'
+    };
+    return iconMap[type] || 'flight';
+  }
+
+  /**
+   * Get display label for aircraft status
+   */
+  getAircraftStatusLabel(status: AircraftStatus): string {
+    const statusMap: Record<AircraftStatus, string> = {
+      'FMC': 'Fully Mission Capable',
+      'NMC': 'Not Mission Capable',
+      'DESTROYED': 'Destroyed'
+    };
+    return statusMap[status] || status;
   }
 
   private createForm(): FormGroup {
     return this.fb.group({
+      selectedAircraft: ['', [Validators.required]],
       aircraftCallSign: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4,12}$/)]],
       startLocation: ['', [Validators.required]],
       enRouteDestination: [''],
@@ -111,7 +246,13 @@ export class FlightPlannerDialogComponent {
   }
 
   private populateFormFromExisting(flightPlan: ATOLine): void {
+    // Find the corresponding aircraft in the available list
+    const matchingAircraft = this.availableAircraft.find(
+      aircraft => aircraft.callSign === flightPlan.aircraftCallSign
+    );
+
     this.flightPlanForm.patchValue({
+      selectedAircraft: matchingAircraft || null,
       aircraftCallSign: flightPlan.aircraftCallSign,
       startLocation: flightPlan.startLocation,
       enRouteDestination: flightPlan.enRouteDestination,
@@ -140,10 +281,11 @@ export class FlightPlannerDialogComponent {
   onSubmit(): void {
     if (this.flightPlanForm.valid) {
       const formValue = this.flightPlanForm.value;
+      const selectedAircraft = formValue.selectedAircraft as AircraftInstance;
 
       if (this.isEditMode) {
         // Return update data for existing flight plan
-        const updateData: UpdateATOLineDto & { riskTokenUsed?: boolean } = {
+        const updateData: UpdateATOLineDto & { riskTokenUsed?: boolean; selectedAircraftId?: number } = {
           aircraftCallSign: formValue.aircraftCallSign,
           startLocation: formValue.startLocation,
           enRouteDestination: formValue.enRouteDestination || null,
@@ -153,11 +295,12 @@ export class FlightPlannerDialogComponent {
           configuration: formValue.configuration,
           riskTokenUsed: formValue.riskTokenUsed,
           executionResult: formValue.missionNotes || null,
+          selectedAircraftId: selectedAircraft?.id,
         };
         this.dialogRef.close(updateData);
       } else {
         // Return create data for new flight plan
-        const createData: CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean } = {
+        const createData: CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean; selectedAircraftId?: number } = {
           gameId: this.data.gameId,
           turn: this.data.currentTurn,
           aircraftCallSign: formValue.aircraftCallSign,
@@ -169,6 +312,7 @@ export class FlightPlannerDialogComponent {
           configuration: formValue.configuration,
           riskTokenUsed: formValue.riskTokenUsed || false,
           executionResult: formValue.missionNotes || null,
+          selectedAircraftId: selectedAircraft?.id,
         };
         this.dialogRef.close(createData);
       }
@@ -183,7 +327,12 @@ export class FlightPlannerDialogComponent {
   // Validation helpers
   get callSignErrorMessage(): string {
     const control = this.flightPlanForm.get('aircraftCallSign');
+    const selectedAircraftControl = this.flightPlanForm.get('selectedAircraft');
+
     if (control?.hasError('required')) {
+      if (!selectedAircraftControl?.value) {
+        return 'Please select an aircraft first';
+      }
       return 'Call sign is required';
     }
     if (control?.hasError('pattern')) {
@@ -194,12 +343,6 @@ export class FlightPlannerDialogComponent {
 
   get routeValidationWarnings(): string[] {
     const warnings: string[] = [];
-    const startLocation = this.flightPlanForm.get('startLocation')?.value;
-    const finalDestination = this.flightPlanForm.get('finalDestination')?.value;
-
-    if (startLocation === finalDestination) {
-      warnings.push('Start location and final destination are the same');
-    }
 
     // TODO: Add range validation, political clearance checks, MOG limits
 
@@ -217,6 +360,14 @@ export class FlightPlannerDialogComponent {
 
   getIntentionIcon(intention: string): string {
     return this.intentions.find(i => i.value === intention)?.icon || 'flight';
+  }
+
+  getConfigurationLabel(config: string): string {
+    return this.configurations.find(c => c.value === config)?.label || '';
+  }
+
+  getIntentionLabel(intention: string): string {
+    return this.intentions.find(i => i.value === intention)?.label || '';
   }
 
   private initializeLocationOptions(): void {

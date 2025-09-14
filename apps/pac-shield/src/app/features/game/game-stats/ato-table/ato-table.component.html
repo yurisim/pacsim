@@ -11,7 +11,7 @@
       @if (canCreateFlightPlan) {
         <button matButton="filled" (click)="onCreateFlightPlan()">
           <mat-icon>add</mat-icon>
-          Add Flight Plan
+          ATO
         </button>
       }
     </div>
@@ -80,11 +80,11 @@
               <div class="flex gap-1 ml-2">
                 <button matIconButton="small" (click)="onApprovePpr(l)"
                         matTooltip="Approve PPR" class="md-sys-color-primary">
-                  <mat-icon class="text-sm">check</mat-icon>
+                  <mat-icon>check</mat-icon>
                 </button>
                 <button matIconButton="small" (click)="onDenyPpr(l)"
                         matTooltip="Deny PPR" class="md-sys-color-error">
-                  <mat-icon class="text-sm">close</mat-icon>
+                  <mat-icon>close</mat-icon>
                 </button>
               </div>
             }
