@@ -144,8 +144,8 @@ export class AtoService {
    * Create a new ATO line (flight plan)
    */
   async createAtoLine(createAtoLineDto: CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean }, user?: any): Promise<ATOLine> {
-    // Validate business rules including aircraft ownership (disabled for debugging)
-    // await this.validateFlightPlan(createAtoLineDto, user);
+    // Validate business rules including aircraft ownership
+    await this.validateFlightPlan(createAtoLineDto, user);
 
     const atoLine = await this.prisma.aTOLine.create({
       data: {
