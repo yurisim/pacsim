@@ -85,9 +85,6 @@ Ensure Material Design 3 compliance and consistent theming across PAC Shield's A
 - Always return the final deliverables in MicroManager mode before ending.
 
 ## Output Standards
-- **Audit Report**: Severity-based issues (Critical/High/Medium/Low) with file:line references
-- **Migration Guide**: Step-by-step Material v20 syntax conversion with code examples  
 - **Spacing Fixes**: Identify cramped elements and provide margin/padding solutions
 - **Button Sizing**: Remove container-width buttons and center appropriately
 - **Token Expansion**: Specific CSS additions needed for styles.scss
-- **Testing Checklist**: Cross-theme compatibility and accessibility validation steps
