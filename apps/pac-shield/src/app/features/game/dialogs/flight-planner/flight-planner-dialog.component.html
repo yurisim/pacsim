@@ -10,61 +10,76 @@
       <div class="form-section">
         <h3 class="md-typescale-title-small mb-4 flex items-center gap-2">
           Aircraft Identification
-          <span class="text-red-500 text-sm">*</span>
         </h3>
 
         <!-- Aircraft Selection -->
         <mat-form-field appearance="outline" class="w-full mb-4">
-          <mat-label>Select Aircraft *</mat-label>
-          <mat-select formControlName="selectedAircraft" (selectionChange)="onAircraftSelected($event)">
+          <mat-label>Select Aircraft</mat-label>
+          <mat-select
+            formControlName="selectedAircraft"
+            (selectionChange)="onAircraftSelected($event)"
+          >
             <mat-select-trigger>
-              @if (flightPlanForm.get('selectedAircraft')?.value; as selectedAircraft) {
-                <div class="flex items-center gap-2">
-                  <mat-icon>{{ getAircraftTypeIcon(selectedAircraft.type) }}</mat-icon>
-                  <span class="font-medium">{{ selectedAircraft.callSign }}</span>
-                  <span class="text-sm md-sys-color-on-surface-variant">
-                    ({{ selectedAircraft.type }} - {{ getAircraftStatusLabel(selectedAircraft.status) }})
-                  </span>
-                </div>
+              @if (flightPlanForm.get('selectedAircraft')?.value; as
+              selectedAircraft) {
+              <div class="flex items-center gap-2">
+                <mat-icon>{{
+                  getAircraftTypeIcon(selectedAircraft.type)
+                }}</mat-icon>
+                <span class="font-medium">{{ selectedAircraft.callSign }}</span>
+                <span class="text-sm md-sys-color-on-surface-variant">
+                  ({{ selectedAircraft.type }} -
+                  {{ getAircraftStatusLabel(selectedAircraft.status) }})
+                </span>
+              </div>
               }
             </mat-select-trigger>
             @if (isLoadingAircraft) {
-              <mat-option disabled>
+            <mat-option disabled>
+              <div class="flex items-center gap-2">
+                <mat-icon class="animate-spin">refresh</mat-icon>
+                Loading aircraft...
+              </div>
+            </mat-option>
+            } @if (aircraftError) {
+            <mat-option disabled>
+              <div class="flex items-center gap-2 text-red-600">
+                <mat-icon>error</mat-icon>
+                {{ aircraftError }}
+              </div>
+            </mat-option>
+            } @for (aircraft of availableAircraft; track aircraft.id) {
+            <mat-option
+              [value]="aircraft"
+              [disabled]="aircraft.status !== 'FMC'"
+            >
+              <div class="flex items-center justify-between w-full">
                 <div class="flex items-center gap-2">
-                  <mat-icon class="animate-spin">refresh</mat-icon>
-                  Loading aircraft...
+                  <mat-icon>{{ getAircraftTypeIcon(aircraft.type) }}</mat-icon>
+                  <span class="font-medium">{{ aircraft.callSign }}</span>
+                  <span class="text-sm md-sys-color-on-surface-variant">{{
+                    aircraft.type
+                  }}</span>
                 </div>
-              </mat-option>
-            }
-            @if (aircraftError) {
-              <mat-option disabled>
-                <div class="flex items-center gap-2 text-red-600">
-                  <mat-icon>error</mat-icon>
-                  {{ aircraftError }}
+                <div class="flex items-center gap-1">
+                  <span
+                    class="text-xs px-2 py-1 rounded-full"
+                    [class.bg-green-100]="aircraft.status === 'FMC'"
+                    [class.text-green-800]="aircraft.status === 'FMC'"
+                    [class.bg-red-100]="
+                      aircraft.status === 'NMC' ||
+                      aircraft.status === 'DESTROYED'
+                    "
+                    [class.text-red-800]="
+                      aircraft.status === 'NMC' ||
+                      aircraft.status === 'DESTROYED'
+                    "
+                  >
+                    {{ getAircraftStatusLabel(aircraft.status) }}
+                  </span>
                 </div>
-              </mat-option>
-            }
-            @for (aircraft of availableAircraft; track aircraft.id) {
-              <mat-option [value]="aircraft" [disabled]="aircraft.status !== 'FMC'">
-                <div class="flex items-center justify-between w-full">
-                  <div class="flex items-center gap-2">
-                    <mat-icon>{{ getAircraftTypeIcon(aircraft.type) }}</mat-icon>
-                    <span class="font-medium">{{ aircraft.callSign }}</span>
-                    <span class="text-sm md-sys-color-on-surface-variant">{{ aircraft.type }}</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span
-                      class="text-xs px-2 py-1 rounded-full"
-                      [class.bg-green-100]="aircraft.status === 'FMC'"
-                      [class.text-green-800]="aircraft.status === 'FMC'"
-                      [class.bg-red-100]="aircraft.status === 'NMC' || aircraft.status === 'DESTROYED'"
-                      [class.text-red-800]="aircraft.status === 'NMC' || aircraft.status === 'DESTROYED'"
-                    >
-                      {{ getAircraftStatusLabel(aircraft.status) }}
-                    </span>
-                  </div>
-                </div>
-              </mat-option>
+              </div>
+            </mat-option>
             }
           </mat-select>
           <mat-icon matSuffix>flight</mat-icon>
@@ -79,7 +94,7 @@
 
         <!-- Aircraft Call Sign (Read-only after selection) -->
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Aircraft Call Sign *</mat-label>
+          <mat-label>Aircraft Call Sign</mat-label>
           <input
             matInput
             formControlName="aircraftCallSign"
@@ -88,11 +103,9 @@
           />
           <mat-icon matSuffix>flight</mat-icon>
           <mat-hint>
-            @if (flightPlanForm.get('selectedAircraft')?.value) {
-              Call sign auto-populated from selected aircraft
-            } @else {
-              Select an aircraft above to auto-populate the call sign
-            }
+            @if (flightPlanForm.get('selectedAircraft')?.value) { Call sign
+            auto-populated from selected aircraft } @else { Select an aircraft
+            above to auto-populate the call sign }
           </mat-hint>
           @if (flightPlanForm.get('aircraftCallSign')?.invalid &&
           flightPlanForm.get('aircraftCallSign')?.touched) {
@@ -106,12 +119,11 @@
         <h3 class="md-typescale-title-small mb-4 flex items-center gap-2">
           <mat-icon>route</mat-icon>
           Route Planning
-          <span class="text-red-500 text-sm">*</span>
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <mat-form-field appearance="outline">
-            <mat-label>Start Location *</mat-label>
+            <mat-label>Start Location</mat-label>
             <input
               matInput
               formControlName="startLocation"
@@ -143,7 +155,7 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Final Destination *</mat-label>
+            <mat-label>Final Destination</mat-label>
             <input
               matInput
               formControlName="finalDestination"
@@ -175,12 +187,12 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>En Route Stop (Optional)</mat-label>
+            <mat-label>En Route Stop</mat-label>
             <input
               matInput
               formControlName="enRouteDestination"
               [matAutocomplete]="enRouteAuto"
-              placeholder="Search en route stops..."
+              placeholder="Optional"
             />
             <mat-autocomplete
               #enRouteAuto="matAutocomplete"
@@ -206,12 +218,12 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Alternate Destination (Optional)</mat-label>
+            <mat-label>Alternate Destination</mat-label>
             <input
               matInput
               formControlName="alternateDestination"
               [matAutocomplete]="alternateAuto"
-              placeholder="Search alternate destinations..."
+              placeholder="Optional"
             />
             <mat-autocomplete
               #alternateAuto="matAutocomplete"
@@ -270,19 +282,19 @@
         <h3 class="md-typescale-title-small mb-4 flex items-center gap-2">
           <mat-icon>settings</mat-icon>
           Mission Configuration
-          <span class="text-red-500 text-sm">*</span>
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <mat-form-field appearance="outline">
-            <mat-label>Flight Intention *</mat-label>
+            <mat-label>Flight Intention</mat-label>
             <mat-select formControlName="intention">
               <mat-select-trigger>
-                @if (flightPlanForm.get('intention')?.value; as selectedIntention) {
-                  <div class="flex items-center gap-2">
-                    <mat-icon>{{ getIntentionIcon(selectedIntention) }}</mat-icon>
-                    {{ getIntentionLabel(selectedIntention) }}
-                  </div>
+                @if (flightPlanForm.get('intention')?.value; as
+                selectedIntention) {
+                <div class="flex items-center gap-2">
+                  <mat-icon>{{ getIntentionIcon(selectedIntention) }}</mat-icon>
+                  {{ getIntentionLabel(selectedIntention) }}
+                </div>
                 }
               </mat-select-trigger>
               @for (intent of intentions; track intent.value) {
@@ -304,14 +316,17 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Aircraft Configuration *</mat-label>
+            <mat-label>Aircraft Configuration</mat-label>
             <mat-select formControlName="configuration">
               <mat-select-trigger>
-                @if (flightPlanForm.get('configuration')?.value; as selectedConfig) {
-                  <div class="flex items-center gap-2">
-                    <mat-icon>{{ getConfigurationIcon(selectedConfig) }}</mat-icon>
-                    {{ getConfigurationLabel(selectedConfig) }}
-                  </div>
+                @if (flightPlanForm.get('configuration')?.value; as
+                selectedConfig) {
+                <div class="flex items-center gap-2">
+                  <mat-icon>{{
+                    getConfigurationIcon(selectedConfig)
+                  }}</mat-icon>
+                  {{ getConfigurationLabel(selectedConfig) }}
+                </div>
                 }
               </mat-select-trigger>
               @for (config of configurations; track config.value) {
@@ -337,7 +352,7 @@
         <div class="mt-4">
           <mat-checkbox formControlName="riskTokenUsed">
             <div class="flex items-center gap-2">
-              <mat-icon >casino</mat-icon>
+              <mat-icon>casino</mat-icon>
               <span>Use Risk Token for this mission</span>
             </div>
           </mat-checkbox>
