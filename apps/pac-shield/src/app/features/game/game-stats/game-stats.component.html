@@ -1,100 +1,148 @@
-<mat-tab-group dynamicHeight="true" data-testid="game-stats-tabs" class="mobile-tabs h-full w-full">
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-scoreboard"><span class="text-xs sm:text-sm md:text-base">Score</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-scoreboard">
-      <app-scoreboard
-        [missionPoints]="gameStats().missionPoints"
-        [demoralizationPoints]="gameStats().demoralizationPoints"
-        [resourcePoints]="gameStats().resourcePoints"
-        [victoryTarget]="gameStats().victoryTarget"
-        [gameTurn]="gameStats().gameTurn"
-        [gameDay]="gameStats().gameDay"
-        [gamePhase]="gameStats().gamePhase"
-      ></app-scoreboard>
-    </div>
-  </mat-tab>
-
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-caoc"><span class="text-xs sm:text-sm md:text-base">CAOC</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-caoc">
-      <div class="overflow-x-auto" data-testid="responsive-scroll-caoc">
-        <div data-testid="caoc-dashboard-host">
-          <app-caoc-dashboard
-            [currentGameId]="currentGameId || 1"
-            [currentTurn]="gameStats().gameTurn"
-            [currentUserTeam]="currentUserTeam"
-            [currentUserRole]="currentUserRole"
-            [readonly]="false">
-          </app-caoc-dashboard>
-        </div>
-      </div>
-      <div class="mt-2 sm:mt-3 overflow-x-auto" data-testid="responsive-scroll-ato">
-        <app-ato-table
-          [lines]="atoLines()"
-          [currentGameId]="currentGameId || 1"
-          [currentTurn]="gameStats().gameTurn"
-          [currentUserTeam]="currentUserTeam"
-          [currentUserRole]="currentUserRole"
-          [readonly]="false">
-        </app-ato-table>
-      </div>
-    </div>
-  </mat-tab>
-
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-mob"><span class="text-xs sm:text-sm md:text-base">MOB</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
-      <div class="overflow-x-auto" data-testid="responsive-scroll-mob">
-        <div data-testid="mob-dashboard-host">
-          <app-mob-dashboard></app-mob-dashboard>
+<!-- Game Stats Panel (mirrors Location Panel structure) -->
+<div class="game-stats-panel md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2">
+  <!-- Header -->
+  <div class="panel-header flex items-center justify-between p-3 pb-2 shrink-0">
+    <div class="flex items-center gap-2">
+      <mat-icon class="md-sys-color-primary text-2xl">leaderboard</mat-icon>
+      <div>
+        <div class="md-typescale-title-small font-medium">Game Stats</div>
+        <div class="md-typescale-body-small md-sys-color-on-surface-variant text-sm">
+          {{ currentTurnLabel() }}
         </div>
       </div>
     </div>
-  </mat-tab>
+    <button
+      mat-icon-button
+      (click)="toggleCollapsed()"
+      [matTooltip]="collapsed ? 'Expand' : 'Collapse'"
+      class="collapse-toggle w-8 h-8"
+      [attr.aria-expanded]="!collapsed"
+      aria-controls="game-stats-content"
+      [attr.title]="collapsed ? 'Expand' : 'Collapse'"
+    >
+      <mat-icon>{{ collapsed ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+  </div>
 
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-fos"><span class="text-xs sm:text-sm md:text-base">FOS</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-fos">
-      <div class="overflow-x-auto" data-testid="responsive-scroll-fos">
-        <div data-testid="fos-dashboard-host">
-          <app-fos-dashboard></app-fos-dashboard>
-        </div>
-      </div>
-    </div>
-  </mat-tab>
+  @if (!collapsed) {
+    <mat-divider></mat-divider>
 
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-cspoc"><span class="text-xs sm:text-sm md:text-base">CSpOC</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-cspoc">
-      <div class="overflow-x-auto" data-testid="responsive-scroll-cspoc">
-        <div data-testid="cspoc-board-host">
-          <app-cspoc-board></app-cspoc-board>
-        </div>
-      </div>
-    </div>
-  </mat-tab>
+    <!-- Responsive Navigation -->
+    <app-responsive-nav
+      (tabChange)="onTabChange($event)"
+      data-testid="responsive-nav"
+    ></app-responsive-nav>
 
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-medcom"><span class="text-xs sm:text-sm md:text-base">MEDCOM</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-medcom">
-      <div class="overflow-x-auto" data-testid="responsive-scroll-medcom">
-        <div data-testid="medcom-dashboard-host">
-          <app-medcom-dashboard></app-medcom-dashboard>
-        </div>
-      </div>
-    </div>
-  </mat-tab>
+    <!-- Content Container with padding for mobile top nav -->
+    <div
+      id="game-stats-content"
+      class="game-stats-content"
+      [class.pt-14]="(navService.isMobile$ | async)"
+      [class.pl-0]="(navService.isTablet$ | async) === false"
+      [class.pl-64]="(navService.isTablet$ | async) && (navService.sideNavOpen$ | async)"
+      data-testid="game-stats-content"
+    >
+      <!-- Dynamic content based on active tab -->
+      @switch (activeTab$ | async) {
+        @case ('scoreboard') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-scoreboard">
+            <app-scoreboard
+              [missionPoints]="gameStats().missionPoints"
+              [demoralizationPoints]="gameStats().demoralizationPoints"
+              [resourcePoints]="gameStats().resourcePoints"
+              [victoryTarget]="gameStats().victoryTarget"
+              [gameTurn]="gameStats().gameTurn"
+              [gameDay]="gameStats().gameDay"
+              [gamePhase]="gameStats().gamePhase"
+            ></app-scoreboard>
+          </div>
+        }
 
-  <mat-tab>
-    <ng-template mat-tab-label data-testid="tab-label-log"><span class="text-xs sm:text-sm md:text-base">Log</span></ng-template>
-    <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-log">
-      <div class="overflow-x-auto" data-testid="responsive-scroll-log">
-        <div data-testid="game-log-host">
-          <app-game-log
-            [log]="gameStatsService.getFormattedLog()"
-          ></app-game-log>
-        </div>
-      </div>
+        @case ('caoc') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-caoc">
+            <div class="space-y-3">
+              <div class="overflow-x-auto" data-testid="responsive-scroll-caoc">
+                <div data-testid="caoc-dashboard-host">
+                  <app-caoc-dashboard
+                    [currentGameId]="currentGameId || 1"
+                    [currentTurn]="gameStats().gameTurn"
+                    [currentUserTeam]="currentUserTeam"
+                    [currentUserRole]="currentUserRole"
+                    [readonly]="false"
+                  >
+                  </app-caoc-dashboard>
+                </div>
+              </div>
+              <div class="overflow-x-auto" data-testid="responsive-scroll-ato">
+                <app-ato-table
+                  [lines]="atoLines()"
+                  [currentGameId]="currentGameId || 1"
+                  [currentTurn]="gameStats().gameTurn"
+                  [currentUserTeam]="currentUserTeam"
+                  [currentUserRole]="currentUserRole"
+                  [readonly]="false"
+                >
+                </app-ato-table>
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('mob') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
+            <div data-testid="mob-dashboard-host">
+              <app-mob-dashboard></app-mob-dashboard>
+            </div>
+          </div>
+        }
+
+        @case ('fos') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-fos">
+            <div class="overflow-x-auto" data-testid="responsive-scroll-fos">
+              <div data-testid="fos-dashboard-host">
+                <app-fos-dashboard></app-fos-dashboard>
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('cspoc') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-cspoc">
+            <div class="overflow-x-auto" data-testid="responsive-scroll-cspoc">
+              <div data-testid="cspoc-board-host">
+                <app-cspoc-board></app-cspoc-board>
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('medcom') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-medcom">
+            <div class="overflow-x-auto" data-testid="responsive-scroll-medcom">
+              <div data-testid="medcom-dashboard-host">
+                <app-medcom-dashboard></app-medcom-dashboard>
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('log') {
+          <div class="p-2 sm:p-3 md:p-4" data-testid="tab-panel-log">
+            <div class="overflow-x-auto" data-testid="responsive-scroll-log">
+              <div data-testid="game-log-host">
+                <app-game-log
+                  [log]="gameStatsService.getFormattedLog()"
+                ></app-game-log>
+              </div>
+            </div>
+          </div>
+        }
+      }
     </div>
-  </mat-tab>
-</mat-tab-group>
+  } @else {
+    <!-- Collapsed summary -->
+    <div class="collapsed-summary p-2 md-typescale-body-small md-sys-color-on-surface-variant text-center text-sm">
+      MP: {{ gameStats().missionPoints }} | DP: {{ gameStats().demoralizationPoints }} | RP: {{ gameStats().resourcePoints }}
+    </div>
+  }
+</div>

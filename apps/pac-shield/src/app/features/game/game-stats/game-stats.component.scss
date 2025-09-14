@@ -2,3 +2,55 @@
   display: block;
   width: 100%;
 }
+
+/* Game Stats Panel - mirrors Location Panel sizing/behavior */
+.game-stats-panel {
+  width: 580px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+
+  .panel-header {
+    .collapse-toggle {
+      ::ng-deep .mat-mdc-button-touch-target {
+        width: 32px !important;
+        height: 32px !important;
+      }
+    }
+  }
+
+  /* Content area can scroll if needed, similar to Location Panel tab body wrapper */
+  .game-stats-content {
+    flex: 1;
+    overflow: hidden;
+
+    /* Inner content regions should be scrollable when necessary */
+    > .p-2,
+    > .p-3,
+    > .p-4 {
+      overflow: auto;
+    }
+  }
+}
+
+/* Dark mode adjustments (kept minimal; Location Panel only adjusts specific buttons) */
+:host-context(.dark-theme) {
+  .game-stats-panel {
+    /* No special overrides needed at the moment */
+  }
+}
+
+/* Responsive adjustments matching Location Panel breakpoints */
+@media (max-width: 768px) {
+  .game-stats-panel {
+    width: 100%;
+    max-width: calc(100vw - 16px);
+  }
+}
+
+@media (max-width: 600px) {
+  .game-stats-panel {
+    /* No special grid changes required for Game Stats content */
+  }
+}
