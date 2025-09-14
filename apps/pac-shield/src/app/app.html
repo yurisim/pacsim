@@ -1,16 +1,37 @@
 <mat-toolbar class="app-toolbar" role="banner">
   <div class="flex items-center gap-3">
-    <mat-icon
-          class="md-sys-color-primary"
-          aria-hidden="true"
-        >security</mat-icon>
+    <mat-icon class="md-sys-color-primary" aria-hidden="true"
+      >security</mat-icon
+    >
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-medium m-0 md-sys-color-on-surface">
         <span class="hidden sm:inline">{{ title }}</span>
         <span class="sm:hidden">OPS</span>
       </h1>
       @if (currentGameId) {
-      <div class="flex items-center gap-2 ml-4">
+      <!-- Mobile Menu (small screens) -->
+      <div class="flex md:hidden ml-4">
+        <button
+          matIconButton
+          [matMenuTriggerFor]="navigationMenu"
+          aria-label="Navigation menu"
+        >
+          <mat-icon>menu</mat-icon>
+        </button>
+        <mat-menu #navigationMenu="matMenu">
+          <button mat-menu-item (click)="navigateToLobby()">
+            <mat-icon>groups</mat-icon>
+            <span>Lobby</span>
+          </button>
+          <button mat-menu-item (click)="navigateToMap()">
+            <mat-icon>map</mat-icon>
+            <span>Map</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <!-- Desktop Buttons (medium+ screens) -->
+      <div class="hidden md:flex items-center gap-2 ml-4">
         <button
           matButton="tonal"
           color="primary"
@@ -67,7 +88,7 @@
       matButton="filled"
       color="warn"
       (click)="onLogout()"
-      class="ml-2"
+      class="md:ml-2"
       aria-label="Logout from current game"
     >
       <mat-icon>logout</mat-icon>

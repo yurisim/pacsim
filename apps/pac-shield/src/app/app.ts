@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { ThemeToggleComponent } from './core/theme-toggle/theme-toggle.component';
 
 @Component({
@@ -22,6 +23,7 @@ import { ThemeToggleComponent } from './core/theme-toggle/theme-toggle.component
     MatSnackBarModule,
     MatIconModule,
     MatTooltipModule,
+    MatMenuModule,
     ThemeToggleComponent
   ],
   selector: 'app-root',
