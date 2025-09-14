@@ -19,7 +19,8 @@
       "Bash(yarn nx run:*)",
       "mcp__wallaby__wallaby_failingTestsForFile",
       "Bash(npx nx prisma-generate:*)",
-      "Bash(npx nx prisma-db-push:*)"
+      "Bash(npx nx prisma-db-push:*)",
+      "Bash(yarn nx run-many:*)"
     ],
     "deny": [],
     "ask": []
