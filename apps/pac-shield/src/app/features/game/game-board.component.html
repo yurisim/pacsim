@@ -61,7 +61,13 @@
 
       <mat-tab label="CAOC">
         <div class="p-3">
-          <app-caoc-dashboard></app-caoc-dashboard>
+          <app-caoc-dashboard
+            [currentGameId]="(gameId$ | async) || 1"
+            [currentTurn]="gameStats().gameTurn"
+            [currentUserTeam]="currentUserTeam$ | async"
+            [currentUserRole]="currentUserRole$ | async"
+            [readonly]="false">
+          </app-caoc-dashboard>
           <div class="mt-3">
             <app-ato-table
               [lines]="atoLines()"
