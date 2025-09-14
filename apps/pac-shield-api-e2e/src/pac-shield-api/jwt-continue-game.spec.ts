@@ -1,3 +1,24 @@
+/**
+ * E2E: JWT and Continue Game flow
+ *
+ * Intent:
+ * - Create a fresh game and validate room codes (valid, invalid, malformed)
+ * - Exercise PIN-based player management:
+ *   - Join with PIN (new player) -> returns JWT
+ *   - Joining with existing name without PIN -> NAME_CONFLICT
+ *   - Existing player rejoins with correct PIN -> same player id, new JWT
+ *   - Wrong PIN -> INVALID_PIN
+ *   - Legacy players with no PIN -> NO_PIN_SET
+ * - Mirror frontend "ConflictUser" scenario (wrong PIN then correct)
+ * - Ensure player isolation across games (same name allowed in separate games)
+ * - Validate JWT structure (3-part token)
+ * - Robust error handling for invalid room codes, missing fields, empty names, null pin
+ * - Comprehensive /api/game/validate endpoint behavior for varied inputs
+ *
+ * This suite guarantees players can resume sessions securely using PINs and JWTs,
+ * prevents name collisions across and within games, and verifies consistent
+ * room-code validation behavior.
+ */
 import axios from 'axios';
 
 describe('JWT and Continue Game API E2E', () => {
