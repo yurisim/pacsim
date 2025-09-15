@@ -30,12 +30,12 @@ describe('AccountRoomFormComponent', () => {
     const spy = jest.fn();
     component.submitted.subscribe(spy);
 
-    // Ensure form is valid by patching values correctly
-    component.form.patchValue({ gameId: 'ABC123', playerName: 'Bob' });
+    // Ensure form is valid by patching values correctly (PIN now required)
+    component.form.patchValue({ gameId: 'ABC123', playerName: 'Bob', pin: '2468' });
 
     // Trigger submit
     component.onSubmit();
-    expect(spy).toHaveBeenCalledWith({ gameId: 'ABC123', playerName: 'Bob' });
+    expect(spy).toHaveBeenCalledWith({ gameId: 'ABC123', playerName: 'Bob', pin: '2468' });
   });
 
   it('shows spinner when room validation is pending and disables submit', () => {

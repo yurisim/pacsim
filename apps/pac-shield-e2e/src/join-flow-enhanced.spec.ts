@@ -7,6 +7,8 @@ import {
   getElementReliably,
   createTestIsolation,
   fillRoomCodeOtp,
+  fillOtp,
+  maybeFillOtpIfVisible,
   generateTestIds
 } from './test-utils';
 
@@ -50,6 +52,9 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       ]);
 
       await playerNameInput.fill('ConflictUser');
+
+      // PIN is required on Account step before submitting
+      await fillOtp(page, 'account-pin-otp', '2468');
 
       // Submit and wait for conflict step with enhanced reliability
       await submitFormReliably(
@@ -95,6 +100,20 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       // Wait for availability confirmation with proper timing
       await expect(page.getByText('This name is available!')).toBeVisible({ timeout: 8000 });
+
+      // Ensure Create button disabled until PIN is valid
+      const createButton = await getElementReliably(page, [
+        '[data-testid="create-new-player"]',
+        'button:has-text("Create new player")',
+        'button:has-text("Create")'
+      ]);
+      await expect(createButton).toBeDisabled();
+
+      // Fill required PIN for new person
+      await fillOtp(page, 'new-person-pin-otp', '1234');
+
+      // Button should now be enabled
+      await expect(createButton).toBeEnabled({ timeout: 3000 });
 
       // Create new player with reliable submission
       await submitFormReliably(
@@ -197,6 +216,12 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       await playerNameInput.fill(testIds.playerName);
 
+      // Join remains disabled until PIN is filled
+      await expect(joinButton).toBeDisabled();
+
+      // Fill required Account step PIN
+      await fillOtp(page, 'account-pin-otp', '2468');
+
       // Button should now be enabled
       await expect(joinButton).toBeEnabled({ timeout: 3000 });
       await expect(joinButton).toContainText('Join');
@@ -256,6 +281,9 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       await expect(roomCodeInputs.nth(0)).toHaveValue(gameData.roomCode.charAt(0));
       await expect(playerNameInput).toHaveValue(testIds.playerName);
 
+      // PIN is required before submitting
+      await fillOtp(page, 'account-pin-otp', '2468');
+
       // Submit should work reliably
       await submitFormReliably(
         page,
@@ -291,6 +319,9 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       await playerNameInput.fill('PinUser');
 
+      // PIN is required on Account step before submitting
+      await fillOtp(page, 'account-pin-otp', '2468');
+
       // Submit to trigger name conflict
       await submitFormReliably(
         page,
@@ -314,7 +345,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       await pinInputs.nth(3).fill('4');
 
       const verifyButton = await getElementReliably(page, [
-        'button[data-testid="verify-pin"]',
+        'button[data-testid="verify-pin-button"]',
         'button:has-text("Verify")',
         'button:has-text("PIN")'
       ]);

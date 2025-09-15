@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-6" novalidate>
+<form [formGroup]="form" class="flex flex-col gap-6" novalidate (submit)="$event.preventDefault()" (keydown.enter)="$event.preventDefault()">
   <!-- Room Code -->
   <div class="flex flex-col items-center gap-2">
     <div class="block md-typescale-body-medium md-sys-color-on-surface mt-4 text-center">
@@ -29,6 +29,47 @@
       [errorText]="form.controls.playerName.invalid && form.controls.playerName.touched ? fieldError(form.controls.playerName) : null"
       (accountChange)="onAccountChange($event)"
     ></app-account-selector>
+
+    <!-- Minimal name availability messaging (optional UX) -->
+    <div
+      class="mt-2 text-center md-typescale-body-small md-sys-color-on-surface-variant"
+      data-testid="account-name-availability"
+      aria-live="polite"
+    >
+      <ng-container *ngIf="nameAvailable === true">
+        <span class="text-green-600">Name available</span>
+      </ng-container>
+      <ng-container *ngIf="nameAvailable === false">
+        <span class="text-red-600">This name is already in use</span>
+      </ng-container>
+      <ng-container *ngIf="nameAvailable === undefined && (form.controls.playerName.value || '').toString().trim().length >= 2">
+        <span>Checking…</span>
+      </ng-container>
+    </div>
+
+    <!-- PIN is shown only when room is valid AND name is available -->
+    <div *ngIf="nameAvailable === true" class="flex flex-col items-center gap-2 mt-4">
+      <app-input-otp
+        [length]="4"
+        [integerOnly]="true"
+        formControlName="pin"
+        aria-label="4-digit PIN"
+        data-testid="account-pin-otp"
+      ></app-input-otp>
+
+      <small class="block text-center md-typescale-body-small md-sys-color-on-surface-variant">
+        Create a 4-digit PIN to secure your name for future sessions.
+      </small>
+
+      <!-- Show validation when field is touched and invalid (required or wrong length) -->
+      <div
+        *ngIf="form.controls.pin.touched && form.controls.pin.invalid"
+        class="md-sys-color-error md-typescale-body-small text-center"
+        role="alert"
+      >
+        {{ fieldError(form.controls.pin) }}
+      </div>
+    </div>
   </div>
 
   <!-- Submit -->
@@ -36,8 +77,9 @@
     <button
       matButton="filled"
       color="primary"
-      type="submit"
-      [disabled]="isBusy || !canSubmit || form.pending"
+      type="button"
+      (click)="onSubmit()"
+      [disabled]="isBusy || !canSubmit || form.pending || form.invalid"
       data-testid="join-submit-button"
       aria-label="Join game"
     >

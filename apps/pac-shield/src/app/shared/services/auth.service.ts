@@ -37,10 +37,11 @@ export class AuthService {
    * 2) POST /player/join to create the player session
    * 3) Persist JWT + player; extract and store playerId for convenience
    */
-  joinGame(roomCode: string, playerName: string) {
+  joinGame(roomCode: string, playerName: string, pin?: string) {
     this.webSocketService.connect(roomCode);
+    const body: any = { roomCode, playerName, ...(pin ? { pin } : {}) };
     return this.apiService
-      .post<{ token: string; player: Player }>('player/join', { roomCode, playerName })
+      .post<{ token: string; player: Player }>('player/join', body)
       .pipe(
         tap(({ token, player }) => {
           this.setToken(token);

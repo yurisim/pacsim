@@ -143,6 +143,48 @@ export async function fillVerificationPin(page: Page, pin: string): Promise<void
 }
 
 /**
+ * Fill OTP inputs within a specific OTP component targeted by data-testid.
+ * Example: await fillOtp(page, 'new-person-pin-otp', '1234')
+ */
+export async function fillOtp(page: Page, testId: string, pin: string): Promise<void> {
+  if (!pin || typeof pin !== 'string') {
+    throw new Error('PIN must be a non-empty string');
+  }
+
+  const root = page.getByTestId(testId);
+  await expect(root).toBeVisible();
+
+  for (let i = 0; i < pin.length; i++) {
+    const input = root.locator(`input[data-otp-index="${i}"]`).first();
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
+    await input.clear();
+    await input.fill(pin[i]);
+    await page.waitForTimeout(30);
+  }
+
+  await page.waitForTimeout(100);
+}
+
+/**
+ * Conditionally fill an OTP by data-testid only if the component is visible.
+ * Safe to call when the OTP is optional (e.g., account PIN).
+ * Example: await maybeFillOtpIfVisible(page, 'account-pin-otp', '2468')
+ */
+export async function maybeFillOtpIfVisible(page: Page, testId: string, pin: string): Promise<void> {
+  try {
+    const root = page.getByTestId(testId);
+
+    // If component not present or not visible, skip without error
+    if ((await root.count()) === 0) return;
+    if (!(await root.isVisible())) return;
+
+    await fillOtp(page, testId, pin);
+  } catch {
+    // No-op: treat as optional
+  }
+}
+/**
  * Helper to wait for OTP component to be ready for input
  * @param page - Playwright Page object
  * @param ariaLabel - Optional aria-label to target a specific OTP component
@@ -188,7 +230,7 @@ export async function clearOtpField(page: Page, length = 4): Promise<void> {
  */
 export async function fillRoomCodeOtp(page: Page, roomCode: string): Promise<void> {
   await fillOtpFieldByAriaLabel(page, '6-character Room Code', roomCode);
-  
+
   // Wait for validation to complete (success or error)
   try {
     await Promise.race([
@@ -211,25 +253,25 @@ export async function fillRoomCodeOtp(page: Page, roomCode: string): Promise<voi
 export async function waitForNavigationReliable(
   page: Page,
   urlPattern: string | RegExp,
-  options: { 
+  options: {
     timeout?: number;
     waitUntil?: 'load' | 'domcontentloaded' | 'commit';
     retries?: number;
   } = {}
 ): Promise<void> {
   const { timeout = 10000, waitUntil = 'domcontentloaded', retries = 3 } = options;
-  
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await expect(page).toHaveURL(urlPattern, { timeout });
-      
+
       // Additional wait for DOM stability
       if (waitUntil === 'domcontentloaded') {
         await page.waitForLoadState('domcontentloaded');
       } else if (waitUntil === 'load') {
         await page.waitForLoadState('load');
       }
-      
+
       return; // Success
     } catch (error) {
       if (attempt === retries) {
@@ -237,7 +279,7 @@ export async function waitForNavigationReliable(
           `Failed to navigate to ${urlPattern.toString()} after ${retries} attempts. Current URL: ${page.url()}`
         );
       }
-      
+
       // Wait before retry
       await page.waitForTimeout(1000 * attempt);
     }
@@ -261,7 +303,7 @@ export async function waitForButtonStates(
   textToContain?: string
 ): Promise<void> {
   const button = await getElementReliably(page, [buttonSelector]);
-  
+
   for (const state of expectedStates) {
     switch (state) {
       case 'enabled':
@@ -283,7 +325,7 @@ export async function waitForButtonStates(
         }
         break;
     }
-    
+
     // Small delay between state checks
     await page.waitForTimeout(100);
   }
@@ -390,7 +432,7 @@ export async function getElementReliably(
   options: { timeout?: number; visible?: boolean } = {}
 ) {
   const { timeout = 5000, visible = true } = options;
-  
+
   for (const selector of selectors) {
     try {
       const element = page.locator(selector);
@@ -405,7 +447,7 @@ export async function getElementReliably(
       continue;
     }
   }
-  
+
   throw new Error(`None of the selectors found an element: ${selectors.join(', ')}`);
 }
 
@@ -428,7 +470,7 @@ export async function submitFormReliably(
   }
 ): Promise<void> {
   const { navigatesTo, showsError, showsStep, timeout = 15000 } = expectedOutcome;
-  
+
   // Get submit button with fallback selectors
   const button = await getElementReliably(page, [
     submitButton,
@@ -437,13 +479,13 @@ export async function submitFormReliably(
     'button:has-text("Continue")',
     'button:has-text("Create")'
   ]);
-  
+
   // Ensure button is enabled before clicking
   await expect(button).toBeEnabled({ timeout: 5000 });
-  
+
   // Click and handle different expected outcomes
   await button.click();
-  
+
   if (navigatesTo) {
     await waitForNavigationReliable(page, navigatesTo, { timeout });
   } else if (showsError) {
@@ -487,21 +529,21 @@ export async function waitForJoinStep(
       '.lobby-container'
     ]
   };
-  
+
   const indicators = stepIndicators[expectedStep];
   if (!indicators) {
     throw new Error(`Unknown join step: ${expectedStep}`);
   }
-  
+
   // Wait for at least one indicator of the expected step
-  const promises = indicators.map(selector => 
+  const promises = indicators.map(selector =>
     page.locator(selector).first().waitFor({ state: 'visible', timeout })
       .catch(() => null) // Don't fail immediately, try other selectors
   );
-  
+
   const results = await Promise.allSettled(promises);
   const hasSuccess = results.some(result => result.status === 'fulfilled');
-  
+
   if (!hasSuccess) {
     throw new Error(`Failed to detect join step "${expectedStep}". Expected one of: ${indicators.join(', ')}`);
   }
@@ -518,7 +560,7 @@ export function generateTestIds(testName: string) {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(7);
   const prefix = testName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-  
+
   return {
     gameId: `test_${prefix}_${timestamp}_${random}`,
     playerName: `Player_${timestamp}_${random}`,
@@ -534,32 +576,32 @@ export function generateTestIds(testName: string) {
  * @returns Promise with game data
  */
 export async function createIsolatedGame(
-  page: Page, 
+  page: Page,
   options: {
     gameMasterName?: string;
     victoryConditionMP?: number;
     players?: Array<{ name: string; pin?: string; role?: string }>;
   } = {}
 ): Promise<{ roomCode: string; gameId: string; players: any[] }> {
-  const { 
+  const {
     gameMasterName = `GM_${Date.now()}`,
     victoryConditionMP = 100,
     players = []
   } = options;
-  
+
   // Create game via API
   const createResponse = await page.request.post('http://localhost:3000/api/game/create', {
     data: { victoryConditionMP }
   });
-  
+
   if (!createResponse.ok()) {
     throw new Error(`Failed to create game: ${createResponse.status()}`);
   }
-  
+
   const gameData = await createResponse.json();
   const roomCode = gameData.roomCode;
   const gameId = gameData.gameId;
-  
+
   // Create GM player
   const gmResponse = await page.request.post('http://localhost:3000/api/player/join', {
     data: {
@@ -568,13 +610,13 @@ export async function createIsolatedGame(
       pin: '1234'
     }
   });
-  
+
   if (!gmResponse.ok()) {
     throw new Error(`Failed to create GM: ${gmResponse.status()}`);
   }
-  
+
   const createdPlayers = [await gmResponse.json()];
-  
+
   // Create additional players if specified
   for (const player of players) {
     const playerResponse = await page.request.post('http://localhost:3000/api/player/join', {
@@ -584,12 +626,12 @@ export async function createIsolatedGame(
         pin: player.pin || '5555',
       }
     });
-    
+
     if (playerResponse.ok()) {
       createdPlayers.push(await playerResponse.json());
     }
   }
-  
+
   return {
     roomCode,
     gameId,
@@ -629,7 +671,7 @@ export async function setupGameScenario(
   conflictName?: string;
 }> {
   const testIds = generateTestIds(`scenario_${scenario}`);
-  
+
   switch (scenario) {
     case 'name-conflict': {
       const gameData = await createIsolatedGame(page, {
@@ -638,13 +680,13 @@ export async function setupGameScenario(
           { name: 'ConflictUser', pin: '5555' }
         ]
       });
-      
+
       return {
         ...gameData,
         conflictName: 'ConflictUser'
       };
     }
-    
+
     case 'multi-player': {
       return createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
@@ -655,7 +697,7 @@ export async function setupGameScenario(
         ]
       });
     }
-    
+
     case 'pin-verification': {
       return createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
@@ -664,7 +706,7 @@ export async function setupGameScenario(
         ]
       });
     }
-    
+
     case 'fresh-game':
     default: {
       return createIsolatedGame(page, {
@@ -682,25 +724,25 @@ export async function setupGameScenario(
  * @returns Promise<void>
  */
 export async function waitForLobbyLoaded(
-  page: Page, 
+  page: Page,
   expectedRoomCode?: string,
   timeout = 10000
 ): Promise<void> {
   // Wait for lobby URL
   await expect(page).toHaveURL(/\/lobby\//, { timeout });
-  
+
   // Wait for lobby heading
   await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible({ timeout });
-  
+
   // Wait for room code display
   const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
   await expect(roomCodeButton).toBeVisible({ timeout });
-  
+
   // Verify specific room code if provided
   if (expectedRoomCode) {
     await expect(roomCodeButton.locator('p')).toContainText(expectedRoomCode, { timeout });
   }
-  
+
   // Wait for players list to be visible (even if empty)
   await expect(page.locator('.md-sys-color-on-surface').first()).toBeVisible({ timeout });
 }
@@ -713,22 +755,22 @@ export async function waitForLobbyLoaded(
  */
 export function createTestIsolation(page: Page, testName: string) {
   let gameData: { gameId: string; roomCode: string } | null = null;
-  
+
   const setup = async (scenario: Parameters<typeof setupGameScenario>[1] = 'fresh-game') => {
     // Clear any existing session
     await clearStorage(page);
-    
+
     // Setup game scenario
     gameData = await setupGameScenario(page, scenario);
-    
+
     return gameData;
   };
-  
+
   const cleanup = async () => {
     if (gameData?.gameId) {
       await cleanupGame(page, gameData.gameId);
     }
-    
+
     // Navigate to a valid page before clearing storage
     try {
       await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 5000 });
@@ -736,10 +778,10 @@ export function createTestIsolation(page: Page, testName: string) {
       // Navigation failed, but continue with cleanup
       console.warn('Navigation failed during cleanup:', error);
     }
-    
+
     // Clear session
     await clearStorage(page);
   };
-  
+
   return { setup, cleanup };
 }

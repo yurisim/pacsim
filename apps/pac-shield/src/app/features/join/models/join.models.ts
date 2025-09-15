@@ -10,6 +10,7 @@ export enum JoinStep {
 export interface AccountFormValue {
   gameId: string;
   playerName: string;
+  pin?: string;
 }
 
 export interface PinFormValue {
@@ -18,6 +19,7 @@ export interface PinFormValue {
 
 export interface NewPersonFormValue {
   newPlayerName: string;
+  pin: string;
 }
 
 export type RoomValidationStatus = 'idle' | 'pending' | 'valid' | 'invalid';
@@ -54,6 +56,8 @@ export interface JoinViewModel {
   step: JoinStep;
   room: RoomStatus;
   nameCheck: NameCheckState;
+  // For Account step rendering: whether the typed name is available (controls PIN visibility)
+  nameAvailable?: boolean;
   busy: boolean;
   error: string | null;
   jwt: JwtSessionState;

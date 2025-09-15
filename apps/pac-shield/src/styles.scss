@@ -5,6 +5,9 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
+// Include Angular Material core styles - required for all Material components
+@include mat.core();
+
 @tailwind components;
 @tailwind utilities;
 

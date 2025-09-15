@@ -34,9 +34,11 @@
               [roomStatus]="vm.room"
               [canSubmit]="vm.canSubmitAccount"
               [isBusy]="vm.busy"
+              [nameAvailable]="vm.nameAvailable"
               (roomCodeComplete)="facade.validateRoom($event)"
               (playerNameChanged)="facade.updateAccountDraft({ playerName: $event })"
-              (submitted)="facade.join($event.gameId, $event.playerName)"
+              (nameAvailabilityRequested)="facade.checkNewName(vm.room.code || vm.accountForm.gameId, $event)"
+              (submitted)="facade.join($event.gameId, $event.playerName, $event.pin)"
             ></app-account-room-form>
 
             <app-error-alert
@@ -69,7 +71,7 @@
               [isBusy]="vm.busy"
               (backClicked)="facade.resetConflictFlow()"
               (checkAvailability)="facade.checkNewName(vm.room.code || vm.accountForm.gameId, $event)"
-              (createNew)="facade.createNewPlayer(vm.room.code || vm.accountForm.gameId, $event)"
+              (createNew)="facade.createNewPlayer(vm.room.code || vm.accountForm.gameId, $event.name, $event.pin)"
             ></app-new-person-form>
 
             <app-error-alert

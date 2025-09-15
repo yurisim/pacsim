@@ -8,9 +8,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { NewPersonFormValue, NameCheckState } from '../../models/join.models';
 import { mapFieldError } from '../../utils/error-presenter';
+import { pinValidator } from '../../validators/pin.validator';
+import { InputOtpComponent } from '../../../../shared/components/input-otp/input-otp.component';
 
 type NewPersonForm = FormGroup<{
   newPlayerName: FormControl<string>;
+  pin: FormControl<string>;
 }>;
 
 @Component({
@@ -24,6 +27,7 @@ type NewPersonForm = FormGroup<{
     MatIconModule,
     MatProgressSpinnerModule,
     MatButtonModule,
+    InputOtpComponent,
   ],
   templateUrl: './new-person-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,16 +47,17 @@ type NewPersonForm = FormGroup<{
 export class NewPersonFormComponent implements OnChanges {
   private fb = inject(FormBuilder).nonNullable;
 
-  @Input({ required: true }) value: NewPersonFormValue = { newPlayerName: '' };
+  @Input({ required: true }) value: NewPersonFormValue = { newPlayerName: '', pin: '' };
   @Input({ required: true }) nameCheck: NameCheckState = { pending: false, available: null, error: null };
   @Input() isBusy = false;
 
   @Output() backClicked = new EventEmitter<void>();
   @Output() checkAvailability = new EventEmitter<string>();
-  @Output() createNew = new EventEmitter<string>();
+  @Output() createNew = new EventEmitter<{ name: string; pin: string }>();
 
   form: NewPersonForm = this.fb.group({
     newPlayerName: this.fb.control('', { validators: [Validators.required, Validators.minLength(2)] }),
+    pin: this.fb.control('', { validators: [pinValidator(4)] }),
   });
 
   /**
@@ -69,7 +74,10 @@ export class NewPersonFormComponent implements OnChanges {
    */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['value'] && this.value) {
-      this.form.patchValue({ newPlayerName: this.value.newPlayerName ?? '' }, { emitEvent: false });
+      this.form.patchValue(
+        { newPlayerName: this.value.newPlayerName ?? '', pin: this.value.pin ?? '' },
+        { emitEvent: false }
+      );
     }
   }
 
@@ -105,8 +113,9 @@ export class NewPersonFormComponent implements OnChanges {
    */
   onCreate(): void {
     const name = (this.form.controls.newPlayerName.value || '').trim();
-    if (name && this.nameCheck.available === true) {
-      this.createNew.emit(name);
+    const pin = (this.form.controls.pin.value || '').trim();
+    if (name && this.nameCheck.available === true && this.form.controls.pin.valid) {
+      this.createNew.emit({ name, pin });
     }
   }
 
@@ -123,7 +132,7 @@ export class NewPersonFormComponent implements OnChanges {
   }
 
   get disabledCreate(): boolean {
-    return this.isBusy || this.nameCheck.available !== true;
+    return this.isBusy || this.nameCheck.available !== true || this.form.controls.pin.invalid;
   }
 
   fieldError(ctrl: FormControl): string | null {
