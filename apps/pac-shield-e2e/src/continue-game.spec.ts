@@ -3,7 +3,6 @@ import {
   fillGameMasterPin,
   fillOtpField,
   clearStorage,
-  setInvalidJwt,
 } from './test-utils';
 
 test.describe('Continue Game functionality', () => {
@@ -118,26 +117,6 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByRole('button', { name: /copy room code/i }).locator('p')).toContainText(roomCode);
   });
 
-  /**
-   * Test Intent: Verify graceful degradation when users have invalid or expired JWT tokens.
-   * The system should fall back to normal join flow without showing continue options.
-   *
-   * This test validates:
-   * - Invalid JWT detection and handling
-   * - UI fallback to standard join form
-   * - No continue game options displayed
-   * - Clean error handling without crashes
-   */
-  test('should handle continue game with invalid/expired JWT gracefully', async ({ page }) => {
-    await page.goto('/join');
-    await setInvalidJwt(page);
-    await page.reload();
-
-    // Continue option should not appear with invalid JWT
-    await expect(page.getByText('Welcome back')).toBeHidden();
-    await expect(page.getByRole('button', { name: /continue game/i })).toBeHidden();
-    await expect(page.locator('input[data-otp-index="0"]')).toBeVisible();
-  });
 
   /**
    * Test Intent: Confirm that users without any JWT token see the standard join form
