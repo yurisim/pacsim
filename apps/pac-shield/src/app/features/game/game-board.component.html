@@ -13,7 +13,6 @@
     [activeFosIds]="activeFosIds"
   ></app-location-markers>
 
-
   <!-- Loading overlay -->
   @if (isLoading$ | async) {
   <div
@@ -44,10 +43,11 @@
   <div class="absolute top-2 right-2 z-[90] pointer-events-none">
     <div class="pointer-events-auto">
       <app-game-stats
-        [currentGameId]="(gameId$ | async)"
-        [currentUserTeam]="(currentUserTeam$ | async)"
-        [currentUserRole]="(currentUserRole$ | async)"
-        [loadDemoData]="true">
+        [currentGameId]="gameId$ | async"
+        [currentUserTeam]="currentUserTeam$ | async"
+        [currentUserRole]="currentUserRole$ | async"
+        [loadDemoData]="true"
+      >
       </app-game-stats>
     </div>
   </div>
@@ -67,7 +67,6 @@
       [isGameMaster]="isGameMaster"
       (actionClicked)="onLocationAction($event)"
       (fosStatusChanged)="onFosStatusChanged($event)"
-      [collapsed]="false"
     >
     </app-location-panel>
   </div>
