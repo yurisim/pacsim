@@ -1,199 +1,251 @@
 <!-- Location Panel Widget -->
-<div class="location-panel md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2">
+<div
+  class="location-panel md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2"
+>
   <!-- Header with selected hex info -->
   <div class="panel-header flex items-center justify-between p-3 pb-2 shrink-0">
     <div class="flex items-center gap-2">
       <mat-icon class="md-sys-color-primary text-2xl">location_on</mat-icon>
       <div>
         <div class="md-typescale-title-small font-medium">Location</div>
-        <div class="md-typescale-body-small md-sys-color-on-surface-variant text-sm">
+        <div
+          class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
+        >
           {{ selectedHex || 'No hex selected' }}
         </div>
       </div>
     </div>
-    <button 
-      mat-icon-button 
+    <button
+      mat-icon-button
       (click)="toggleCollapsed()"
       [matTooltip]="collapsed ? 'Expand' : 'Collapse'"
-      class="collapse-toggle w-8 h-8">
+      class="collapse-toggle w-8 h-8"
+    >
       <mat-icon>{{ collapsed ? 'expand_less' : 'expand_more' }}</mat-icon>
     </button>
   </div>
 
   @if (!collapsed && hasAssets) {
-    <mat-divider></mat-divider>
-    
-    <!-- Dynamic tabbed interface based on available asset types -->
-    <mat-tab-group class="asset-tabs">
-      <!-- MOB Tab (only shown if MOBs exist) -->
-      @if (mobAssets.length > 0) {
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <span>MOB</span>
-          </ng-template>
-          <div class="tab-content p-3 overflow-y-auto max-h-[350px]">
-            <!-- Asset selector buttons if multiple MOBs -->
-            @if (mobAssets.length > 1) {
-              <div class="asset-selector flex gap-2 flex-wrap mb-2">
-                @for (asset of mobAssets; track asset.id) {
-                  <button 
-                    mat-button
-                    [class.selected]="selectedMobAsset?.id === asset.id"
-                    (click)="selectMobAsset(asset)"
-                    class="asset-select-btn px-3 py-1.5 rounded-full">
-                    {{ asset.name }}
-                  </button>
-                }
-              </div>
-              <mat-divider class="my-2"></mat-divider>
-            }
-            
-            <!-- Selected MOB content -->
-            @if (selectedMobAsset) {
-              <div class="asset-section mb-4">
-                <div class="asset-header flex items-center gap-3 mb-3">
-                  <mat-icon class="md-sys-color-primary text-[28px]" style="width: 28px; height: 28px;">home</mat-icon>
-                  <div>
-                    <div class="md-typescale-label-medium font-medium">{{ selectedMobAsset.name }}</div>
-                    <div class="md-typescale-body-small md-sys-color-on-surface-variant text-sm">{{ selectedMobAsset.status }}</div>
-                  </div>
-                </div>
-                <div class="action-grid">
-                  @for (action of selectedMobAsset.actions; track action.id) {
-                    <button
-                      mat-raised-button
-                      [color]="action.color"
-                      [disabled]="action.disabled"
-                      [matTooltip]="action.tooltip || action.label"
-                      (click)="onActionClick(action, selectedMobAsset)"
-                      class="action-btn">
-                      <mat-icon>{{ action.icon }}</mat-icon>
-                      <span>{{ action.label }}</span>
-                    </button>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-        </mat-tab>
-      }
+  <!-- <mat-divider></mat-divider> -->
 
-      <!-- FOS Tab (only shown if FOSs exist) -->
-      @if (fosAssets.length > 0) {
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <span>FOS</span>
-          </ng-template>
-          <div class="tab-content p-3 overflow-y-auto max-h-[350px]">
-            <!-- Asset selector buttons if multiple FOSs -->
-            @if (fosAssets.length > 1) {
-              <div class="asset-selector flex gap-2 flex-wrap mb-2">
-                @for (asset of fosAssets; track asset.id) {
-                  <button 
-                    mat-button
-                    [class.selected]="selectedFosAsset?.id === asset.id"
-                    (click)="selectFosAsset(asset)"
-                    class="asset-select-btn px-3 py-1.5 rounded-full">
-                    {{ asset.name }}
-                  </button>
-                }
-              </div>
-              <mat-divider class="my-2"></mat-divider>
-            }
-            
-            <!-- Selected FOS content -->
-            @if (selectedFosAsset) {
-              <div class="asset-section mb-4">
-                <div class="asset-header flex items-center gap-3 mb-3">
-                  <mat-icon class="md-sys-color-accent text-[28px]" style="width: 28px; height: 28px;">festival</mat-icon>
-                  <div>
-                    <div class="md-typescale-label-medium font-medium">{{ selectedFosAsset.name }}</div>
-                    <div class="md-typescale-body-small md-sys-color-on-surface-variant text-sm">{{ selectedFosAsset.status }}</div>
-                  </div>
-                </div>
-                <div class="action-grid">
-                  @for (action of selectedFosAsset.actions; track action.id) {
-                    <button
-                      mat-raised-button
-                      [color]="action.color"
-                      [disabled]="action.disabled"
-                      [matTooltip]="action.tooltip || action.label"
-                      (click)="onActionClick(action, selectedFosAsset)"
-                      class="action-btn">
-                      <mat-icon>{{ action.icon }}</mat-icon>
-                      <span>{{ action.label }}</span>
-                    </button>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-        </mat-tab>
-      }
+  <!-- Dynamic tabbed interface based on available asset types -->
+  <mat-tab-group class="asset-tabs">
+    <!-- MOB Tab (only shown if MOBs exist) -->
+    @if (mobAssets.length > 0) {
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span>MOB</span>
+      </ng-template>
+      <div class="tab-content p-3 overflow-y-auto max-h-[350px]">
+        <!-- Asset selector buttons if multiple MOBs -->
+        @if (mobAssets.length > 1) {
+        <div class="asset-selector flex gap-2 flex-wrap mb-2">
+          @for (asset of mobAssets; track asset.id) {
+          <button
+            mat-button
+            [class.selected]="selectedMobAsset?.id === asset.id"
+            (click)="selectMobAsset(asset)"
+            class="asset-select-btn px-3 py-1.5 rounded-full"
+          >
+            {{ asset.name }}
+          </button>
+          }
+        </div>
+        <mat-divider class="my-2"></mat-divider>
+        }
 
-      <!-- Planes Tab (only shown if planes exist) -->
-      @if (planeAssets.length > 0) {
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <span>PLANES</span>
-          </ng-template>
-          <div class="tab-content p-3 overflow-y-auto max-h-[350px]">
-            <!-- Asset selector buttons if multiple planes -->
-            @if (planeAssets.length > 1) {
-              <div class="asset-selector flex gap-2 flex-wrap mb-2">
-                @for (asset of planeAssets; track asset.id) {
-                  <button 
-                    mat-button
-                    [class.selected]="selectedPlaneAsset?.id === asset.id"
-                    (click)="selectPlaneAsset(asset)"
-                    class="asset-select-btn px-3 py-1.5 rounded-full">
-                    {{ asset.name }}
-                  </button>
-                }
+        <!-- Selected MOB content -->
+        @if (selectedMobAsset) {
+        <div class="asset-section mb-4">
+          <div class="asset-header flex items-center gap-3 mb-3">
+            <mat-icon
+              class="md-sys-color-primary text-[28px]"
+              style="width: 28px; height: 28px"
+              >home</mat-icon
+            >
+            <div>
+              <div class="md-typescale-label-medium font-medium">
+                {{ selectedMobAsset.name }}
               </div>
-              <mat-divider class="my-2"></mat-divider>
-            }
-            
-            <!-- Selected plane content -->
-            @if (selectedPlaneAsset) {
-              <div class="asset-section mb-4">
-                <div class="asset-header flex items-center gap-3 mb-3">
-                  <mat-icon class="md-sys-color-tertiary text-[28px]" style="width: 28px; height: 28px;">flight</mat-icon>
-                  <div>
-                    <div class="md-typescale-label-medium font-medium">{{ selectedPlaneAsset.name }}</div>
-                    <div class="md-typescale-body-small md-sys-color-on-surface-variant text-sm">{{ selectedPlaneAsset.status }}</div>
-                  </div>
-                </div>
-                <div class="action-grid">
-                  @for (action of selectedPlaneAsset.actions; track action.id) {
-                    <button
-                      mat-raised-button
-                      [color]="action.color"
-                      [disabled]="action.disabled"
-                      [matTooltip]="action.tooltip || action.label"
-                      (click)="onActionClick(action, selectedPlaneAsset)"
-                      class="action-btn">
-                      <mat-icon>{{ action.icon }}</mat-icon>
-                      <span>{{ action.label }}</span>
-                    </button>
-                  }
-                </div>
+              <div
+                class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
+              >
+                {{ selectedMobAsset.status }}
               </div>
+            </div>
+          </div>
+          <div class="action-grid">
+            @for (action of selectedMobAsset.actions; track action.id) {
+            <button
+              mat-raised-button
+              [color]="action.color"
+              [disabled]="action.disabled"
+              [matTooltip]="action.tooltip || action.label"
+              (click)="onActionClick(action, selectedMobAsset)"
+              class="action-btn"
+            >
+              <mat-icon>{{ action.icon }}</mat-icon>
+              <span>{{ action.label }}</span>
+            </button>
             }
           </div>
-        </mat-tab>
-      }
-    </mat-tab-group>
+        </div>
+        }
+      </div>
+    </mat-tab>
+    }
+
+    <!-- FOS Tab (only shown if FOSs exist) -->
+    @if (fosAssets.length > 0) {
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span>FOS</span>
+      </ng-template>
+      <div class="tab-content p-3 overflow-y-auto max-h-[350px]">
+        <!-- Asset selector buttons if multiple FOSs -->
+        @if (fosAssets.length > 1) {
+        <div class="asset-selector flex gap-2 flex-wrap mb-2">
+          @for (asset of fosAssets; track asset.id) {
+          <button
+            mat-button
+            [class.selected]="selectedFosAsset?.id === asset.id"
+            (click)="selectFosAsset(asset)"
+            class="asset-select-btn px-3 py-1.5 rounded-full"
+          >
+            {{ asset.name }}
+          </button>
+          }
+        </div>
+        <mat-divider class="my-2"></mat-divider>
+        }
+
+        <!-- Selected FOS content -->
+        @if (selectedFosAsset) {
+        <div class="asset-section mb-4">
+          <div class="asset-header flex items-center gap-3 mb-3">
+            <mat-icon
+              class="md-sys-color-accent text-[28px]"
+              style="width: 28px; height: 28px"
+              >festival</mat-icon
+            >
+            <div>
+              <div class="md-typescale-label-medium font-medium">
+                {{ selectedFosAsset.name }}
+              </div>
+              <div
+                class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
+              >
+                {{ selectedFosAsset.status }}
+              </div>
+            </div>
+          </div>
+          <div class="action-grid">
+            @for (action of selectedFosAsset.actions; track action.id) {
+            <button
+              mat-raised-button
+              [color]="action.color"
+              [disabled]="action.disabled"
+              [matTooltip]="action.tooltip || action.label"
+              (click)="onActionClick(action, selectedFosAsset)"
+              class="action-btn"
+            >
+              <mat-icon>{{ action.icon }}</mat-icon>
+              <span>{{ action.label }}</span>
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </mat-tab>
+    }
+
+    <!-- Planes Tab (only shown if planes exist) -->
+    @if (planeAssets.length > 0) {
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span>PLANES</span>
+      </ng-template>
+      <div class="tab-content p-3 overflow-y-auto max-h-[350px]">
+        <!-- Asset selector buttons if multiple planes -->
+        @if (planeAssets.length > 1) {
+        <div class="asset-selector flex gap-2 flex-wrap mb-2">
+          @for (asset of planeAssets; track asset.id) {
+          <button
+            mat-button
+            [class.selected]="selectedPlaneAsset?.id === asset.id"
+            (click)="selectPlaneAsset(asset)"
+            class="asset-select-btn px-3 py-1.5 rounded-full"
+          >
+            {{ asset.name }}
+          </button>
+          }
+        </div>
+        <mat-divider class="my-2"></mat-divider>
+        }
+
+        <!-- Selected plane content -->
+        @if (selectedPlaneAsset) {
+        <div class="asset-section mb-4">
+          <div class="asset-header flex items-center gap-3 mb-3">
+            <mat-icon
+              class="md-sys-color-tertiary text-[28px]"
+              style="width: 28px; height: 28px"
+              >flight</mat-icon
+            >
+            <div>
+              <div class="md-typescale-label-medium font-medium">
+                {{ selectedPlaneAsset.name }}
+              </div>
+              <div
+                class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
+              >
+                {{ selectedPlaneAsset.status }}
+              </div>
+            </div>
+          </div>
+          <div class="action-grid">
+            @for (action of selectedPlaneAsset.actions; track action.id) {
+            <button
+              mat-raised-button
+              [color]="action.color"
+              [disabled]="action.disabled"
+              [matTooltip]="action.tooltip || action.label"
+              (click)="onActionClick(action, selectedPlaneAsset)"
+              class="action-btn"
+            >
+              <mat-icon>{{ action.icon }}</mat-icon>
+              <span>{{ action.label }}</span>
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </mat-tab>
+    }
+  </mat-tab-group>
   } @else if (!collapsed && !hasAssets) {
-    <!-- Empty state when no assets on hex -->
-    <div class="empty-hex-state flex flex-col items-center justify-center p-8 text-center">
-      <mat-icon class="md-sys-color-on-surface-variant text-5xl opacity-50 mb-2" style="font-size: 48px; width: 48px; height: 48px;">explore_off</mat-icon>
-      <p class="md-typescale-body-medium md-sys-color-on-surface-variant">No assets on this hex</p>
-    </div>
+  <!-- Empty state when no assets on hex -->
+  <div
+    class="empty-hex-state flex flex-col items-center justify-center p-8 text-center"
+  >
+    <mat-icon
+      class="md-sys-color-on-surface-variant text-5xl opacity-50 mb-2"
+      style="font-size: 48px; width: 48px; height: 48px"
+      >explore_off</mat-icon
+    >
+    <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
+      No assets on this hex
+    </p>
+  </div>
   } @else {
-    <!-- Collapsed view - just show summary -->
-    <div class="collapsed-summary p-2 md-typescale-body-small md-sys-color-on-surface-variant text-center text-sm">
-      MOB: {{ mobAssets.length }} | FOS: {{ fosAssets.length }} | Planes: {{ planeAssets.length }}
-    </div>
+  <!-- Collapsed view - just show summary -->
+  <div
+    class="collapsed-summary p-2 md-typescale-body-small md-sys-color-on-surface-variant text-center text-sm"
+  >
+    MOB: {{ mobAssets.length }} | FOS: {{ fosAssets.length }} | Planes:
+    {{ planeAssets.length }}
+  </div>
   }
 </div>
