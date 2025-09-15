@@ -75,10 +75,10 @@ export class LocationPanelComponent implements OnChanges {
   @Input() fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID
   @Input() currentPlayerMob: string | null = null; // Current player's MOB
   @Input() isGameMaster = false; // Whether current player is GM
-  @Input() collapsed = false;
-  @Output() actionClicked = new EventEmitter<{action: AssetAction, asset: TileAsset}>();
+  @Input() collapsed = true;
+  @Output() actionClicked = new EventEmitter<{ action: AssetAction, asset: TileAsset }>();
   @Output() collapsedChange = new EventEmitter<boolean>();
-  @Output() fosStatusChanged = new EventEmitter<{fosId: string, isActive: boolean, teamId?: number}>();
+  @Output() fosStatusChanged = new EventEmitter<{ fosId: string, isActive: boolean, teamId?: number }>();
 
   private gameStatsService = inject(GameStatsService);
   private fosService = inject(FosService);

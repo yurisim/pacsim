@@ -58,7 +58,7 @@ export class GameStatsComponent implements OnInit {
   @Input() currentGameId: number | null = null;
   @Input() currentUserTeam: TeamType | null = null;
   @Input() currentUserRole: PlayerRole | null = null;
-  @Input() collapsed = false;
+  @Input() collapsed = true;
   @Output() collapsedChange = new EventEmitter<boolean>();
 
   navService = inject(ResponsiveNavService);
