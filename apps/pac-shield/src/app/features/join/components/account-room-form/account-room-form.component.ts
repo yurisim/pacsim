@@ -11,10 +11,15 @@ import { mapFieldError } from '../../utils/error-presenter';
 import { RoomCodeFieldComponent } from '../room-code-field/room-code-field.component';
 import { StatusBannerComponent } from '../status-banner/status-banner.component';
 import { AccountSelectorComponent } from '../account-selector/account-selector.component';
+import { pinValidator } from '../../validators/pin.validator';
+import { InputOtpComponent } from '../../../../shared/components/input-otp/input-otp.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs/operators';
 
 type AccountForm = FormGroup<{
   gameId: FormControl<string>;
   playerName: FormControl<string>;
+  pin: FormControl<string>;
 }>;
 
 @Component({
@@ -30,6 +35,7 @@ type AccountForm = FormGroup<{
     RoomCodeFieldComponent,
     StatusBannerComponent,
     AccountSelectorComponent,
+    InputOtpComponent,
   ],
   templateUrl: './account-room-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,16 +60,37 @@ export class AccountRoomFormComponent implements OnChanges {
   @Input({ required: true }) roomStatus: RoomStatus = { status: 'idle', message: null, code: '' };
   @Input() canSubmit = false;
   @Input() isBusy = false;
+  // Controls PIN visibility and helper messaging when name is checked/available
+  @Input() nameAvailable?: boolean;
 
   @Output() roomCodeChanged = new EventEmitter<string>();
   @Output() roomCodeComplete = new EventEmitter<string>();
   @Output() playerNameChanged = new EventEmitter<string>();
+  // Debounced availability request emitted when room is valid and name length >= 2
+  @Output() nameAvailabilityRequested = new EventEmitter<string>();
   @Output() submitted = new EventEmitter<AccountFormValue>();
 
   form: AccountForm = this.fb.group({
     gameId: this.fb.control('', { validators: [roomCodeValidator(6)] }),
     playerName: this.fb.control('', { validators: [Validators.required] }),
+    // Required PIN for securing name
+    pin: this.fb.control('', { validators: [Validators.required, pinValidator(4)] }),
   });
+
+  constructor() {
+    // Debounced name changes for availability check
+    this.form.controls.playerName.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        map((v) => (v || '').toString().trim()),
+        filter((name) => this.isRoomValid && name.length >= 2),
+        takeUntilDestroyed()
+      )
+      .subscribe((name) => {
+        this.nameAvailabilityRequested.emit(name);
+      });
+  }
 
   /**
    * Method Intent: Handle input property changes to synchronize form values
@@ -81,7 +108,7 @@ export class AccountRoomFormComponent implements OnChanges {
     if (changes['value'] && this.value) {
       const v = this.value;
       // Avoid emitting when patching inputs from parent
-      this.form.patchValue({ gameId: v.gameId ?? '', playerName: v.playerName ?? '' }, { emitEvent: false });
+      this.form.patchValue({ gameId: v.gameId ?? '', playerName: v.playerName ?? '', pin: v.pin ?? '' }, { emitEvent: false });
     }
   }
 
@@ -128,9 +155,19 @@ export class AccountRoomFormComponent implements OnChanges {
    * - Type-safe data transformation for parent consumption
    */
   onSubmit(): void {
-    if (this.form.valid) {
+    const gameIdCtrl = this.form.controls.gameId;
+    const playerNameCtrl = this.form.controls.playerName;
+    const pinCtrl = this.form.controls.pin;
+
+    // Require room+name+pin to all be valid before submit.
+    if (gameIdCtrl.valid && playerNameCtrl.valid && pinCtrl.valid) {
       const val = this.form.getRawValue();
-      this.submitted.emit({ gameId: val.gameId, playerName: val.playerName });
+      const pin = (val.pin || '').trim();
+      this.submitted.emit({
+        gameId: val.gameId,
+        playerName: val.playerName,
+        pin,
+      });
     }
   }
 
