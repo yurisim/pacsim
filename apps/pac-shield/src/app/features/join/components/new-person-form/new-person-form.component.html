@@ -1,4 +1,27 @@
-<form [formGroup]="form" class="flex flex-col gap-4 w-full max-w-md mx-auto" novalidate (submit)="$event.preventDefault()" (keydown.enter)="$event.preventDefault()">
+<form
+  [formGroup]="form"
+  class="flex flex-col gap-4 w-full max-w-md mx-auto"
+  novalidate
+  (submit)="$event.preventDefault()"
+  (keydown.enter)="$event.preventDefault()"
+>
+  <div aria-live="polite" class="text-center mt-3">
+    <div
+      *ngIf="showUnavailable"
+      class="md-sys-color-error md-typescale-body-small"
+      data-testid="name-unavailable"
+    >
+      This name is already taken. Please choose another one.
+    </div>
+    <div
+      *ngIf="nameCheck.error"
+      class="md-sys-color-error md-typescale-body-small"
+      data-testid="name-check-error"
+    >
+      {{ nameCheck.error }}
+    </div>
+  </div>
+
   <mat-form-field appearance="outline" class="w-full">
     <mat-label>New Player Name</mat-label>
     <mat-icon matPrefix aria-hidden="true">person</mat-icon>
@@ -11,7 +34,26 @@
     />
   </mat-form-field>
 
-  <div class="flex gap-2 items-center justify-center">
+  <!-- Required PIN for new person -->
+  <div class="flex flex-col items-center gap-2">
+    <div>Create a new 4-digit PIN</div>
+    <app-input-otp
+      [length]="4"
+      [integerOnly]="true"
+      formControlName="pin"
+      aria-label="4-digit PIN"
+      data-testid="new-person-pin-otp"
+    ></app-input-otp>
+
+    <div
+      *ngIf="form.controls.pin.touched && form.controls.pin.invalid"
+      class="md-sys-color-error md-typescale-body-small text-center"
+      role="alert"
+    >
+      {{ fieldError(form.controls.pin) }}
+    </div>
+  </div>
+  <div class="flex gap-2 items-center justify-center mt-4">
     <button
       matButton="outlined"
       color="primary"
@@ -33,36 +75,12 @@
       role="status"
     ></mat-progress-spinner>
   </div>
-
-  <div aria-live="polite" class="text-center">
-    <div *ngIf="showAvailable" class="md-sys-color-secondary md-typescale-body-small" data-testid="name-available">
-      This name is available!
-    </div>
-    <div *ngIf="showUnavailable" class="md-sys-color-error md-typescale-body-small" data-testid="name-unavailable">
-      This name is already taken. Please choose another one.
-    </div>
-    <div *ngIf="nameCheck.error" class="md-sys-color-error md-typescale-body-small" data-testid="name-check-error">
-      {{ nameCheck.error }}
-    </div>
-  </div>
-
-  <!-- Required PIN for new person -->
-  <div class="flex flex-col items-center gap-2 mt-2">
-    <app-input-otp
-      [length]="4"
-      [integerOnly]="true"
-      formControlName="pin"
-      aria-label="4-digit PIN"
-      data-testid="new-person-pin-otp"
-    ></app-input-otp>
-
-    <div
-      *ngIf="form.controls.pin.touched && form.controls.pin.invalid"
-      class="md-sys-color-error md-typescale-body-small text-center"
-      role="alert"
-    >
-      {{ fieldError(form.controls.pin) }}
-    </div>
+  <div
+    *ngIf="showAvailable"
+    class="md-sys-color-secondary md-typescale-body-small text-center"
+    data-testid="name-available"
+  >
+    This name is available!
   </div>
   <div class="flex gap-2 justify-center mt-2">
     <button
