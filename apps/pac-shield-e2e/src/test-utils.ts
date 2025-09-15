@@ -143,6 +143,48 @@ export async function fillVerificationPin(page: Page, pin: string): Promise<void
 }
 
 /**
+ * Fill OTP inputs within a specific OTP component targeted by data-testid.
+ * Example: await fillOtp(page, 'new-person-pin-otp', '1234')
+ */
+export async function fillOtp(page: Page, testId: string, pin: string): Promise<void> {
+  if (!pin || typeof pin !== 'string') {
+    throw new Error('PIN must be a non-empty string');
+  }
+
+  const root = page.getByTestId(testId);
+  await expect(root).toBeVisible();
+
+  for (let i = 0; i < pin.length; i++) {
+    const input = root.locator(`input[data-otp-index="${i}"]`).first();
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
+    await input.clear();
+    await input.fill(pin[i]);
+    await page.waitForTimeout(30);
+  }
+
+  await page.waitForTimeout(100);
+}
+
+/**
+ * Conditionally fill an OTP by data-testid only if the component is visible.
+ * Safe to call when the OTP is optional (e.g., account PIN).
+ * Example: await maybeFillOtpIfVisible(page, 'account-pin-otp', '2468')
+ */
+export async function maybeFillOtpIfVisible(page: Page, testId: string, pin: string): Promise<void> {
+  try {
+    const root = page.getByTestId(testId);
+
+    // If component not present or not visible, skip without error
+    if ((await root.count()) === 0) return;
+    if (!(await root.isVisible())) return;
+
+    await fillOtp(page, testId, pin);
+  } catch {
+    // No-op: treat as optional
+  }
+}
+/**
  * Helper to wait for OTP component to be ready for input
  * @param page - Playwright Page object
  * @param ariaLabel - Optional aria-label to target a specific OTP component
