@@ -61,7 +61,7 @@ export class InputOtpComponent implements ControlValueAccessor {
 
     // Move to next input if value entered and not last input
     if (value && index < this.length - 1) {
-      this.focusNext(index + 1);
+      this.focusNext(index);
     }
 
     // Emit the complete value
@@ -81,7 +81,7 @@ export class InputOtpComponent implements ControlValueAccessor {
     if (event.key === 'Backspace') {
       if (input.value === '' && index > 0) {
         // Move to previous input if current is empty
-        this.focusPrevious(index - 1);
+        this.focusPrevious(index);
       } else {
         // Clear current input
         this.values[index] = '';
@@ -91,10 +91,9 @@ export class InputOtpComponent implements ControlValueAccessor {
     }
     // Handle arrow keys
     else if (event.key === 'ArrowLeft' && index > 0) {
-      this.focusPrevious(index - 1);
-    }
-    else if (event.key === 'ArrowRight' && index < this.length - 1) {
-      this.focusNext(index + 1);
+      this.focusPrevious(index);
+    } else if (event.key === 'ArrowRight' && index < this.length - 1) {
+      this.focusNext(index);
     }
     // Handle paste
     else if (event.key === 'v' && (event.ctrlKey || event.metaKey)) {
@@ -123,17 +122,14 @@ export class InputOtpComponent implements ControlValueAccessor {
       const index = startIndex + i;
       if (index < this.length) {
         this.values[index] = char;
-        const input = this.getInputElement(index);
-        if (input) {
-          input.value = char;
-        }
+        // This is now handled by the values array and Angular's rendering
       }
     });
 
     // Focus on next empty input or last input
     const nextEmptyIndex = this.values.findIndex((val, i) => i >= startIndex && val === '');
     const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : Math.min(startIndex + chars.length, this.length - 1);
-    this.focusNext(focusIndex);
+    this.focusIndex(focusIndex);
 
     const completeValue = this.values.join('');
     this.onChange(completeValue);
@@ -180,14 +176,7 @@ export class InputOtpComponent implements ControlValueAccessor {
       this.values = [...chars, ...new Array(this.length - chars.length).fill('')];
 
       // Update input elements
-      setTimeout(() => {
-        chars.forEach((char, index) => {
-          const input = this.getInputElement(index);
-          if (input) {
-            input.value = char;
-          }
-        });
-      });
+      // No longer need to manually update inputs, Angular handles it via `values`
     } else {
       this.initializeValues();
     }
@@ -218,18 +207,7 @@ export class InputOtpComponent implements ControlValueAccessor {
     this.onChange('');
 
     // Clear all input elements
-    setTimeout(() => {
-      for (let i = 0; i < this.length; i++) {
-        const input = this.getInputElement(i);
-        if (input) {
-          input.value = '';
-        }
-      }
-      // Focus first input
-      const firstInput = this.getInputElement(0);
-      if (firstInput) {
-        firstInput.focus();
-      }
-    });
+    // Angular will clear inputs based on `values` array change. We just need to focus.
+    this.focusFirst();
   }
 }
