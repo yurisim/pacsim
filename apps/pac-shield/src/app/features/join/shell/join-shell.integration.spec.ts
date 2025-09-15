@@ -19,7 +19,7 @@ class MockJoinFacade {
     jwt: { hasValid: false, player: null, gameId: null },
     accountForm: { gameId: '', playerName: '' },
     pinForm: { pin: '' },
-    newPersonForm: { newPlayerName: '' },
+    newPersonForm: { newPlayerName: '', pin: '' },
     canSubmitAccount: false,
     canVerifyPin: true,
     canCreateNewPerson: false,
@@ -82,7 +82,7 @@ describe('JoinShellComponent (integration)', () => {
     });
     fixture.detectChanges();
 
-    const account = fixture.debugElement.query(de => 
+    const account = fixture.debugElement.query(de =>
       de.componentInstance instanceof AccountRoomFormComponent
     )?.componentInstance as AccountRoomFormComponent;
 
@@ -92,9 +92,9 @@ describe('JoinShellComponent (integration)', () => {
     account.roomCodeComplete.emit('ABC123');
     expect(facade.validateRoom).toHaveBeenCalledWith('ABC123');
 
-    // Submit -> join
-    account.submitted.emit({ gameId: 'ABC123', playerName: 'Bob' });
-    expect(facade.join).toHaveBeenCalledWith('ABC123', 'Bob');
+    // Submit -> join (PIN now required and forwarded)
+    account.submitted.emit({ gameId: 'ABC123', playerName: 'Bob', pin: '2468' });
+    expect(facade.join).toHaveBeenCalledWith('ABC123', 'Bob', '2468');
   });
 
   it('conflict path: forwards verifyPin and switchToNewPerson events', () => {
@@ -107,7 +107,7 @@ describe('JoinShellComponent (integration)', () => {
     });
     fixture.detectChanges();
 
-    const conflict = fixture.debugElement.query(de => 
+    const conflict = fixture.debugElement.query(de =>
       de.componentInstance instanceof NameConflictResolveComponent
     )?.componentInstance as NameConflictResolveComponent;
 
@@ -131,7 +131,7 @@ describe('JoinShellComponent (integration)', () => {
     });
     fixture.detectChanges();
 
-    const newPerson = fixture.debugElement.query(de => 
+    const newPerson = fixture.debugElement.query(de =>
       de.componentInstance instanceof NewPersonFormComponent
     )?.componentInstance as NewPersonFormComponent;
 
@@ -140,8 +140,8 @@ describe('JoinShellComponent (integration)', () => {
     newPerson.checkAvailability.emit('NewGuy');
     expect(facade.checkNewName).toHaveBeenCalledWith('ROOM77', 'NewGuy');
 
-    newPerson.createNew.emit('NewGuy');
-    expect(facade.createNewPlayer).toHaveBeenCalledWith('ROOM77', 'NewGuy');
+    newPerson.createNew.emit({ name: 'NewGuy', pin: '2468' });
+    expect(facade.createNewPlayer).toHaveBeenCalledWith('ROOM77', 'NewGuy', '2468');
   });
 
   it('continue session card: forwards continue click', () => {
@@ -151,7 +151,7 @@ describe('JoinShellComponent (integration)', () => {
     });
     fixture.detectChanges();
 
-    const cont = fixture.debugElement.query(de => 
+    const cont = fixture.debugElement.query(de =>
       de.componentInstance instanceof ContinueSessionCardComponent
     )?.componentInstance as ContinueSessionCardComponent;
 

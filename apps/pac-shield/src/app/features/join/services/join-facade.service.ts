@@ -33,7 +33,7 @@ export class JoinFacadeService {
   private readonly jwtSessionSignal = signal<JwtSessionState>({ hasValid: false, player: null, gameId: null });
   private readonly accountFormSignal = signal<AccountFormValue>({ gameId: '', playerName: '' });
   private readonly pinFormSignal = signal<{ pin: string }>({ pin: '' });
-  private readonly newPersonFormSignal = signal<{ newPlayerName: string }>({ newPlayerName: '' });
+  private readonly newPersonFormSignal = signal<{ newPlayerName: string; pin: string }>({ newPlayerName: '', pin: '' });
 
   // Request subjects for coalescing/cancelling (keep these as observables for async operations)
   private readonly roomCodeRequests$ = new Subject<string>();
@@ -58,13 +58,23 @@ export class JoinFacadeService {
       step: this.stepSignal(),
       room: this.roomStatusSignal(),
       nameCheck: this.nameCheckSignal(),
+      // Expose simple boolean for Account step to gate PIN visibility
+      nameAvailable:
+        this.nameCheckSignal().available === true
+          ? true
+          : this.nameCheckSignal().available === false
+          ? false
+          : undefined,
       busy: this.busySignal(),
       error: this.errorSignal(),
       jwt: this.jwtSessionSignal(),
       accountForm,
       pinForm: this.pinFormSignal(),
       newPersonForm: this.newPersonFormSignal(),
-      canSubmitAccount: !this.busySignal() && this.roomStatusSignal().status === 'valid' && !!(accountForm.playerName || '').trim(),
+      canSubmitAccount:
+        !this.busySignal() &&
+        this.roomStatusSignal().status === 'valid' &&
+        !!(accountForm.playerName || '').trim(),
       canVerifyPin: !this.busySignal(),
       canCreateNewPerson: !this.busySignal() && this.nameCheckSignal().available === true,
     };
@@ -81,7 +91,7 @@ export class JoinFacadeService {
     this.jwtSessionSignal.set(initialState.jwt);
     this.accountFormSignal.set(initialState.account ?? { gameId: '', playerName: '' });
     this.pinFormSignal.set({ pin: '' });
-    this.newPersonFormSignal.set({ newPlayerName: '' });
+    this.newPersonFormSignal.set({ newPlayerName: '', pin: '' });
     // Wire room code validation pipeline (latest wins, min spinner time)
     this.roomCodeRequests$
       .pipe(
@@ -147,6 +157,13 @@ export class JoinFacadeService {
         };
         this.nameCheckSignal.set(nameCheck);
         this.errorSignal.set(null);
+
+        // Branch behavior for Account step:
+        // - If duplicate name (available === false), route immediately to NameConflict
+        // - If available, remain on Account step (PIN will be shown by [nameAvailable])
+        if (available === false && this.stepSignal() === JoinStep.AccountRoom) {
+          this.stepSignal.set(JoinStep.NameConflict);
+        }
       });
 
     // Reflect step changes to query param (?step=...) using effect
@@ -179,14 +196,14 @@ export class JoinFacadeService {
     });
   }
 
-  join(gameId: string, playerName: string): void {
+  join(gameId: string, playerName: string, pin?: string): void {
     if (this.busySignal()) return;
     if (this.roomStatusSignal().status !== 'valid') return;
 
     this.patchState({ busy: true, error: null });
 
     this.auth
-      .joinGame(gameId, playerName)
+      .joinGame(gameId, playerName, pin)
       .pipe(
         take(1),
         finalize(() => this.patchState({ busy: false }))
@@ -254,20 +271,35 @@ export class JoinFacadeService {
       });
   }
 
-  checkNewName(roomCode: string, newName: string): void {
+  // Overloaded-style API:
+  // - checkNewName(name) -> uses current room code from state
+  // - checkNewName(roomCode, name) -> explicit room (used by NewPerson flow)
+  checkNewName(arg1: string, arg2?: string): void {
+    const roomCode =
+      arg2 === undefined
+        ? (this.roomStatusSignal().code || this.accountFormSignal().gameId || '').toUpperCase()
+        : (arg1 || '').toUpperCase();
+    const name = (arg2 === undefined ? arg1 : arg2) || '';
+
+    if (!roomCode || !name.trim()) {
+      // Clear pending to avoid misleading "Checking…" when we cannot check
+      this.nameCheckSignal.set({ pending: false, available: null, error: null });
+      return;
+    }
+
     this.nameCheckSignal.set({ pending: true, available: null, error: null });
     this.errorSignal.set(null);
-    this.nameCheckRequests$.next({ roomCode, name: newName });
+    this.nameCheckRequests$.next({ roomCode, name });
   }
 
-  createNewPlayer(roomCode: string, newName: string): void {
+  createNewPlayer(roomCode: string, newName: string, pin: string): void {
     if (this.busySignal()) return;
     if (this.nameCheckSignal().available !== true) return;
 
     this.patchState({ busy: true, error: null });
 
     this.auth
-      .joinGame(roomCode, newName)
+      .joinGame(roomCode, newName, pin)
       .pipe(
         take(1),
         finalize(() => this.patchState({ busy: false }))

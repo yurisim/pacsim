@@ -22,14 +22,13 @@
           Enter your PIN to continue as this player:
         </p>
 
-        <form [formGroup]="pinForm" class="flex flex-col items-center gap-2 w-full" novalidate>
+        <form [formGroup]="pinForm" class="flex flex-col items-center gap-2 w-full" novalidate (submit)="$event.preventDefault()" (keydown.enter)="$event.preventDefault()">
           <div class="mb-4">
             <app-input-otp
               [length]="4"
               [integerOnly]="true"
               formControlName="pin"
               ariaLabel="4-digit PIN"
-              (complete)="onPinComplete($event)"
               data-testid="pin-otp"
             ></app-input-otp>
           </div>
