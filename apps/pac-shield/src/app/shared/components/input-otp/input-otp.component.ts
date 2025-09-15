@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
@@ -19,6 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   ]
 })
 export class InputOtpComponent implements ControlValueAccessor {
+  @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
+
   @Input() length = 4;
   @Input() mask = false;
   @Input() disabled = false;
@@ -142,27 +144,33 @@ export class InputOtpComponent implements ControlValueAccessor {
   }
 
   private focusNext(index: number): void {
-    setTimeout(() => {
-      const input = this.getInputElement(index);
-      if (input) {
-        input.focus();
-        input.select();
-      }
-    });
+    const nextIndex = Math.min(index + 1, this.length - 1);
+    this.focusIndex(nextIndex);
   }
 
   private focusPrevious(index: number): void {
+    const prevIndex = Math.max(index - 1, 0);
+    this.focusIndex(prevIndex);
+  }
+
+  private getInputElement(index: number): HTMLInputElement | null {
+    return this.otpInputs?.toArray()[index]?.nativeElement ?? null;
+  }
+
+  focusIndex(index: number, select = true): void {
     setTimeout(() => {
-      const input = this.getInputElement(index);
-      if (input) {
-        input.focus();
-        input.select();
+      const el = this.getInputElement(index);
+      if (el && !el.disabled) {
+        el.focus();
+        if (select) {
+          el.select();
+        }
       }
     });
   }
 
-  private getInputElement(index: number): HTMLInputElement | null {
-    return document.querySelector(`input[data-otp-index="${index}"]`);
+  focusFirst(): void {
+    this.focusIndex(0);
   }
 
   // ControlValueAccessor implementation

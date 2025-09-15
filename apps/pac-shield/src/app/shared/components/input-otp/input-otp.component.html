@@ -1,5 +1,6 @@
 <div class="otp-container" role="group" [attr.aria-label]="ariaLabel">
   <input
+    #otpInput
     *ngFor="let value of values; let i = index; trackBy: trackByIndex"
     class="otp-input md-sys-bg-surface-container md-sys-color-on-surface"
     [type]="mask ? 'password' : 'text'"
