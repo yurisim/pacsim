@@ -64,15 +64,8 @@ export class RoomCodeFieldComponent implements ControlValueAccessor, AfterViewIn
    * - Preventing focus issues during component lifecycle
    */
   ngAfterViewInit(): void {
-    if (this.autofocus) {
-      // Focus first OTP input after view init
-      setTimeout(() => {
-        const el = document.querySelector('input[data-otp-index="0"]') as HTMLInputElement | null;
-        if (el) {
-          el.focus();
-          el.select();
-        }
-      });
+    if (this.autofocus && this.otp) {
+      queueMicrotask(() => this.otp!.focusFirst());
     }
   }
 
