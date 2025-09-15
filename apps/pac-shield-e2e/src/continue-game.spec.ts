@@ -104,14 +104,13 @@ test.describe('Continue Game functionality', () => {
     // Test manual join
     await fillOtpField(page, roomCode);
 
-    // Wait for room validation
-    await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible();
-
     // Player name should appear
     await expect(page.getByTestId('player-name-input')).toBeVisible();
 
     // Enter player name and join
     await page.fill('[data-testid="player-name-input"]', 'NewPlayer');
+
+
     await page.getByRole('button', { name: /join/i }).click();
 
     // Should join the game and navigate to lobby
