@@ -1,5 +1,5 @@
 import { test, expect, request } from '@playwright/test';
-import { fillRoomCodeOtp, submitFormReliably, getElementReliably } from './test-utils';
+import { fillRoomCodeOtp, submitFormReliably, getElementReliably, fillOtp } from './test-utils';
 
 /**
  * Test Suite: New Player Flow
@@ -65,6 +65,9 @@ test.describe('New Player Flow', () => {
     ]);
     await nameInput.fill('DUPLICATE_NAME');
 
+    // Account step now requires PIN before submitting
+    await fillOtp(page, 'account-pin-otp', '2468');
+
     await submitFormReliably(page, '[data-testid="join-submit-button"]', {
       showsError: 'already exists in this game',
       timeout: 10000
@@ -93,6 +96,9 @@ test.describe('New Player Flow', () => {
     await newPlayerInput.fill(uniqueName);
     await page.getByRole('button', { name: /check name availability/i }).click();
     await expect(page.locator('text=This name is available!')).toBeVisible();
+
+    // Fill required PIN for new person before creating
+    await fillOtp(page, 'new-person-pin-otp', '4321');
 
     // Create the new player
     await submitFormReliably(page, 'button:has-text("Create new player")', {

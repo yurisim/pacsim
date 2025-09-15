@@ -6,6 +6,7 @@ import {
   submitFormReliably,
   waitForNavigationReliable,
   getElementReliably,
+  fillOtp
 } from './test-utils';
 
 test.describe('JWT Integration and Continue Game Flow', () => {
@@ -153,6 +154,10 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode);
     await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible(); // Wait for validation
     await page.fill('input[data-testid="player-name-input"]', 'ConflictUser');
+
+    // Account step now requires PIN before submitting
+    await fillOtp(page, 'account-pin-otp', '2468');
+
     await page.getByTestId('join-submit-button').click();
 
     // Should trigger name conflict since ConflictUser already exists
@@ -210,6 +215,10 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await fillRoomCodeOtp(page, roomCode);
     await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible();
     await page.fill('input[data-testid="player-name-input"]', 'OriginalUser');
+
+    // Account step now requires PIN before submitting
+    await fillOtp(page, 'account-pin-otp', '2468');
+
     await page.getByTestId('join-submit-button').click();
 
     // Should show name conflict (message enhanced with Angular Material v20)
@@ -338,6 +347,12 @@ test.describe('JWT Integration and Continue Game Flow', () => {
       'input[formControlName="playerName"]'
     ]);
     await nameInput.fill('StateTestUser');
+
+    // Join remains disabled until PIN is entered
+    await expect(page.getByTestId('join-submit-button')).toBeDisabled();
+
+    // Fill required PIN then expect enabled
+    await fillOtp(page, 'account-pin-otp', '2468');
     await expect(joinButton).toBeEnabled();
     await expect(joinButton).toContainText('Join');
 
