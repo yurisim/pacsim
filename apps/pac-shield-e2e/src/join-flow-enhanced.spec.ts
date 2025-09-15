@@ -8,7 +8,6 @@ import {
   createTestIsolation,
   fillRoomCodeOtp,
   fillOtp,
-  maybeFillOtpIfVisible,
   generateTestIds
 } from './test-utils';
 
@@ -53,26 +52,13 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       await playerNameInput.fill('ConflictUser');
 
-      // PIN is required on Account step before submitting
-      await fillOtp(page, 'account-pin-otp', '2468');
-
-      // Submit and wait for conflict step with enhanced reliability
-      await submitFormReliably(
-        page,
-        '[data-testid="join-submit-button"]',
-        { showsStep: 'conflict', timeout: 15000 }
-      );
-
       // Verify we're on conflict step with proper UI elements
       await expect(page.getByText(`A player named "${'ConflictUser'}" already exists in this game`))
         .toBeVisible({ timeout: 5000 });
 
       // Click "I'm a new person" with fallback selectors
-      const newPersonButton = await getElementReliably(page, [
-        'button[data-testid="new-person-button"]',
-        'button:has-text("I\'m a new person")',
-        'button:has-text("new person")'
-      ]);
+      const newPersonButton =
+        await page.getByTestId('new-person-button');
 
       await newPersonButton.click();
 
@@ -80,11 +66,9 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       await waitForJoinStep(page, 'new', 10000);
 
       // Fill new unique name with enhanced element detection
-      const newNameInput = await getElementReliably(page, [
-        '[data-testid="new-player-name-input"]',
-        'input[aria-label*="new player"]',
-        'input[formControlName="newPlayerName"]'
-      ], { timeout: 8000 });
+      const newNameInput = page.getByTestId('new-player-name-input');
+
+      newNameInput.click();
 
       const uniqueName = `${testIds.playerName}_unique`;
       await newNameInput.fill(uniqueName);
@@ -320,7 +304,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       await playerNameInput.fill('PinUser');
 
       // PIN is required on Account step before submitting
-      await fillOtp(page, 'account-pin-otp', '2468');
+      await fillOtp(page, '-digit PIN digit 1', '2468');
 
       // Submit to trigger name conflict
       await submitFormReliably(

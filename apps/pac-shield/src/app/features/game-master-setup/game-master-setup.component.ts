@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { InputOtpComponent } from '../../shared/components/input-otp/input-otp.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export interface GameMasterInfo {
   lastName: string;
@@ -47,6 +48,7 @@ export interface GameMasterInfo {
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
     InputOtpComponent,
   ],
   templateUrl: './game-master-setup.component.html',
