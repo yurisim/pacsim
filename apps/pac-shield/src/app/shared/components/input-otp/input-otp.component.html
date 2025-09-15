@@ -12,6 +12,7 @@
     autocomplete="off"
     (input)="onInputChange($event, i)"
     (keydown)="onInputKeyDown($event, i)"
+    (keydown.enter)="$event.preventDefault()"
     (paste)="onInputPaste($event, i)"
     (focus)="onInputFocus()"
   />
