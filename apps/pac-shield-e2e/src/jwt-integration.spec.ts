@@ -1,18 +1,12 @@
 import { test, expect } from '@playwright/test';
 import {
   fillGameMasterPin,
-  fillVerificationPin,
   fillRoomCodeOtp,
   waitForNavigationReliable,
   fillOtp
 } from './test-utils';
 
 test.describe('JWT Integration and Continue Game Flow', () => {
-  test.use({
-    launchOptions: {
-      slowMo: 450,
-    },
-  });
 
   /**
    * Test Intent: Comprehensive flow to validate joining a game, handling
@@ -73,11 +67,6 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible(); // Wait for validation
     await page.fill('input[data-testid="player-name-input"]', 'ConflictUser');
 
-    // Account step now requires PIN before submitting
-    await fillOtp(page, 'account-pin-otp', '2468');
-
-    await page.getByTestId('join-submit-button').click();
-
     // Should trigger name conflict since ConflictUser already exists
     await expect(
       page.getByText('A player named "ConflictUser" already exists in this game')
@@ -86,8 +75,13 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     // Should show OTP component
     await expect(page.getByText("Enter your PIN to continue as this player")).toBeVisible();
 
-    // Enter wrong PIN
-    await fillVerificationPin(page, '9999');
+    // Account step now requires PIN before submitting
+    await page.getByRole('textbox', { name: '-digit PIN digit 1' }).click();
+    await page.getByRole('textbox', { name: '-digit PIN digit 1' }).fill('2');
+    await page.getByRole('textbox', { name: '-digit PIN digit 2' }).fill('4');
+    await page.getByRole('textbox', { name: '-digit PIN digit 3' }).fill('6');
+    await page.getByRole('textbox', { name: '-digit PIN digit 4' }).fill('8');
+
 
     await page.getByRole('button', { name: /verify pin/i }).click();
 
@@ -97,7 +91,11 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     ).toBeVisible();
 
     // Now enter correct PIN
-    await fillVerificationPin(page, '5555');
+    await page.getByRole('textbox', { name: '-digit PIN digit 1' }).click();
+    await page.getByRole('textbox', { name: '-digit PIN digit 1' }).fill('5');
+    await page.getByRole('textbox', { name: '-digit PIN digit 2' }).fill('5');
+    await page.getByRole('textbox', { name: '-digit PIN digit 3' }).fill('5');
+    await page.getByRole('textbox', { name: '-digit PIN digit 4' }).fill('5');
     await page.getByRole('button', { name: /verify pin/i }).click();
 
     // Should be in lobby now

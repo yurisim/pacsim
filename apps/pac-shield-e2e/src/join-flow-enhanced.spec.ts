@@ -8,7 +8,6 @@ import {
   createTestIsolation,
   fillRoomCodeOtp,
   fillOtp,
-  maybeFillOtpIfVisible,
   generateTestIds
 } from './test-utils';
 
@@ -320,7 +319,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       await playerNameInput.fill('PinUser');
 
       // PIN is required on Account step before submitting
-      await fillOtp(page, 'account-pin-otp', '2468');
+      await fillOtp(page, '-digit PIN digit 1', '2468');
 
       // Submit to trigger name conflict
       await submitFormReliably(
