@@ -24,10 +24,18 @@
         </div>
 
         <div class="text-center">
-          <div
-            class="block md-typescale-body-medium md-sys-color-on-surface mb-4"
-          >
-            4-Digit PIN <span class="md-sys-color-error">*</span>
+          <div class="flex items-center justify-center mb-4">
+            <div class="md-typescale-body-medium">
+              4-Digit PIN <span class="md-sys-color-error">*</span>
+            </div>
+            <mat-icon
+              class="ml-2 cursor-pointer md-sys-color-primary"
+              matTooltip="This PIN will be used to log in again in the future. You are creating it now."
+              matTooltipPosition="above"
+              aria-label="PIN help information"
+            >
+              help_outline
+            </mat-icon>
           </div>
           <app-input-otp
             [length]="4"
