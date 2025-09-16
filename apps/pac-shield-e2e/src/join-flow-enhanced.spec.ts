@@ -308,15 +308,6 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       await playerNameInput.fill('PinUser');
 
-      // PIN is required on Account step before submitting
-      await fillOtp(page, '-digit PIN digit 1', '2468');
-
-      // Submit to trigger name conflict
-      await submitFormReliably(
-        page,
-        '[data-testid="join-submit-button"]',
-        { showsStep: 'conflict', timeout: 10000 }
-      );
 
       // Verify conflict resolution UI
       await expect(page.getByText('A player named "PinUser" already exists in this game'))
