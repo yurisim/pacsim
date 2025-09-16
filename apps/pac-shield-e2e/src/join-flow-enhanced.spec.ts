@@ -73,6 +73,22 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
       const uniqueName = `${testIds.playerName}_unique`;
       await newNameInput.fill(uniqueName);
 
+      // Ensure Create button disabled until PIN is valid
+      const createButton = await getElementReliably(page, [
+        '[data-testid="create-new-player"]',
+        'button:has-text("Create new player")',
+        'button:has-text("Create")'
+      ]);
+      await expect(createButton).toBeDisabled();
+
+
+      // enter pin
+      await page.getByRole('textbox', { name: 'OTP Input digit 1' }).click();
+      await page.getByRole('textbox', { name: 'OTP Input digit 1' }).fill('1');
+      await page.getByRole('textbox', { name: 'OTP Input digit 2' }).fill('2');
+      await page.getByRole('textbox', { name: 'OTP Input digit 3' }).fill('3');
+      await page.getByRole('textbox', { name: 'OTP Input digit 4' }).fill('4');
+
       // Check name availability with proper button state handling
       const checkButton = await getElementReliably(page, [
         '[data-testid="check-name-availability"]',
@@ -84,17 +100,6 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       // Wait for availability confirmation with proper timing
       await expect(page.getByText('This name is available!')).toBeVisible({ timeout: 8000 });
-
-      // Ensure Create button disabled until PIN is valid
-      const createButton = await getElementReliably(page, [
-        '[data-testid="create-new-player"]',
-        'button:has-text("Create new player")',
-        'button:has-text("Create")'
-      ]);
-      await expect(createButton).toBeDisabled();
-
-      // Fill required PIN for new person
-      await fillOtp(page, 'new-person-pin-otp', '1234');
 
       // Button should now be enabled
       await expect(createButton).toBeEnabled({ timeout: 3000 });
