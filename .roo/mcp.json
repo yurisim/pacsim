@@ -2,34 +2,22 @@
   "mcpServers": {
     "wallaby": {
       "command": "powershell.exe",
-      "args": [
-        "node",
-        "$Env:USERPROFILE/.wallaby/mcp/"
-      ],
-      "alwaysAllow": [
-        "wallaby_failingTests",
-        "wallaby_failingTestsForFile"
-      ]
+      "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"],
+      "alwaysAllow": ["wallaby_failingTests", "wallaby_failingTestsForFile"]
     },
     "playwright": {
       "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ],
-      "alwaysAllow": [
-        "browser_install"
-      ],
+      "args": ["@playwright/mcp@latest"],
+      "alwaysAllow": ["browser_install"],
       "disabled": false
     },
-    "nx-mcp": {
-      "type": "stdio",
+    "context7": {
       "command": "npx",
       "args": [
-        "nx-mcp@latest"
-      ],
-      "alwaysAllow": [
-        "nx_workspace",
-        "nx_current_running_tasks_details"
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-7a021de2-dd21-42b8-88e1-06208aa3c848"
       ]
     }
   }
