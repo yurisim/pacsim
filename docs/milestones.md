@@ -1,229 +1,161 @@
 # **Project Roadmap: Digital Operation Pacific Shield**
 
-
-1.  **Game Board Rendering:**
-
-     - [ ] **Implement Civilization-style Layout Components:**
-       - [ ] Create base layout with central map (75% width), right sidebar (25% width), and bottom panel (25% height), these panels should be overlays on top of the map. They need to be able to expand and close and be mobile friendly.
-       - [ ] Create collapsible sidebar for mobile/tablet viewports
-     - [ ] **Create a `GameTokenComponent`:**
-       - [ ] A generic component that takes an `asset` object as input.
-       - [ ] Uses `ngSwitch` to render the correct image, text (strength), and team color based on the asset's type.
-       - [ ] Implement NATO-standard military symbology for units
-       - [ ] Add hover states and selection highlighting
-       - [ ] Include drag-and-drop functionality with visual feedback
-     - [ ] **Implement Context-Sensitive Right Sidebar:**
-       - [ ] Create `UnitDetailsComponent` for selected asset information
-       - [ ] Build `TeamResourcesComponent` for inventory and personnel tracking
-       - [ ] Add adaptive layout that adjusts based on selection state
-     - [ ] **Integrate Backend Data:**
-       - [ ] Create a `[Game] Load Game` NgRx effect that fetches the full game state from the backend API when a player loads the game page.
-       - [ ] Create NgRx selectors to get all aircraft, ground units, and threat tokens from the state.
-       - [ ] In `GameBoardComponent`, subscribe to these selectors and use `ngFor` to render a `GameTokenComponent` for each asset at its correct hex/airfield location.
-       - [ ] Implement real-time state synchronization across all connected clients
-
-2.  **Role-Specific Dashboard Overlays (Civilization-style):**
-     - [ ] **Implement `FosDashboardComponent` (Tech Tree Style):**
-       - [ ] Create a UI that visually represents the FOS board with interconnected task nodes
-       - [ ] Implement task dependency visualization showing prerequisites
-       - [ ] Use selectors to get the state of a specific FOS
-       - [ ] Use CSS classes and progress indicators for task completion status
-       - [ ] Add RFI request interface with dice roll visualization
-     - [ ] **Implement `ScoreboardComponent` (Status Bar Integration):**
-       - [ ] Integrate into main layout's bottom panel status section
-       - [ ] Create visual MP/DP meters with progress toward victory
-       - [ ] Add turn/phase indicator with "Next Turn" Civilization-style button
-       - [ ] Display real-time resource counters (personnel, equipment, commodities)
-     - [ ] **Implement `CSpOCBoardComponent` (Orbital Visualization):**
-       - [ ] Create orbital track visualization (GEO ring, MEO/LEO tracks)
-       - [ ] Implement satellite positioning system with movement indicators
-       - [ ] Build intelligence collection results panel with actionable recommendations
-       - [ ] Add cyber warfare assets management interface
-       - [ ] Create Ground Based Radar (GBR) deployment controls
-       - [ ] Subscribe to `satelliteInstances` and render with orbital context
-     - [ ] **Implement `MedcomDashboardComponent` (Medical Network Status):**
-       - [ ] Design hospital network status board with bed capacity visualization
-       - [ ] Create patient triage and treatment protocol displays
-       - [ ] Implement active MEDEVAC operations tracking
-       - [ ] Build medical supply inventory management interface
-       - [ ] Add emergency protocol activation controls
-       - [ ] Create `HospitalStatusComponent` with visual bed occupancy and supply status
+**Objective:** To create a real-time, multi-user, web-based version of the "Operation Pacific Shield" wargame, replicating the data-rich dashboards and complex game logic defined in the user guide and Excel prototype. The new platform will be built on Angular with an NgRx state management backend and real-time communication via WebSockets.
 
 ---
 
-## **Phase 2: Core Gameplay Mechanics & Interaction**
+## **Phase 1: UI/UX Foundation & Core Dashboard Replication**
 
-_This is where the game comes to life. The goal is to enable players to perform the most common actions and see the state update in real-time._
+**Goal:** Build the main application shell and recreate the key static information displays from the Excel `Mission Dashboard` and `Team` tabs. This phase focuses on rendering the game state, not yet interacting with it.
 
-1.  **Asset Movement:**
+1.  **Implement Civilization-Style Main Layout:**
 
-         - [ ] Integrate Angular Material Drag and Drop directives into `GameTokenComponent`.
+    - [ ] **Create Application Shell:** A responsive layout with a main content area for the map, a collapsible right sidebar, and a bottom information panel.
+    - [ ] **`TopBarComponent`:** Display `Block`, `Day`, `Turn`, `Game Phase` (Crisis/Conflict), and `Victory Condition` progress. This directly replicates the top section of the `Mission Dashboard`.
+    - [ ] **`HexGridMapComponent`:** Render the main game board from Appendix A. It should be pannable and zoomable.
 
-     - [ ] When a token is dropped onto a valid target (a hex or another board area):
-       - [ ] The component dispatches an NgRx action, e.g., `[Asset] Move Request ({ assetId, targetLocation })`.
-     - [ ] **Create `AssetEffects` in NgRx:**
-       - [ ] The effect listens for `Move Request`.
-       - [ ] It calls a `GameLogicService` to validate the move (checking range, political access, etc.).
-       - [ ] If valid, it sends the action to the backend via the `WebSocketService`.
-     - [ ] **Backend Logic:**
-       - [ ] The WebSocket server receives the `[Asset] Move` action.
-       - [ ] It performs final server-side validation.
-       - [ ] It updates the asset's location in the MongoDB database.
-       - [ ] It broadcasts a `[Asset] Move Success ({ assetId, newLocation })` action to the specific game room.
-     - [ ] **Frontend Update:**
-       - [ ] The `WebSocketService` on all clients receives the `Move Success` event and dispatches it to their local NgRx store.
-       - [ ] The reducer updates the state, and the UI reactively moves the token on everyone's screen.
+2.  **Recreate Core Dashboard Widgets (from `Mission Dashboard` Excel Sheet):**
 
-2.  **Air Tasking Order (ATO) Implementation with Civilization-style Interfaces:**
+    - [ ] **`BaseAccessWidgetComponent`:**
+      - [ ] Display country flags with their current access level ("Full Access," "Overflight," "No Access") and the underlying dice roll value.
+      - [ ] Use dynamic CSS to apply green, yellow, and red color-coding.
+    - [ ] **`AircraftApportionmentWidgetComponent`:**
+      - [ ] Display the current number of apportioned C-17, C-130, and C-5 aircraft with their icons and call signs (MOOSE, ARROW, BOSCO).
+    - [ ] **`AirfieldCapacityStatusWidgetComponent` (CFACC View):**
+      - [ ] Create a master table that consolidates FOS data from all teams, mirroring the "Airfield Capacity & Capability" Excel table.
+      - [ ] Display columns for `FOS #`, `Turn Est`, `Capability`, `Assessed`, `Improv`, `Ramp Size (MOG)`, `Ramp Status %`, `Comms Status`, `Consecutive Strikes`, and `Runway Status`.
+      - [ ] Implement logic to hide or show "Unknown" based on game rules for communication denial (Data-Sharing Denied).
+    - [ ] **`VictoryProgressWidgetComponent`:**
+      - [ ] Implement two charts:
+        1.  A progress bar for the overall "Victory Condition Progress."
+        2.  A bar chart for "Mission Points by Team."
 
-     - [ ] Create an interactive `AtoTableComponent` using Angular Material Table with enhanced visual design.
-     - [ ] The table's data source should be an NgRx selector for the game's `atoLines`.
-     - [ ] **For MOB Players:**
-       - [ ] Add a "New Flight Plan" button that opens a comprehensive `FlightPlannerDialogComponent`.
-       - [ ] Implement mission planner dialog with:
-         - [ ] Aircraft selection with visual representation and status indicators
-         - [ ] Route planning with range validation and fuel calculations
-         - [ ] Mission loadout configuration (weapons, fuel, special equipment)
-         - [ ] Mission parameters (time on station, altitude, ROE)
-         - [ ] Warning system for political clearances and weather advisories
-       - [ ] On submit, dispatch a `[ATO] Create Line Request` action, which is sent to the backend.
-     - [ ] **For CAOC Players:**
-       - [ ] The table should display "Approve PPR" / "Deny PPR" buttons with batch processing capabilities.
-       - [ ] Implement PPR approval queue with status indicators and filtering.
-       - [ ] Add theater status overview showing operational metrics.
-       - [ ] Clicking these buttons dispatches actions (`[ATO] Approve PPR Request`) to the backend.
+3.  **Implement Generic `GameTokenComponent`:**
 
-3.  **FOS Management:**
+    - [ ] A single component capable of rendering all game pieces (aircraft, personnel, equipment, commodities, PLA threats) based on an input object.
+    - [ ] Use NATO-standard military symbology where applicable.
+    - [ ] Display key information like strength value (for combat units).
+    - [ ] Implement drag-and-drop functionality using Angular CDK.
 
-     - [ ] **RFI Logic:**
-       - [ ] In the `FosDashboardComponent`, make the RFI slots clickable.
-       - [ ] Clicking an RFI dispatches a `[FOS] Request RFI` action.
-       - [ ] The backend processes this, simulates the dice roll, updates the `RFI_Answers` in the database for that FOS, and broadcasts the result.
-     - [ ] **Task Completion:**
-       - [ ] Implement drag-and-drop functionality to move personnel tokens onto the task slots.
-       - [ ] When a valid set of tokens is dropped on a task, a "Complete Task" button appears.
-       - [ ] Clicking it dispatches a `[FOS] Complete Task Request`, which is validated and broadcasted by the backend.
-
-4.  **CSpOC Gameplay Implementation:**
-
-     - [ ] **Satellite Movement Logic (Backend):** Implement the end-of-turn logic to advance all LEO/MEO satellites one position along their tracks.
-     - [ ] **"Look" Action:**
-       - [ ] Allow CSpOC players to dispatch a `[CSpOC] Satellite Look Request` action.
-       - [ ] Backend logic should determine what is visible based on satellite type, orbit (single hex vs. H3 resolution area), and fidelity (one-pass vs. two-pass identification).
-       - [ ] Broadcast the revealed information to the CSpOC player.
-
-5.  **MEDCOM Gameplay Implementation:**
-     - [ ] **Casualty Generation (Backend):** When a PLA strike on a FOS is successful, the `EndTurnService` must calculate casualties based on personnel present and create new `Patient` documents in the database.
-     - [ ] **MEDEVAC Flights:**
-       - [ ] The `FlightPlannerDialogComponent` must be updated to include a "MEDEVAC" configuration.
-       - [ ] When planning a MEDEVAC, the UI must allow the player to select casualties at a FOS to load onto the aircraft.
-       - [ ] The backend must validate that the MEDCOM player has the required commodity tokens (bandages, IV, etc.) to perform the flight.
-     - [ ] **Patient Triage & Treatment (Backend):** The `EndTurnService` must check hospital status. If the required tasks are complete, it should "cure" patients based on their casualty type and the turn they arrived (e.g., green patients cured in 1 turn).
+4.  **Data Integration (Read-Only):**
+    - [ ] Create NgRx state slices for all major game entities: `teams`, `airfields`, `assets`, `gameTurn`, etc.
+    - [ ] Create an NgRx effect (`[Game] Load Game`) to fetch the entire game state from the backend API.
+    - [ ] Connect all widgets and components created in this phase to the NgRx store using selectors to display the fetched data.
 
 ---
 
-## **Phase 3: Role-Based Views & Advanced Game Rules**
+## **Phase 2: Core Gameplay Mechanics & Player Interaction**
 
-_This phase transforms the single-player prototype into a fully-fledged, multi-user experience. The goal is to refine the experience for different player roles and implement the more complex game rules._
+**Goal:** Enable players to perform the most common actions defined in the user guide. The focus is on implementing the core game loop of planning and execution, with real-time state updates across all clients.
 
-1.  **Session Authentication & Authorization:**
+1.  **Air Tasking Order (ATO) Implementation:**
 
-     - [ ] Implement Angular Route Guards (`SessionAuthGuard`, `RoleGuard`) to protect game routes.
-       - [ ] Implement RoleGuard
+    - [ ] **`MobAtoComponent` (Team Tab View):**
+      - [ ] Replicate the team-specific ATO table from the Excel sheet.
+      - [ ] Rows should populate when the CFACC allocates an aircraft.
+      - [ ] Implement dropdowns for all user-editable fields: `Start Location` (Airfield/Hex), `En Route Destination`, `Final Destination`, `Intention`, `Alternate Location`, `Risk`, and `Configuration`.
+    - [ ] **`CaocMasterAtoComponent` (Mission Dashboard View):**
+      - [ ] Display a consolidated, read-only view of all flight plans from all teams.
+      - [ ] Add "Approve PPR" / "Deny PPR" buttons for the CFACC player.
+    - [ ] **`StationWorkloadComponent`:**
+      - [ ] Recreate the "Station Workload" table to track MOG and PPR limits for all airfields.
+      - [ ] Use dynamic CSS to flag overages in red, as seen in the Excel sheet.
+    - [ ] **NgRx/WebSocket Logic:** Dispatch actions for creating/updating flight plans, which are sent to the backend, validated, and broadcast to all clients to update the UI in real-time.
 
-2.  **Role-Specific UI (Conditional Rendering):**
+2.  **FOS Management (Team Tab Interaction):**
 
-     - [ ] In your components, use `*ngIf` based on the current user's role to show/hide UI elements.
-       - `*ngIf="user.role === 'CFACC'"` on the "Approve PPR" button.
-       - `*ngIf="user.teamId === currentMob.id"` to prevent players from interacting with other teams' dashboards.
-     - [ ] The backend must re-validate every single action against the user's role and team ownership. **Never trust the client.**
+    - [ ] **`FosRfiComponent`:**
+      - [ ] Create the UI from the "Airfield RFI" Excel tab.
+      - [ ] Allow players to click to "ask" an RFI. This sends a request to the backend.
+      - [ ] Backend simulates the dice roll, updates the FOS state, and broadcasts the result, which updates the UI for all players.
+    - [ ] **`FosTaskBoardComponent`:**
+      - [ ] Replicate the "Forward Operating Site Task Completed" boards.
+      - [ ] Allow players to drag-and-drop personnel/equipment tokens onto task slots to signify assignment.
+      - [ ] Implement a "Complete Task" action that validates the required resources are present and updates the task's status.
 
-3.  **Combat Adjudication with Enhanced UI (Conflict Phase):**
+3.  **Logistics & Load Planning:**
 
-     - [ ] Add logic to the `GameLogicService` and backend to check if `gamePhase === 'CONFLICT'`.
-     - [ ] When a fighter is moved onto a hex with an enemy token, open an enhanced `CombatDialogComponent`.
-     - [ ] Implement comprehensive combat dialog featuring:
-       - [ ] Visual unit representations with detailed statistics
-       - [ ] Combat modifier calculations with explanations
-       - [ ] Force package options for coordinated attacks
-       - [ ] Real-time dice rolling with animation
-       - [ ] Detailed result explanation and damage assessment
-     - [ ] Add engagement confirmation with tactical overview.
-     - [ ] This triggers a `[Combat] Adjudicate Request` action with all combat parameters.
-     - [ ] The backend performs the dice rolls, determines the outcome, updates/deletes the database documents for the involved units, and broadcasts the result.
-     - [ ] The result should be displayed to all players via enhanced notifications and detailed combat log entries.
-     - [ ] Implement post-combat unit status updates and damage visualization on the map.
+    - [ ] **`LoadPlannerDialogComponent`:**
+      - [ ] Create a modal/dialog that replicates the "REACH 01" load planner.
+      - [ ] The dialog should show the selected aircraft's pallet and personnel capacity based on its ATO configuration.
+      - [ ] Allow players to input quantities for personnel and equipment.
+      - [ ] Validate that the load does not exceed capacity.
+    - [ ] **`UstranscomRequestComponent`:**
+      - [ ] Create the interface for MOBs to request resources from USTRANSCOM, mirroring the "AEW Requests" sheet.
 
-4.  **Scoring and End-of-Turn Automation:**
-
-     - [ ] Create an `EndTurnService` on the backend.
-     - [ ] This service will be triggered by a GM action.
-     - [ ] It will iterate through all teams and FOSs to:
-       - [ ] Calculate and apply the Logistics Commodities Tax.
-       - [ ] Calculate and award Demoralization Points.
-       - [ ] Calculate and award Mission Points for sorties and completed assessments.
-       - [ ] Implement Resource Point (RP) Logic by checking Task #13 and incrementing RPs.
-       - [ ] Implement Risk Token Adjudication logic for any actions flagged with it.
-       - [ ] Advance the `gameTurn` counter.
-     - [ ] All state changes are broadcast to the relevant game room.
-
-5.  **MFR Logic Implementation:**
-      - [ ] Create API endpoints for submitting MFRs.
-      - [ ] Create a section in the GM Interface for approving/denying MFRs.
-
-6.  **Turn Management**
-      - [ ] Implement MOB commander ability to mark their own team as "done" for the current turn
-      - [ ] Implement GM authority to advance the turn after all teams are prepared
-      - [ ] Add turn progression controls with status tracking and confirmation dialogs
-      - [ ] Ensure orderly progression and coordination across all teams
+4.  **CSpOC & MEDCOM Dashboards:**
+    - [ ] **`CSpocDashboardComponent`:**
+      - [ ] Build the dedicated UI for the CSpOC player, including orbital track visualization.
+      - [ ] Implement the "Satellite Look" action.
+      - [ ] Display intelligence results and allow for offensive actions (e.g., attacking enemy satellites).
+    - [ ] **`MedcomDashboardComponent`:**
+      - [ ] Replicate the MEDCOM Excel tab, showing hospital bed space and task completion status.
+      - [ ] Implement logic for MEDEVAC flights, allowing MEDCOM players to assign patients to aircraft via the ATO.
+      - [ ] Automate patient status updates at the end of each turn based on completed hospital tasks.
 
 ---
 
-## **Phase 4: Polish, Deployment, and Maintenance**
+## **Phase 3: Advanced Rules, Automation & Role Enforcement**
 
-_This phase focuses on finalizing the user experience, recreating rich data displays, and making the application production-ready._
+**Goal:** Implement the complex game logic, automate end-of-turn calculations, and enforce role-based permissions to create a complete, multi-user experience.
 
-1.  **UI/UX Enhancements - Civilization-Inspired Interface:**
+1.  **Multiplayer & Role-Based Views:**
 
-     - [ ] Implement a `GameLogComponent` that displays a running text log of all major events.
-     - [ ] Add a notification/toast service (`ngx-toastr`) for immediate feedback on actions.
-     - [ ] Add tooltips (using Angular Material Tooltips) to explain complex UI elements.
-     - [ ] Refine all CSS for a clean, professional look.
-     - [ ] Implement Civilization-style main interface layout:
-       - [ ] Create responsive grid layout with central map area (75%), side panel (25%), and bottom action bar
-       - [ ] Design and implement top toolbar with team badges and phase controls
-       - [ ] Create context-sensitive right sidebar for unit details and team resources
-       - [ ] Implement bottom panel with status indicators, ATO table, and notification feed
-     - [ ] Develop role-specific dashboard overlays:
-       - [ ] MOB sliding panel with personnel, equipment, and FOS status
-       - [ ] CAOC command dashboard with ATO management and resource allocation
-       - [ ] CSpOC operations console with orbital track visualization
-       - [ ] MEDCOM dashboard with hospital network status board
-     - [ ] Create Civilization-style interactive map components:
-       - [ ] Implement map layer toggle controls (political boundaries, threat zones, etc.)
-       - [ ] Add hover/click interactions for hexes and assets
-       - [ ] Design range and movement overlays with visual pathing
-       - [ ] Create context menus for unit-specific actions
+    - [ ] **Implement Authentication & Authorization:** Use Route Guards to ensure only logged-in users can access games and that their role (`CFACC`, `MOB`, `CSpOC`, `GM`, etc.) is enforced.
+    - [ ] **Conditional UI Rendering:** Use `*ngIf` extensively to show/hide UI elements based on user role (e.g., only CFACC sees "Approve PPR," only the correct MOB can edit their ATO).
+    - [ ] **Backend Validation:** Ensure every action sent to the server is re-validated against the user's role and team ownership. **Never trust the client.**
 
-2.  **Game Master (GM) Interface:**
+2.  **Combat Adjudication (Conflict Phase):**
 
-     - [ ] Create a special GM dashboard, protected by a `RoleGuard`.
-     - [ ] The GM dashboard should allow for:
-       - [ ] Manually editing any game state variable (e.g., player points, asset locations).
-       - [ ] Triggering Event/Risk cards.
-       - [ ] Advancing the game turn.
-       - [ ] Creating/starting/ending game sessions.
+    - [ ] **`CombatDialogComponent`:** When a friendly fighter attacks a PLA token, open a dialog showing both units, their strengths, and any roll modifiers (from GPS, jamming, etc.).
+    - [ ] **Backend Dice Rolls:** The backend must handle the dice rolls according to the rules (e.g., F-22 rolls d20, PLA 4th-gen fighter rolls d12).
+    - [ ] **State Updates:** The backend updates the database (removing the defeated token) and broadcasts the combat result to all players with a visual notification.
+    - [ ] **PLA Airfield Strikes:** Implement the logic from the "Airfield Attack" tab. At the start of a turn, the backend will simulate PLA strikes, calculate damage to runways and ramps, and update the `AirfieldCapacityStatusWidget`.
+
+3.  **End-of-Turn Automation (Backend `EndTurnService`):**
+
+    - [ ] **Trigger:** Create a GM-controlled action to advance the game turn.
+    - [ ] **Calculations:** The service will automatically:
+      - Apply the **Logistics Commodities Tax** to all occupied airfields.
+      - Calculate and apply **Demoralization Points (DP)** for inadequate food/water or beddown.
+      - Award **Mission Points (MP)** for successful fighter sorties and completed airfield assessments.
+      - Award **Resource Points (RP)** for Host Nation Relationship tasks.
+      - Process **USTRANSCOM resupply** missions and **sealift** commodity deliveries.
+      - Advance all LEO/MEO satellites in their orbits for the CSpOC.
+
+4.  **Turn Management:**
+    - [ ] Implement a "Ready" or "End Turn" button for each MOB Commander.
+    - [ ] The GM dashboard should show which teams are ready.
+    - [ ] The GM has the final authority to advance the turn once all teams are ready or time expires.
+
+---
+
+## **Phase 4: Polish, Deployment & Game Master Tools**
+
+**Goal:** Refine the user experience to match the data density and clarity of the Excel prototype, create powerful GM tools, and deploy the application for production use.
+
+1.  **UI/UX Polish & Refinement:**
+
+    - [ ] **`GameLogComponent`:** Add a persistent, scrollable log of all major game events (combat results, task completions, resource changes).
+    - [ ] **Notifications & Tooltips:** Implement a toast notification system for immediate feedback on actions. Add tooltips to all icons and complex data points to explain game rules.
+    - [ ] **Visualizations:** Add visual effects for combat, asset movement paths, and status changes (e.g., a damaged runway icon).
+    - [ ] **Final Styling:** Ensure the entire application has a consistent, professional, and military-simulation aesthetic.
+
+2.  **Comprehensive Game Master (GM) Dashboard:**
+
+    - [ ] **Full State Control:** Allow the GM to view and manually edit any part of the game state (e.g., change a country's base access, add/remove commodities, move any unit).
+    - [ ] **Event Management:** Create an interface for the GM to trigger Event and Risk cards as described in the PDF.
+    - [ ] **Game Lifecycle Management:** Tools to create new games, load saved games, manage player assignments, and end sessions.
+    - [ ] **Rule Adjudication:** Provide tools to resolve MFRs (Memorandums for Record) and handle edge cases that arise during gameplay.
 
 3.  **Containerization & Deployment:**
 
-     - [ ] Create a `Dockerfile` for the Angular application (multi-stage build for optimization).
-     - [ ] Create a `Dockerfile` for the Node.js backend.
-     - [ ] Create a `docker-compose.yml` file to orchestrate the frontend, backend, and a PostgreSQL container for local development.
-     - [ ] Set up a CI/CD pipeline (e.g., GitHub Actions) to automatically build and test the code on every push.
-     - [ ] Deploy the containers to a cloud service (e.g., AWS, Google Cloud, DigitalOcean).
+    - [ ] **Create `Dockerfile`s:** One for the Angular front-end and one for the Node.js back-end.
+    - [ ] **Create `docker-compose.yml`:** Orchestrate the front-end, back-end, and database containers for easy local development.
+    - [ ] **Set up CI/CD Pipeline:** Use GitHub Actions or similar to automate testing and building of containers on every code push.
+    - [ ] **Deploy to Production:** Deploy the application to a cloud provider (e.g., AWS, DigitalOcean) for live use.
 
-4.  **Testing and Bug Fixing:**
-
-     - [ ] Conduct thorough end-to-end testing of all game mechanics.
-     - [ ] Perform user acceptance testing (UAT) with a group of test players.
-     - [ ] Track and resolve bugs found during testing.
+4.  **Testing & User Acceptance:**
+    - [ ] Conduct thorough end-to-end testing of all gameplay loops and role interactions.
+    - [ ] Run a full-scale User Acceptance Test (UAT) with a group of Officer Trainees to gather feedback and identify bugs.
+    - [ ] Iterate on feedback to ensure the digital version is an effective and engaging training tool.
