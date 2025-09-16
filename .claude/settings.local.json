@@ -25,7 +25,8 @@
       "Bash(npx nx serve:*)",
       "Bash(npm test:*)",
       "Bash(pkill:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
