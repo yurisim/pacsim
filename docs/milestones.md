@@ -10,8 +10,7 @@
 
 1.  **Implement Civilization-Style Main Layout:**
 
-    - [ ] **Create Application Shell:** A responsive layout with a main content area for the map, a collapsible right sidebar, and a bottom information panel.
-    - [ ] **`TopBarComponent`:** Display `Block`, `Day`, `Turn`, `Game Phase` (Crisis/Conflict), and `Victory Condition` progress. This directly replicates the top section of the `Mission Dashboard`.
+    - [ ] Display `Block`, `Day`, `Turn`, `Game Phase` (Crisis/Conflict), and `Victory Condition` progress. This directly replicates the top section of the `Mission Dashboard`.
     - [ ] **`HexGridMapComponent`:** Render the main game board from Appendix A. It should be pannable and zoomable.
 
 2.  **Recreate Core Dashboard Widgets (from `Mission Dashboard` Excel Sheet):**
@@ -93,6 +92,11 @@
       - [ ] Implement logic for MEDEVAC flights, allowing MEDCOM players to assign patients to aircraft via the ATO.
       - [ ] Automate patient status updates at the end of each turn based on completed hospital tasks.
 
+5.  **Allocation Notifications MVP**
+    - [ ] Badge, Toast, Notification Center
+    - [ ] NgRx slice and WebSocket handling
+    - [ ] Unread count, priority visuals, basic ARIA
+
 ---
 
 ## **Phase 3: Advanced Rules, Automation & Role Enforcement**
@@ -128,6 +132,12 @@
     - [ ] The GM dashboard should show which teams are ready.
     - [ ] The GM has the final authority to advance the turn once all teams are ready or time expires.
 
+5.  **Notifications Enforcement & End Phase Integration**
+    - [ ] Action-required acknowledgment enforcement
+    - [ ] Audit surfaces for notification delivery/ack status
+    - [ ] Role/room scoping validation
+    - [ ] End Phase modal “Outstanding Actions” integration via NgRx selectors
+
 ---
 
 ## **Phase 4: Polish, Deployment & Game Master Tools**
@@ -136,8 +146,8 @@
 
 1.  **UI/UX Polish & Refinement:**
 
-    - [ ] **`GameLogComponent`:** Add a persistent, scrollable log of all major game events (combat results, task completions, resource changes).
-    - [ ] **Notifications & Tooltips:** Implement a toast notification system for immediate feedback on actions. Add tooltips to all icons and complex data points to explain game rules.
+    - [ ] **`GameLogComponent`:** Persistent, cross-domain action log (global history), separate from the bottom-panel Event Log (ephemeral feed). Consumes the normalized, shared notification schema and other domain events. Provides filtering and export capabilities.
+    - [ ] **Notifications & Tooltips:** Toast polish, tooltips, theme tokens, motion. Implement a toast notification system for immediate feedback on actions. Add tooltips to all icons and complex data points to explain game rules. Ensure theme tokens and motion guidelines are applied consistently.
     - [ ] **Visualizations:** Add visual effects for combat, asset movement paths, and status changes (e.g., a damaged runway icon).
     - [ ] **Final Styling:** Ensure the entire application has a consistent, professional, and military-simulation aesthetic.
 
@@ -159,3 +169,7 @@
     - [ ] Conduct thorough end-to-end testing of all gameplay loops and role interactions.
     - [ ] Run a full-scale User Acceptance Test (UAT) with a group of Officer Trainees to gather feedback and identify bugs.
     - [ ] Iterate on feedback to ensure the digital version is an effective and engaging training tool.
+
+5.  **Notifications & Logs Finalization**
+    - [ ] Shared notification schema adopted by CSpOC/MEDCOM/GM
+    - [ ] Persistent Game Log with filters/export, ingesting normalized events from all domains
