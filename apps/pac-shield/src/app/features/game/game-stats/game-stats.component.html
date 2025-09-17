@@ -39,15 +39,7 @@
       @switch (activeTab$ | async) {
         @case ('scoreboard') {
           <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-scoreboard">
-            <app-scoreboard
-              [missionPoints]="gameStats().missionPoints"
-              [demoralizationPoints]="gameStats().demoralizationPoints"
-              [resourcePoints]="gameStats().resourcePoints"
-              [victoryTarget]="gameStats().victoryTarget"
-              [gameTurn]="gameStats().gameTurn"
-              [gameDay]="gameStats().gameDay"
-              [gamePhase]="gameStats().gamePhase"
-            ></app-scoreboard>
+            <app-scoreboard></app-scoreboard>
           </div>
         }
 
@@ -133,9 +125,7 @@
       }
     </div>
   } @else {
-    <!-- Collapsed summary -->
-    <div class="collapsed-summary p-2 md-typescale-body-small md-sys-color-on-surface-variant text-center text-sm">
-      MP: {{ gameStats().missionPoints }} | DP: {{ gameStats().demoralizationPoints }} | RP: {{ gameStats().resourcePoints }}
-    </div>
+    <!-- Reserved space for future information (e.g., TODO list) -->
+    <div class="p-2 sm:p-3" aria-label="Reserved information area"></div>
   }
 </div>
