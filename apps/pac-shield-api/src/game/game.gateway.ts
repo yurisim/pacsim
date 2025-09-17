@@ -4,6 +4,8 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  ConnectedSocket,
+  MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -63,6 +65,25 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Action received from ${client.id}: ${JSON.stringify(payload)}`);
     // In the future, this will be broadcasted to the room
     // this.server.to(client.rooms.values().next().value).emit('action', payload);
+  }
+
+  /**
+   * Allow clients to explicitly join a game room after connecting to the /game namespace.
+   * This complements automatic join via handshake ?gameId= and is used by some clients.
+   */
+  @SubscribeMessage('joinGameRoom')
+  joinGameRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { gameId: string }
+  ): void {
+    const gameId = body?.gameId;
+    if (!gameId) {
+      this.logger.warn(`joinGameRoom called without gameId by ${client.id}`);
+      return;
+    }
+    client.join(gameId);
+    this.logger.log(`Client ${client.id} joined room via joinGameRoom ${gameId}`);
+    client.emit('joinedGameRoom', { gameId });
   }
 
   // =============================================================================
@@ -321,6 +342,41 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       timestamp: new Date().toISOString(),
     });
     this.logger.log(`Aircraft pool updated broadcast to room ${gameId}`);
+  }
+
+  /**
+   * Broadcast game state updates for Scoreboard + Top Bar.
+   * Payload shape:
+   * {
+   *   block: number,
+   *   day: number,
+   *   turn: number,
+   *   phase: 'CRISIS' | 'CONFLICT',
+   *   victoryProgress: number,
+   *   missionPoints: number,
+   *   demoralizationPoints: number,
+   *   resourcePoints: number,
+   *   victoryTarget: number
+   * }
+   */
+  broadcastGameStateUpdated(
+    gameId: string,
+    status: {
+      block: number;
+      day: number;
+      turn: number;
+      phase: 'CRISIS' | 'CONFLICT';
+      victoryProgress: number;
+      missionPoints: number;
+      demoralizationPoints: number;
+      resourcePoints: number;
+      victoryTarget: number;
+    }
+  ): void {
+    this.server.to(gameId).emit('gameStateUpdated', status);
+    this.logger.log(
+      `Game state updated broadcast to room ${gameId}: block=${status.block}, day=${status.day}, turn=${status.turn}, phase=${status.phase}, victoryProgress=${status.victoryProgress}%, MP=${status.missionPoints}, DP=${status.demoralizationPoints}, RP=${status.resourcePoints}, target=${status.victoryTarget}`
+    );
   }
 
   // =============================================================================
