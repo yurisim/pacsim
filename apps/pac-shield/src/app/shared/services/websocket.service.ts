@@ -20,6 +20,8 @@ export class WebSocketService {
   private store = inject(Store<AppState>);
   private connectionStatus = new BehaviorSubject<boolean>(false);
   private gameId: string | null = null;
+  /** Separate Socket.IO client for the '/game' namespace used by GameGateway */
+  private gameNsSocket: Socket | null = null;
   /** Emits true when connected; subscribe to reflect socket availability in UI/store. */
   public connectionStatus$ = this.connectionStatus.asObservable();
 
@@ -78,6 +80,10 @@ export class WebSocketService {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
+    if (this.gameNsSocket?.connected) {
+      this.gameNsSocket.disconnect();
+    }
+    this.gameNsSocket = null;
     this.gameId = null;
   }
 
@@ -152,6 +158,56 @@ export class WebSocketService {
       this.connectionStatus.next(false);
       // TODO: Dispatch a connection failure action
       // this.store.dispatch(WebSocketActions.connectFailure({ error }));
+    });
+  }
+
+  // =====================================================
+  // Game namespace helpers for GameGateway (/game)
+  // =====================================================
+
+  /**
+   * Connect to '/game' namespace for game-scoped events (e.g., gameStateUpdated).
+   * Uses same host as API (environment.apiUrl) with '/game' namespace.
+   */
+  connectToGameNamespace(gameId: string): void {
+    const socketUrl = environment.apiUrl.replace(/\/api$/, '');
+    if (this.gameNsSocket?.connected) {
+      // Reconnect to different gameId if needed
+      this.gameNsSocket.disconnect();
+      this.gameNsSocket = null;
+    }
+    this.gameNsSocket = io(`${socketUrl}/game`, {
+      query: { gameId },
+      transports: ['websocket', 'polling'],
+      autoConnect: true,
+      forceNew: true,
+    });
+  }
+
+  /**
+   * Observable stream for server→client 'gameStateUpdated' events.
+   * Ensure connectToGameNamespace(gameId) is called before subscribing.
+   */
+  listenGameStateUpdated(): Observable<{
+    block: number;
+    day: number;
+    turn: number;
+    phase: 'CRISIS' | 'CONFLICT';
+    victoryProgress: number;
+    missionPoints: number;
+    demoralizationPoints: number;
+    resourcePoints: number;
+    victoryTarget: number;
+  }> {
+    return new Observable((subscriber) => {
+      if (!this.gameNsSocket) {
+        console.error('Game namespace socket not connected. Call connectToGameNamespace() first.');
+        subscriber.complete();
+        return;
+      }
+      const handler = (data: any) => subscriber.next(data);
+      this.gameNsSocket.on('gameStateUpdated', handler);
+      return () => this.gameNsSocket?.off('gameStateUpdated', handler);
     });
   }
 }
