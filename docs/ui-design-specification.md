@@ -57,7 +57,7 @@ A collapsible panel that adapts to the player's selection.
 
 ### **4. Bottom Panel (Status & Action Bar)**
 - **Status Block**: Displays `Turn #`, `Game Phase`, `Mission Points (MP)`, and `Demoralization Points (DP)`.
-- **Event Log**: A running feed of important game events and notifications (e.g., "ATO flight AW14 has landed at FOS-10," "Combat in Hex 407: Success!"). Alerts from the ATO will appear here, linking to the full dashboard. The Event Log is an ephemeral, in-session feed for recent events and alerts. A persistent, cross-domain Game Log (with filters/export) is delivered in Phase 4, consuming normalized notifications and events. The Notification Center offers a filterable, detailed view of notifications distinct from the Event Log’s brief feed.
+- **Event Log**: A running feed of important game events and notifications (e.g., "ATO flight AW14 has landed at FOS-10," "Combat in Hex 407: Success!"). Alerts from the ATO will appear here, linking to the full dashboard. The Event Log is an ephemeral, in-session feed for recent events and alerts. A persistent, cross-domain Game Log (with filters/export) is delivered in Phase 4, consuming normalized notifications and events. The Notification Center offers a filterable, detailed view of notifications distinct from the Event Log’s brief feed. Award entries (e.g., "+5 MP for FOS-23 Assessment", "+5 MP Crisis Sortie", "+10 MP Conflict Kill") will appear in the Event Log feed and, in Phase 4, the persistent Game Log with filter/export support.
 
 ---
 
@@ -199,6 +199,7 @@ A collapsible panel that adapts to the player's selection.
 
 ### **Scoreboard Component**
 - A persistent element, possibly in the Bottom Panel, showing `MP` (Mission Points), `DP` (Demoralization Points), and `RP` (Resource Points).
+- Values (MP/DP/RP/Victory Target) are sourced from NgRx (backend status + WS). Scoring rules (RFIs completion, Crisis sorties, Conflict target destruction) are enforced server-side per [docs/milestones.md](docs/milestones.md) Phase 3 and surfaced to the UI as award events in the Game Log.
 
 ### **Notifications (Notification Center & Toasts)**
 - Standard alerting surfaces across roles and domains.
@@ -231,6 +232,7 @@ A collapsible panel that adapts to the player's selection.
 │                  [Cancel]                   [Confirm End Phase]        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
+The modal may also surface scoring-relevant preconditions (e.g., missing fuel/munitions at a FOS preventing eligible Crisis sorties) as warnings where applicable.
 **Turn Management Rules**:
 - MOB commanders can mark their team as "Ready".
 - Only the Game Master (GM) can advance the game to the next turn/phase.
