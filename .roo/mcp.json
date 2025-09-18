@@ -3,7 +3,13 @@
     "wallaby": {
       "command": "powershell.exe",
       "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"],
-      "alwaysAllow": ["wallaby_failingTests", "wallaby_failingTestsForFile"]
+      "alwaysAllow": [
+        "wallaby_failingTests",
+        "wallaby_failingTestsForFile",
+        "wallaby_runtimeValues",
+        "wallaby_runtimeValuesByTest",
+        "wallaby_allTests"
+      ]
     },
     "playwright": {
       "command": "npx",

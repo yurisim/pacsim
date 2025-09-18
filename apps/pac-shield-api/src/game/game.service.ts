@@ -78,7 +78,7 @@ export class GameService {
     // Creating 30 FOSs as per the game design
     const fosCount = 30;
     const fosList = [];
-    
+
     for (let i = 1; i <= fosCount; i++) {
       fosList.push({
         gameId: game.id,
@@ -166,6 +166,84 @@ export class GameService {
     this.gameGateway.server.to(roomCode).emit('playerJoined', player);
 
     return this.authService.login(game.id, player.id);
+  }
+
+  /**
+   * Compute and return minimal game status for Top Bar/Scoreboard display.
+   * Response model fields:
+   * - block: number
+   * - day: number
+   * - turn: number
+   * - phase: 'CRISIS' | 'CONFLICT'
+   * - victoryProgress: number // 0..100
+   * - missionPoints: number
+   * - demoralizationPoints: number
+   * - resourcePoints: number
+   * - victoryTarget: number
+   *
+   * TODO(team-scoped): If needed, derive requesting player's team from JWT (req.user)
+   * and return team-specific metrics instead of global totals.
+   */
+  async getGameStatus(gameId: number): Promise<{
+    block: number;
+    day: number;
+    turn: number;
+    phase: 'CRISIS' | 'CONFLICT';
+    victoryProgress: number;
+    missionPoints: number;
+    demoralizationPoints: number;
+    resourcePoints: number;
+    victoryTarget: number;
+  }> {
+    const game = await this.prisma.game.findUnique({
+      where: { id: gameId },
+      include: {
+        teams: {
+          select: {
+            missionPoints: true,
+            demoralizationPoints: true,
+            resourcePoints: true,
+          },
+        },
+      },
+    });
+
+    if (!game) {
+      throw new NotFoundException(`Game with ID "${gameId}" not found`);
+    }
+
+    // Aggregate totals across teams (global metrics). See TODO above for team-scoped alternative.
+    const totalMissionPoints =
+      (game.teams || []).reduce((sum, t: any) => sum + (t.missionPoints ?? 0), 0) || 0;
+    const totalDemoralizationPoints =
+      (game.teams || []).reduce((sum, t: any) => sum + (t.demoralizationPoints ?? 0), 0) || 0;
+    const totalResourcePoints =
+      (game.teams || []).reduce((sum, t: any) => sum + (t.resourcePoints ?? 0), 0) || 0;
+
+    const target = game.victoryConditionMP || 100;
+    const victoryProgress =
+      target > 0 ? Math.max(0, Math.min(100, Math.round((totalMissionPoints / target) * 100))) : 0;
+
+    return {
+      block: game.executionBlock,
+      day: game.day,
+      turn: game.turn,
+      phase: game.phase as any,
+      victoryProgress,
+      missionPoints: totalMissionPoints,
+      demoralizationPoints: totalDemoralizationPoints,
+      resourcePoints: totalResourcePoints,
+      victoryTarget: target,
+    };
+  }
+
+  /**
+   * Broadcast the current game status to all clients in the game's room.
+   * Intended to be called whenever Block/Day/Turn/Phase/Victory points change.
+   */
+  async broadcastCurrentGameStatus(gameId: number): Promise<void> {
+    const status = await this.getGameStatus(gameId);
+    this.gameGateway.broadcastGameStateUpdated(gameId.toString(), status);
   }
 
   /**

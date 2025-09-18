@@ -6,10 +6,15 @@
       <mat-icon class="md-sys-color-primary text-xl sm:text-2xl">leaderboard</mat-icon>
       <div class="md-typescale-title-small sm:md-typescale-title-medium">Scoreboard</div>
     </div>
-    <div class="md-typescale-label-small sm:md-typescale-label-medium md-sys-color-on-surface-variant text-center sm:text-right">
-      <span class="block sm:inline">Phase: {{ gamePhase }}</span>
+    <div
+      class="md-typescale-label-small sm:md-typescale-label-medium md-sys-color-on-surface-variant text-center sm:text-right"
+      [attr.aria-label]="'Phase ' + (gamePhase || '—') + ', Block ' + (gameBlock ?? '—') + ', Day ' + (gameDay ?? '—') + ', Turn ' + (gameTurn ?? '—')"
+    >
+      <span class="block sm:inline">Phase: {{ gamePhase || '—' }}</span>
       <span class="hidden sm:inline"> • </span>
-      <span class="block sm:inline text-xs sm:text-sm">Day {{ gameDay }} • Turn {{ gameTurn }}</span>
+      <span class="block sm:inline text-xs sm:text-sm">Block {{ gameBlock ?? '—' }}</span>
+      <span class="hidden sm:inline"> • </span>
+      <span class="block sm:inline text-xs sm:text-sm">Day {{ gameDay ?? '—' }} • Turn {{ gameTurn ?? '—' }}</span>
     </div>
   </div>
 
@@ -17,7 +22,7 @@
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-4">
     <mat-card class="md-elevation-1 p-2 sm:p-3 text-center">
       <div class="md-typescale-headline-small md-sys-color-primary text-lg sm:text-xl md:text-2xl">
-        {{ missionPoints }}
+        {{ (missionPoints$ | async) ?? '—' }}
       </div>
       <div class="md-typescale-body-small md-sys-color-on-surface-variant text-xs sm:text-sm">
         Mission Points
@@ -26,7 +31,7 @@
 
     <mat-card class="md-elevation-1 p-2 sm:p-3 text-center">
       <div class="md-typescale-headline-small md-sys-color-error text-lg sm:text-xl md:text-2xl">
-        {{ demoralizationPoints }}
+        {{ (demoralizationPoints$ | async) ?? '—' }}
       </div>
       <div class="md-typescale-body-small md-sys-color-on-surface-variant text-xs sm:text-sm">
         Demoralization
@@ -35,7 +40,7 @@
 
     <mat-card class="md-elevation-1 p-2 sm:p-3 text-center">
       <div class="md-typescale-headline-small md-sys-color-tertiary text-lg sm:text-xl md:text-2xl">
-        {{ resourcePoints }}
+        {{ (resourcePoints$ | async) ?? '—' }}
       </div>
       <div class="md-typescale-body-small md-sys-color-on-surface-variant text-xs sm:text-sm">
         Resources
@@ -54,7 +59,7 @@
       class="md-shape-corner-full"
     />
     <div class="md-typescale-body-small md-sys-color-on-surface-variant text-xs sm:text-sm">
-      {{ missionPoints }} / {{ victoryTarget }} MPs
+      {{ (missionPoints$ | async) ?? '—' }} / {{ (victoryTarget$ | async) ?? '—' }} MPs
     </div>
   </div>
 </mat-card>

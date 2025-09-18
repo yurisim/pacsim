@@ -148,4 +148,32 @@ export class ApiService {
   getCurrentAtoLines(gameId: number): Observable<any[]> {
     return this.get<any[]>(`ato/game/${gameId}/current`);
   }
+
+  /**
+   * Fetch minimal game status for Top Bar/Scoreboard.
+   * GET /game/:gameId/status
+   */
+  getGameStatus(gameId: string | number): Observable<{
+    block: number;
+    day: number;
+    turn: number;
+    phase: 'CRISIS' | 'CONFLICT';
+    victoryProgress: number; // 0..100
+    missionPoints: number;
+    demoralizationPoints: number;
+    resourcePoints: number;
+    victoryTarget: number;
+  }> {
+    return this.get<{
+      block: number;
+      day: number;
+      turn: number;
+      phase: 'CRISIS' | 'CONFLICT';
+      victoryProgress: number;
+      missionPoints: number;
+      demoralizationPoints: number;
+      resourcePoints: number;
+      victoryTarget: number;
+    }>(`game/${gameId}/status`);
+  }
 }
