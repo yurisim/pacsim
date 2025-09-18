@@ -15,6 +15,8 @@ import { AuthService } from '../../../../shared/services/auth.service';
 import { ApiService } from '../../../../shared/services/api.service';
 import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraftInstance.entity';
 import { of } from 'rxjs';
+import { provideMockStore } from '@ngrx/store/testing';
+import { initialGameState } from '../../../../core/store/game/game.state';
 
 describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
   let component: FlightPlannerDialogComponent;
@@ -95,6 +97,7 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
         { provide: MAT_DIALOG_DATA, useValue: mockDialogData },
         { provide: AuthService, useValue: mockAuthService },
         { provide: ApiService, useValue: mockApiService },
+        provideMockStore({ initialState: { game: initialGameState } }),
       ],
     }).compileComponents();
 
@@ -112,7 +115,7 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
       component.allLocationOptions.forEach(option => {
         expect(option.value).toBeDefined();
         expect(option.displayName).toBeDefined();
-        expect(option.type).toMatch(/^(MOB|FOS)$/);
+        expect(option.type).toMatch(/^(MOB|FOS|Hex)$/);
         expect(option.country).toBeDefined();
       });
     });

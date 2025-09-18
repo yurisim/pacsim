@@ -17,3 +17,8 @@ export const selectGameError = createSelector(
   selectGameState,
   (state: GameState) => state.error
 );
+
+export const selectHexGrid = createSelector(
+  selectGameState,
+  (state: GameState) => state.hexGrid
+);
