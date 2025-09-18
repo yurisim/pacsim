@@ -10,7 +10,8 @@
 
 1.  **Implement Civilization-Style Main Layout:**
 
-    - [ ] Display `Block`, `Day`, `Turn`, `Game Phase` (Crisis/Conflict), and `Victory Condition` progress. This directly replicates the top section of the `Mission Dashboard`.
+    - [ ] **Create Application Shell:** A responsive layout with a main content area for the map, a collapsible right sidebar, and a bottom information panel.
+    - [ ] **`TopBarComponent`:** Display `Block`, `Day`, `Turn`, `Game Phase` (Crisis/Conflict), and `Victory Condition` progress. This directly replicates the top section of the `Mission Dashboard`.
     - [ ] **`HexGridMapComponent`:** Render the main game board from Appendix A. It should be pannable and zoomable.
 
 2.  **Recreate Core Dashboard Widgets (from `Mission Dashboard` Excel Sheet):**
@@ -83,7 +84,6 @@
       - [ ] Create the interface for MOBs to request resources from USTRANSCOM, mirroring the "AEW Requests" sheet.
 
 4.  **CSpOC & MEDCOM Dashboards:**
-
     - [ ] **`CSpocDashboardComponent`:**
       - [ ] Build the dedicated UI for the CSpOC player, including orbital track visualization.
       - [ ] Implement the "Satellite Look" action.
@@ -92,21 +92,6 @@
       - [ ] Replicate the MEDCOM Excel tab, showing hospital bed space and task completion status.
       - [ ] Implement logic for MEDEVAC flights, allowing MEDCOM players to assign patients to aircraft via the ATO.
       - [ ] Automate patient status updates at the end of each turn based on completed hospital tasks.
-
-5.  **Allocation Notifications MVP**
-
-    - [ ] Badge, Toast, Notification Center
-    - [ ] NgRx slice and WebSocket handling
-    - [ ] Unread count, priority visuals, basic ARIA
-
-6.  **Scoring Scaffolding**
-
-    - [ ] Add Award API and service method (backend) to increment Mission Points with an audited reason (e.g., RFI_COMPLETED, CRISIS_SORTIE, CONFLICT_KILL_TIER10/7/5)
-    - [ ] Emit “award” events into a Game Log stream (temporary in-memory/audit entry)
-    - [ ] Wire NgRx/WS to reflect updated Mission Points on the Scoreboard
-
-7.  **UI/UX Update**
-    - [ ] Game Stats minimized header: remove MP/DP/RP summary; leave reserved placeholder for future TODO list
 
 ---
 
@@ -139,28 +124,9 @@
       - Advance all LEO/MEO satellites in their orbits for the CSpOC.
 
 4.  **Turn Management:**
-
     - [ ] Implement a "Ready" or "End Turn" button for each MOB Commander.
     - [ ] The GM dashboard should show which teams are ready.
     - [ ] The GM has the final authority to advance the turn once all teams are ready or time expires.
-
-5.  **Notifications Enforcement & End Phase Integration**
-
-    - [ ] Action-required acknowledgment enforcement
-    - [ ] Audit surfaces for notification delivery/ack status
-    - [ ] Role/room scoping validation
-    - [ ] End Phase modal “Outstanding Actions” integration via NgRx selectors
-
-6.  **Scoring Rules Implementation**
-
-    - [ ] RFIs Completion: +5 MP per FOS upon completing all 10 RFIs (initial + follow-up). Idempotent award (per FOS per cycle) with audited entry
-    - [ ] Crisis Sorties: +5 MP per fighter sortie launched from a FOS into an activated operational hex with required fuel and munitions present at launch (munitions not expended in Crisis). Validate origin ≠ MOB. Idempotent per sortie per turn
-    - [ ] Conflict Kills: Tiered MPs for destroying PLA targets (20→+10, 12→+7, 10→+5). Munitions expended in Conflict on successful attack
-    - [ ] Idempotency & Audit: Unique award keys for de-duplication; persistent audit entries per award
-    - [ ] Game Log integration: Emit domain-normalized “award” entries for UI logs
-
-7.  **EndTurnService Scoring Hooks**
-    - [ ] Centralize and/or finalize scoring application at end-of-turn where appropriate; ensure real-time updates broadcast upon calculation completion
 
 ---
 
@@ -170,8 +136,8 @@
 
 1.  **UI/UX Polish & Refinement:**
 
-    - [ ] **`GameLogComponent`:** Persistent, cross-domain action log (global history), separate from the bottom-panel Event Log (ephemeral feed). Consumes the normalized, shared notification schema and other domain events. Provides filtering and export capabilities.
-    - [ ] **Notifications & Tooltips:** Toast polish, tooltips, theme tokens, motion. Implement a toast notification system for immediate feedback on actions. Add tooltips to all icons and complex data points to explain game rules. Ensure theme tokens and motion guidelines are applied consistently.
+    - [ ] **`GameLogComponent`:** Add a persistent, scrollable log of all major game events (combat results, task completions, resource changes).
+    - [ ] **Notifications & Tooltips:** Implement a toast notification system for immediate feedback on actions. Add tooltips to all icons and complex data points to explain game rules.
     - [ ] **Visualizations:** Add visual effects for combat, asset movement paths, and status changes (e.g., a damaged runway icon).
     - [ ] **Final Styling:** Ensure the entire application has a consistent, professional, and military-simulation aesthetic.
 
@@ -190,17 +156,6 @@
     - [ ] **Deploy to Production:** Deploy the application to a cloud provider (e.g., AWS, DigitalOcean) for live use.
 
 4.  **Testing & User Acceptance:**
-
     - [ ] Conduct thorough end-to-end testing of all gameplay loops and role interactions.
     - [ ] Run a full-scale User Acceptance Test (UAT) with a group of Officer Trainees to gather feedback and identify bugs.
     - [ ] Iterate on feedback to ensure the digital version is an effective and engaging training tool.
-
-5.  **Notifications & Logs Finalization**
-
-    - [ ] Shared notification schema adopted by CSpOC/MEDCOM/GM
-    - [ ] Persistent Game Log with filters/export, ingesting normalized events from all domains
-
-6.  **Scoring & Logs Validation**
-    - [ ] Cross-verify award entries in persistent Game Log with UI totals
-    - [ ] UAT checklist for RFIs/Crisis/Conflict scoring scenarios
-    - [ ] Exportable award audit (CSV/JSON) for after-action review

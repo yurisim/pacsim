@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../../prisma/prisma.service';
 import { EventsGateway } from '../events.gateway';
 import { ForwardOperatingSite } from '../generated';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class FosService {
@@ -53,31 +52,21 @@ export class FosService {
     }
 
     if (team.gameId !== fos.gameId) {
-      // Do not leak existence of FOS in other games; treat as not found in this context
-      throw new NotFoundException('FOS not found');
+      throw new BadRequestException('Team and FOS must be in the same game');
     }
 
-    let activatedFOS: ForwardOperatingSite;
-    try {
-      activatedFOS = await this.prisma.forwardOperatingSite.update({
-        where: { id: fosId },
-        data: {
-          isActive: true,
-          teamId: teamId,
-          turnActivated: currentTurn,
-        },
-        include: {
-          team: true,
-          game: true,
-        },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
-        // Map "record not found" to HTTP 404 per REST semantics
-        throw new NotFoundException('FOS not found');
-      }
-      throw e;
-    }
+    const activatedFOS = await this.prisma.forwardOperatingSite.update({
+      where: { id: fosId },
+      data: {
+        isActive: true,
+        teamId: teamId,
+        turnActivated: currentTurn,
+      },
+      include: {
+        team: true,
+        game: true,
+      },
+    });
 
     // Broadcast FOS activation to all clients in the game
     await this.broadcastFOSUpdate(fos.gameId, fos.game?.roomCode);
@@ -104,27 +93,18 @@ export class FosService {
       throw new BadRequestException('FOS is already inactive');
     }
 
-    let deactivatedFOS: ForwardOperatingSite;
-    try {
-      deactivatedFOS = await this.prisma.forwardOperatingSite.update({
-        where: { id: fosId },
-        data: {
-          isActive: false,
-          teamId: null,
-          turnActivated: null,
-        },
-        include: {
-          team: true,
-          game: true,
-        },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
-        // Map "record not found" to HTTP 404 per REST semantics
-        throw new NotFoundException('FOS not found');
-      }
-      throw e;
-    }
+    const deactivatedFOS = await this.prisma.forwardOperatingSite.update({
+      where: { id: fosId },
+      data: {
+        isActive: false,
+        teamId: null,
+        turnActivated: null,
+      },
+      include: {
+        team: true,
+        game: true,
+      },
+    });
 
     // Broadcast FOS deactivation to all clients in the game
     await this.broadcastFOSUpdate(fos.gameId, fos.game?.roomCode);

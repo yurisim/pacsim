@@ -4,10 +4,6 @@
 
 This document describes the comprehensive real-time communication and notification system implemented for CFACC-MOB aircraft allocation coordination. The system enables immediate communication of allocation decisions between CFACC strategic command and MOB operational teams.
 
-## Scope
-- This is an allocation domain subsystem focused on CFACC↔MOB allocation communications.
-- Cross-domain reuse will occur via a shared notification schema planned in [docs/milestones.md](docs/milestones.md) Phase 4 (“Notifications & Logs Finalization”).
-
 ## System Architecture
 
 ### Backend Components
@@ -57,22 +53,18 @@ This document describes the comprehensive real-time communication and notificati
   - Notification acknowledgment processing
 
 #### 2. Notification Components
-Note: Planned (Phase 2: Allocation Notifications MVP)
 - **Toast Component**: [`apps/pac-shield/src/app/features/game/notifications/allocation-notification-toast/`](apps/pac-shield/src/app/features/game/notifications/allocation-notification-toast/)
   - Real-time popup notifications
   - Priority-based styling
   - Auto-dismiss and manual controls
-  - Status: Planned (Phase 2)
 - **Badge Component**: [`apps/pac-shield/src/app/features/game/notifications/allocation-notification-badge/`](apps/pac-shield/src/app/features/game/notifications/allocation-notification-badge/)
   - Unread notification indicators
   - Priority-based visual alerts
   - Accessibility compliant
-  - Status: Planned (Phase 2)
 - **Notification Center**: [`apps/pac-shield/src/app/features/game/notifications/allocation-notification-center/`](apps/pac-shield/src/app/features/game/notifications/allocation-notification-center/)
   - Complete notification history
   - Filtering by read/unread/action required
   - Bulk actions (mark all read, clear all)
-  - Status: Planned (Phase 2)
 
 #### 3. WebSocket Service
 - **Location**: [`apps/pac-shield/src/app/shared/services/allocation-websocket.service.ts`](apps/pac-shield/src/app/shared/services/allocation-websocket.service.ts)
@@ -91,8 +83,6 @@ Note: Planned (Phase 2: Allocation Notifications MVP)
   - Request submission notifications
   - Allocation confirmation feedback
   - Pool update notifications
-
-Status: Planned (Phase 2)
 
 ## Communication Workflow
 
@@ -218,12 +208,6 @@ Turn advancement → AircraftPoolService.refreshAircraftPool()
 - Filtering tabs: All, Unread, Action Required
 - Bulk operations (mark all read, clear all)
 - Detailed notification views with metadata
-
-## Event Log and Game Log Integration
-- Allocation notifications will be normalized into:
-  - Bottom Panel Event Log (ephemeral feed) as described in [docs/ui-design-specification.md](docs/ui-design-specification.md).
-  - Persistent Game Log with filters/export in Phase 4 per [docs/milestones.md](docs/milestones.md) (“Notifications & Logs Finalization”).
-- Action-required notifications (e.g., REQUEST_REVIEWED, AIRCRAFT_ALLOCATED with acknowledgment) will surface as “Outstanding Actions” in the End Phase modal via NgRx selectors (planned in Phase 3).
 
 ## Security & Permissions
 

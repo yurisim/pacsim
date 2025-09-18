@@ -32,15 +32,6 @@ export class GameController {
   }
 
   /**
-   * GET /game/:id/status
-   * Minimal status used by Top Bar (block/day/turn/phase/victoryProgress).
-   */
-  @Get(':id/status')
-  async getGameStatus(@Param('id') id: string) {
-    return this.gameService.getGameStatus(+id);
-  }
-
-  /**
    * GET /game/validate/:roomCode
    * Lightweight existence check before user attempts to join.
    * @returns { valid: boolean, gameId?: number }
