@@ -203,7 +203,9 @@ export class WebSocketService {
       if (!this.gameNsSocket) {
         console.error('Game namespace socket not connected. Call connectToGameNamespace() first.');
         subscriber.complete();
-        return;
+        return () => {
+          // Cleanup function - no socket to clean up in this case
+        };
       }
       const handler = (data: any) => subscriber.next(data);
       this.gameNsSocket.on('gameStateUpdated', handler);
