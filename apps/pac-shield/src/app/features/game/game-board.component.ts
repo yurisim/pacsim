@@ -574,9 +574,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.initializeMap();
 
       // Initialize demo FOS activations after a slight delay to ensure markers are ready
-      setTimeout(() => {
-        this.initializeDemoFosActivations();
-      }, 1000);
+      // Commented out: No FOSs should be active at game start
+      // setTimeout(() => {
+      //   this.initializeDemoFosActivations();
+      // }, 1000);
     }, 0);
   }
 

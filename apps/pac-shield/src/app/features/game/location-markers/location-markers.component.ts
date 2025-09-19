@@ -13,14 +13,14 @@ import {
 
 /**
  * Component Intent: Renders and manages MOB and FOS location markers on the game map.
- * 
+ *
  * This component provides:
  * - Custom HTML markers for MOB locations with home icons
  * - Custom HTML markers for FOS locations with camping icons and color coding
  * - Theme-aware styling that responds to light/dark mode changes
  * - Efficient marker management with proper cleanup
  * - Color-coded FOS markers based on strategic value (green/yellow/red)
- * 
+ *
  * The component uses Material Design icons and maintains references to DOM elements
  * for dynamic theme updates without recreating markers.
  */
@@ -122,7 +122,7 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
 
   /**
    * Method Intent: Render MOB location symbols using custom HTML markers with Material Design icons.
-   * 
+   *
    * Creates home icon markers for each Main Operating Base with:
    * - Material Design home icon
    * - Base name label
@@ -199,7 +199,7 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
 
   /**
    * Method Intent: Render FOS location symbols using custom HTML markers with camping icons and color coding.
-   * 
+   *
    * Creates festival/camping icon markers for each Forward Operating Site with:
    * - Material Design festival icon
    * - Site name label
@@ -225,6 +225,14 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
 
     const config = { ...this.defaultConfig, ...this.markerConfig };
 
+    // Log active FOS when map loads
+    const activeFosList = this.fosStateService.getActiveFosList();
+    console.log('Active FOS list on map load:', activeFosList.map(fos => ({
+      id: fos.fosIdNumber,
+      name: this.getFosNameById(fos.fosIdNumber || 0),
+      isActive: fos.isActive
+    })));
+
     // Create custom HTML markers for each FOS location
     Object.values(FOS_LOCATIONS).forEach(fos => {
       try {
@@ -234,7 +242,7 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
         markerElement.style.textAlign = 'center';
         markerElement.style.cursor = 'pointer';
         markerElement.style.transition = 'opacity 0.3s ease-in-out';
-        
+
         // Set initial opacity based on activation status from service
         const isActive = this.fosStateService.isFosActive(fos.id);
         markerElement.style.opacity = isActive ? '1' : '0.5';
@@ -245,9 +253,15 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
         iconElement.textContent = 'festival';
         iconElement.style.fontSize = config.iconSize;
 
-        // Set color based on activation status - grey initially, green when active
-        const iconColor = this.getFosActivationColor(isActive);
+        // Set color based on FOS color with activation-based opacity
+        const fosColor = fos.color || 'green'; // Default to green if no color specified
+        const iconColor = this.getThemeAwareFosColor(fosColor);
         iconElement.style.color = iconColor;
+
+        // Apply transparency for unoccupied FOS
+        if (!isActive) {
+          iconElement.style.opacity = '0.4';
+        }
 
         // Create label element
         const labelElement = document.createElement('div');
@@ -319,9 +333,13 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
         markerRef.isActive = shouldBeActive;
         markerRef.markerElement.style.opacity = shouldBeActive ? '1' : '0.5';
 
-        // Update colors based on new activation status
-        const newColor = this.getFosActivationColor(shouldBeActive);
+        // Update colors based on FOS color with activation-based transparency
+        const fosColor = markerRef.fosData.color || 'green';
+        const newColor = this.getThemeAwareFosColor(fosColor);
+        const opacity = shouldBeActive ? '1' : '0.5';
+
         markerRef.iconElement.style.color = newColor;
+        markerRef.iconElement.style.opacity = opacity;
         markerRef.labelElement.style.color = newColor;
       }
     });
@@ -339,9 +357,13 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
         markerRef.isActive = shouldBeActive;
         markerRef.markerElement.style.opacity = shouldBeActive ? '1' : '0.5';
 
-        // Update colors based on new activation status
-        const newColor = this.getFosActivationColor(shouldBeActive);
+        // Update colors based on FOS color with activation-based transparency
+        const fosColor = markerRef.fosData.color || 'green';
+        const newColor = this.getThemeAwareFosColor(fosColor);
+        const opacity = shouldBeActive ? '1' : '0.5';
+
         markerRef.iconElement.style.color = newColor;
+        markerRef.iconElement.style.opacity = opacity;
         markerRef.labelElement.style.color = newColor;
       }
     });
@@ -352,10 +374,14 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * Called when theme changes to ensure HTML marker colors stay consistent
    */
   private updateMarkerColors(): void {
-    // Update FOS marker colors based on activation status
+    // Update FOS marker colors based on FOS color with activation-based transparency
     this.fosMarkers.forEach(({ fosData, iconElement, labelElement, isActive }) => {
-      const newColor = this.getFosActivationColor(isActive);
+      const fosColor = fosData.color || 'green';
+      const newColor = this.getThemeAwareFosColor(fosColor);
+      const opacity = isActive ? '1' : '0.5';
+
       iconElement.style.color = newColor;
+      iconElement.style.opacity = opacity;
       labelElement.style.color = newColor;
     });
 
@@ -416,24 +442,6 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
     return rootStyle.getPropertyValue(variableName).trim();
   }
 
-  /**
-   * Helper method to get FOS activation colors based on theme and activation status.
-   * Returns grey for inactive FOSs and green for active ones, with theme-aware contrast.
-   *
-   * @param isActive Whether the FOS is currently activated
-   * @returns Color string appropriate for the current theme and activation status
-   */
-  private getFosActivationColor(isActive: boolean): string {
-    const isDarkMode = this.themeService.isDarkMode();
-
-    if (isActive) {
-      // Green colors for activated FOSs
-      return isDarkMode ? '#81C784' : '#388E3C'; // Light green in dark mode, dark green in light mode
-    } else {
-      // Grey colors for inactive FOSs
-      return isDarkMode ? '#BDBDBD' : '#616161'; // Lighter grey in dark mode, dark grey in light mode
-    }
-  }
 
   /**
    * Helper method to get theme-aware FOS colors with proper contrast ratios.
@@ -444,7 +452,7 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * - Dark theme: Brighter, less saturated colors for better contrast on dark backgrounds
    * - All colors maintain minimum 4.5:1 contrast ratio with their respective backgrounds
    *
-   * @deprecated This method is no longer used since FOSs now use activation-based coloring
+   * Used for FOS color rendering with activation-based transparency.
    */
   private getThemeAwareFosColor(fosColor: string): string {
     const isDarkMode = this.themeService.isDarkMode();
@@ -543,9 +551,13 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
       markerRef.isActive = isActive;
       markerRef.markerElement.style.opacity = isActive ? '1' : '0.5';
 
-      // Update colors based on new activation status
-      const newColor = this.getFosActivationColor(isActive);
+      // Update colors based on FOS color with activation-based transparency
+      const fosColor = markerRef.fosData.color || 'green';
+      const newColor = this.getThemeAwareFosColor(fosColor);
+      const opacity = isActive ? '1' : '0.5';
+
       markerRef.iconElement.style.color = newColor;
+      markerRef.iconElement.style.opacity = opacity;
       markerRef.labelElement.style.color = newColor;
     }
   }
@@ -579,10 +591,23 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
       markerRef.isActive = false;
       markerRef.markerElement.style.opacity = '0.5';
 
-      // Update colors to grey for deactivated state
-      const greyColor = this.getFosActivationColor(false);
-      markerRef.iconElement.style.color = greyColor;
-      markerRef.labelElement.style.color = greyColor;
+      // Update colors based on FOS color with deactivated transparency
+      const fosColor = markerRef.fosData.color || 'green';
+      const colorValue = this.getThemeAwareFosColor(fosColor);
+      markerRef.iconElement.style.color = colorValue;
+      markerRef.iconElement.style.opacity = '0.5';
+      markerRef.labelElement.style.color = colorValue;
     });
+  }
+
+  /**
+   * Helper method to get FOS name by its ID number
+   * @param fosIdNumber The numeric ID of the FOS (e.g., 1 for 'fos-01')
+   * @returns The name of the FOS or 'Unknown FOS' if not found
+   */
+  private getFosNameById(fosIdNumber: number): string {
+    const fosId = this.fosStateService.numberToFosId(fosIdNumber);
+    const fosLocation = FOS_LOCATIONS[fosId];
+    return fosLocation ? fosLocation.name : 'Unknown FOS';
   }
 }
