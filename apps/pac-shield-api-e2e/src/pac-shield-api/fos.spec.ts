@@ -4,7 +4,6 @@ describe('FOS Controller E2E', () => {
   let gameId: number;
   let roomCode: string;
   let teamId: number;
-  let fosId: number;
   let playerToken: string;
 
   beforeAll(async () => {
@@ -39,11 +38,8 @@ describe('FOS Controller E2E', () => {
       teamId = 1;
     }
 
-    // Create a test FOS for the game - this needs to be done through direct DB access
-    // or via a test utility since there's likely no public FOS creation endpoint
-    // For this test, we'll use a mock FOS ID and rely on existing data
-    // In production tests, you'd set up test data via database seeders
-    fosId = 1; // This should be a real FOS ID from test data
+    // Note: FOSs are created dynamically when activated via the API
+    // No need to pre-create test data since the activate endpoint handles creation
   });
 
   describe('GET /api/fos/game/:gameId', () => {
@@ -70,19 +66,19 @@ describe('FOS Controller E2E', () => {
         const fos = res.data[0];
         expect(fos).toHaveProperty('id');
         expect(fos).toHaveProperty('gameId');
-        expect(fos).toHaveProperty('fosIdNumber');
+        expect(fos).toHaveProperty('fosDisplayNumber');
         expect(fos).toHaveProperty('isActive');
-        expect(typeof fos.id).toBe('number');
+        expect(typeof fos.id).toBe('string');
         expect(typeof fos.gameId).toBe('number');
-        expect(typeof fos.fosIdNumber).toBe('number');
+        expect(typeof fos.fosDisplayNumber).toBe('number');
         expect(typeof fos.isActive).toBe('boolean');
       }
     });
   });
 
   describe('POST /api/fos/:id/activate', () => {
-    it('should create and activate a new FOS when using fosIdNumber', async () => {
-      const fosIdNumber = 7; // Use FOS 7 for testing
+    it('should create and activate a new FOS when using fosDisplayNumber', async () => {
+      const fosDisplayNumber = 7; // Use FOS 7 for testing
       const currentTurn = 3;
 
       // Verify no FOSs exist initially
@@ -90,13 +86,13 @@ describe('FOS Controller E2E', () => {
       expect(initialRes.data.length).toBe(0);
 
       // Activate FOS 7 - should create and activate it
-      const res = await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+      const res = await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn,
+        turnActivated: currentTurn,
       });
 
       expect(res.status).toBe(201);
-      expect(res.data.fosIdNumber).toBe(fosIdNumber);
+      expect(res.data.fosDisplayNumber).toBe(fosDisplayNumber);
       expect(res.data.isActive).toBe(true);
       expect(res.data.teamId).toBe(teamId);
       expect(res.data.turnActivated).toBe(currentTurn);
@@ -106,37 +102,37 @@ describe('FOS Controller E2E', () => {
       // Verify FOS now exists in the game
       const afterRes = await axios.get(`/api/fos/game/${gameId}`);
       expect(afterRes.data.length).toBe(1);
-      expect(afterRes.data[0].fosIdNumber).toBe(fosIdNumber);
+      expect(afterRes.data[0].fosDisplayNumber).toBe(fosDisplayNumber);
     });
 
-    it('should create FOS with valid fosIdNumber even if it seems high', async () => {
-      const fosIdNumber = 25; // Valid FOS ID number
+    it('should create FOS with valid fosDisplayNumber even if it seems high', async () => {
+      const fosDisplayNumber = 25; // Valid FOS ID number
       const currentTurn = 1;
 
-      const res = await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+      const res = await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn,
+        turnActivated: currentTurn,
       });
 
       expect(res.status).toBe(201);
-      expect(res.data.fosIdNumber).toBe(fosIdNumber);
+      expect(res.data.fosDisplayNumber).toBe(fosDisplayNumber);
       expect(res.data.isActive).toBe(true);
     });
 
     it('should return 400 when activating already active FOS', async () => {
-      const fosIdNumber = 15;
+      const fosDisplayNumber = 15;
 
       // First activate the FOS
-      await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+      await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn: 3,
+        turnActivated: 3,
       });
 
       // Now try to activate it again - this should fail
       try {
-        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+        await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
           teamId,
-          currentTurn: 4,
+          turnActivated: 4,
         });
         fail('Expected request to fail');
       } catch (error) {
@@ -146,12 +142,12 @@ describe('FOS Controller E2E', () => {
     });
 
     it('should return 404 when using non-existent team', async () => {
-      const fosIdNumber = 20;
+      const fosDisplayNumber = 20;
 
       try {
-        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+        await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
           teamId: 99999,
-          currentTurn: 1,
+          turnActivated: 1,
         });
         fail('Expected request to fail');
       } catch (error) {
@@ -161,21 +157,21 @@ describe('FOS Controller E2E', () => {
     });
 
     it('should validate required fields', async () => {
-      const fosIdNumber = 30;
+      const fosDisplayNumber = 30;
 
       // Test missing teamId
       try {
-        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
-          currentTurn: 1,
+        await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
+          turnActivated: 1,
         });
         fail('Expected request to fail');
       } catch (error) {
         expect(error.response.status).toBe(400);
       }
 
-      // Test missing currentTurn
+      // Test missing turnActivated
       try {
-        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+        await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
           teamId,
         });
         fail('Expected request to fail');
@@ -186,7 +182,7 @@ describe('FOS Controller E2E', () => {
   });
 
   describe('PATCH /api/fos/:id/deactivate', () => {
-    let activeFosId: number;
+    let activeFosId: string;
 
     beforeAll(async () => {
       // Find an active FOS to use for testing
@@ -198,9 +194,9 @@ describe('FOS Controller E2E', () => {
       } else {
         // If no FOSs are active, activate one for testing
         if (fosRes.data.length > 0) {
-          await axios.post(`/api/fos/${fosRes.data[0].id}/activate`, {
+          await axios.post(`/api/fos/${fosRes.data[0].fosDisplayNumber}/activate`, {
             teamId,
-            currentTurn: 1,
+            turnActivated: 1,
           });
           activeFosId = fosRes.data[0].id;
         }
@@ -224,7 +220,7 @@ describe('FOS Controller E2E', () => {
 
     it('should return 404 when deactivating non-existent FOS', async () => {
       try {
-        await axios.patch(`/api/fos/99999/deactivate`);
+        await axios.patch(`/api/fos/00000000-0000-0000-0000-000000000000/deactivate`);
         fail('Expected request to fail');
       } catch (error) {
         expect(error.response.status).toBe(404);
@@ -257,7 +253,7 @@ describe('FOS Controller E2E', () => {
   });
 
   describe('FOS activation workflow', () => {
-    let workflowFosId: number;
+    let workflowFosId: string;
 
     beforeAll(async () => {
       // Find any FOS to use for workflow testing
@@ -286,11 +282,12 @@ describe('FOS Controller E2E', () => {
       expect(initialFos.isActive).toBe(false);
       expect(initialFos.teamId).toBeNull();
 
-      // 2. Activate the FOS
+      // 2. Activate the FOS using fosDisplayNumber
       const currentTurn = 5;
-      const activateRes = await axios.post(`/api/fos/${workflowFosId}/activate`, {
+      const fosToActivate = initialRes.data.find(f => f.id === workflowFosId);
+      const activateRes = await axios.post(`/api/fos/${fosToActivate.fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn,
+        turnActivated: currentTurn,
       });
       expect(activateRes.data.isActive).toBe(true);
       expect(activateRes.data.teamId).toBe(teamId);
@@ -329,16 +326,18 @@ describe('FOS Controller E2E', () => {
       }
 
       // Activate, deactivate, then reactivate
-      await axios.post(`/api/fos/${workflowFosId}/activate`, {
+      const fosRes = await axios.get(`/api/fos/game/${gameId}`);
+      const fosToUse = fosRes.data.find(f => f.id === workflowFosId);
+      await axios.post(`/api/fos/${fosToUse.fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn: 1,
+        turnActivated: 1,
       });
 
       await axios.patch(`/api/fos/${workflowFosId}/deactivate`);
 
-      const reactivateRes = await axios.post(`/api/fos/${workflowFosId}/activate`, {
+      const reactivateRes = await axios.post(`/api/fos/${fosToUse.fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn: 2,
+        turnActivated: 2,
       });
 
       expect(reactivateRes.data.isActive).toBe(true);
@@ -348,7 +347,7 @@ describe('FOS Controller E2E', () => {
   });
 
   describe('Error handling and edge cases', () => {
-    let edgeCaseFosId: number;
+    let edgeCaseFosId: string;
 
     beforeAll(async () => {
       // Find a FOS to use for edge case testing
@@ -368,7 +367,7 @@ describe('FOS Controller E2E', () => {
       try {
         await axios.post(`/api/fos/invalid/activate`, {
           teamId,
-          currentTurn: 1,
+          turnActivated: 1,
         });
         fail('Expected request to fail');
       } catch (error) {
@@ -382,10 +381,14 @@ describe('FOS Controller E2E', () => {
         return;
       }
 
+      // Get fosDisplayNumber from the FOS entity
+      const fosRes = await axios.get(`/api/fos/game/${gameId}`);
+      const edgeCaseFos = fosRes.data.find(f => f.id === edgeCaseFosId);
+
       try {
-        await axios.post(`/api/fos/${edgeCaseFosId}/activate`, {
+        await axios.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
           teamId: -1,
-          currentTurn: 1,
+          turnActivated: 1,
         });
         fail('Expected request to fail');
       } catch (error) {
@@ -407,19 +410,23 @@ describe('FOS Controller E2E', () => {
         // Might already be inactive
       }
 
+      // Get fosDisplayNumber from the FOS entity
+      const fosRes = await axios.get(`/api/fos/game/${gameId}`);
+      const edgeCaseFos = fosRes.data.find(f => f.id === edgeCaseFosId);
+
       // Test with turn 0
-      const zeroTurnRes = await axios.post(`/api/fos/${edgeCaseFosId}/activate`, {
+      const zeroTurnRes = await axios.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn: 0,
+        turnActivated: 0,
       });
       expect(zeroTurnRes.data.turnActivated).toBe(0);
 
       await axios.patch(`/api/fos/${edgeCaseFosId}/deactivate`);
 
       // Test with negative turn
-      const negativeTurnRes = await axios.post(`/api/fos/${edgeCaseFosId}/activate`, {
+      const negativeTurnRes = await axios.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn: -5,
+        turnActivated: -5,
       });
       expect(negativeTurnRes.data.turnActivated).toBe(-5);
     });
@@ -437,10 +444,14 @@ describe('FOS Controller E2E', () => {
         // Might already be inactive
       }
 
+      // Get fosDisplayNumber from the FOS entity
+      const fosRes = await axios.get(`/api/fos/game/${gameId}`);
+      const edgeCaseFos = fosRes.data.find(f => f.id === edgeCaseFosId);
+
       // Activate and verify persistence
-      await axios.post(`/api/fos/${edgeCaseFosId}/activate`, {
+      await axios.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
         teamId,
-        currentTurn: 10,
+        turnActivated: 10,
       });
 
       // Check that the state was persisted by making a new request
