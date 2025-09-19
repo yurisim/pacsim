@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { AtoState, initialAtoState } from './ato.state';
 import * as AtoActions from './ato.actions';
+import { ATOLine } from '../../generated/aTOLine/aTOLine.entity';
 
 /**
  * ATO reducer for managing Air Tasking Order state
@@ -226,8 +227,8 @@ export const atoReducer = createReducer(
   on(AtoActions.atoTurnAdvancedFromSocket, (state, { turn }) => ({
     ...state,
     previousLines: [...state.currentLines],
-    currentLines: [],
-    pprQueue: [],
+    currentLines: [] as ATOLine[],
+    pprQueue: [] as ATOLine[],
     lastRefresh: new Date().toISOString(),
   })),
 
