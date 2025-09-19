@@ -153,11 +153,11 @@ These points represent negative points in the event teams deploy too many person
 - **1.1.3.2.2. Deployed without Food/Water.** One day without food or water automatically allocates 10 DPs, and two or more days allocates 30 DPs per day. Days without food or water are calculated starting at the turn when the first personnel arrived at the location. DPs are awarded at the end of each gameplay day.
 - **1.1.3.2.3.** If adequate Beddown and Sanitation is not established within 4 turns of personnel arriving at the location, 5 DPs are gained. Teams will accumulate 10 DPs for each consecutive day without adequate Bed down and Sanitation, awarded at the end of each gameday.
 - **1.1.3.2.4. Beddown and Sanitation setup is adjusted to the following:**
+
   - **1.1.3.2.4.1.** 5-10 Pers: 4 Turns
 
-
-    *   **1.1.3.2.4.2.** 11-20 Pers: 2 Turns
-    *   **1.1.3.2.4.3.** 21+ Pers: 1 Turn
+    - **1.1.3.2.4.2.** 11-20 Pers: 2 Turns
+    - **1.1.3.2.4.3.** 21+ Pers: 1 Turn
 
 - **1.1.3.2.5. Inadequate Health and Welfare,** defined as Airfield Task #14 not complete, will result in 5 DPs per gameplay day.
 - **1.1.3.2.6. Demoralization Points will not be collected from the CSpOC.**
@@ -259,9 +259,9 @@ Support Commanders to understand, integrate, delegate, and execute to ensure mis
 ### 2.4. Hex Overlay
 
 - **2.4.1.** The center of the game board indicates the main operational area (the Indo-Pacific AOR). Hexes will indicate operating locations and movement restrictions. There is a threat ring indicating the potential reach of the adversary's ballistic missiles and airfield locations with varying capabilities. Each hex represents approximately 200 nautical miles.
+
   - **2.4.1.1.** Mobility aircraft range is depicted by the number in the white hex at the bottom of the aircraft counter. Mobility aircraft can move the specified number of hexes per turn and remain airborne to continue movement the next turn. However, aircraft remaining airborne for two subsequent turns will run out of fuel and be destroyed.
   - **2.4.1.2.** Fighter and other combat operations aircraft have a range of 4 hexes. Fighter and other combat operations aircraft must land at the end of each turn or the aircraft will run out of fuel and be destroyed. Fighter and other combat operations aircraft do not have to land at the same airfield that they departed from, but capabilities at the landing location will determine whether the aircraft is able to launch again on the next turn.
-
 
 - **2.4.2.** The DF-26 threat ring depicted on the main board generically represents the range of China's ballistic missiles. Bases located inside this range may be targeted by the People's Liberation Army Rocket Force (PLARF) during conflict.
   - **2.4.2.1.** Country borders determine base access and overflight considerations. Access to these countries is determined during the base access and overflight step of the game and the EXORD/FRAGORD.
@@ -552,17 +552,15 @@ The following paragraphs will describe items found on the MOB board.
     - **5.3.8.2.7.** (02:15-02:30) Seventh Look
   - **5.3.8.3. 30 Minutes Hotwash/Debrief/Feedback (02:30-03:00)**
     - **5.3.8.3.1.** 10 mins Hotwash / 10 mins Debrief to Instructor / 10 mins Instructor Feedback
- 
- 
- ### 5.4. Turn Management
- 
- #### 5.4.1. Turn Management Rules
- 
- - MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
- - Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.
- 
- 
- ## Chapter 6: CSpOC SPECIFIC INFORMATION
+
+### 5.4. Turn Management
+
+#### 5.4.1. Turn Management Rules
+
+- MOB commanders can only mark their own team as "done" for the current turn, signaling completion of their actions.
+- Only the Game Master (GM) has the authority to advance the turn, ensuring orderly progression and that all teams are prepared.
+
+## Chapter 6: CSpOC SPECIFIC INFORMATION
 
 ### 6.1. Introduction
 
@@ -744,9 +742,9 @@ The concept of ACE includes two critical components: (1) The assumption that US 
     - **8.3.1.2.1. NOTE:** Teams may airdrop a runway repair team if the FOS is Non-Operational and repair capabilities do not exist. A Risk Token is required to execute an airdrop.
     - **8.3.1.2.2.** C-17s or C-5s located at a MOB/FOS that is hit with a kinetic strike on the runway and degraded to C-130 Operations Only will be stuck in place until airfield repairs are complete. These aircraft are still counted in the total apportioned forces.
 - **8.3.2. Kinetic Strike on the Parking Ramp.**
+
   - **8.3.2.1.** A successful kinetic strike to the parking ramp will reduce the airfield's MOG. The operational capability of the ramp will be presented as a percentage of full operational capability (i.e. 40% means that the MOG is 40% of the MOG before the strike occurred).
   - **8.3.2.2.** If a kinetic strike to a parking ramp degrades the MOG to the extent that it is no longer capable of supporting the aircraft currently on the ground at the FOS at the time of the strike, then the aircraft causing the overage are destroyed.
-
 
 - **8.3.3. Consecutive Strikes.**
   - **8.3.3.1.** Airfields successfully attacked on the previous turn will not automatically be “detected and targeted" the following turn.
