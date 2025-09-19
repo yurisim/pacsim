@@ -1,4 +1,3 @@
-
 # OFFICER TRAINING SCHOOL
 
 # OPERATION PACIFIC SHIELD
@@ -18,11 +17,9 @@ _"Always with Honor”_
 **Officer Training School**
 **Maxwell Air Force Base, Alabama**
 
-
 **Officer of Primary Responsibility:** Officer Training School (OTS) Module 4 A2/3  
 **Supersedes:** All previously dated documents, same subject.  
 **Total Pages:** 72
-
 
 > **RELEASABILITY:** All information herein is for OTS training use only. Any unauthorized disclosure of this information may result in the removal from OTS or UCMJ action.
 
@@ -35,7 +32,6 @@ Learning the game is up to you! Get started early in OTS. You will execute OPS i
 The use of the word “**will**” in this guide denotes an OTS standard that requires compliance. The use of the word “**should**” denotes techniques and suggestions that have been proven effective, but are not OTS standards requiring compliance.
 
 Let's get started!
-
 
 ## Chapter 1: GENERAL GAMEPLAY
 
@@ -75,7 +71,6 @@ Led by the Combined Forces Air Component Commander (CFACC) will coordinate and s
 
 > States that the Joint Force Commander (JFC) normally designates a Joint Force Air Component Commander (JFACC) or CFACC to establish unity of command and unity of effort for joint air operations. The JFC will normally assign CFACC responsibilities to the component commander having the preponderance of forces to be tasked and the ability to effectively plan, task, and control joint air operations. The CFACC will normally exercise tactical control (TACON) over forces made available for tasking. The CFACC normally provides oversight and guidance during the execution of joint air operations, to include making timely adjustments to taskings of available joint air forces.
 
-
 ##### 1.1.1.6. Combined Force Space Component Command (CFSCC) Team
 
 Led by the CSpOC commander will coordinate and synchronize operations in accordance with (IAW) CFACC intent, to facilitate the maximum generation of mission points.
@@ -105,7 +100,6 @@ GMs assigned to a MOB will execute necessary updates to the OPS Execution Spread
 
 GMs assigned to MEDCOM may access the “MEDCOM Data” tab on the excel; however, all other MEDCOM team members may only view the “MEDCOM” tab. Additionally, the MEDCOM GM is responsible for ensuring patients are tracked properly (to include personnel at a FOS, personnel picked up by medevac aircraft, and personnel landed at a hospital) and rules are followed in accordance with this OPS User Guide.
 
-
 ###### 1.1.1.7.4. GM (CAOC) Spreadsheet Duties
 
 GMs assigned to the CAOC will execute the following necessary updates to the OPS Execution Spreadsheet:
@@ -130,7 +124,6 @@ Neither the CSpOC team, nor the CSpOC GM need to access the OPS Execution Spread
 #### 1.1.3. OPS Point System
 
 Teams obtain and lose points throughout the game. The objective of OPS is for CJTF Agile Dragon to accumulate as many mission points as possible. OPS consists of mission points, resource points, and demoralization points. The GM will calculate all three scoring criteria at the end of each turn. Actions performed by the CFSCC will indirectly affect CFACC's ability to obtain and maximize mission points.
-
 
 ##### 1.1.3.1. Mission Points (MP)
 
@@ -176,7 +169,6 @@ Resource Points represent the relationships established with host nations at eac
 - **1.1.4.1.** OPS is executed across multiple execution blocks, allowing opportunities for numerous MCEs per team throughout the course of gameplay. Each MCE block consists of a three-hour period and does not correspond to any specific game turns or days.
 - **1.1.4.2.** Aircraft apportionment and diplomatic assessments will change at the beginning of each OPS execution block.
 
-
 ## Chapter 2: GAME BOARD AND PIECES
 
 ### 2. Main Game Board
@@ -203,7 +195,6 @@ Personnel counters represent the minimum personnel requirement to complete tasks
 
 [Image of Personnel Counters: Refueling, Airfield Ops, Air Traffic Control, Weather.]
 
-
 #### 2.2.2. Equipment Counters
 
 Equipment counters represent capabilities required to complete tasks identified on the airfield playing cards. “X PP” represents the number of pallet positions the equipment requires for air transport.
@@ -224,7 +215,6 @@ Considered available as determined by the OPORD. Once employed, fighter and othe
 
 - **2.2.4.1.1. NOTE:** The aircraft “strength” determines the number-sided dice that will be rolled. For example, an F-16 with a “12 strength" will roll a 12-sided dice versus the appropriate enemy strength (10, 12, or 20-sided dice). The highest number rolled will win the engagement. Exception to this rule is that F-22 will roll a 20-sided dice and have the strength of 20 not the “18 strength” it says on the token.
 
-
 [Image of a Fighter Aircraft Counter for an F-22 with a strength of 18.]
 
 ##### 2.2.4.2. Mobility Aircraft
@@ -242,7 +232,6 @@ For the purposes of OPS, the MRA concept will apply to the personnel chips in th
 Includes all necessary combat and combat support to deliver decisive effects. Composed of one or several lead maneuver elements. Elements must fall in on a lead element of the same weapons system to deliver expeditionary effects that include: Minor Maintenance, Fuel, Munitions, Airfield Operations, Aerial Port Operations, Distributed Mission Planning/Debrief, and Scramble/Flush Operations. Due to the unique characteristic of each aircraft, Refueling, AMMO (Munitions), and Maintenance personnel must remain with their originating platform (e.g. F-22, F-15, F-16, etc). Exception: Personnel counters are interchangeable with similar platforms (e.g F-22 from one base can service F-22 from another).
 
 [Image showing the various counters that make up the Mission Generation Team.]
-
 
 #### 2.3.2. Base Operating Support-Integrator (BOS-I) Team
 
@@ -335,7 +324,6 @@ The following paragraphs will describe items found on the FOS board.
 
 RFIs are used to gather additional information about an airfield's ability to support air operations. The RFIs are answered by on-site assessment teams and personnel reviewing and updating products at the Joint Air Operations Center. However, the CJTFC has a limited number of these personnel to task for assessments, so AEW/CCs must be strategic and efficient in their assessment requests.
 
-
 ##### 3.2.1.1. RFI Categories
 
 Crash Fire Rescue (CFR), Mobility Support, Ramp Space, Air Traffic Control (ATC), Equipment, Bed Down, Fuel, Airfield Security, Local Community Support, and Medical.
@@ -351,7 +339,6 @@ MOG is a planning factor that is used to facilitate the efficient flow of aircra
 - **3.2.2.1.** Teams can build a parking ramp at airfields to improve the MOG. Building a parking ramp requires an in-place base recovery team (Airfield Task #15). The MOG can be increased from one C-130 and two Fighters to two C-17s and seven Fighters. Construction of the parking ramp takes one turn from the time the team is in place.
   - **3.2.2.1.1.** Recovery teams do not have enough resources to improve a field from two C-17s and seven Fighters to six C-17s and 42 Fighters.
   - **3.2.2.1.2. NOTE:** This function is performed in the OTS OPS Execution Spreadsheet Airfield Data tab. Teams must select “Ramp Space Expanded” under the Airfield Data Tab.
-
 
 ### 3.3. Prior Permission Required (PPR)
 
@@ -400,7 +387,6 @@ Airfield capabilities are grouped and depicted in four categories: Establish, De
   - **3.7.3.1. NOTE:** Bombs/missiles must be available for fighter sorties during crisis phase, but they return to the base with the fighter because they are not employed on a target.
 - **3.7.4.** Blue dollar icon indicates that the task can be contracted to the host nation. However, the team must first establish contracting capability (Airfield Task #4) and a team is limited to contracting one Airfield Task per turn.
 
-
 [Image of the Airfield Capabilities and Tasks board, showing all 16 tasks organized under the Establish, Defend, Operate, and Maintain categories.]
 
 ### 3.8. Main Operating Bases (MOB)
@@ -415,7 +401,6 @@ The following paragraphs will describe items found on the MOB board.
 ### 3.9. Aircraft Loadout
 
 - **3.9.1.** Cargo aircraft are designed to be reconfigured to carry varying types of cargo. The columns for each aircraft in the cargo load planner represent different aircraft configurations. Each aircraft can be configured for personnel only, cargo only, or a mix of cargo and personnel. Choose the configuration that best meets mission requirements.
-
 
 [Image of the Aircraft Load Planners for C-130, C-17, and C-5 aircraft, showing different configurations of pallet positions and personnel slots.]
 
@@ -435,7 +420,6 @@ The following paragraphs will describe items found on the MOB board.
 - **3.10.12.** GEO Zone 1: FOS 1-18
 - **3.10.13.** GEO Zone 2: FOS 19-45
 
-
 ## Chapter 4: INITIAL AND DAILY CONFIGURATION
 
 ### 4.1. Base Access and Overflight
@@ -454,7 +438,6 @@ The following paragraphs will describe items found on the MOB board.
   - **4.2.2.2. Initial Fighter Aircraft:** 16x F-16s.
   - **4.2.2.3. Risk Token Chits:** 4x (only 2x can be used per MCE block during crisis and 4x can be used per MCE block during conflict). MC must take risk tokens to CAOC during execution is desired to be used. At the end of the MCE block, MC must retrieve all used risk tokens turned into the CAOC to ensure the next MC has their allotted amount of risk tokens for the next MCE block.
 
-
 [Image of the Kadena AB Initial Commodities Setup table, showing the starting quantity for every personnel, equipment, and commodity token.]
 
 - **4.2.3. Team 2: Anderson AFB, Guam**
@@ -463,7 +446,6 @@ The following paragraphs will describe items found on the MOB board.
   - **4.2.3.3. Risk Token Chits:** 4x (only 2x can be used per MCE block during crisis and 4x can be used per MCE block during conflict). MC must take risk tokens to CAOC during execution is desired to be used. At the end of the MCE block, MC must retrieve all used risk tokens turned into the CAOC to ensure the next MC has their allotted amount of risk tokens for the next MCE block.
 
 [Image of the Andersen AFB Commodities Initial Setup table, showing the starting quantity for every personnel, equipment, and commodity token.]
-
 
 - **4.2.4. Team 3: Yokota AB, Japan**
   - **4.2.4.1. Summary:** Yokota AB is a mobility hub with extra Port, Communications, and base bed down capabilities, but does not provide fighter operations/Intel or Maintenance capabilities.
@@ -477,9 +459,7 @@ The following paragraphs will describe items found on the MOB board.
   - **4.2.5.2. Initial Fighter Aircraft:** 16x F-22s.
   - **4.2.5.3. Risk Token Chits:** 4x (only 2x can be used per MCE block during crisis and 4x can be used per MCE block during conflict). MC must take risk tokens to CAOC during execution is desired to be used. At the end of the MCE block, MC must retrieve all used risk tokens turned into the CAOC to ensure the next MC has their allotted amount of risk tokens for the next MCE block.
 
-
 [Image of the JB Pearl-Harbor Hickam – OR – Osan AB Initial Commodities Setup table, showing the starting quantity for every personnel, equipment, and commodity token.]
-
 
 ## Chapter 5: EXECUTING A TURN
 
@@ -503,7 +483,6 @@ The following paragraphs will describe items found on the MOB board.
   - **5.1.8.5. 30 Minutes Hotwash/Debrief/Feedback (02:30-03:00)**
     - **5.1.8.5.1.** 10 mins Hotwash / 10 mins Debrief to Instructor / 10 mins Instructor Feedback
 
-
 ### 5.2. Air Expeditionary Wing Commander / Main Operating Base (MOB) Turn Execution
 
 - **5.2.1.** MC will review the appropriate OPORD/EXORD/FRAGO prior to their MCE.
@@ -526,7 +505,6 @@ The following paragraphs will describe items found on the MOB board.
     - **5.2.11.4.1.** Adhere to same guidance as Turn 1 Execution
   - **5.2.11.5. 30 Minutes Hotwash/Debrief/Feedback (02:30-03:00)**
     - **5.2.11.5.1.** 10 mins Hotwash / 10 mins Debrief to Instructor / 10 mins Instructor Feedback
-
 
 ### 5.3. CSpOC Turn Execution
 
@@ -590,7 +568,6 @@ There will be an initial allocation of 14 satellites and 1 cyber package to be p
 - **6.4.4.2. Fidelity:** Identifies targets as "unidentified" on first pass and fully-identifies targets on second pass (based on satellite type).
 - **6.4.5.** U.S. Missile Warning satellites can identify 10-based targets and U.S. Space Domain Awareness satellites can identify space jammers on first pass, regardless of assigned orbit.
 
-
 ### 6.5. Subsequent Allocation
 
 An additional allocation of 3x capabilities will be “launched” at the beginning of each subsequent MCE block. The MC can either choose 3x satellites or 2x satellites and a cyber package to be deployed. Each new satellite will be deployed with a fuel chit. GPS, SDA, and Orbital Warfare can never be placed in GEO.
@@ -626,7 +603,6 @@ Every 15-minute cycle during execution will involve three primary moves.
 - **6.9.7. Precision, Navigation, & Timing (GPS)** - Adds +1 OPS dice modifier for U.S. forces. Only a single hex receives the multiplier.
 - **6.9.8. Offensive Cyber** - Degrade adversary capabilities for targeted hex and adds +1 OPS dice modifier. Can ONLY be employed 1x per OPS turn (expires after that turn ends & not reusable). Package employment MUST be coordinated PRIOR to OPS execution rounds. Only a single hex receives the multiplier.
 
-
 ### 6.10. Adversary Capabilities
 
 - **6.10.1. (COMM)** - No capability for enemy use.
@@ -658,7 +634,6 @@ Will be drawn once per execution period beginning on the second period, at the s
 
 [Image of a red "Conflict Card" and a blue "Crisis Card".]
 
-
 ## Chapter 7: HELPFUL GAMEPLAY INFORMATION
 
 ### 7.1. Mark Airfield Conditions on the Airfield Board
@@ -678,7 +653,6 @@ Will be drawn once per execution period beginning on the second period, at the s
   - **7.2.2.3.** After download, the aircraft may depart to the next location using normal range rules on the following turn. Mobility aircraft may complete a total of two cargo downloads per turn (en route stop and final destination).
     - **7.2.2.3.1.** Aircraft may depart an airfield after downloading cargo within the same turn. However, the movement of the aircraft will not exceed the total range of the aircraft per turn minus one Hex of range to account for the time required for download (i.e. C-17 could fly two Hex, download cargo, then depart and fly one Hex before the turn ends with the aircraft enroute).
   - **7.2.2.4.** Aircraft arriving or departing JBPHH must transit through either the North or South AOR Entry Point. Transit between JBPHH and either AOR entry point will count as one hex count movement (not one turn as stated on the OPS board). This means when a mobility aircraft is going into theater from JBPHH they should have either 2 (C-130) or 3 (C-17/C-5) remaining hex counts left it may travel to final destination.
-
 
 ### 7.3. Generate Fighter Sorties
 
@@ -711,7 +685,6 @@ MC's can utilize MFRs to exhibit creative thinking during their MCE block and re
 - **7.5.1.** MOBs and the CSpOC are limited to one active MFR at a time. The CAOC can have three active MFRs at a time.
 - **7.5.2.** MFRs will be considered after successfully answering an academic Sample of Behavior question.
 - **7.5.3.** Request only affecting a specific MOB or the CSpOC can be approved at the MOB/CSpOC level. Requests affecting the entire JOA or multiple entities will need to be routed for approval through the MOB and/or CSpOC assessing instructor to the CAOC for approval by the CAOC assessing instructor.
-
 
 ## Chapter 8: COMBAT OPERATIONS DURING CONFLICT
 
@@ -763,7 +736,6 @@ The concept of ACE includes two critical components: (1) The assumption that US 
   - **8.3.5.2. Data Denial:** No use of Microsoft Teams, texts messaging, Slack, or other messaging applications to/from affected location. Verbal communication only allowed. Data denial also prevents true data from being viewed on the team's tab on the OPS Execution Spreadsheet.
   - **8.3.5.3. Communications Denial:** All communications are degraded to/from the affected location. Both voice and data denial restrictions apply to this location.
 
-
 ### 8.4. Friendly Strike on PLA Forces
 
 - **8.4.1. Roll Modifiers.** GPS jamming can have a significant impact on the employment of precision-guided munitions, limiting fighter effectiveness. Additionally, communications jamming limits the Joint force's ability to share information, which complicates targeting and weapons employment as the Joint force struggles to connect sensors with shooters.
@@ -777,7 +749,6 @@ The concept of ACE includes two critical components: (1) The assumption that US 
   - **8.4.5.1.** Friendly forces must determine which threat capability token is being targeted by a given asset.
   - **8.4.5.2.** PLA forces will roll a sided-die equal to the strength of the targeted capability token and friendly forces will roll a sided-die equal to their attacking asset's indicated strength. The higher number, adjusted for any die roll modifiers, wins the engagement. The losing token will be removed from play.
     - **8.4.5.2.1.** (Corrected from original) If flying a single fighter sortie, friendly forces will receive full value of their dice roll. If flying a two-ship sortie, friendly forces will roll the dice twice and receive full value of the first dice and half value of the second dice.
-
 
 ## Chapter 9: MEDCOM SPECIFIC INFORMATION
 
@@ -804,7 +775,6 @@ The overall objective of MEDCOM is for the MEDCOM/CC to effectively and efficien
 - **9.3.6.** MEDCOM must communicate with supporting/supported MOB and FOS locations to understand their aircraft ramp capacity, limitations, and runway status to deconflict with mobility aircraft and fighter sorties flying in support of defensive and offensive operations.
 - **9.3.7.** Hospitals must always maintain a proper patient count, not to exceed bed space capabilities. Bedspace for each hospital is reported on the MEDCOM tab. Triage tasks must be completed to identify if patients are classified as either Delayed, Immediate, Minimal, or Expectant.
 
-
 - **9.3.8.** The MEDCOM Liaison in each MOB is responsible for updating an accurate personnel count at each FOS within their purview. Keep the “Original Total Personnel at FOS” column up to date. Additionally, keep the “Personnel Picked-up” column updated based on medevac pick-ups.
 
 [Image of the "Forward Operating Site Casualty Report" spreadsheet table, with columns for Original Total Personnel, Injured Personnel, Personnel Picked-up, etc.]
@@ -820,7 +790,6 @@ The overall objective of MEDCOM is for the MEDCOM/CC to effectively and efficien
 - **9.3.14. Victory Condition.** MEDCOM contributes to the overall CJTF Agile Dragon's victory condition score. Each casualty equates to one demoralization point, while every cured patient equates to one victory point.
 - **9.3.15.** Task completions are annotated on both the hospital board and on the MEDCOM sheet in the OPS execution spreadsheet. OTs assigned to MEDCOM should only monitor the MEDCOM Tab. **If an OT assigned to MEDCOM views any other tab in the OPS Execution Spreadsheet, he/she will be subject to adverse disciplinarian actions.** Only the MEDCOM GM may access the “MEDCOM Data” tab on the OPS execution spreadsheet.
 
-
 ## Appendix A: GAME BOARDS
 
 [Image of the main game board, a large map of the Indo-Pacific AOR with hexes, status tracks, and informational tables around the perimeter for scoring, political access, operations, and combat adjudication.]
@@ -832,7 +801,6 @@ The overall objective of MEDCOM is for the MEDCOM/CC to effectively and efficien
 [Image of the MEDCOM player boards, including the Main Operating Base, Air Mobility cards, and the Hospital Status board.]
 
 [Image of a large, world-map-style CSpOC game board with orbital tracks (LEO, MEO, GEO) laid over a hex grid.]
-
 
 ## Appendix B: FREQUENTLY ASKED QUESTIONS
 
@@ -887,7 +855,6 @@ No, the task force receives 5 MPs for a completed airfield assessment.
 **How many FOSs can you have?**
 The maximum number of FOS is four per team at any given time. You can abandon a FOS and open a new one somewhere else, if desired. If currently operating four FOS, you may elect to ask RFIs at a fifth FOS, but you must select one of your original four FOS to be inoperable for that turn.
 
-
 ## ANNEX C - OPS EXECUTION SPREADSHEET USER GUIDE
 
 ### D.1. Introduction
@@ -930,8 +897,6 @@ The Mission Dashboard Tab provides consolidated gameplay information to teams, i
     - **D.2.6.5.2.** If the airfield is fully operational, it will show “Operational."
     - **D.2.6.5.3.** If the MOG is experiencing communication degradation, the airfield status is "Unknown." If the CFACC allocates an aircraft to a MOB with an “Unknown” status, he/she risks that aircraft not being able to operate from that airfield due to damage from a kinetic attack.
 
-
-
 # OPERATION PACIFIC SHEILD (OPS) QUICKSTART GUIDE
 
 ### **Combined Force Air Component Commander (CFACC)**
@@ -953,7 +918,6 @@ The Mission Dashboard Tab provides consolidated gameplay information to teams, i
     a. Allows any RFI to be answered that you may have missed.
     b. Allow your MOBs to have time to brief their instructor.
 8.  **Prepare for execution**
-
 
 ### **Air Expeditionary Wing Commander (AEW/CC) (MOB)**
 
