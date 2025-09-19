@@ -74,8 +74,6 @@ export class GameService {
       });
     }
 
-    // FOSes should remain empty at game start - they will be created when teams activate them
-
     return game;
   }
 
