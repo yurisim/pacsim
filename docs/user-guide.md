@@ -313,6 +313,9 @@ Four different types of airfields are identified on the map. These include Main 
 
 - **3.1.1.1. Light Blue.** Light blue depicts a MOB. The Personnel and Equipment Counters offered to players as starting conditions represent assets that are available to relocate to a FOS.
   - **3.1.1.1.1.** It is assumed that some base assets will remain at the MOB to conduct activities required for base maintenance and mission generation. All tokens are deployable and it will not impact operations at the MOB.
+- **3.1.1.2. Red.** Red depicts a FOS assessed as an expeditionary airfield suitable for tactical mobility (C-17 and C-130) aircraft only. In order to conduct fighter operations out of these fields, teams need to deploy arresting gear to the location.
+- **3.1.1.3. Yellow.** Yellow depicts a FOS surveyed as suitable for tactical mobility and daytime fighter operations only. In order to conduct day/night operations, teams need to deploy runway/taxiway lighting to the location.
+- **3.1.1.4. Green.** Green depicts a FOS surveyed as suitable for tactical mobility and day/night fighter operations.
 
 [Image of the Airfield Capability markers: Red (C-17/C-130 Only), Yellow (Day Only), Green (Day/Night Capable).]
 
