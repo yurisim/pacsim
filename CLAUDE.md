@@ -32,6 +32,33 @@ The system uses a unique dual-generation approach:
 - **Game-specific Gateway**: `GameGateway` handles game logic events
 - **Frontend Service**: WebSocket service manages connection state and event handling
 
+#### Synthetic Jamming & Offline-First Architecture
+**Purpose**: Simulates adversary communication jamming for realistic military training scenarios.
+
+**Architecture Pattern**: Database → LocalStorage → UI with Service-Specific Blocking
+- **Normal Operations**: Data flows from database via API/WebSocket to UI with localStorage caching
+- **Jamming Conditions**: UI continues operating from localStorage cache when specific services are "jammed"
+- **Location-Specific Jamming**:
+  - Individual bases (FOSs, MOBs) can be communication-jammed
+  - Jammed locations lose ability to communicate with command and other bases
+  - Jammed bases operate from cached/local data when communications are down
+  - Jamming affects specific geographic locations rather than entire service types
+  - Realistic simulation of targeted electronic warfare attacks on military installations
+
+**Key Services**:
+- **JammingStateService**: Manages location-specific jamming state with geographic targeting
+- **LocalStorageService**: Handles persistent caching with metadata (timestamp, gameId, version)
+- **StateServices**: Implement offline-first pattern respecting individual location jamming states
+
+**Implementation Details**:
+- Location-specific jamming allows realistic scenarios (e.g., "Kadena MOB jammed but FOS-12 operational")
+- Individual bases can be jammed/restored independently during gameplay
+- Jammed locations display different visual states and have limited functionality
+- Cache entries include metadata for validation (timestamp, gameId, app version)
+- Geographic targeting simulates realistic electronic warfare scenarios
+- Graceful degradation: Jammed bases continue with cached data and limited operations
+- Extensible architecture supports future jamming features and target types
+
 #### Material 3 Design System Integration
 - Uses Angular Material 3 with comprehensive token system in `styles.scss`
 - Custom utility classes map Material Design tokens (`md-*` classes)
@@ -79,6 +106,42 @@ npx nx test pac-shield-api          # Backend tests
 # Linting
 npx nx lint pac-shield
 npx nx lint pac-shield-api
+```
+
+### Synthetic Jamming Testing
+```bash
+# Access jamming debug panel in the game board UI (top-right corner)
+
+# Programmatic jamming control:
+// Jam specific locations by their IDs
+jammingStateService.jamLocations(['fos-07', 'kadena-mob'], 10); // 10 minute duration
+
+// Jam locations in a geographic region
+jammingStateService.jamLocationsByRegion('northern-sector', 15);
+
+// Add additional locations to existing jamming
+jammingStateService.addJammedLocations(['fos-03']);
+
+// Remove specific locations from jamming
+jammingStateService.removeJammedLocations(['fos-07']);
+
+// Check if specific location is jammed
+const isKadenaJammed = jammingStateService.isLocationJammed('kadena-mob');
+const isFos07Jammed = jammingStateService.isLocationJammed('fos-07');
+
+// Restore all communications
+jammingStateService.deactivateAllJamming();
+
+# Manual cache operations:
+// Force refresh FOS data (ignores jamming)
+await fosStateService.forceRefresh();
+
+// Clear cache for testing
+fosStateService.clearCache();
+
+# Verify cache functionality:
+// Check cache status
+console.log(fosStateService.getCacheInfo());
 ```
 
 ## Critical Development Rules

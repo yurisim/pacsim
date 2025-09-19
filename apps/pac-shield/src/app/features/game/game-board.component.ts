@@ -22,6 +22,7 @@ import { GameStatsService } from './game-stats/game-stats.service';
 import { LocationPanelComponent } from './location-panel';
 import { FosStateService } from '../../shared/services/fos-state.service';
 import { WebSocketService } from '../../shared/services/websocket.service';
+import { JammingDebugComponent } from '../../shared/components/jamming-debug.component';
 
 @Component({
   selector: 'app-game-board',
@@ -34,7 +35,8 @@ import { WebSocketService } from '../../shared/services/websocket.service';
     HexGridComponent,
     LocationMarkersComponent,
     GameStatsComponent,
-    LocationPanelComponent
+    LocationPanelComponent,
+    JammingDebugComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
@@ -549,6 +551,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Connect to WebSocket for real-time updates
       this.webSocketService.connect(gameId);
+
+      // Initialize FOS state with offline-first approach
+      this.fosStateService.initializeForGame(Number(gameId));
     }
 
     // Subscribe to game changes to join the appropriate room
