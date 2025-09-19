@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, HttpCode, BadRequestException } from '@nestjs/common';
 import { FosService } from './fos.service';
 import { ForwardOperatingSite, UpdateForwardOperatingSiteDto } from '../generated';
 import { ApiOperation, ApiParam, ApiBody, ApiResponse } from '@nestjs/swagger';
@@ -114,7 +114,7 @@ export class FosController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - FOS is already active'
+    description: 'Bad Request - FOS is already active or validation failed'
   })
   @ApiResponse({
     status: 404,
@@ -124,6 +124,14 @@ export class FosController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { teamId: number; turnActivated: number }
   ): Promise<ForwardOperatingSite> {
+    // Manual validation since we're not using a DTO class
+    if (body.teamId === undefined || body.teamId === null || body.turnActivated === undefined || body.turnActivated === null) {
+      throw new BadRequestException('teamId and turnActivated are required fields');
+    }
+    if (typeof body.teamId !== 'number' || typeof body.turnActivated !== 'number') {
+      throw new BadRequestException('teamId and turnActivated must be numbers');
+    }
+
     return this.fosService.activateFOS(id, body.teamId, body.turnActivated);
   }
 
