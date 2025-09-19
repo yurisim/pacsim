@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MOB_LOCATIONS, FOS_LOCATIONS, StaticLocation } from '../../../shared/config/static-locations.config';
 import { GameStatsService } from '../game-stats/game-stats.service';
 import { FosService } from '../services/fos.service';
+import { FosStateService } from '../../../shared/services/fos-state.service';
 import { ForwardOperatingSite, Team } from '../../../generated';
 import { FosActivationDialogComponent, FosActivationDialogData, FosActivationDialogResult } from './fos-activation-dialog.component';
 
@@ -71,7 +72,6 @@ export class LocationPanelComponent implements OnChanges {
   @Input() gameId: number | null = null; // Current game ID
   @Input() currentTurn = 1; // Current game turn
   @Input() availableTeams: Team[] = []; // Available teams for FOS activation
-  @Input() activeFosIds: Set<string> = new Set(); // Track active FOSs from parent
   @Input() fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID
   @Input() currentPlayerMob: string | null = null; // Current player's MOB
   @Input() isGameMaster = false; // Whether current player is GM
@@ -82,11 +82,13 @@ export class LocationPanelComponent implements OnChanges {
 
   private gameStatsService = inject(GameStatsService);
   private fosService = inject(FosService);
+  private fosStateService = inject(FosStateService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  // Database FOSs for the current game
-  gameFOSs: ForwardOperatingSite[] = [];
+  // Use signals from FosStateService for reactive updates
+  fosList = this.fosStateService.fosList;
+  activeFosIds = this.fosStateService.activeFosIds;
 
   // Selected asset for each type
   selectedMobAsset: TileAsset | null = null;
@@ -94,31 +96,10 @@ export class LocationPanelComponent implements OnChanges {
   selectedPlaneAsset: TileAsset | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['gameId'] && this.gameId) {
-      // Load FOSs when game changes
-      this.loadGameFOSs();
-    }
     if (changes['selectedHex'] || changes['selectedH3Index']) {
       // Reset selections when hex changes
       this.initializeAssetSelections();
     }
-  }
-
-  /**
-   * Load FOSs for the current game
-   */
-  private loadGameFOSs(): void {
-    if (!this.gameId) return;
-
-    this.fosService.getFOSsForGame(this.gameId).subscribe({
-      next: (foss) => {
-        this.gameFOSs = foss;
-      },
-      error: (error) => {
-        console.error('Failed to load game FOSs:', error);
-        this.snackBar.open('Failed to load FOS data', 'Close', { duration: 3000 });
-      }
-    });
   }
 
   /**
@@ -186,11 +167,11 @@ export class LocationPanelComponent implements OnChanges {
     // Get static FOS definitions at this hex
     const staticFoss = Object.values(FOS_LOCATIONS).filter(fos => fos.h3Index === h3Index);
 
-    // Enhance with database information
+    // Enhance with database information using signal-based FOS list
     return staticFoss.map(staticFos => {
       // Find corresponding database FOS by fosDisplayNumber
       const fosNumber = parseInt(staticFos.name.replace(/\D/g, '') || '0');
-      const dbFos = this.gameFOSs.find(f => f.fosDisplayNumber === fosNumber);
+      const dbFos = this.fosList().find(f => f.fosDisplayNumber === fosNumber);
 
       return {
         ...staticFos,
@@ -237,8 +218,8 @@ export class LocationPanelComponent implements OnChanges {
    * Get FOS status based on activation state, ownership, and color
    */
   private getFosStatus(fos: StaticLocation & { dbFos?: ForwardOperatingSite }): string {
-    // Check activation status from parent component's tracking
-    const isActive = this.activeFosIds.has(fos.id);
+    // Check activation status using signal-based tracking
+    const isActive = this.activeFosIds().has(fos.id);
     const fosMobId = this.fosMobAssignments[fos.id];
 
     if (isActive) {
@@ -281,8 +262,8 @@ export class LocationPanelComponent implements OnChanges {
   private getFosActions(fos: StaticLocation & { dbFos?: ForwardOperatingSite }): AssetAction[] {
     const baseActions: AssetAction[] = [];
 
-    // Check activation status from parent component's tracking
-    const isActive = this.activeFosIds.has(fos.id);
+    // Check activation status using signal-based tracking
+    const isActive = this.activeFosIds().has(fos.id);
 
     // Check if player's MOB owns this FOS or is GM
     const fosMobId = this.fosMobAssignments[fos.id];
@@ -540,16 +521,10 @@ export class LocationPanelComponent implements OnChanges {
   }
 
   /**
-   * Update local FOS array with updated FOS data
+   * Handle FOS update by notifying parent component
+   * The FosStateService will be updated via WebSocket events
    */
   private updateLocalFos(updatedFos: ForwardOperatingSite): void {
-    const index = this.gameFOSs.findIndex(f => f.id === updatedFos.id);
-    if (index !== -1) {
-      this.gameFOSs[index] = updatedFos;
-    } else {
-      this.gameFOSs.push(updatedFos);
-    }
-
     // Find the static FOS to get its ID
     const staticFos = Object.values(FOS_LOCATIONS).find(f => {
       const fosNumber = parseInt(f.name.replace(/\D/g, '') || '0');
