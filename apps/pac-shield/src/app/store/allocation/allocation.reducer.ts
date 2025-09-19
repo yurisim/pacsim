@@ -14,7 +14,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       cycleLoading: true,
-      cycleError: null,
+      cycleError: null as string | null,
     },
   })),
 
@@ -24,7 +24,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       cycleLoading: false,
-      cycleError: null,
+      cycleError: null as string | null,
     },
   })),
 
@@ -42,7 +42,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       cycleLoading: true,
-      cycleError: null,
+      cycleError: null as string | null,
     },
   })),
 
@@ -52,7 +52,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       cycleLoading: false,
-      cycleError: null,
+      cycleError: null as string | null,
     },
   })),
 
@@ -70,7 +70,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       cycleLoading: true,
-      cycleError: null,
+      cycleError: null as string | null,
     },
   })),
 
@@ -80,7 +80,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       cycleLoading: false,
-      cycleError: null,
+      cycleError: null as string | null,
     },
   })),
 
@@ -102,7 +102,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       poolLoading: true,
-      poolError: null,
+      poolError: null as string | null,
     },
   })),
 
@@ -112,7 +112,7 @@ export const allocationReducer = createReducer(
     ui: {
       ...state.ui,
       poolLoading: false,
-      poolError: null,
+      poolError: null as string | null,
     },
   })),
 
@@ -340,10 +340,10 @@ export const allocationReducer = createReducer(
     ...state,
     ui: {
       ...state.ui,
-      cycleError: null,
+      cycleError: null as string | null,
       requestsError: null,
       allocationsError: null,
-      poolError: null,
+      poolError: null as string | null,
       formError: null,
     },
   })),

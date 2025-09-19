@@ -114,7 +114,6 @@
       },
       "configurations": {
         "production": {
-          "command": "npx prisma db push --schema src/prisma/schema.prisma",
           "envFile": ".env.production"
         }
       }
@@ -124,6 +123,11 @@
       "options": {
         "command": "npx prisma migrate reset --force --schema src/prisma/schema.prisma",
         "cwd": "apps/pac-shield-api"
+      },
+      "configurations": {
+        "production": {
+          "envFile": ".env.production"
+        }
       }
     },
 
