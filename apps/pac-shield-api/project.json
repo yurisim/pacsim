@@ -109,12 +109,11 @@
     "prisma-db-push": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma db push --schema src/prisma/schema.prisma",
+        "command": "npx prisma db push --schema src/prisma/schema.prisma --accept-data-loss",
         "cwd": "apps/pac-shield-api"
       },
       "configurations": {
         "production": {
-          "command": "npx prisma db push --schema src/prisma/schema.prisma",
           "envFile": ".env.production"
         }
       }
@@ -124,6 +123,11 @@
       "options": {
         "command": "npx prisma migrate reset --force --schema src/prisma/schema.prisma",
         "cwd": "apps/pac-shield-api"
+      },
+      "configurations": {
+        "production": {
+          "envFile": ".env.production"
+        }
       }
     },
 
@@ -132,6 +136,11 @@
       "options": {
         "command": "npx prisma studio --schema src/prisma/schema.prisma",
         "cwd": "apps/pac-shield-api"
+      },
+      "configurations": {
+        "production": {
+          "envFile": ".env.production"
+        }
       }
     },
 

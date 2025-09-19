@@ -10,7 +10,7 @@ import { Team } from '../../../generated';
 
 export interface FosActivationDialogData {
   fosName: string;
-  fosIdNumber: number;
+  fosDisplayNumber: number;
   availableTeams: Team[];
   currentTurn: number;
 }
@@ -53,7 +53,7 @@ export interface FosActivationDialogResult {
           <div class="details-grid space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="md-sys-color-on-surface-variant">FOS ID:</span>
-              <span class="font-medium">{{ data.fosIdNumber }}</span>
+              <span class="font-medium">{{ data.fosDisplayNumber }}</span>
             </div>
             <div class="flex justify-between">
               <span class="md-sys-color-on-surface-variant">Current Turn:</span>

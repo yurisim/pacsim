@@ -128,7 +128,7 @@ model Team {
   commoditiesAtMOB    CommodityStock[]
   mfrs                MFR[]
   aircraftRequests    AircraftRequest[]
-  aircraftAllocations AircraftAllocation[] @relation("AllocatedToTeam")
+  aircraftAllocations AircraftAllocation[]   @relation("AllocatedToTeam")
 }
 
 model Player {
@@ -148,14 +148,14 @@ model Player {
 // =============================================
 
 model ForwardOperatingSite {
-  id              Int  @id @default(autoincrement())
-  gameId          Int
-  game            Game @relation(fields: [gameId], references: [id])
-  fosIdNumber     Int
-  isActive        Boolean @default(false)
-  teamId          Int?
-  team            Team? @relation(fields: [teamId], references: [id])
-  turnActivated   Int?
+  id               String  @id @default(uuid())
+  gameId           Int
+  game             Game    @relation(fields: [gameId], references: [id])
+  fosDisplayNumber Int
+  isActive         Boolean @default(false)
+  teamId           Int?
+  team             Team?   @relation(fields: [teamId], references: [id])
+  turnActivated    Int?
 
   answeredRFIs    AnsweredRFI[]
   isFullyAssessed Boolean       @default(false)
@@ -175,7 +175,7 @@ model ForwardOperatingSite {
   commodities            CommodityStock[]
   isPlaJammingWithin2Hex Boolean            @default(false)
 
-  @@unique([gameId, fosIdNumber])
+  @@unique([gameId, fosDisplayNumber])
 }
 
 model CommodityStock {
@@ -183,7 +183,7 @@ model CommodityStock {
   type     CommodityType
   quantity Int
 
-  forwardOperatingSiteId Int?
+  forwardOperatingSiteId String?
   forwardOperatingSite   ForwardOperatingSite? @relation(fields: [forwardOperatingSiteId], references: [id])
 
   teamId Int?
@@ -192,7 +192,7 @@ model CommodityStock {
 
 model AnsweredRFI {
   id    Int                  @id @default(autoincrement())
-  fosId Int
+  fosId String
   fos   ForwardOperatingSite @relation(fields: [fosId], references: [id])
 
   rfiKey   String
@@ -214,7 +214,7 @@ model AircraftInstance {
   status     AircraftStatus @default(FMC)
 
   locationType  LocationType
-  locationFosId Int?
+  locationFosId String?
   locationFos   ForwardOperatingSite? @relation("StationedAircraft", fields: [locationFosId], references: [id])
   locationHex   String?
 
@@ -225,8 +225,8 @@ model AircraftInstance {
   currentATOId          Int?
 
   // Allocation workflow
-  allocationStatus      AircraftAllocationStatus @default(AVAILABLE)
-  allocation            AircraftAllocation?
+  allocationStatus AircraftAllocationStatus @default(AVAILABLE)
+  allocation       AircraftAllocation?
 }
 
 model AssetInstance {
@@ -236,7 +236,7 @@ model AssetInstance {
   mraCategory     MRACategory?
 
   locationType          LocationType
-  locationFosId         Int?
+  locationFosId         String?
   locationFos           ForwardOperatingSite? @relation("StationedAssets", fields: [locationFosId], references: [id])
   inTransitOnAircraftId Int?
   inTransitOnAircraft   AircraftInstance?     @relation("AircraftPayload", fields: [inTransitOnAircraftId], references: [id])
@@ -298,11 +298,11 @@ model GameEvent {
 // =============================================
 
 model AllocationCycle {
-  id     Int                    @id @default(autoincrement())
+  id     Int                   @id @default(autoincrement())
   gameId Int
-  game   Game                   @relation(fields: [gameId], references: [id])
+  game   Game                  @relation(fields: [gameId], references: [id])
   turn   Int
-  status AllocationCycleStatus  @default(PENDING)
+  status AllocationCycleStatus @default(PENDING)
 
   requests    AircraftRequest[]
   allocations AircraftAllocation[]
@@ -314,9 +314,9 @@ model AllocationCycle {
 }
 
 model AircraftRequest {
-  id                Int                      @id @default(autoincrement())
+  id                Int             @id @default(autoincrement())
   allocationCycleId Int
-  allocationCycle   AllocationCycle          @relation(fields: [allocationCycleId], references: [id])
+  allocationCycle   AllocationCycle @relation(fields: [allocationCycleId], references: [id])
 
   teamId Int
   team   Team @relation(fields: [teamId], references: [id])
@@ -363,17 +363,17 @@ model AircraftAllocation {
 // =============================================
 
 model AircraftPool {
-  id              Int          @id @default(autoincrement())
-  gameId          Int
-  game            Game         @relation(fields: [gameId], references: [id])
-  turn            Int
-  executionBlock  Int
-  aircraftType    AircraftType
-  availableCount  Int          @default(0)
-  allocatedCount  Int          @default(0)
-  inTransitCount  Int          @default(0)
-  maintenanceCount Int         @default(0)
-  lastUpdated     DateTime     @default(now()) @updatedAt
+  id               Int          @id @default(autoincrement())
+  gameId           Int
+  game             Game         @relation(fields: [gameId], references: [id])
+  turn             Int
+  executionBlock   Int
+  aircraftType     AircraftType
+  availableCount   Int          @default(0)
+  allocatedCount   Int          @default(0)
+  inTransitCount   Int          @default(0)
+  maintenanceCount Int          @default(0)
+  lastUpdated      DateTime     @default(now()) @updatedAt
 
   @@unique([gameId, turn, executionBlock, aircraftType])
 }
@@ -684,23 +684,23 @@ enum HospitalTask {
 }
 
 enum AllocationCycleStatus {
-  PENDING       // Cycle has not started
+  PENDING // Cycle has not started
   REQUESTS_OPEN // MOBs can submit requests
-  ANALYSIS      // CFACC is reviewing requests
-  ALLOCATED     // CFACC has allocated aircraft
-  CLOSED        // Cycle is complete for the turn
+  ANALYSIS // CFACC is reviewing requests
+  ALLOCATED // CFACC has allocated aircraft
+  CLOSED // Cycle is complete for the turn
 }
 
 enum AllocationRequestStatus {
-  PENDING   // Submitted by MOB, awaiting review
-  APPROVED  // CFACC has approved the request (fully or partially)
-  DENIED    // CFACC has denied the request
-  MODIFIED  // CFACC has modified the request
+  PENDING // Submitted by MOB, awaiting review
+  APPROVED // CFACC has approved the request (fully or partially)
+  DENIED // CFACC has denied the request
+  MODIFIED // CFACC has modified the request
 }
 
 enum AircraftAllocationStatus {
-  AVAILABLE   // In the unallocated pool
-  ALLOCATED   // Assigned to a MOB for the turn
-  IN_TRANSIT  // In transit as part of an ATO
+  AVAILABLE // In the unallocated pool
+  ALLOCATED // Assigned to a MOB for the turn
+  IN_TRANSIT // In transit as part of an ATO
   MAINTENANCE // Unavailable for allocation
 }

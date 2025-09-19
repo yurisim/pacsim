@@ -188,9 +188,9 @@ export class LocationPanelComponent implements OnChanges {
 
     // Enhance with database information
     return staticFoss.map(staticFos => {
-      // Find corresponding database FOS by fosIdNumber
+      // Find corresponding database FOS by fosDisplayNumber
       const fosNumber = parseInt(staticFos.name.replace(/\D/g, '') || '0');
-      const dbFos = this.gameFOSs.find(f => f.fosIdNumber === fosNumber);
+      const dbFos = this.gameFOSs.find(f => f.fosDisplayNumber === fosNumber);
 
       return {
         ...staticFos,
@@ -205,7 +205,6 @@ export class LocationPanelComponent implements OnChanges {
   private getPlanesAtHex(h3Index: string): TileAsset[] {
     // For now, return demo planes based on game assets
     // In real implementation, this would filter gameAssets by location
-    const gameAssets = this.gameStatsService.gameAssets();
     const planes: TileAsset[] = [];
 
     // Demo: Add some planes to MOB locations
@@ -257,13 +256,8 @@ export class LocationPanelComponent implements OnChanges {
       return 'Active';
     }
 
-    // Fallback to static color-based status
-    switch (fos.color) {
-      case 'green': return 'Available';
-      case 'yellow': return 'Limited Access';
-      case 'red': return 'Contested';
-      default: return 'Dormant';
-    }
+    // All inactive FOSs have the same status regardless of color
+    return 'Dormant';
   }
 
   /**
@@ -345,27 +339,16 @@ export class LocationPanelComponent implements OnChanges {
           { id: 'activate', icon: 'power_settings_new', label: 'Activate', tooltip: 'Activate this FOS', color: 'accent' },
           { id: 'gm-assign', icon: 'assignment_ind', label: 'Assign MOB', tooltip: 'GM: Assign to a MOB', color: 'accent' }
         );
-      } else if (fos.color === 'green' || fos.color === 'yellow') {
-        // Regular players can only activate politically accessible FOSs
+      } else {
+        // All regular players can activate any inactive FOS
         baseActions.push(
           { id: 'activate', icon: 'power_settings_new', label: 'Activate', tooltip: 'Activate this FOS', color: 'accent' }
-        );
-
-        if (fos.color === 'yellow') {
-          baseActions.push(
-            { id: 'negotiate', icon: 'handshake', label: 'Negotiate', tooltip: 'Negotiate for access', color: 'primary' }
-          );
-        }
-      } else if (fos.color === 'red') {
-        // Contested areas require special actions
-        baseActions.push(
-          { id: 'contest', icon: 'flag', label: 'Contest', tooltip: 'Contest control of this area', color: 'warn', disabled: !this.currentPlayerMob }
         );
       }
     }
 
-    // Add emergency evacuation for contested areas
-    if (fos.color === 'red' && fos.dbFos?.isActive) {
+    // Emergency evacuation available for all active FOSs
+    if (fos.dbFos?.isActive) {
       baseActions.push({ id: 'evacuate', icon: 'emergency', label: 'Evacuate', tooltip: 'Emergency evacuation', color: 'warn' });
     }
 
@@ -484,7 +467,7 @@ export class LocationPanelComponent implements OnChanges {
 
     const dialogData: FosActivationDialogData = {
       fosName: asset.name,
-      fosIdNumber: fosNumber,
+      fosDisplayNumber: fosNumber,
       availableTeams: this.availableTeams,
       currentTurn: this.currentTurn
     };
@@ -527,36 +510,27 @@ export class LocationPanelComponent implements OnChanges {
    * Activate FOS via API
    */
   private activateFos(fosNumber: number, teamId: number): void {
-    // Check if FOS already exists in database
-    const dbFos = this.gameFOSs.find(f => f.fosIdNumber === fosNumber);
-
-    if (dbFos) {
-      // Update existing FOS
-      this.fosService.activateFOS(dbFos.id, teamId, this.currentTurn).subscribe({
-        next: (updatedFos) => {
-          this.updateLocalFos(updatedFos);
-          this.snackBar.open(`FOS ${fosNumber} activated successfully!`, 'Close', { duration: 3000 });
-        },
-        error: (error) => {
-          console.error('Failed to activate FOS:', error);
-          this.snackBar.open('Failed to activate FOS', 'Close', { duration: 3000 });
-        }
-      });
-    } else {
-      // Create new FOS in database first, then activate
-      // This would require additional API endpoint for creating FOSs
-      this.snackBar.open('FOS creation not implemented yet', 'Close', { duration: 3000 });
-    }
+    // Use fosNumber directly - API will create FOS if it doesn't exist
+    this.fosService.activateFOS(fosNumber, teamId, this.currentTurn).subscribe({
+      next: (updatedFos) => {
+        this.updateLocalFos(updatedFos);
+        this.snackBar.open(`FOS ${fosNumber} activated successfully!`, 'Close', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Failed to activate FOS:', error);
+        this.snackBar.open('Failed to activate FOS', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   /**
    * Deactivate FOS via API
    */
-  private deactivateFos(fosId: number): void {
+  private deactivateFos(fosId: string): void {
     this.fosService.deactivateFOS(fosId).subscribe({
       next: (updatedFos) => {
         this.updateLocalFos(updatedFos);
-        this.snackBar.open(`FOS ${updatedFos.fosIdNumber} deactivated successfully!`, 'Close', { duration: 3000 });
+        this.snackBar.open(`FOS ${updatedFos.fosDisplayNumber} deactivated successfully!`, 'Close', { duration: 3000 });
       },
       error: (error) => {
         console.error('Failed to deactivate FOS:', error);
@@ -579,7 +553,7 @@ export class LocationPanelComponent implements OnChanges {
     // Find the static FOS to get its ID
     const staticFos = Object.values(FOS_LOCATIONS).find(f => {
       const fosNumber = parseInt(f.name.replace(/\D/g, '') || '0');
-      return fosNumber === updatedFos.fosIdNumber;
+      return fosNumber === updatedFos.fosDisplayNumber;
     });
 
     if (staticFos) {

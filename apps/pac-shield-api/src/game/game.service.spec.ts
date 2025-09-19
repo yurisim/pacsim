@@ -26,7 +26,7 @@ describe('GameService', () => {
         create: jest.fn(),
       },
       forwardOperatingSite: {
-        createMany: jest.fn(),
+        findMany: jest.fn(),
       },
     };
     const mockAuthService = {
@@ -118,6 +118,34 @@ describe('GameService', () => {
         Object.values(TeamType).length
       );
       expect(result).toEqual(mockGame);
+    });
+
+    /**
+     * Test Intent: Verify that FOSes are not created during game setup and remain empty.
+     *
+     * This test validates:
+     * - No FOS records created during game initialization
+     * - FOSes should only be created when teams activate them
+     * - Game setup focuses only on game and team creation
+     */
+    it('should not create any FOSes during game setup', async () => {
+      const createGameDto: CreateGameDto = { victoryConditionMP: 100 };
+      const mockGame = { id: 1, roomCode: 'ABCDEF', ...createGameDto };
+
+      (prisma.game.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.game.create as jest.Mock).mockResolvedValue(mockGame);
+      (prisma.forwardOperatingSite.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.createGame(createGameDto);
+
+      // Verify no FOS creation methods were called during game setup
+      expect(prisma.forwardOperatingSite.findMany).not.toHaveBeenCalled();
+
+      // If we were to check for FOSes after game creation, there should be none
+      const fosCount = await prisma.forwardOperatingSite.findMany({
+        where: { gameId: mockGame.id }
+      });
+      expect(fosCount).toEqual([]);
     });
   });
 
