@@ -188,9 +188,9 @@ export class LocationPanelComponent implements OnChanges {
 
     // Enhance with database information
     return staticFoss.map(staticFos => {
-      // Find corresponding database FOS by fosIdNumber
+      // Find corresponding database FOS by fosDisplayNumber
       const fosNumber = parseInt(staticFos.name.replace(/\D/g, '') || '0');
-      const dbFos = this.gameFOSs.find(f => f.fosIdNumber === fosNumber);
+      const dbFos = this.gameFOSs.find(f => f.fosDisplayNumber === fosNumber);
 
       return {
         ...staticFos,
@@ -467,7 +467,7 @@ export class LocationPanelComponent implements OnChanges {
 
     const dialogData: FosActivationDialogData = {
       fosName: asset.name,
-      fosIdNumber: fosNumber,
+      fosDisplayNumber: fosNumber,
       availableTeams: this.availableTeams,
       currentTurn: this.currentTurn
     };
@@ -526,11 +526,11 @@ export class LocationPanelComponent implements OnChanges {
   /**
    * Deactivate FOS via API
    */
-  private deactivateFos(fosId: number): void {
+  private deactivateFos(fosId: string): void {
     this.fosService.deactivateFOS(fosId).subscribe({
       next: (updatedFos) => {
         this.updateLocalFos(updatedFos);
-        this.snackBar.open(`FOS ${updatedFos.fosIdNumber} deactivated successfully!`, 'Close', { duration: 3000 });
+        this.snackBar.open(`FOS ${updatedFos.fosDisplayNumber} deactivated successfully!`, 'Close', { duration: 3000 });
       },
       error: (error) => {
         console.error('Failed to deactivate FOS:', error);
@@ -553,7 +553,7 @@ export class LocationPanelComponent implements OnChanges {
     // Find the static FOS to get its ID
     const staticFos = Object.values(FOS_LOCATIONS).find(f => {
       const fosNumber = parseInt(f.name.replace(/\D/g, '') || '0');
-      return fosNumber === updatedFos.fosIdNumber;
+      return fosNumber === updatedFos.fosDisplayNumber;
     });
 
     if (staticFos) {

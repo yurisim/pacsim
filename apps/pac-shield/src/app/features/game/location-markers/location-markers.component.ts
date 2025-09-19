@@ -228,8 +228,8 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
     // Log active FOS when map loads
     const activeFosList = this.fosStateService.getActiveFosList();
     console.log('Active FOS list on map load:', activeFosList.map(fos => ({
-      id: fos.fosIdNumber,
-      name: this.getFosNameById(fos.fosIdNumber || 0),
+      id: fos.fosDisplayNumber,
+      name: this.getFosNameById(fos.fosDisplayNumber || 0),
       isActive: fos.isActive
     })));
 
@@ -602,11 +602,11 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
 
   /**
    * Helper method to get FOS name by its ID number
-   * @param fosIdNumber The numeric ID of the FOS (e.g., 1 for 'fos-01')
+   * @param fosDisplayNumber The numeric ID of the FOS (e.g., 1 for 'fos-01')
    * @returns The name of the FOS or 'Unknown FOS' if not found
    */
-  private getFosNameById(fosIdNumber: number): string {
-    const fosId = this.fosStateService.numberToFosId(fosIdNumber);
+  private getFosNameById(fosDisplayNumber: number): string {
+    const fosId = this.fosStateService.numberToFosId(fosDisplayNumber);
     const fosLocation = FOS_LOCATIONS[fosId];
     return fosLocation ? fosLocation.name : 'Unknown FOS';
   }

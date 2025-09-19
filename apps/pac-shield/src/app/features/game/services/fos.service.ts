@@ -20,17 +20,17 @@ export class FosService {
   /**
    * Activate a FOS and assign it to a team
    */
-  activateFOS(fosId: number, teamId: number, currentTurn: number): Observable<ForwardOperatingSite> {
+  activateFOS(fosId: number, teamId: number, turnActivated: number): Observable<ForwardOperatingSite> {
     return this.http.post<ForwardOperatingSite>(`${this.baseUrl}/${fosId}/activate`, {
       teamId,
-      currentTurn
+      turnActivated
     });
   }
 
   /**
    * Deactivate a FOS
    */
-  deactivateFOS(fosId: number): Observable<ForwardOperatingSite> {
+  deactivateFOS(fosId: string): Observable<ForwardOperatingSite> {
     return this.http.patch<ForwardOperatingSite>(`${this.baseUrl}/${fosId}/deactivate`, {});
   }
 }

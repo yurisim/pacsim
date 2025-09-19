@@ -34,9 +34,9 @@ export class FosStateService {
   private updateActiveFosIds(fosList: ForwardOperatingSite[]): void {
     const activeIds = new Set<string>();
     fosList.forEach(fos => {
-      if (fos.isActive && fos.fosIdNumber) {
-        // Convert fosIdNumber to the string format used by markers (e.g., 'fos-01')
-        const fosId = `fos-${fos.fosIdNumber.toString().padStart(2, '0')}`;
+      if (fos.isActive && fos.fosDisplayNumber) {
+        // Convert fosDisplayNumber to the string format used by markers (e.g., 'fos-01')
+        const fosId = `fos-${fos.fosDisplayNumber.toString().padStart(2, '0')}`;
         activeIds.add(fosId);
       }
     });
@@ -44,10 +44,10 @@ export class FosStateService {
   }
 
   /**
-   * Get FOS data by fosIdNumber
+   * Get FOS data by fosDisplayNumber
    */
-  getFosById(fosIdNumber: number): ForwardOperatingSite | undefined {
-    return this.fosListSignal().find(fos => fos.fosIdNumber === fosIdNumber);
+  getFosById(fosDisplayNumber: number): ForwardOperatingSite | undefined {
+    return this.fosListSignal().find(fos => fos.fosDisplayNumber === fosDisplayNumber);
   }
 
   /**
@@ -75,7 +75,7 @@ export class FosStateService {
   /**
    * Convert number FOS ID to string (e.g., 1 -> 'fos-01')
    */
-  numberToFosId(fosIdNumber: number): string {
-    return `fos-${fosIdNumber.toString().padStart(2, '0')}`;
+  numberToFosId(fosDisplayNumber: number): string {
+    return `fos-${fosDisplayNumber.toString().padStart(2, '0')}`;
   }
 }
