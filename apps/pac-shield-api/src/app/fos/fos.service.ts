@@ -27,22 +27,10 @@ export class FosService {
 
   /**
    * Activate a FOS and assign it to a team
+   * Creates the FOS in the database if it doesn't exist (using fosId as fosIdNumber)
    */
-  async activateFOS(fosId: number, teamId: number, currentTurn: number): Promise<ForwardOperatingSite> {
-    const fos = await this.prisma.forwardOperatingSite.findUnique({
-      where: { id: fosId },
-      include: { game: true, team: true },
-    });
-
-    if (!fos) {
-      throw new NotFoundException('FOS not found');
-    }
-
-    if (fos.isActive) {
-      throw new BadRequestException('FOS is already active');
-    }
-
-    // Verify the team exists and is in the same game
+  async activateFOS(fosIdNumber: number, teamId: number, currentTurn: number): Promise<ForwardOperatingSite> {
+    // Verify the team exists first to get the gameId
     const team = await this.prisma.team.findUnique({
       where: { id: teamId },
     });
@@ -51,12 +39,35 @@ export class FosService {
       throw new NotFoundException('Team not found');
     }
 
-    if (team.gameId !== fos.gameId) {
-      throw new BadRequestException('Team and FOS must be in the same game');
+    // Find existing FOS by fosIdNumber and gameId, or create it
+    let fos = await this.prisma.forwardOperatingSite.findFirst({
+      where: {
+        fosIdNumber: fosIdNumber,
+        gameId: team.gameId
+      },
+      include: { game: true, team: true },
+    });
+
+    if (!fos) {
+      // Create the FOS if it doesn't exist
+      fos = await this.prisma.forwardOperatingSite.create({
+        data: {
+          gameId: team.gameId,
+          fosIdNumber: fosIdNumber,
+          isActive: false,
+          parkingRampMOG: 'TWO_C17_SEVEN_FIGHTERS', // Default MOG level
+          runwayStatus: 'OPERATIONAL',
+        },
+        include: { game: true, team: true },
+      });
+    }
+
+    if (fos.isActive) {
+      throw new BadRequestException('FOS is already active');
     }
 
     const activatedFOS = await this.prisma.forwardOperatingSite.update({
-      where: { id: fosId },
+      where: { id: fos.id },
       data: {
         isActive: true,
         teamId: teamId,
