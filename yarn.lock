@@ -3573,6 +3573,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@maplibre/ngx-maplibre-gl@npm:^20.0.0":
+  version: 20.0.0
+  resolution: "@maplibre/ngx-maplibre-gl@npm:20.0.0"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/common": ">= 19.0.0"
+    "@angular/core": ">= 19.0.0"
+    maplibre-gl: ">= 5.0.0"
+    rxjs: ">= 7.8.1"
+  checksum: 10c0/c06c8dab803577d253eaba4f01f97c1d0fff3b481caaa25c35270891a8bb15598d171d05d063ca8c588e1df84732a89f3ec9ad0a8199aca6fd5bfe0ece567808
+  languageName: node
+  linkType: hard
+
 "@maplibre/vt-pbf@npm:^4.0.3":
   version: 4.0.3
   resolution: "@maplibre/vt-pbf@npm:4.0.3"
@@ -5055,6 +5069,7 @@ __metadata:
     "@angular/router": "npm:20.2.4"
     "@brakebein/prisma-generator-nestjs-dto": "npm:^1.28.1"
     "@eslint/js": "npm:^9.8.0"
+    "@maplibre/ngx-maplibre-gl": "npm:^20.0.0"
     "@nestjs/common": "npm:^11.0.0"
     "@nestjs/config": "npm:^4.0.2"
     "@nestjs/core": "npm:^11.0.0"
