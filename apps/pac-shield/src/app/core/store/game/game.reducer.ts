@@ -9,7 +9,7 @@ export const gameReducer = createReducer(
   on(GameActions.loadGameByRoomCode, GameActions.loadGameById, (state) => ({
     ...state,
     loading: true,
-    error: null,
+    error: null as string | null,
   })),
   on(GameActions.loadGameSuccess, (state, { game }) => ({
     ...state,
@@ -26,7 +26,7 @@ export const gameReducer = createReducer(
   on(GameActions.loadGameStatus, (state) => ({
     ...state,
     status: 'loading',
-    error: null,
+    error: null as string | null,
   })),
   on(GameActions.loadGameStatusSuccess, (state, { payload }) => ({
     ...state,

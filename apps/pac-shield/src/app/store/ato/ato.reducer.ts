@@ -14,7 +14,7 @@ export const atoReducer = createReducer(
   on(AtoActions.loadCurrentAtoLines, (state) => ({
     ...state,
     loading: { ...state.loading, fetchingLines: true },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.loadCurrentAtoLinesSuccess, (state, { lines }) => ({
@@ -22,7 +22,7 @@ export const atoReducer = createReducer(
     currentLines: lines,
     loading: { ...state.loading, fetchingLines: false },
     lastRefresh: new Date().toISOString(),
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.loadCurrentAtoLinesFailure, (state, { error }) => ({
@@ -37,14 +37,14 @@ export const atoReducer = createReducer(
   on(AtoActions.loadPprQueue, (state) => ({
     ...state,
     loading: { ...state.loading, fetchingLines: true },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.loadPprQueueSuccess, (state, { queue }) => ({
     ...state,
     pprQueue: queue,
     loading: { ...state.loading, fetchingLines: false },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.loadPprQueueFailure, (state, { error }) => ({
@@ -59,14 +59,14 @@ export const atoReducer = createReducer(
   on(AtoActions.createAtoLine, (state) => ({
     ...state,
     loading: { ...state.loading, creatingLine: true },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.createAtoLineSuccess, (state, { line }) => ({
     ...state,
     currentLines: [...state.currentLines, line],
     loading: { ...state.loading, creatingLine: false },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.createAtoLineFailure, (state, { error }) => ({
@@ -81,7 +81,7 @@ export const atoReducer = createReducer(
   on(AtoActions.updateAtoLine, (state) => ({
     ...state,
     loading: { ...state.loading, updatingLine: true },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.updateAtoLineSuccess, (state, { line }) => ({
@@ -90,7 +90,7 @@ export const atoReducer = createReducer(
       existing.id === line.id ? line : existing
     ),
     loading: { ...state.loading, updatingLine: false },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.updateAtoLineFailure, (state, { error }) => ({
@@ -105,7 +105,7 @@ export const atoReducer = createReducer(
   on(AtoActions.deleteAtoLine, (state) => ({
     ...state,
     loading: { ...state.loading, deletingLine: true },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.deleteAtoLineSuccess, (state, { id }) => ({
@@ -113,7 +113,7 @@ export const atoReducer = createReducer(
     currentLines: state.currentLines.filter(line => line.id !== id),
     pprQueue: state.pprQueue.filter(line => line.id !== id),
     loading: { ...state.loading, deletingLine: false },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.deleteAtoLineFailure, (state, { error }) => ({
@@ -128,7 +128,7 @@ export const atoReducer = createReducer(
   on(AtoActions.approvePpr, AtoActions.denyPpr, AtoActions.bulkApprovePpr, (state) => ({
     ...state,
     loading: { ...state.loading, approvingPpr: true },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.approvePprSuccess, AtoActions.denyPprSuccess, (state, { line }) => ({
@@ -138,7 +138,7 @@ export const atoReducer = createReducer(
     ),
     pprQueue: state.pprQueue.filter(existing => existing.id !== line.id),
     loading: { ...state.loading, approvingPpr: false },
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.bulkApprovePprSuccess, (state, { lines }) => {
@@ -151,7 +151,7 @@ export const atoReducer = createReducer(
       }),
       pprQueue: state.pprQueue.filter(existing => !approvedIds.includes(existing.id)),
       loading: { ...state.loading, approvingPpr: false },
-      error: null,
+      error: null as string | null,
     };
   }),
 
@@ -246,12 +246,12 @@ export const atoReducer = createReducer(
 
   on(AtoActions.clearAtoError, (state) => ({
     ...state,
-    error: null,
+    error: null as string | null,
   })),
 
   on(AtoActions.refreshAtoData, (state) => ({
     ...state,
     loading: { ...state.loading, fetchingLines: true },
-    error: null,
+    error: null as string | null,
   }))
 );
