@@ -47,23 +47,12 @@ describe('FOS Controller E2E', () => {
   });
 
   describe('GET /api/fos/game/:gameId', () => {
-    it('should return all FOSs for a game', async () => {
+    it('should return empty array for new games (FOSs created on activation)', async () => {
       const res = await axios.get(`/api/fos/game/${gameId}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.data)).toBe(true);
-      
-      // Update fosId to use the first FOS found, if any exist
-      if (res.data.length > 0) {
-        fosId = res.data[0].id;
-        expect(res.data[0]).toHaveProperty('id');
-        expect(res.data[0]).toHaveProperty('gameId');
-        expect(res.data[0]).toHaveProperty('fosIdNumber');
-        expect(res.data[0]).toHaveProperty('isActive');
-        expect(res.data[0].gameId).toBe(gameId);
-      } else {
-        console.warn('No FOSs found for this game - some tests may be skipped');
-      }
+      expect(res.data.length).toBe(0); // New games start with no FOSs
     });
 
     it('should return empty array for non-existent game', async () => {
@@ -92,77 +81,60 @@ describe('FOS Controller E2E', () => {
   });
 
   describe('POST /api/fos/:id/activate', () => {
-    let inactiveFosId: number;
-
-    beforeAll(async () => {
-      // Find an inactive FOS to use for testing
-      const fosRes = await axios.get(`/api/fos/game/${gameId}`);
-      const inactiveFos = fosRes.data.find(f => !f.isActive);
-      
-      if (inactiveFos) {
-        inactiveFosId = inactiveFos.id;
-      } else {
-        // If all FOSs are active, deactivate one for testing
-        if (fosRes.data.length > 0) {
-          await axios.patch(`/api/fos/${fosRes.data[0].id}/deactivate`);
-          inactiveFosId = fosRes.data[0].id;
-        }
-      }
-    });
-
-    it('should activate a FOS and assign it to a team', async () => {
-      if (!inactiveFosId) {
-        pending('No inactive FOS available for testing');
-        return;
-      }
-
+    it('should create and activate a new FOS when using fosIdNumber', async () => {
+      const fosIdNumber = 7; // Use FOS 7 for testing
       const currentTurn = 3;
-      const res = await axios.post(`/api/fos/${inactiveFosId}/activate`, {
+
+      // Verify no FOSs exist initially
+      const initialRes = await axios.get(`/api/fos/game/${gameId}`);
+      expect(initialRes.data.length).toBe(0);
+
+      // Activate FOS 7 - should create and activate it
+      const res = await axios.post(`/api/fos/${fosIdNumber}/activate`, {
         teamId,
         currentTurn,
       });
 
       expect(res.status).toBe(201);
-      expect(res.data.id).toBe(inactiveFosId);
+      expect(res.data.fosIdNumber).toBe(fosIdNumber);
       expect(res.data.isActive).toBe(true);
       expect(res.data.teamId).toBe(teamId);
       expect(res.data.turnActivated).toBe(currentTurn);
       expect(res.data.game).toBeDefined();
       expect(res.data.gameId).toBe(gameId);
+
+      // Verify FOS now exists in the game
+      const afterRes = await axios.get(`/api/fos/game/${gameId}`);
+      expect(afterRes.data.length).toBe(1);
+      expect(afterRes.data[0].fosIdNumber).toBe(fosIdNumber);
     });
 
-    it('should return 404 when activating non-existent FOS', async () => {
-      try {
-        await axios.post(`/api/fos/99999/activate`, {
-          teamId,
-          currentTurn: 1,
-        });
-        fail('Expected request to fail');
-      } catch (error) {
-        expect(error.response.status).toBe(404);
-        expect(error.response.data.message).toBe('FOS not found');
-      }
+    it('should create FOS with valid fosIdNumber even if it seems high', async () => {
+      const fosIdNumber = 25; // Valid FOS ID number
+      const currentTurn = 1;
+
+      const res = await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+        teamId,
+        currentTurn,
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.data.fosIdNumber).toBe(fosIdNumber);
+      expect(res.data.isActive).toBe(true);
     });
 
     it('should return 400 when activating already active FOS', async () => {
-      if (!inactiveFosId) {
-        pending('No FOS available for testing');
-        return;
-      }
+      const fosIdNumber = 15;
 
-      // First ensure the FOS is active
-      try {
-        await axios.post(`/api/fos/${inactiveFosId}/activate`, {
-          teamId,
-          currentTurn: 3,
-        });
-      } catch (error) {
-        // It might already be active, which is fine for this test
-      }
+      // First activate the FOS
+      await axios.post(`/api/fos/${fosIdNumber}/activate`, {
+        teamId,
+        currentTurn: 3,
+      });
 
       // Now try to activate it again - this should fail
       try {
-        await axios.post(`/api/fos/${inactiveFosId}/activate`, {
+        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
           teamId,
           currentTurn: 4,
         });
@@ -174,17 +146,10 @@ describe('FOS Controller E2E', () => {
     });
 
     it('should return 404 when using non-existent team', async () => {
-      // First deactivate a FOS for this test
-      if (!inactiveFosId) {
-        pending('No FOS available for testing');
-        return;
-      }
-
-      // Deactivate the FOS first
-      await axios.patch(`/api/fos/${inactiveFosId}/deactivate`);
+      const fosIdNumber = 20;
 
       try {
-        await axios.post(`/api/fos/${inactiveFosId}/activate`, {
+        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
           teamId: 99999,
           currentTurn: 1,
         });
@@ -196,14 +161,11 @@ describe('FOS Controller E2E', () => {
     });
 
     it('should validate required fields', async () => {
-      if (!inactiveFosId) {
-        pending('No FOS available for testing');
-        return;
-      }
+      const fosIdNumber = 30;
 
       // Test missing teamId
       try {
-        await axios.post(`/api/fos/${inactiveFosId}/activate`, {
+        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
           currentTurn: 1,
         });
         fail('Expected request to fail');
@@ -213,7 +175,7 @@ describe('FOS Controller E2E', () => {
 
       // Test missing currentTurn
       try {
-        await axios.post(`/api/fos/${inactiveFosId}/activate`, {
+        await axios.post(`/api/fos/${fosIdNumber}/activate`, {
           teamId,
         });
         fail('Expected request to fail');
