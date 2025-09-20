@@ -149,7 +149,7 @@ describe('FOS Controller E2E', () => {
       }
     });
 
-    it('should return 404 when using non-existent team', async () => {
+    it('should return 403 when using non-existent team', async () => {
       const fosDisplayNumber = 20;
 
       try {
@@ -159,8 +159,8 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(404);
-        expect(error.response.data.message).toBe('Team not found');
+        expect(error.response.status).toBe(403);
+        expect(error.response.data.message).toBe('Access denied to this team');
       }
     });
 
@@ -400,8 +400,8 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(404);
-        expect(error.response.data.message).toBe('Team not found');
+        expect(error.response.status).toBe(403);
+        expect(error.response.data.message).toBe('Access denied to this team');
       }
     });
 

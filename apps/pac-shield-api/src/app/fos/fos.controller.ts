@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
 import { FosService } from './fos.service';
-import { ForwardOperatingSite, UpdateForwardOperatingSiteDto } from '../generated';
+import { ForwardOperatingSite } from '../generated';
 import { ApiOperation, ApiParam, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { MobCommanderGuard } from '../auth/mob-commander.guard';
+import { FosManagementGuard } from '../auth/fos-management.guard';
 
 /**
  * FOS REST API Controller for Forward Operating Site management.
@@ -92,7 +92,7 @@ export class FosController {
    *   ...
    * }
    */
-  @UseGuards(JwtAuthGuard, MobCommanderGuard)
+  @UseGuards(JwtAuthGuard, FosManagementGuard)
   @Post(':id/activate')
   @ApiOperation({ summary: 'Activate FOS and assign to team' })
   @ApiParam({
@@ -169,7 +169,7 @@ export class FosController {
    *   ...
    * }
    */
-  @UseGuards(JwtAuthGuard, MobCommanderGuard)
+  @UseGuards(JwtAuthGuard, FosManagementGuard)
   @Patch(':id/deactivate')
   @ApiOperation({ summary: 'Deactivate FOS and remove team assignment' })
   @ApiParam({

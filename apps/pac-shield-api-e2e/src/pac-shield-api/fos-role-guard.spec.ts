@@ -104,7 +104,7 @@ describe('FOS Role Guard E2E (MobCommanderGuard)', () => {
         response: {
           status: 403,
           data: {
-            message: expect.stringContaining('Only MOB Commanders'),
+            message: expect.stringContaining('Only GMs and MOB CCs'),
           },
         },
       });
@@ -122,7 +122,7 @@ describe('FOS Role Guard E2E (MobCommanderGuard)', () => {
         response: {
           status: 403,
           data: {
-            message: expect.stringContaining('Only MOB Commanders'),
+            message: expect.stringContaining('Only GMs and MOB CCs'),
           },
         },
       });
