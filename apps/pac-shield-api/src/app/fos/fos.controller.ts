@@ -19,7 +19,7 @@ import { FosManagementGuard } from '../auth/fos-management.guard';
  */
 @Controller('fos')
 export class FosController {
-  constructor(private readonly fosService: FosService) {}
+  constructor(private readonly fosService: FosService) { }
 
   /**
    * Get all Forward Operating Sites for a specific game.
