@@ -21,8 +21,11 @@ export class PlayerController {
   constructor(private readonly playerService: PlayerService) {}
 
   /**
-   * POST /player
-   * Create a new player (generic endpoint; game-scoped creation typically uses /player/join).
+   * Creates a new player with the provided data.
+   * Generic endpoint for player creation; game-scoped creation typically uses /player/join.
+   * @param createPlayerDto - Player creation data including name, role, and game association
+   * @returns Promise<Player> - The created player record
+   * @example POST /player
    */
   @Post()
   create(@Body() createPlayerDto: CreatePlayerDto) {
@@ -30,8 +33,10 @@ export class PlayerController {
   }
 
   /**
-   * GET /player
-   * List all players across games (primarily for diagnostics/admin).
+   * Retrieves all players across all games.
+   * Primarily used for diagnostics and administrative purposes.
+   * @returns Promise<Player[]> - Array of all player records
+   * @example GET /player
    */
   @Get()
   findAll() {
@@ -39,8 +44,10 @@ export class PlayerController {
   }
 
   /**
-   * GET /player/:id
-   * Fetch a single player by id.
+   * Retrieves a single player by their unique identifier.
+   * @param id - The player's unique ID as a string
+   * @returns Promise<Player | null> - The player record or null if not found
+   * @example GET /player/123
    */
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -48,8 +55,14 @@ export class PlayerController {
   }
 
   /**
-   * PATCH /player/:id
-   * Update player fields including role. Validates role against known enum set.
+   * Updates player fields including role with validation.
+   * Validates role against known enum set and broadcasts updates via WebSocket.
+   * @param id - The player's unique ID as a string
+   * @param updatePlayerDto - Update data including name and/or role
+   * @returns Promise<Player> - The updated player record
+   * @throws BadRequestException when role is invalid or name is empty
+   * @throws NotFoundException when player does not exist
+   * @example PATCH /player/123
    */
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePlayerDto: UpdatePlayerWithRoleDto) {
@@ -57,9 +70,15 @@ export class PlayerController {
   }
 
   /**
-   * PATCH /player/:id/name
-   * Update only the player's display name with strict non-empty validation.
-   * Broadcasts player list update to the lobby on success.
+   * Updates only the player's display name with strict validation.
+   * Validates that the name is non-empty and broadcasts player list updates to the lobby.
+   * @param id - The player's unique ID as a string
+   * @param body - Request body containing the new name
+   * @param body.name - The new display name for the player
+   * @returns Promise<Player> - The updated player record
+   * @throws BadRequestException when name is empty or invalid
+   * @throws NotFoundException when player does not exist
+   * @example PATCH /player/123/name
    */
   @Patch(':id/name')
   async updatePlayerName(
@@ -70,8 +89,12 @@ export class PlayerController {
   }
 
   /**
-   * DELETE /player/:id
-   * Remove a player record.
+   * Permanently removes a player record from the system.
+   * Broadcasts player list updates to notify other players in the lobby.
+   * @param id - The player's unique ID as a string
+   * @returns Promise<Player> - The deleted player record
+   * @throws NotFoundException when player does not exist
+   * @example DELETE /player/123
    */
   @Delete(':id')
   remove(@Param('id') id: string) {
@@ -79,9 +102,13 @@ export class PlayerController {
   }
 
   /**
-   * POST /player/join
-   * Game-scoped join flow. Handles name conflicts + PIN resume via PlayerService.
-   * Returns a JWT and the created/resumed Player.
+   * Handles the complete game join flow with name conflict resolution.
+   * Processes player creation or resumption via PIN validation and returns session JWT.
+   * @param joinGameDto - Join request data including room code, player name, and optional PIN
+   * @returns Promise<{token: string, player: Player, id: number}> - Session token and player data
+   * @throws BadRequestException for name conflicts, invalid PINs, or validation errors
+   * @throws NotFoundException when room code is invalid
+   * @example POST /player/join
    */
   @Post('join')
   async joinGame(
@@ -92,8 +119,14 @@ export class PlayerController {
   }
 
   /**
-   * POST /player/check-name-availability
-   * Quickly verify if a name is available for a given roomCode to drive the join UI.
+   * Checks if a player name is available within a specific game.
+   * Used by the join UI to provide real-time name availability feedback.
+   * @param body - Request body containing room code and player name
+   * @param body.roomCode - The game's room code to check within
+   * @param body.playerName - The proposed player name to check
+   * @returns Promise<{isAvailable: boolean}> - Whether the name is available
+   * @throws NotFoundException when room code is invalid
+   * @example POST /player/check-name-availability
    */
   @Post('check-name-availability')
   async checkPlayerNameAvailability(
@@ -106,8 +139,15 @@ export class PlayerController {
   }
 
   /**
-   * POST /player/:id/join-team
-   * Assign a player to a specific team within their game.
+   * Assigns a player to a specific team within their game.
+   * Validates team exists, belongs to same game, and respects team lock status.
+   * @param id - The player's unique ID as a string
+   * @param body - Request body containing team assignment
+   * @param body.teamId - The ID of the team to join
+   * @returns Promise<Player> - The updated player record with team assignment
+   * @throws NotFoundException when player or team does not exist
+   * @throws BadRequestException when team is locked, belongs to different game, or GM role restrictions
+   * @example POST /player/123/join-team
    */
   @Post(':id/join-team')
   async joinTeam(
@@ -118,8 +158,12 @@ export class PlayerController {
   }
 
   /**
-   * POST /player/:id/leave-team
-   * Remove a player from their current team.
+   * Removes a player from their current team assignment.
+   * Sets the player's teamId to null and broadcasts updates to the lobby.
+   * @param id - The player's unique ID as a string
+   * @returns Promise<Player> - The updated player record without team assignment
+   * @throws NotFoundException when player does not exist
+   * @example POST /player/123/leave-team
    */
   @Post(':id/leave-team')
   async leaveTeam(@Param('id') id: string): Promise<Player> {

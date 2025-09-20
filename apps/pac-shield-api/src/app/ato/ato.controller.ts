@@ -32,8 +32,13 @@ export class AtoController {
   constructor(private readonly atoService: AtoService) {}
 
   /**
-   * Get available aircraft for a specific team
-   * GET /ato/teams/:teamId/aircraft
+   * Retrieves available aircraft instances for a specific team.
+   * Used by flight planners to see which aircraft are available for mission planning.
+   * @param teamId - The unique identifier of the team
+   * @param req - Express request object containing authenticated user information
+   * @returns Promise<AircraftInstance[]> - Array of aircraft instances available to the team
+   * @throws UnauthorizedException when user doesn't have access to the team
+   * @example GET /ato/teams/123/aircraft
    */
   @Get('teams/:teamId/aircraft')
   async getAircraftForTeam(
@@ -44,8 +49,13 @@ export class AtoController {
   }
 
   /**
-   * Get all aircraft in game (GM access)
-   * GET /ato/games/:gameId/aircraft
+   * Retrieves all aircraft instances in a game (Game Master access only).
+   * Provides GM with complete visibility of all aircraft across all teams.
+   * @param gameId - The unique identifier of the game
+   * @param req - Express request object containing authenticated user information
+   * @returns Promise<AircraftInstance[]> - Array of all aircraft instances in the game
+   * @throws UnauthorizedException when user is not a GM
+   * @example GET /ato/games/123/aircraft
    */
   @Get('games/:gameId/aircraft')
   async getAllAircraftInGame(
@@ -56,8 +66,14 @@ export class AtoController {
   }
 
   /**
-   * Create a new flight plan (ATO line)
-   * POST /ato
+   * Creates a new flight plan (ATO line) for mission execution.
+   * Processes flight plan submission and initiates PPR approval workflow if required.
+   * @param createAtoRequestDto - Flight plan creation data including aircraft, targets, and timing
+   * @param req - Express request object containing authenticated user information
+   * @returns Promise<ATOLine> - The created ATO line with initial status
+   * @throws BadRequestException when flight plan data is invalid
+   * @throws UnauthorizedException when user doesn't have permission to create plans
+   * @example POST /ato
    */
   @Post()
   async createFlightPlan(
