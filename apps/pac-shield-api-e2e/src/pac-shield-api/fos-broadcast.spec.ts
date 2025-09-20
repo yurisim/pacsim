@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { io, Socket } from 'socket.io-client';
 
 describe('FOS WebSocket Broadcasts E2E', () => {
@@ -6,6 +6,9 @@ describe('FOS WebSocket Broadcasts E2E', () => {
   let roomCode: string;
   let teamId: number;
   let socket: Socket;
+  let playerId: number;
+  let token: string;
+  let api: AxiosInstance;
 
   // Use retries if Jest has retryTimes configured in this environment (do not modify global config)
   if (typeof (global as any).jest?.retryTimes === 'function') {
@@ -37,27 +40,39 @@ describe('FOS WebSocket Broadcasts E2E', () => {
     roomCode = gameRes.data.roomCode;
 
     // 2) Join the game as a player to ensure a team exists and capture a teamId
-    const joinRes = await axios.post(`/api/game/join`, {
+    const joinRes = await axios.post(`/api/player/join`, {
       roomCode,
       playerName: 'WS Broadcast Tester',
     });
     expect(joinRes.data?.token).toBeDefined();
+    token = joinRes.data.token;
+    playerId = joinRes.data.id ?? joinRes.data.player?.id;
 
-    // Reuse "get game" pattern from fos.spec.ts to obtain a valid teamId
+    // Reuse "get game" pattern from fos.spec.ts to obtain a MOB teamId
     try {
       const gameDetails = await axios.get(`/api/game/${gameId}`);
-      if (gameDetails.data?.teams?.length) {
-        teamId = gameDetails.data.teams[0].id;
-      } else {
-        // Fallback if teams array unavailable for some reason
-        teamId = 1;
-      }
+      const teams: Array<{ id: number; type: string }> = gameDetails.data?.teams ?? [];
+      const mobTeam = teams.find(t => String(t.type).startsWith('MOB_'));
+      teamId = mobTeam ? mobTeam.id : (teams[0]?.id ?? 1);
     } catch {
       teamId = 1;
     }
 
-    // 3) Start a Socket.IO client that connects to the default namespace and joins the room
+    // Elevate to COMMANDER and join MOB team for authorization
+    const roleRes = await axios.patch(`/api/player/${playerId}`, { role: 'COMMANDER' });
+    expect([200, 201]).toContain(roleRes.status);
+    const joinTeamRes = await axios.post(`/api/player/${playerId}/join-team`, { teamId });
+    expect([200, 201]).toContain(joinTeamRes.status);
+
+    // Authorized axios instance
     const baseURL = (axios.defaults.baseURL ?? 'http://localhost:3000').replace(/\/$/, '');
+    api = axios.create({
+      baseURL,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // 3) Start a Socket.IO client that connects to the default namespace and joins the room
+
     socket = io(baseURL, {
       transports: ['websocket'],
       forceNew: true,
@@ -104,7 +119,7 @@ describe('FOS WebSocket Broadcasts E2E', () => {
     const fosDisplayNumber = 7;
     const turnActivated = 1;
 
-    const activateRes = await axios.post(`/api/fos/${fosDisplayNumber}/activate`, {
+    const activateRes = await api.post(`/api/fos/${fosDisplayNumber}/activate`, {
       teamId,
       turnActivated,
     });
@@ -149,7 +164,7 @@ describe('FOS WebSocket Broadcasts E2E', () => {
     const updatePromise = waitForSocketEvent<any[]>('fosListUpdate', 10000);
 
     // Deactivate (PATCH uses database UUID id per fos.controller.ts)
-    const deactivateRes = await axios.patch(`/api/fos/${fosId}/deactivate`);
+    const deactivateRes = await api.patch(`/api/fos/${fosId}/deactivate`);
     expect(deactivateRes.status).toBe(200);
     expect(deactivateRes.data.id).toBe(fosId);
     expect(deactivateRes.data.isActive).toBe(false);
