@@ -4,6 +4,7 @@ import { AtoController } from './ato.controller';
 import { AtoService } from './ato.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { GameModule } from '../../game/game.module';
+import { AuthModule } from '../../auth/auth.module';
 
 /**
  * ATO (Air Tasking Order) module for flight plan management.
@@ -12,6 +13,7 @@ import { GameModule } from '../../game/game.module';
   imports: [
     PrismaModule,
     forwardRef(() => GameModule),
+    AuthModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'fallback-secret-key',
       signOptions: { expiresIn: '24h' },

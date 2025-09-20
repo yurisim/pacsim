@@ -98,6 +98,15 @@ export class FosStateService {
   }
 
   /**
+   * Public method to immediately update FOS state - used for optimistic updates
+   * This allows components to update the state immediately after successful API calls
+   * without waiting for WebSocket updates
+   */
+  public updateFosImmediately(fosList: ForwardOperatingSite[]): void {
+    this.updateFosState(fosList);
+  }
+
+  /**
    * Update the active FOS IDs set based on the current FOS list
    */
   private updateActiveFosIds(fosList: ForwardOperatingSite[]): void {
