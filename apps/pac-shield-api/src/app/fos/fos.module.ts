@@ -3,11 +3,13 @@ import { FosController } from './fos.controller';
 import { FosService } from './fos.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { EventsGateway } from '../events.gateway';
+import { AuthModule } from '../../auth/auth.module';
+import { MobCommanderGuard } from '../auth/mob-commander.guard';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   controllers: [FosController],
-  providers: [FosService, EventsGateway],
+  providers: [FosService, EventsGateway, MobCommanderGuard],
   exports: [FosService],
 })
 export class FosModule {}
