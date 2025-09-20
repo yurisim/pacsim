@@ -265,7 +265,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Handle location panel actions
    */
-  onLocationAction(event: {action: any, asset: any}): void {
+  onLocationAction(event: { action: any, asset: any }): void {
     console.log('Location action:', event);
 
     const action = event.action;
@@ -377,7 +377,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Handle FOS status changes from location panel
    */
-  onFosStatusChanged(event: {fosId: string, isActive: boolean, teamId?: number}): void {
+  onFosStatusChanged(event: { fosId: string, isActive: boolean, teamId?: number }): void {
     console.log('FOS status changed:', event);
 
     if (event.isActive) {
