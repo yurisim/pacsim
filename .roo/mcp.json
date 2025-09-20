@@ -11,15 +11,14 @@
       "alwaysAllow": ["browser_install"],
       "disabled": false
     },
-    "nx-mcp": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["nx-mcp@latest"],
-      "alwaysAllow": ["nx_workspace", "nx_current_running_tasks_details"]
-    },
     "context7": {
-      "type": "streamable-http",
-      "url": "https://mcp.context7.com/mcp"
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-7a021de2-dd21-42b8-88e1-06208aa3c848"
+      ]
     }
   }
 }

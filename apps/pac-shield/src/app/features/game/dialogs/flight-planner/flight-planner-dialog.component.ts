@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,8 +10,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
-import { Observable, catchError, of } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import { Observable, Subject, catchError, of } from 'rxjs';
+import { filter, map, startWith, take, takeUntil } from 'rxjs/operators';
 import { ATOLine } from '../../../../generated/aTOLine/aTOLine.entity';
 import { CreateATOLineDto } from '../../../../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../../../../generated/aTOLine/update-aTOLine.dto';
@@ -21,14 +22,15 @@ import { Player } from '../../../../generated/player/player.entity';
 import { FOS_LOCATIONS, MOB_LOCATIONS } from '../../../../shared/config/static-locations.config';
 import { ApiService } from '../../../../shared/services/api.service';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { selectHexGrid } from '../../../../core/store/game/game.selectors';
 
 interface LocationOption {
-  /** Backend value (e.g., 'Kadena AB', 'FOS 7') */
+  /** Backend value (e.g., 'Kadena AB', 'FOS 7', '505A') */
   value: string;
-  /** Frontend display alias (e.g., 'Kadena Air Base', 'FOS 7 - Philippines') */
+  /** Frontend display alias (e.g., 'Kadena Air Base', 'FOS 7 - Philippines', 'Hex 505A') */
   displayName: string;
   /** Location type for filtering */
-  type: 'MOB' | 'FOS';
+  type: 'MOB' | 'FOS' | 'Hex';
   /** Country for additional context */
   country: string;
 }
@@ -62,7 +64,7 @@ export interface FlightPlannerDialogData {
   ],
   templateUrl: './flight-planner-dialog.component.html',
 })
-export class FlightPlannerDialogComponent implements OnInit {
+export class FlightPlannerDialogComponent implements OnInit, OnDestroy {
   flightPlanForm: FormGroup;
   isEditMode: boolean;
 
@@ -78,6 +80,8 @@ export class FlightPlannerDialogComponent implements OnInit {
   filteredFinalDestinations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
   filteredEnRouteDestinations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
   filteredAlternateDestinations$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
+
+  private destroy$ = new Subject<void>();
 
   configurations = [
     { value: 'CARGO_ONLY', label: 'Cargo Only', icon: 'inventory' },
@@ -96,18 +100,25 @@ export class FlightPlannerDialogComponent implements OnInit {
   public data = inject(MAT_DIALOG_DATA) as FlightPlannerDialogData;
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
+  private store = inject(Store);
 
   constructor() {
     this.isEditMode = !!this.data.existingFlightPlan;
     this.initializeLocationOptions();
     this.flightPlanForm = this.createForm();
     this.setupLocationAutocomplete();
+    this.loadHexLocations();
   }
 
   ngOnInit(): void {
     // Note: We'll fetch the current player data from API instead of using cached data
     // since we need the full Player entity with role information
     this.loadAvailableAircraft();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -387,6 +398,23 @@ export class FlightPlannerDialogComponent implements OnInit {
         country: location.country,
       })),
     ];
+  }
+
+  private loadHexLocations(): void {
+    this.store.select(selectHexGrid).pipe(
+      filter((hexGrid): hexGrid is Record<string, string> => hexGrid !== null),
+      take(1),
+      takeUntil(this.destroy$)
+    ).subscribe(hexGrid => {
+      const hexLocationOptions: LocationOption[] = Object.entries(hexGrid).map(([h3Index, visualCoord]) => ({
+        value: visualCoord,
+        displayName: `Hex ${visualCoord}`,
+        type: 'Hex',
+        country: '',
+      }));
+
+      this.allLocationOptions = [...this.allLocationOptions, ...hexLocationOptions];
+    });
   }
 
   private getMOBBackendValue(mobId: string): string {

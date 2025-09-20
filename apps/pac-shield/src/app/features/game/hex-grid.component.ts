@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnDestroy, inject } from '@angu
 import { Map } from 'maplibre-gl';
 import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js';
 import { ThemeService } from '../../shared/services/theme.service';
+import { Store } from '@ngrx/store';
+import { setHexGrid } from '../../core/store/game/game.actions';
 
 /**
  * Interface for hex selection events
@@ -56,6 +58,7 @@ export class HexGridComponent implements OnDestroy {
   @Output() hexHovered = new EventEmitter<HexSelectionEvent | null>();
 
   private themeService = inject(ThemeService);
+  private store = inject(Store);
 
   // State management
   private selectedHexCoordinate: string | null = null;
@@ -115,6 +118,9 @@ export class HexGridComponent implements OnDestroy {
 
     // Create mapping from H3 internal indexes to visual hex coordinates
     this.h3IndexToVisualCoordDictionary = this.generateVisualHexCoordinates(centerH3Index, h3InternalIndexes);
+
+    // Dispatch action to save hex grid data in the store
+    this.store.dispatch(setHexGrid({ hexGrid: this.h3IndexToVisualCoordDictionary }));
 
     // Create GeoJSON features for each hex
     h3InternalIndexes.forEach((h3InternalIndex: string) => {

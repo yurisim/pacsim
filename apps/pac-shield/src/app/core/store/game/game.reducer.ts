@@ -18,5 +18,9 @@ export const gameReducer = createReducer(
     ...state,
     loading: false,
     error,
+  })),
+  on(GameActions.setHexGrid, (state, { hexGrid }) => ({
+    ...state,
+    hexGrid,
   }))
 );

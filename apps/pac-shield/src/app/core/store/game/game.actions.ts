@@ -6,3 +6,5 @@ export const loadGameById = createAction('[Game] Load Game by ID', props<{ gameI
 
 export const loadGameSuccess = createAction('[Game] Load Game Success', props<{ game: Game }>());
 export const loadGameFailure = createAction('[Game] Load Game Failure', props<{ error: string }>());
+
+export const setHexGrid = createAction('[Game] Set Hex Grid', props<{ hexGrid: Record<string, string> }>());
