@@ -456,8 +456,43 @@ export class PlayerService {
 
   /**
    * Permanently delete a player by id.
+   * Emits lobby roster updates on success.
    */
-  remove(id: number) {
-    return this.prisma.player.delete({ where: { id } });
+  async remove(id: number) {
+    const requestId = this.cls.getId();
+    this.logger.log(`[${requestId}] Removing player ${id}`);
+
+    try {
+      // Get player data including game info before deletion
+      const player = await this.prisma.player.findUnique({
+        where: { id },
+        include: { game: true },
+      });
+
+      if (!player) {
+        throw new NotFoundException('Player not found');
+      }
+
+      // Delete the player
+      const deletedPlayer = await this.prisma.player.delete({ where: { id } });
+
+      // Emit WebSocket event to notify other players
+      if (player.game) {
+        const players = await this.prisma.player.findMany({
+          where: { gameId: player.gameId },
+          include: { team: true },
+        });
+        this.eventsGateway.sendToLobby(player.game.roomCode, 'playerListUpdate', players);
+      }
+
+      this.logger.log(`[${requestId}] Successfully removed player ${id}`);
+      return deletedPlayer;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to remove player ${id}: ${error.message}`, error.stack);
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Player not found');
+      }
+      throw error;
+    }
   }
 }

@@ -20,6 +20,9 @@ import { LocationMarkersComponent } from './location-markers/location-markers.co
 import { GameStatsComponent } from './game-stats/game-stats.component';
 import { GameStatsService } from './game-stats/game-stats.service';
 import { LocationPanelComponent } from './location-panel';
+import { FosStateService } from '../../shared/services/fos-state.service';
+import { WebSocketService } from '../../shared/services/websocket.service';
+import { PlayerRoleService } from '../../shared/services/player-role.service';
 
 @Component({
   selector: 'app-game-board',
@@ -61,6 +64,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private themeService = inject(ThemeService);
   private authService = inject(AuthService);
   gameStatsService = inject(GameStatsService);  // Made public for template access
+  fosStateService = inject(FosStateService);  // Made public for template access
+  private webSocketService = inject(WebSocketService);
+  private playerRoleService = inject(PlayerRoleService);
   map!: Map;  // Made public for template access
   private mapReady = false;
   private hexGridCreated = false;
@@ -90,7 +96,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedVisualHexCoord: string | null = null;
   selectedH3Index: string | null = null;
 
-  // FOS activation tracking
+  // FOS activation tracking (deprecated - now handled by FosStateService)
   activeFosIds = new Set<string>();
   fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID (e.g., 'kadena')
 
@@ -110,20 +116,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       return team?.type || null;
     })
   );
-  currentUserRole$ = this.game$.pipe(
-    map(game => {
-      const authPlayer = this.authService.getPlayer();
-      if (!authPlayer?.id || !game?.players) return null;
-
-      // Find the player in the game's player list
-      const gamePlayer = game.players.find(p => p.sessionId === authPlayer.sessionId);
-      return gamePlayer?.role || null;
-    })
-  );
+  // Use centralized role service instead of local derivation
+  currentUserRole$ = this.playerRoleService.currentRole$;
 
   // Legacy properties for compatibility
   currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
-  isGameMaster = false; // Will be determined from live data
+
+  // Use centralized role service for derived properties
+  isGameMaster$ = this.playerRoleService.isGameMaster$;
+  isMobCommander$ = this.playerRoleService.isMobCommander$;
+
+  // For backward compatibility - will be replaced with observables in template
+  isGameMaster = false;
 
   // Game statistics from service (reactive signals)
   gameStats = this.gameStatsService.gameStats;
@@ -261,7 +265,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Handle location panel actions
    */
-  onLocationAction(event: {action: any, asset: any}): void {
+  onLocationAction(event: { action: any, asset: any }): void {
     console.log('Location action:', event);
 
     const action = event.action;
@@ -373,7 +377,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Handle FOS status changes from location panel
    */
-  onFosStatusChanged(event: {fosId: string, isActive: boolean, teamId?: number}): void {
+  onFosStatusChanged(event: { fosId: string, isActive: boolean, teamId?: number }): void {
     console.log('FOS status changed:', event);
 
     if (event.isActive) {
@@ -542,7 +546,20 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
       this.store.dispatch(GameActions.loadGameById({ gameId }));
+
+      // Connect to WebSocket for real-time updates
+      this.webSocketService.connect(gameId);
+
+      // Initialize FOS state with offline-first approach
+      this.fosStateService.initializeForGame(Number(gameId));
     }
+
+    // Subscribe to game changes to join the appropriate room
+    this.game$.subscribe(game => {
+      if (game?.roomCode && this.webSocketService) {
+        this.webSocketService.joinGameRoom(game.roomCode);
+      }
+    });
   }
 
   /**
@@ -560,9 +577,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.initializeMap();
 
       // Initialize demo FOS activations after a slight delay to ensure markers are ready
-      setTimeout(() => {
-        this.initializeDemoFosActivations();
-      }, 1000);
+      // Commented out: No FOSs should be active at game start
+      // setTimeout(() => {
+      //   this.initializeDemoFosActivations();
+      // }, 1000);
     }, 0);
   }
 
@@ -578,6 +596,9 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   ngOnDestroy(): void {
     // LocationMarkersComponent handles its own cleanup via ngOnDestroy
+
+    // Disconnect from WebSocket
+    this.webSocketService.disconnect();
 
     // Reset flags for cleanup
     this.hexGridCreated = false;

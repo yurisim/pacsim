@@ -43,7 +43,7 @@
           @for (asset of mobAssets; track asset.id) {
           <button
             mat-button
-            [class.selected]="selectedMobAsset?.id === asset.id"
+            [class.selected]="selectedMobAsset()?.id === asset.id"
             (click)="selectMobAsset(asset)"
             class="asset-select-btn px-3 py-1.5 rounded-full"
           >
@@ -55,7 +55,7 @@
         }
 
         <!-- Selected MOB content -->
-        @if (selectedMobAsset) {
+        @if (selectedMobAsset(); as selectedMob) {
         <div class="asset-section mb-4">
           <div class="asset-header flex items-center gap-3 mb-3">
             <mat-icon
@@ -65,23 +65,23 @@
             >
             <div>
               <div class="md-typescale-label-medium font-medium">
-                {{ selectedMobAsset.name }}
+                {{ selectedMob.name }}
               </div>
               <div
                 class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
               >
-                {{ selectedMobAsset.status }}
+                {{ selectedMob.status }}
               </div>
             </div>
           </div>
           <div class="action-grid">
-            @for (action of selectedMobAsset.actions; track action.id) {
+            @for (action of selectedMob.actions; track action.id) {
             <button
               mat-raised-button
               [color]="action.color"
               [disabled]="action.disabled"
               [matTooltip]="action.tooltip || action.label"
-              (click)="onActionClick(action, selectedMobAsset)"
+              (click)="onActionClick(action, selectedMob)"
               class="action-btn"
             >
               <mat-icon>{{ action.icon }}</mat-icon>
@@ -108,7 +108,7 @@
           @for (asset of fosAssets; track asset.id) {
           <button
             mat-button
-            [class.selected]="selectedFosAsset?.id === asset.id"
+            [class.selected]="selectedFosAsset()?.id === asset.id"
             (click)="selectFosAsset(asset)"
             class="asset-select-btn px-3 py-1.5 rounded-full"
           >
@@ -120,7 +120,7 @@
         }
 
         <!-- Selected FOS content -->
-        @if (selectedFosAsset) {
+        @if (selectedFosAssetWithActions(); as selectedFos) {
         <div class="asset-section mb-4">
           <div class="asset-header flex items-center gap-3 mb-3">
             <mat-icon
@@ -130,23 +130,23 @@
             >
             <div>
               <div class="md-typescale-label-medium font-medium">
-                {{ selectedFosAsset.name }}
+                {{ selectedFos.name }}
               </div>
               <div
                 class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
               >
-                {{ selectedFosAsset.status }}
+                {{ selectedFos.status }}
               </div>
             </div>
           </div>
           <div class="action-grid">
-            @for (action of selectedFosAsset.actions; track action.id) {
+            @for (action of selectedFos.actions; track action.id) {
             <button
               mat-raised-button
               [color]="action.color"
               [disabled]="action.disabled"
               [matTooltip]="action.tooltip || action.label"
-              (click)="onActionClick(action, selectedFosAsset)"
+              (click)="onActionClick(action, selectedFos)"
               class="action-btn"
             >
               <mat-icon>{{ action.icon }}</mat-icon>
@@ -173,7 +173,7 @@
           @for (asset of planeAssets; track asset.id) {
           <button
             mat-button
-            [class.selected]="selectedPlaneAsset?.id === asset.id"
+            [class.selected]="selectedPlaneAsset()?.id === asset.id"
             (click)="selectPlaneAsset(asset)"
             class="asset-select-btn px-3 py-1.5 rounded-full"
           >
@@ -185,7 +185,7 @@
         }
 
         <!-- Selected plane content -->
-        @if (selectedPlaneAsset) {
+        @if (selectedPlaneAsset(); as selectedPlane) {
         <div class="asset-section mb-4">
           <div class="asset-header flex items-center gap-3 mb-3">
             <mat-icon
@@ -195,23 +195,23 @@
             >
             <div>
               <div class="md-typescale-label-medium font-medium">
-                {{ selectedPlaneAsset.name }}
+                {{ selectedPlane.name }}
               </div>
               <div
                 class="md-typescale-body-small md-sys-color-on-surface-variant text-sm"
               >
-                {{ selectedPlaneAsset.status }}
+                {{ selectedPlane.status }}
               </div>
             </div>
           </div>
           <div class="action-grid">
-            @for (action of selectedPlaneAsset.actions; track action.id) {
+            @for (action of selectedPlane.actions; track action.id) {
             <button
               mat-raised-button
               [color]="action.color"
               [disabled]="action.disabled"
               [matTooltip]="action.tooltip || action.label"
-              (click)="onActionClick(action, selectedPlaneAsset)"
+              (click)="onActionClick(action, selectedPlane)"
               class="action-btn"
             >
               <mat-icon>{{ action.icon }}</mat-icon>
