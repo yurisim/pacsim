@@ -35,8 +35,7 @@ import { PlayerRoleService } from '../../shared/services/player-role.service';
     HexGridComponent,
     LocationMarkersComponent,
     GameStatsComponent,
-    LocationPanelComponent,
-    JammingDebugComponent
+    LocationPanelComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
