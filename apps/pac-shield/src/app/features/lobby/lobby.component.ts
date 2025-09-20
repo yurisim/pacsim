@@ -96,19 +96,16 @@ export class LobbyComponent implements OnInit {
         );
       }
 
+      // Connect WebSocket and join the game room using roomCode
       this.webSocketService.connect(gameId);
+      this.game$.subscribe(game => {
+        if (game?.roomCode) {
+          this.webSocketService.joinGameRoom(game.roomCode);
+        }
+      });
+
       // Refresh on server signals that roster changed or a player joined
-      this.webSocketService.listen('playerJoined').subscribe(() => {
-        this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-        // Update current player when game data refreshes
-        const playerId = this.authService.getPlayerId();
-        if (playerId) {
-          this.currentPlayer$ = this.game$.pipe(
-            map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
-          );
-        }
-      });
-      this.webSocketService.listen('playerListUpdate').subscribe(() => {
+      const refreshGameData = () => {
         this.game$ = this.apiService.get<Game>(`game/${gameId}`);
         const playerId = this.authService.getPlayerId();
         if (playerId) {
@@ -116,7 +113,10 @@ export class LobbyComponent implements OnInit {
             map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
           );
         }
-      });
+      };
+
+      this.webSocketService.listen('playerJoined').subscribe(refreshGameData);
+      this.webSocketService.listen('playerListUpdate').subscribe(refreshGameData);
     }
   }
 
@@ -143,18 +143,7 @@ export class LobbyComponent implements OnInit {
     this.apiService.joinTeam(playerId, team.id!).subscribe({
       next: () => {
         this.notification.success(`Joined ${team.name}`);
-        // Refresh game data
-        const gameId = this.route.snapshot.paramMap.get('gameId');
-        if (gameId) {
-          this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-          // Update current player when game data refreshes
-          const playerId = this.authService.getPlayerId();
-          if (playerId) {
-            this.currentPlayer$ = this.game$.pipe(
-              map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
-            );
-          }
-        }
+        // WebSocket event will refresh game data automatically
       },
       error: (err) => {
         this.notification.error(err.error?.message || 'Failed to join team');
@@ -172,18 +161,7 @@ export class LobbyComponent implements OnInit {
     this.apiService.leaveTeam(playerId).subscribe({
       next: () => {
         this.notification.success('Left current team');
-        // Refresh game data
-        const gameId = this.route.snapshot.paramMap.get('gameId');
-        if (gameId) {
-          this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-          // Update current player when game data refreshes
-          const playerId = this.authService.getPlayerId();
-          if (playerId) {
-            this.currentPlayer$ = this.game$.pipe(
-              map(game => game.players?.find(player => player.id === parseInt(playerId)) || undefined)
-            );
-          }
-        }
+        // WebSocket event will refresh game data automatically
       },
       error: (err) => {
         this.notification.error(err.error?.message || 'Failed to leave team');
@@ -215,18 +193,7 @@ export class LobbyComponent implements OnInit {
       this.apiService.updatePlayerNameAndRole(playerId, result.name, result.role).subscribe({
         next: () => {
           this.notification.success('Your name and role have been updated');
-          // Refresh game data
-          const gameId = this.route.snapshot.paramMap.get('gameId');
-          if (gameId) {
-            this.game$ = this.apiService.get<Game>(`game/${gameId}`);
-            // Update current player when game data refreshes
-            const playerId2 = this.authService.getPlayerId();
-            if (playerId2) {
-              this.currentPlayer$ = this.game$.pipe(
-                map(game => game.players?.find(player => player.id === parseInt(playerId2)) || undefined)
-              );
-            }
-          }
+          // WebSocket event will refresh game data automatically
         },
         error: (err) => {
           this.notification.error(err.error?.message || 'Failed to update settings');
@@ -353,6 +320,7 @@ export class LobbyComponent implements OnInit {
     this.apiService.assignOneUnassigned(teamId).subscribe({
       next: () => {
         this.notification.success('Assigned one unassigned player');
+        // WebSocket event will refresh game data automatically
       },
       error: (err) => {
         this.notification.error(err.error?.message || 'Failed to assign player');
@@ -363,14 +331,20 @@ export class LobbyComponent implements OnInit {
   // GM Action Handlers - for structured events from GM menus
   onChangeRole(event: { player: Player, role: string }): void {
     this.apiService.updatePlayerRole(event.player.id!.toString(), event.role).subscribe({
-      next: () => this.notification.success('Player role updated'),
+      next: () => {
+        this.notification.success('Player role updated');
+        // WebSocket event will refresh game data automatically
+      },
       error: (err) => this.notification.error(err.error?.message || 'Failed to update player role')
     });
   }
 
   onMoveToTeam(event: { player: Player, team: Team }): void {
     this.apiService.joinTeam(event.player.id!.toString(), event.team.id!).subscribe({
-      next: () => this.notification.success('Player moved to team'),
+      next: () => {
+        this.notification.success('Player moved to team');
+        // WebSocket event will refresh game data automatically
+      },
       error: (err) => this.notification.error(err.error?.message || 'Failed to move player')
     });
   }
@@ -390,14 +364,20 @@ export class LobbyComponent implements OnInit {
 
   onRemoveFromTeam(player: Player): void {
     this.apiService.leaveTeam(player.id!.toString()).subscribe({
-      next: () => this.notification.success('Player removed from team'),
+      next: () => {
+        this.notification.success('Player removed from team');
+        // WebSocket event will refresh game data automatically
+      },
       error: (err) => this.notification.error(err.error?.message || 'Failed to remove player from team')
     });
   }
 
   onRemoveFromGame(player: Player): void {
     this.apiService.deletePlayer(player.id!.toString()).subscribe({
-      next: () => this.notification.success('Player removed from game'),
+      next: () => {
+        this.notification.success('Player removed from game');
+        // WebSocket event will refresh game data automatically
+      },
       error: (err) => this.notification.error(err.error?.message || 'Failed to remove player')
     });
   }
@@ -405,7 +385,10 @@ export class LobbyComponent implements OnInit {
   onToggleTeamLock(team: Team): void {
     const action = team.locked ? this.apiService.unlockTeam(team.id!) : this.apiService.lockTeam(team.id!);
     action.subscribe({
-      next: () => this.notification.success(`Team ${team.locked ? 'unlocked' : 'locked'}`),
+      next: () => {
+        this.notification.success(`Team ${team.locked ? 'unlocked' : 'locked'}`);
+        // WebSocket event will refresh game data automatically
+      },
       error: (err) => this.notification.error(err.error?.message || `Failed to ${team.locked ? 'unlock' : 'lock'} team`)
     });
   }
