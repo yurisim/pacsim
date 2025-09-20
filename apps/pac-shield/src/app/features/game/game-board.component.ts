@@ -22,7 +22,7 @@ import { GameStatsService } from './game-stats/game-stats.service';
 import { LocationPanelComponent } from './location-panel';
 import { FosStateService } from '../../shared/services/fos-state.service';
 import { WebSocketService } from '../../shared/services/websocket.service';
-import { JammingDebugComponent } from '../../shared/components/jamming-debug.component';
+import { PlayerRoleService } from '../../shared/services/player-role.service';
 
 @Component({
   selector: 'app-game-board',
@@ -67,6 +67,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   gameStatsService = inject(GameStatsService);  // Made public for template access
   fosStateService = inject(FosStateService);  // Made public for template access
   private webSocketService = inject(WebSocketService);
+  private playerRoleService = inject(PlayerRoleService);
   map!: Map;  // Made public for template access
   private mapReady = false;
   private hexGridCreated = false;
@@ -116,20 +117,18 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       return team?.type || null;
     })
   );
-  currentUserRole$ = this.game$.pipe(
-    map(game => {
-      const authPlayer = this.authService.getPlayer();
-      if (!authPlayer?.id || !game?.players) return null;
-
-      // Find the player in the game's player list
-      const gamePlayer = game.players.find(p => p.sessionId === authPlayer.sessionId);
-      return gamePlayer?.role || null;
-    })
-  );
+  // Use centralized role service instead of local derivation
+  currentUserRole$ = this.playerRoleService.currentRole$;
 
   // Legacy properties for compatibility
   currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
-  isGameMaster = false; // Will be determined from live data
+
+  // Use centralized role service for derived properties
+  isGameMaster$ = this.playerRoleService.isGameMaster$;
+  isMobCommander$ = this.playerRoleService.isMobCommander$;
+
+  // For backward compatibility - will be replaced with observables in template
+  isGameMaster = false;
 
   // Game statistics from service (reactive signals)
   gameStats = this.gameStatsService.gameStats;

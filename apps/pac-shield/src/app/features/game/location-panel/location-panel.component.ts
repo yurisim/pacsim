@@ -13,6 +13,7 @@ import { MOB_LOCATIONS, FOS_LOCATIONS, StaticLocation } from '../../../shared/co
 import { GameStatsService } from '../game-stats/game-stats.service';
 import { FosService } from '../services/fos.service';
 import { FosStateService } from '../../../shared/services/fos-state.service';
+import { PlayerRoleService } from '../../../shared/services/player-role.service';
 import { ForwardOperatingSite, Team } from '../../../generated';
 import { FosActivationDialogComponent, FosActivationDialogData, FosActivationDialogResult } from './fos-activation-dialog.component';
 
@@ -83,6 +84,7 @@ export class LocationPanelComponent implements OnChanges {
   private gameStatsService = inject(GameStatsService);
   private fosService = inject(FosService);
   private fosStateService = inject(FosStateService);
+  private playerRoleService = inject(PlayerRoleService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
@@ -308,10 +310,12 @@ export class LocationPanelComponent implements OnChanges {
           { id: 'transfer', icon: 'swap_horiz', label: 'Transfer', tooltip: 'Transfer control to another MOB' }
         );
 
-        // Add deactivation for owners/GM
-        baseActions.push(
-          { id: 'deactivate', icon: 'power_settings_new', label: 'Deactivate', tooltip: 'Deactivate this FOS', color: 'warn' }
-        );
+        // Add deactivation for owners/GM/MOB Commanders
+        if (this.canManageFos()) {
+          baseActions.push(
+            { id: 'deactivate', icon: 'power_settings_new', label: 'Deactivate', tooltip: 'Deactivate this FOS', color: 'warn' }
+          );
+        }
 
         // GM-only actions
         if (this.isGameMaster) {
@@ -337,16 +341,29 @@ export class LocationPanelComponent implements OnChanges {
       }
     } else {
       // FOS is inactive - show activation option based on permissions
-      if (this.isGameMaster) {
-        // GM can always activate
+      if (this.canManageFos()) {
+        // GMs and MOB Commanders can activate
+        const tooltipText = this.isGameMaster ? 'GM: Activate this FOS' : 'Activate this FOS';
         baseActions.push(
-          { id: 'activate', icon: 'power_settings_new', label: 'Activate', tooltip: 'Activate this FOS', color: 'accent' },
-          { id: 'gm-assign', icon: 'assignment_ind', label: 'Assign MOB', tooltip: 'GM: Assign to a MOB', color: 'accent' }
+          { id: 'activate', icon: 'power_settings_new', label: 'Activate', tooltip: tooltipText, color: 'accent' }
         );
+
+        if (this.isGameMaster) {
+          baseActions.push(
+            { id: 'gm-assign', icon: 'assignment_ind', label: 'Assign MOB', tooltip: 'GM: Assign to a MOB', color: 'accent' }
+          );
+        }
       } else {
-        // All regular players can activate any inactive FOS
+        // Non-authorized players see disabled activation button with explanation
         baseActions.push(
-          { id: 'activate', icon: 'power_settings_new', label: 'Activate', tooltip: 'Activate this FOS', color: 'accent' }
+          {
+            id: 'activate',
+            icon: 'power_settings_new',
+            label: 'Activate',
+            tooltip: 'Only GMs and MOB Commanders can activate FOS',
+            color: 'accent',
+            disabled: true
+          }
         );
       }
     }
@@ -638,6 +655,14 @@ export class LocationPanelComponent implements OnChanges {
     const types = new Set<string>();
     this.tileAssets.forEach(asset => types.add(asset.type));
     return Array.from(types);
+  }
+
+  /**
+   * Check if current player can manage FOS (GM or MOB Commander)
+   * Now uses the centralized PlayerRoleService
+   */
+  private canManageFos(): boolean {
+    return this.playerRoleService.canCurrentPlayerManageFos();
   }
 
 }

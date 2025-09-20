@@ -62,7 +62,7 @@
       [availableTeams]="(availableTeams$ | async) ?? []"
       [fosMobAssignments]="fosMobAssignments"
       [currentPlayerMob]="currentPlayerMob"
-      [isGameMaster]="isGameMaster"
+      [isGameMaster]="(isGameMaster$ | async) ?? false"
       (actionClicked)="onLocationAction($event)"
       (fosStatusChanged)="onFosStatusChanged($event)"
     >
