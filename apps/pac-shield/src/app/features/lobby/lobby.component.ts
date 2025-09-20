@@ -133,6 +133,12 @@ export class LobbyComponent implements OnInit {
     }
   }
 
+  /**
+   * Allows the current player to join a specific team.
+   * Validates authentication and calls the API to assign the player to the team.
+   * Shows success/error notifications and relies on WebSocket for real-time updates.
+   * @param team - The team object to join
+   */
   openJoinTeamDialog(team: Team): void {
     const playerId = this.authService.getPlayerId();
     if (!playerId) {
@@ -151,6 +157,11 @@ export class LobbyComponent implements OnInit {
     });
   }
 
+  /**
+   * Removes the current player from their assigned team.
+   * Validates authentication and calls the API to remove team assignment.
+   * Shows success/error notifications and relies on WebSocket for real-time updates.
+   */
   leaveCurrentTeam(): void {
     const playerId = this.authService.getPlayerId();
     if (!playerId) {
@@ -169,6 +180,12 @@ export class LobbyComponent implements OnInit {
     });
   }
 
+  /**
+   * Opens the player settings dialog for editing name and role.
+   * Retrieves current player data, shows dialog, and processes changes.
+   * Updates the player via API and shows notifications. Relies on WebSocket for real-time updates.
+   * @returns Promise that resolves when the dialog interaction is complete
+   */
   async openPlayerSettings(): Promise<void> {
     const current = await firstValueFrom(this.currentPlayer$);
     const dialogRef = this.dialog.open(PlayerSettingsDialogComponent, {
