@@ -61,16 +61,17 @@ model Game {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  teams            Team[]
-  players          Player[]
-  gameBoard        GameBoard?
-  atoLines         ATOLine[]
-  satellites       SatelliteInstance[]
-  hospitals        Hospital[]
-  eventLog         GameEvent[]
-  fosSites         ForwardOperatingSite[]
-  allocationCycles AllocationCycle[]
-  aircraftPools    AircraftPool[]
+  teams              Team[]
+  players            Player[]
+  gameBoard          GameBoard?
+  atoLines           ATOLine[]
+  satellites         SatelliteInstance[]
+  hospitals          Hospital[]
+  eventLog           GameEvent[]
+  fosSites           ForwardOperatingSite[]
+  allocationCycles   AllocationCycle[]
+  aircraftPools      AircraftPool[]
+  countryAccessState GameCountryAccessState?
 }
 
 model GameBoard {
@@ -85,6 +86,15 @@ model GameBoard {
   enrouteUSTRANSCOM EnrouteUSTRANSCOM[]
 }
 
+model GameCountryAccessState {
+  gameId Int  @id
+  game   Game @relation(fields: [gameId], references: [id])
+
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model PoliticalAccess {
   id         Int          @id @default(autoincrement())
   boardId    Int
@@ -92,6 +102,9 @@ model PoliticalAccess {
   country    Country
   access     AccessStatus
   overflight AccessStatus
+
+  @@unique([boardId, country])
+  @@index([boardId])
 }
 
 model EnrouteUSTRANSCOM {
