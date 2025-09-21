@@ -93,7 +93,7 @@
           <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-fos">
             <div class="overflow-x-auto" data-testid="responsive-scroll-fos">
               <div data-testid="fos-dashboard-host">
-                <app-fos-dashboard></app-fos-dashboard>
+                <app-fos-dashboard [currentGameId]="currentGameId || 1"></app-fos-dashboard>
               </div>
             </div>
           </div>
