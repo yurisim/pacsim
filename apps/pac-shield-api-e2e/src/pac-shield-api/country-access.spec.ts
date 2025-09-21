@@ -342,7 +342,14 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
         response: {
           status: 400,
           data: {
-            message: expect.stringContaining('Invalid country'),
+            message: expect.arrayContaining([
+              expect.objectContaining({
+                property: 'countries',
+                constraints: expect.objectContaining({
+                  isEnum: expect.stringContaining('must be one of the following values')
+                })
+              })
+            ])
           },
         },
       });
