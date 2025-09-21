@@ -28,7 +28,13 @@
       "WebSearch",
       "Bash(ls:*)",
       "Bash(curl:*)",
-      "Bash(npx nx reset:*)"
+      "Bash(npx nx reset:*)",
+      "Read(//c/Users/yuras/Pictures/Screenshots/**)",
+      "Bash(npx nx run-many:*)",
+      "Bash(npx nx show project:*)",
+      "Bash(yarn:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
