@@ -29,24 +29,20 @@ export class CountryAccessController {
     }
 
     const snapshot = await this.gameService.getCountryAccessSnapshot(gameId);
-    const etag = this.gameService.buildETag(gameId, snapshot.version);
 
     res.setHeader('Cache-Control', 'no-cache');
-
-    if (ifNoneMatch && ifNoneMatch.trim() === etag) {
-      res.status(HttpStatus.NOT_MODIFIED).send();
-      return;
-    }
-
-    res.setHeader('ETag', etag);
     return snapshot;
   }
 
   @Put(':gameId/country-access')
+  @ApiOperation({ summary: 'Update country access changes' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiBody({ description: 'Country access changes' })
+  @ApiResponse({ status: 200, description: 'Country access updated successfully' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
   async putCountryAccess(
     @Param('gameId') gameIdParam: string,
     @Body() body: UpdateCountryAccessBody,
-    @Headers('if-match') ifMatch: string | undefined,
     @Res({ passthrough: true }) res: Response
   ) {
     const gameId = Number(gameIdParam);
