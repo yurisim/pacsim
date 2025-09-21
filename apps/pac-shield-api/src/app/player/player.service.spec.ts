@@ -122,13 +122,13 @@ describe('PlayerService', () => {
       };
 
       await expect(service.updateWithRole(1, updateDto))
-        .rejects.toThrow(new BadRequestException('Invalid role. Must be one of: PLAYER, COMMANDER, DEPUTY, STRATEGIST, GM'));
+        .rejects.toThrow(new BadRequestException('Invalid role. Must be one of: PLAYER, COMMANDER, DEPUTY, LNO, GM'));
 
       expect(prismaService.player.update).not.toHaveBeenCalled();
     });
 
     it('should accept all valid roles', async () => {
-      const validRoles = [PlayerRole.PLAYER, PlayerRole.COMMANDER, PlayerRole.DEPUTY, PlayerRole.STRATEGIST, PlayerRole.GM];
+      const validRoles = [PlayerRole.PLAYER, PlayerRole.COMMANDER, PlayerRole.DEPUTY, PlayerRole.LNO, PlayerRole.GM];
 
       (prismaService.player.update as jest.Mock).mockResolvedValue(mockPlayer);
 

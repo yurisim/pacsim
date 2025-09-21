@@ -7,6 +7,7 @@ import { TeamType } from '.prisma/client';
 import { NotFoundException } from '@nestjs/common';
 import { PlayerService } from '../app/player/player.service';
 import { GameGateway } from './game.gateway';
+import { EventsGateway } from '../app/events.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 
 describe('GameService', () => {
@@ -15,6 +16,7 @@ describe('GameService', () => {
   let authService: AuthService;
   let playerService: PlayerService;
   let gameGateway: GameGateway;
+  let eventsGateway: EventsGateway;
 
   beforeEach(async () => {
     const mockPrismaService = {
@@ -41,6 +43,13 @@ describe('GameService', () => {
         emit: jest.fn(),
       },
     };
+    const mockEventsGateway = {
+      server: {
+        to: jest.fn().mockReturnThis(),
+        emit: jest.fn(),
+      },
+      sendToLobby: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -61,6 +70,10 @@ describe('GameService', () => {
           provide: GameGateway,
           useValue: mockGameGateway,
         },
+        {
+          provide: EventsGateway,
+          useValue: mockEventsGateway,
+        },
       ],
     }).compile();
 
@@ -69,6 +82,7 @@ describe('GameService', () => {
     authService = module.get<AuthService>(AuthService);
     playerService = module.get<PlayerService>(PlayerService);
     gameGateway = module.get<GameGateway>(GameGateway);
+    eventsGateway = module.get<EventsGateway>(EventsGateway);
   });
 
   /**

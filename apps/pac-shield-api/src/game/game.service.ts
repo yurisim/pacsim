@@ -6,6 +6,8 @@ import { CreateGameDto, Game } from '../app/generated';
 import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 import { PlayerService } from '../app/player/player.service';
+import { EventsGateway } from '../app/events.gateway';
+import { UpdateDiceRollDto, BulkDiceRollDto, BulkAccessUpdateDto } from './dto/dice-roll.dto';
 
 /**
  * Domain service handling game lifecycle operations: creation, retrieval, room-code validation, and join orchestration.
@@ -23,7 +25,8 @@ export class GameService {
     private prisma: PrismaService,
     private authService: AuthService,
     private gameGateway: GameGateway,
-    private playerService: PlayerService
+    private playerService: PlayerService,
+    private eventsGateway: EventsGateway
   ) { }
 
   /**
@@ -149,45 +152,16 @@ export class GameService {
   }
 
   // =============================================================================
-  // Country Access - Optimistic Concurrency Helpers and Operations
+  // Country Access - Database Operations (Database → Local Storage Pattern)
   // =============================================================================
 
   /**
-   * Build ETag string for country access payload
-   * Format: W/"country-access:{gameId}:{version}"
-   */
-  public buildETag(gameId: number, version: number): string {
-    return `W/"country-access:${gameId}:${version}"`;
-  }
-
-  /**
-   * Parse If-Match header and return version if valid for this gameId, otherwise null.
-   * Supports multiple comma-separated ETags per RFC semantics.
-   */
-  public parseIfMatch(gameId: number, ifMatchETag?: string): number | null {
-    if (!ifMatchETag) return null;
-    const candidates = ifMatchETag.split(',').map(s => s.trim());
-    for (const tag of candidates) {
-      const m = /^W\/"country-access:(\d+):(\d+)"$/.exec(tag);
-      if (m) {
-        const gid = Number(m[1]);
-        const ver = Number(m[2]);
-        if (gid === gameId) return ver;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Return current snapshot of country access for a game.
-   * - Validates game existence (404 if missing)
-   * - Reads all PoliticalAccess rows for the game's board
-   * - Maps AccessStatus -> boolean (FULL_ACCESS = true, others = false)
-   * - Version is sourced from GameCountryAccessState (0 if absent)
+   * Return current snapshot of country access for a game using CountryAccess table.
+   * Database → Local Storage pattern: reads from database, cached on frontend.
    */
   public async getCountryAccessSnapshot(
     gameId: number
-  ): Promise<{ version: number; countries: Record<string, boolean> }> {
+  ): Promise<{ countries: Record<string, boolean> }> {
     const game = await this.prisma.game.findUnique({
       where: { id: gameId },
       select: { id: true },
@@ -196,50 +170,27 @@ export class GameService {
       throw new NotFoundException(`Game with ID "${gameId}" not found`);
     }
 
-    const board = await this.prisma.gameBoard.findUnique({
+    const countryAccessRows = await this.prisma.countryAccess.findMany({
       where: { gameId },
-      select: { id: true },
+      select: { country: true, accessLevel: true },
     });
 
-    let countries: Record<string, boolean> = {};
-    if (board) {
-      const rows = await this.prisma.politicalAccess.findMany({
-        where: { boardId: board.id },
-        select: { country: true, access: true },
-      });
-      countries = rows.reduce((acc, row) => {
-        acc[row.country] = row.access === AccessStatus.FULL_ACCESS;
-        return acc;
-      }, {} as Record<string, boolean>);
+    const countries: Record<string, boolean> = {};
+    for (const row of countryAccessRows) {
+      countries[row.country] = row.accessLevel === AccessStatus.FULL_ACCESS;
     }
 
-    const state = await (this.prisma as any).gameCountryAccessState.findUnique({
-      where: { gameId },
-      select: { version: true },
-    });
-
-    const version = state?.version ?? 0;
-    return { version, countries };
+    return { countries };
   }
 
   /**
-   * Apply changes with optimistic concurrency controlled by If-Match ETag.
-   * - Validates game existence (404)
-   * - Validates If-Match (428 if missing, 412 if mismatch with latest version)
-   * - Ensures GameBoard exists (create if missing)
-   * - Validates countries against Country enum (400 on unknown)
-   * - Applies changes:
-   *   - null -> delete row
-   *   - boolean -> upsert PoliticalAccess.access (FULL_ACCESS if true, NO_ACCESS if false)
-   *   - overflight defaults to NO_ACCESS on create
-   * - Bumps version if any effective change; lazy-init state at version=1
-   * - Returns latest snapshot
+   * Apply country access changes using CountryAccess table.
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
    */
   public async applyCountryAccessChanges(
     gameId: number,
-    changes: Record<string, boolean | null>,
-    ifMatchETag: string
-  ): Promise<{ version: number; countries: Record<string, boolean> }> {
+    changes: Record<string, boolean | null>
+  ): Promise<{ countries: Record<string, boolean> }> {
     const result = await this.prisma.$transaction(async (tx) => {
       // Ensure game exists
       const game = await tx.game.findUnique({
@@ -248,35 +199,6 @@ export class GameService {
       });
       if (!game) {
         throw new NotFoundException(`Game with ID "${gameId}" not found`);
-      }
-
-      // Read current state/version
-      const state = await (tx as any).gameCountryAccessState.findUnique({
-        where: { gameId },
-        select: { version: true },
-      });
-      const currentVersion = state?.version ?? 0;
-
-      // Validate If-Match
-      if (!ifMatchETag) {
-        throw new HttpException({ message: 'If-Match header required' }, 428);
-      }
-      const ifMatchVersion = this.parseIfMatch(gameId, ifMatchETag);
-      if (ifMatchVersion === null || ifMatchVersion !== currentVersion) {
-        // 412 Precondition Failed with latest version in body
-        throw new HttpException({ version: currentVersion }, 412);
-      }
-
-      // Ensure GameBoard exists
-      let board = await tx.gameBoard.findUnique({
-        where: { gameId },
-        select: { id: true },
-      });
-      if (!board) {
-        board = await tx.gameBoard.create({
-          data: { gameId },
-          select: { id: true },
-        });
       }
 
       // Validate payload
@@ -295,88 +217,53 @@ export class GameService {
         }
       }
 
-      // Read existing rows for changed countries
-      const existing = await tx.politicalAccess.findMany({
-        where: {
-          boardId: board.id,
-          country: { in: keys as any },
-        },
-        select: { id: true, country: true, access: true },
-      });
-      const existingMap = new Map<string, { id: number; country: Country; access: AccessStatus }>(
-        existing.map((r) => [r.country as unknown as string, r])
-      );
-      let modified = 0;
-
+      // Apply changes to CountryAccess table
       for (const key of keys) {
         const value = (changes as any)[key] as boolean | null;
-        const existingRow = existingMap.get(key);
+        const country = key as Country;
 
         if (value === null) {
-          if (existingRow) {
-            await tx.politicalAccess.delete({ where: { id: existingRow.id } });
-            modified++;
-          }
-          continue;
-        }
-
-        const desiredAccess = value ? AccessStatus.FULL_ACCESS : AccessStatus.NO_ACCESS;
-
-        if (!existingRow) {
-          await tx.politicalAccess.create({
-            data: {
-              boardId: board.id,
-              country: key as any,
-              access: desiredAccess,
-              overflight: AccessStatus.NO_ACCESS,
+          // Delete country access entry
+          await tx.countryAccess.deleteMany({
+            where: { gameId, country }
+          });
+        } else {
+          // Upsert country access entry
+          const accessLevel = value ? AccessStatus.FULL_ACCESS : AccessStatus.NO_ACCESS;
+          await tx.countryAccess.upsert({
+            where: {
+              gameId_country: { gameId, country }
+            },
+            update: {
+              accessLevel,
+              diceRoll: value ? 10 : 1, // High roll = access, low roll = no access
+            },
+            create: {
+              gameId,
+              country,
+              accessLevel,
+              diceRoll: value ? 10 : 1,
             },
           });
-          modified++;
-        } else if (existingRow.access !== desiredAccess) {
-          await tx.politicalAccess.update({
-            where: { id: existingRow.id },
-            data: { access: desiredAccess },
-          });
-          modified++;
-        }
-      }
-
-      // Version bump if any effective change
-      let newVersion = currentVersion;
-      if (modified > 0) {
-        if (state) {
-          const updated = await (tx as any).gameCountryAccessState.update({
-            where: { gameId },
-            data: { version: currentVersion + 1 },
-            select: { version: true },
-          });
-          newVersion = updated.version;
-        } else {
-          const created = await (tx as any).gameCountryAccessState.create({
-            data: { gameId, version: 1 },
-            select: { version: true },
-          });
-          newVersion = created.version;
         }
       }
 
       // Load latest snapshot to return
-      const allRows = await tx.politicalAccess.findMany({
-        where: { boardId: board.id },
-        select: { country: true, access: true },
+      const allRows = await tx.countryAccess.findMany({
+        where: { gameId },
+        select: { country: true, accessLevel: true },
       });
       const countries: Record<string, boolean> = {};
       for (const row of allRows) {
-        countries[row.country] = row.access === AccessStatus.FULL_ACCESS;
+        countries[row.country] = row.accessLevel === AccessStatus.FULL_ACCESS;
       }
 
-      return { version: newVersion, countries };
+      return { countries };
     });
 
-    // Best-effort broadcast (non-blocking)
+    // Broadcast changes for real-time updates
     try {
       (this.gameGateway as any)?.publishCountryAccessUpdated?.(gameId, {
-        version: result.version,
         changes,
       });
     } catch (err) {
@@ -384,6 +271,205 @@ export class GameService {
     }
 
     return result;
+  }
+
+  /**
+   * Update dice roll for a specific country.
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async updateCountryDiceRoll(
+    gameId: number,
+    country: Country,
+    updateDto: UpdateDiceRollDto
+  ): Promise<{ country: Country; diceRoll: number; accessLevel: AccessStatus }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
+
+      // Calculate access level based on dice roll (standard ACE rules)
+      const accessLevel = this.calculateAccessLevel(updateDto.diceRoll);
+
+      // Upsert country access with new dice roll
+      const countryAccess = await tx.countryAccess.upsert({
+        where: {
+          gameId_country: { gameId, country }
+        },
+        update: {
+          diceRoll: updateDto.diceRoll,
+          accessLevel,
+          notes: updateDto.notes || null,
+        },
+        create: {
+          gameId,
+          country,
+          diceRoll: updateDto.diceRoll,
+          accessLevel,
+          notes: updateDto.notes || null,
+        },
+        select: { country: true, diceRoll: true, accessLevel: true },
+      });
+
+      return countryAccess;
+    });
+
+    // Broadcast dice roll update
+    try {
+      (this.gameGateway as any)?.publishDiceRollUpdated?.(gameId, {
+        country: result.country,
+        diceRoll: result.diceRoll,
+        accessLevel: result.accessLevel,
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast dice roll update failed for game ${gameId}: ${err}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Update dice rolls for multiple countries.
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async updateBulkDiceRolls(
+    gameId: number,
+    bulkDto: BulkDiceRollDto
+  ): Promise<{ countries: Array<{ country: Country; diceRoll: number; accessLevel: AccessStatus }> }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
+
+      // Validate dice rolls
+      for (const { diceRoll } of bulkDto.diceRolls) {
+        if (diceRoll < 1 || diceRoll > 20) {
+          throw new BadRequestException(`Invalid dice roll: ${diceRoll}. Must be between 1 and 20.`);
+        }
+      }
+
+      // Update all country dice rolls
+      const countries = [];
+      for (const { country, diceRoll } of bulkDto.diceRolls) {
+        const accessLevel = this.calculateAccessLevel(diceRoll);
+
+        const countryAccess = await tx.countryAccess.upsert({
+          where: {
+            gameId_country: { gameId, country }
+          },
+          update: {
+            diceRoll,
+            accessLevel,
+            notes: bulkDto.notes || null,
+          },
+          create: {
+            gameId,
+            country,
+            diceRoll,
+            accessLevel,
+            notes: bulkDto.notes || null,
+          },
+          select: { country: true, diceRoll: true, accessLevel: true },
+        });
+
+        countries.push(countryAccess);
+      }
+
+      return { countries };
+    });
+
+    // Broadcast bulk dice roll update
+    try {
+      (this.gameGateway as any)?.publishBulkDiceRollUpdated?.(gameId, {
+        countries: result.countries,
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast bulk dice roll update failed for game ${gameId}: ${err}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Update access level for multiple countries (bulk operation).
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async updateBulkCountryAccess(
+    gameId: number,
+    bulkDto: BulkAccessUpdateDto
+  ): Promise<{ countries: Array<{ country: Country; accessLevel: AccessStatus }> }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
+
+      // Determine which countries to update
+      const targetCountries = bulkDto.countries || Object.values(Country);
+
+      // Update access level for all target countries
+      const countries = [];
+      for (const country of targetCountries) {
+        const countryAccess = await tx.countryAccess.upsert({
+          where: {
+            gameId_country: { gameId, country }
+          },
+          update: {
+            accessLevel: bulkDto.accessLevel,
+            notes: bulkDto.notes || null,
+          },
+          create: {
+            gameId,
+            country,
+            accessLevel: bulkDto.accessLevel,
+            diceRoll: 1, // Default low roll for restricted access
+            notes: bulkDto.notes || null,
+          },
+          select: { country: true, accessLevel: true },
+        });
+
+        countries.push(countryAccess);
+      }
+
+      return { countries };
+    });
+
+    // Broadcast bulk access update
+    try {
+      (this.gameGateway as any)?.publishBulkAccessUpdated?.(gameId, {
+        accessLevel: bulkDto.accessLevel,
+        countries: result.countries.map(c => c.country),
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast bulk access update failed for game ${gameId}: ${err}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculate access level based on dice roll using standard ACE rules.
+   * Dice Roll 1-5: NO_ACCESS
+   * Dice Roll 6-15: OVERFLIGHT_ONLY
+   * Dice Roll 16-20: FULL_ACCESS
+   */
+  private calculateAccessLevel(diceRoll: number): AccessStatus {
+    if (diceRoll >= 16) return AccessStatus.FULL_ACCESS;
+    if (diceRoll >= 6) return AccessStatus.OVERFLIGHT_ONLY;
+    return AccessStatus.NO_ACCESS;
   }
 
   /**

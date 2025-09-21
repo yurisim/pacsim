@@ -22,6 +22,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger: Logger = new Logger('EventsGateway');
 
   handleConnection(client: Socket) {
+    client.setMaxListeners(15); // Increase from default 10 to prevent warnings
     this.logger.log(`Client connected: ${client.id}`);
   }
 

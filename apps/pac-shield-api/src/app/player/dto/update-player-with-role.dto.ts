@@ -5,7 +5,7 @@ export enum PlayerRole {
   PLAYER = 'PLAYER',
   COMMANDER = 'COMMANDER',
   DEPUTY = 'DEPUTY',
-  STRATEGIST = 'STRATEGIST',
+  LNO = 'LNO',
   GM = 'GM'
 }
 

@@ -1,0 +1,207 @@
+<div class="political-access-panel">
+  <!-- Header Section -->
+  <mat-toolbar class="panel-header mb-4 rounded-lg">
+    <mat-icon class="mr-3">public</mat-icon>
+    <span class="flex-1">Political Access Control</span>
+
+    <!-- Status Summary -->
+    <div class="flex items-center gap-4 text-sm">
+      <mat-chip class="bg-md-primary text-md-on-primary">
+        <mat-icon class="mr-1">check_circle</mat-icon>
+        Full: {{ fullAccessCount() }}
+      </mat-chip>
+      <mat-chip class="bg-md-tertiary text-md-on-tertiary">
+        <mat-icon class="mr-1">flight</mat-icon>
+        Overflight: {{ overflightOnlyCount() }}
+      </mat-chip>
+      <mat-chip class="bg-md-error text-md-on-error">
+        <mat-icon class="mr-1">block</mat-icon>
+        None: {{ noAccessCount() }}
+      </mat-chip>
+    </div>
+
+    <!-- Refresh Button -->
+    <button
+      mat-icon-button
+      matTooltip="Refresh data"
+      class="ml-2"
+      (click)="rerollAllDice()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <!-- Bulk Actions -->
+  @if (!isReadOnly) {
+  <div class="bulk-actions mb-6 flex gap-2 flex-wrap">
+    <button
+      matButton="filled"
+      class="bg-md-primary text-md-on-primary"
+      (click)="setAllAccess('FULL_ACCESS')">
+      <mat-icon class="mr-2">check_circle</mat-icon>
+      Set All Full Access
+    </button>
+    <button
+      matButton="filled"
+      class="bg-md-error text-md-on-error"
+      (click)="setAllAccess('NO_ACCESS')">
+      <mat-icon class="mr-2">block</mat-icon>
+      Set All No Access
+    </button>
+    <button
+      matButton="outlined"
+      (click)="rerollAllDice()">
+      <mat-icon class="mr-2">casino</mat-icon>
+      Roll All Dice
+    </button>
+  </div>
+  }
+
+  <!-- Country Grid -->
+  <div class="country-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    @for (countryData of countryAccess(); track countryData.country) {
+    <mat-card class="country-card p-4 hover:shadow-lg transition-shadow duration-200">
+      <!-- Country Header -->
+      <div class="country-header flex items-center mb-4">
+        <span class="flag-emoji text-2xl mr-3">{{ countryData.flagEmoji }}</span>
+        <div class="flex-1">
+          <h3 class="text-md-on-surface font-medium text-base m-0">
+            {{ countryData.countryDisplayName }}
+          </h3>
+          <p class="text-md-on-surface-variant text-sm m-0">
+            <span [class]="getFosOccupancyColor(countryData)">
+              {{ getFosOccupancyDisplay(countryData) }}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Access Controls -->
+      <div class="access-controls space-y-3 mb-4">
+        <!-- Main Access Level -->
+        <div class="access-field">
+          <mat-select
+            [value]="countryData.access"
+            [disabled]="isReadOnly"
+            (selectionChange)="onAccessChange(countryData.country, 'access', $event.value)"
+            class="w-full">
+            <mat-label>Access Level</mat-label>
+            @for (option of accessOptions; track option.value) {
+            <mat-option [value]="option.value" [class]="option.colorClass">
+              <div class="flex items-center">
+                <mat-icon class="mr-2 text-sm">{{ option.icon }}</mat-icon>
+                <span>{{ option.label }}</span>
+              </div>
+            </mat-option>
+            }
+          </mat-select>
+        </div>
+
+        <!-- Overflight Status -->
+        <div class="overflight-field">
+          <mat-select
+            [value]="countryData.overflight"
+            [disabled]="isReadOnly"
+            (selectionChange)="onAccessChange(countryData.country, 'overflight', $event.value)"
+            class="w-full">
+            <mat-label>Overflight</mat-label>
+            @for (option of accessOptions; track option.value) {
+            <mat-option [value]="option.value" [class]="option.colorClass">
+              <div class="flex items-center">
+                <mat-icon class="mr-2 text-sm">{{ option.icon }}</mat-icon>
+                <span>{{ option.label }}</span>
+              </div>
+            </mat-option>
+            }
+          </mat-select>
+        </div>
+      </div>
+
+      <!-- Dice Roll Display -->
+      <div class="dice-section">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-md-on-surface-variant text-sm font-medium">
+            Dice Roll Value
+          </span>
+          @if (!isReadOnly) {
+          <button
+            mat-icon-button
+            size="small"
+            matTooltip="Re-roll dice"
+            (click)="rerollDice(countryData.country)"
+            class="text-md-primary">
+            <mat-icon class="text-sm">casino</mat-icon>
+          </button>
+          }
+        </div>
+
+        <mat-chip
+          class="dice-chip bg-md-surface-variant text-md-on-surface-variant cursor-pointer"
+          [matTooltip]="'Last updated: ' + (countryData.lastUpdated | date:'short')"
+          (click)="!isReadOnly && rerollDice(countryData.country)">
+          <mat-icon class="mr-1">casino</mat-icon>
+          <span class="font-mono font-bold">{{ countryData.diceRoll }}</span>
+        </mat-chip>
+      </div>
+
+      <!-- FOS Display Section -->
+      <div class="fos-section mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-md-on-surface-variant text-sm font-medium">
+            Forward Operating Sites
+          </span>
+          <span class="text-xs text-md-on-surface-variant">
+            {{ countryData.fosOccupied }}/{{ countryData.fosCount }}
+          </span>
+        </div>
+
+        <div class="fos-chips flex flex-wrap gap-1">
+          @for (fos of countryData.fosSites; track fos.id) {
+          <mat-chip
+            [class]="getFosChipClass(fos)"
+            [matTooltip]="fos.name + ' (' + fos.coordinates[0] + ', ' + fos.coordinates[1] + ') - Available'"
+            (click)="onFosClick(fos)"
+            class="cursor-pointer text-xs">
+            <span class="mr-1">{{ getFosStatusIcon(fos) }}</span>
+            <span>{{ fos.name }}</span>
+          </mat-chip>
+          }
+        </div>
+      </div>
+
+      <!-- Status Icons -->
+      <div class="status-icons flex items-center justify-between mt-4 pt-3 border-t border-md-outline-variant">
+        <div class="access-status flex items-center">
+          @let accessOption = getAccessOption(countryData.access);
+          <mat-icon
+            [class]="accessOption.colorClass + ' mr-1 text-sm'"
+            [matTooltip]="'Access: ' + accessOption.label">
+            {{ accessOption.icon }}
+          </mat-icon>
+
+          @let overflightOption = getAccessOption(countryData.overflight);
+          <mat-icon
+            [class]="overflightOption.colorClass + ' text-sm'"
+            [matTooltip]="'Overflight: ' + overflightOption.label">
+            {{ overflightOption.icon }}
+          </mat-icon>
+        </div>
+
+        <span class="text-md-on-surface-variant text-xs">
+          {{ countryData.lastUpdated | date:'MMM d, HH:mm' }}
+        </span>
+      </div>
+    </mat-card>
+    }
+  </div>
+
+  <!-- Empty State -->
+  @if (countryAccess().length === 0) {
+  <div class="empty-state text-center py-12">
+    <mat-icon class="text-6xl text-md-on-surface-variant mb-4">public_off</mat-icon>
+    <h3 class="text-md-on-surface text-lg mb-2">No Political Access Data</h3>
+    <p class="text-md-on-surface-variant">
+      Country access data will appear here when available.
+    </p>
+  </div>
+  }
+</div>

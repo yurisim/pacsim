@@ -61,17 +61,17 @@ model Game {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  teams              Team[]
-  players            Player[]
-  gameBoard          GameBoard?
-  atoLines           ATOLine[]
-  satellites         SatelliteInstance[]
-  hospitals          Hospital[]
-  eventLog           GameEvent[]
-  fosSites           ForwardOperatingSite[]
-  allocationCycles   AllocationCycle[]
-  aircraftPools      AircraftPool[]
-  countryAccessState GameCountryAccessState?
+  teams            Team[]
+  players          Player[]
+  gameBoard        GameBoard?
+  atoLines         ATOLine[]
+  satellites       SatelliteInstance[]
+  hospitals        Hospital[]
+  eventLog         GameEvent[]
+  fosSites         ForwardOperatingSite[]
+  allocationCycles AllocationCycle[]
+  aircraftPools    AircraftPool[]
+  countryAccess    CountryAccess[]
 }
 
 model GameBoard {
@@ -86,14 +86,6 @@ model GameBoard {
   enrouteUSTRANSCOM EnrouteUSTRANSCOM[]
 }
 
-model GameCountryAccessState {
-  gameId Int  @id
-  game   Game @relation(fields: [gameId], references: [id])
-
-  version   Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model PoliticalAccess {
   id         Int          @id @default(autoincrement())
@@ -105,6 +97,19 @@ model PoliticalAccess {
 
   @@unique([boardId, country])
   @@index([boardId])
+}
+
+model CountryAccess {
+  id          Int          @id @default(autoincrement())
+  gameId      Int
+  game        Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  country     Country
+  diceRoll    Int          // 1-10
+  accessLevel AccessStatus // Auto-calculated from diceRoll
+  notes       String?      // Optional: GM notes about the roll
+
+  @@unique([gameId, country])
+  @@index([gameId])
 }
 
 model EnrouteUSTRANSCOM {
@@ -145,15 +150,15 @@ model Team {
 }
 
 model Player {
-  id        Int        @id @default(autoincrement())
-  sessionId String     @unique
-  name      String
-  role      PlayerRole @default(PLAYER)
-  pin       String?
-  teamId    Int?
-  team      Team?      @relation(fields: [teamId], references: [id])
-  gameId    Int?
-  game      Game?      @relation(fields: [gameId], references: [id])
+  id                   Int             @id @default(autoincrement())
+  sessionId            String          @unique
+  name                 String
+  role                 PlayerRole      @default(PLAYER)
+  pin                  String?
+  teamId               Int?
+  team                 Team?           @relation(fields: [teamId], references: [id])
+  gameId               Int?
+  game                 Game?           @relation(fields: [gameId], references: [id])
 }
 
 // =============================================
@@ -446,7 +451,7 @@ enum PlayerRole {
   PLAYER
   COMMANDER
   DEPUTY
-  STRATEGIST
+  LNO
   GM
 }
 

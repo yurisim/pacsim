@@ -161,6 +161,25 @@ console.log(fosStateService.getCacheInfo());
 
 ## Critical Development Rules
 
+### 🚨🚫 ABSOLUTELY NO BARREL EXPORTS 🚫🚨
+**⚠️ CRITICAL WARNING: DO NOT CREATE index.ts FILES FOR BARREL EXPORTS ⚠️**
+
+**NEVER, EVER, UNDER ANY CIRCUMSTANCES CREATE `index.ts` FILES FOR BARREL EXPORTS IN THIS ANGULAR APPLICATION!**
+
+- **❌ DO NOT** create `index.ts` files in component directories
+- **❌ DO NOT** create `index.ts` files in feature modules
+- **❌ DO NOT** create `index.ts` files in shared directories
+- **❌ DO NOT** create barrel exports anywhere in the Angular app
+- **✅ ALWAYS** import components directly from their specific file paths
+- **✅ ALWAYS** use full import paths like `./component/component.component`
+
+**WHY THIS RULE EXISTS:**
+- Barrel exports DESTROY Angular's tree-shaking capabilities
+- Barrel exports cause MASSIVE bundle size increases
+- Barrel exports HURT performance in Angular applications
+- Barrel exports create circular dependency issues
+- The Angular team explicitly recommends AGAINST barrel exports
+
 ### Database Schema Changes
 
 1. **Always modify** `apps/pac-shield-api/src/prisma/schema.prisma` first
@@ -178,7 +197,7 @@ console.log(fosStateService.getCacheInfo());
 - **Theme Support**: Ensure components work in both light and dark themes
 - **Responsive Design**: Use Tailwind responsive prefixes (sm:, md:, lg:, xl:) for all layouts
 - **Control Flow**: Use new Angular control flow syntax (`@if`, `@for`, `@switch`) instead of structural directives (`*ngIf`, `*ngFor`, `*ngSwitch`)
-- **No Barrel Exports**: NEVER create `index.ts` files for barrel exports in Angular. Always import components directly from their specific file paths. Barrel exports hurt performance and tree-shaking in Angular applications.
+- **Direct Imports Only**: Always import from specific file paths (see critical warning above about barrel exports)
 
 #### Angular Material 20 Button Syntax
 

@@ -1,0 +1,42 @@
+.country-access-toggle-bar {
+  @apply flex items-center gap-1 p-1;
+  background-color: var(--mat-sys-surface-container);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  .toggle-button {
+    color: var(--mat-sys-on-surface-variant);
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      color: var(--mat-sys-primary);
+      background-color: var(--mat-sys-primary-container);
+    }
+
+    &.active {
+      color: var(--mat-sys-on-primary);
+      background-color: var(--mat-sys-primary);
+
+      &:hover {
+        background-color: var(--mat-sys-primary);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .country-access-toggle-bar {
+    @apply p-0.5;
+
+    .toggle-button {
+      width: 32px;
+      height: 32px;
+
+      mat-icon {
+        font-size: 20px;
+      }
+    }
+  }
+}

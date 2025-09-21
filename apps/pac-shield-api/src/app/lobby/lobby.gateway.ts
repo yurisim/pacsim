@@ -16,6 +16,7 @@ export class LobbyGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * Lobby is not game-scoped; rooms are joined explicitly via joinLobby().
    */
   handleConnection(client: Socket, ...args: any[]) {
+    client.setMaxListeners(15); // Increase from default 10 to prevent warnings
     console.log(`Client connected: ${client.id}`);
   }
 

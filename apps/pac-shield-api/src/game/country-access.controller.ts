@@ -1,19 +1,26 @@
 import { Controller, Get, Put, Param, Body, Headers, Res, HttpStatus, BadRequestException } from '@nestjs/common';
 import { Response } from 'express';
 import { GameService } from './game.service';
+import { UpdateDiceRollDto, BulkDiceRollDto, BulkAccessUpdateDto } from './dto/dice-roll.dto';
+import { Country } from '.prisma/client';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 interface UpdateCountryAccessBody {
   changes: Record<string, boolean | null>;
 }
 
+@ApiTags('Country Access')
 @Controller('games')
 export class CountryAccessController {
   constructor(private readonly gameService: GameService) {}
 
   @Get(':gameId/country-access')
+  @ApiOperation({ summary: 'Get country access snapshot for a game' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Country access snapshot retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
   async getCountryAccess(
     @Param('gameId') gameIdParam: string,
-    @Headers('if-none-match') ifNoneMatch: string | undefined,
     @Res({ passthrough: true }) res: Response
   ) {
     const gameId = Number(gameIdParam);
@@ -22,24 +29,20 @@ export class CountryAccessController {
     }
 
     const snapshot = await this.gameService.getCountryAccessSnapshot(gameId);
-    const etag = this.gameService.buildETag(gameId, snapshot.version);
 
     res.setHeader('Cache-Control', 'no-cache');
-
-    if (ifNoneMatch && ifNoneMatch.trim() === etag) {
-      res.status(HttpStatus.NOT_MODIFIED).send();
-      return;
-    }
-
-    res.setHeader('ETag', etag);
     return snapshot;
   }
 
   @Put(':gameId/country-access')
+  @ApiOperation({ summary: 'Update country access changes' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiBody({ description: 'Country access changes' })
+  @ApiResponse({ status: 200, description: 'Country access updated successfully' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
   async putCountryAccess(
     @Param('gameId') gameIdParam: string,
     @Body() body: UpdateCountryAccessBody,
-    @Headers('if-match') ifMatch: string | undefined,
     @Res({ passthrough: true }) res: Response
   ) {
     const gameId = Number(gameIdParam);
@@ -47,24 +50,91 @@ export class CountryAccessController {
       throw new BadRequestException('Invalid gameId');
     }
 
-    try {
-      const result = await this.gameService.applyCountryAccessChanges(
-        gameId,
-        body?.changes ?? ({} as any),
-        ifMatch ?? ''
-      );
-      res.setHeader('ETag', this.gameService.buildETag(gameId, result.version));
-      return result;
-    } catch (e: any) {
-      if (typeof e?.getStatus === 'function' && e.getStatus() === 412) {
-        const data = e.getResponse ? e.getResponse() : undefined;
-        const latestVersion =
-          data && typeof data === 'object' && 'version' in data ? (data as any).version : 0;
-        res.setHeader('ETag', this.gameService.buildETag(gameId, latestVersion));
-        res.status(HttpStatus.PRECONDITION_FAILED).json({ version: latestVersion });
-        return;
-      }
-      throw e;
+    const result = await this.gameService.applyCountryAccessChanges(
+      gameId,
+      body?.changes ?? ({} as any)
+    );
+    return result;
+  }
+
+  @Put(':gameId/country-access/:country/dice-roll')
+  @ApiOperation({ summary: 'Update dice roll for a specific country' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiParam({ name: 'country', description: 'Country code', enum: Country })
+  @ApiBody({ type: UpdateDiceRollDto })
+  @ApiResponse({ status: 200, description: 'Dice roll updated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid dice roll value' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
+  async updateCountryDiceRoll(
+    @Param('gameId') gameIdParam: string,
+    @Param('country') countryParam: string,
+    @Body() updateDto: UpdateDiceRollDto
+  ) {
+    const gameId = Number(gameIdParam);
+    if (!Number.isFinite(gameId)) {
+      throw new BadRequestException('Invalid gameId');
     }
+
+    // Validate country enum
+    const country = countryParam.toUpperCase() as Country;
+    if (!Object.values(Country).includes(country)) {
+      throw new BadRequestException(`Invalid country: ${countryParam}`);
+    }
+
+    return await this.gameService.updateCountryDiceRoll(gameId, country, updateDto);
+  }
+
+  @Put(':gameId/country-access/dice-rolls')
+  @ApiOperation({ summary: 'Update dice rolls for multiple countries' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiBody({ type: BulkDiceRollDto })
+  @ApiResponse({ status: 200, description: 'Bulk dice rolls updated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid dice roll values' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
+  async updateBulkDiceRolls(
+    @Param('gameId') gameIdParam: string,
+    @Body() bulkDto: BulkDiceRollDto
+  ) {
+    const gameId = Number(gameIdParam);
+    if (!Number.isFinite(gameId)) {
+      throw new BadRequestException('Invalid gameId');
+    }
+
+    // Validate countries in the bulk update
+    for (const { country } of bulkDto.diceRolls) {
+      if (!Object.values(Country).includes(country)) {
+        throw new BadRequestException(`Invalid country: ${country}`);
+      }
+    }
+
+    return await this.gameService.updateBulkDiceRolls(gameId, bulkDto);
+  }
+
+  @Put(':gameId/country-access/bulk')
+  @ApiOperation({ summary: 'Update access level for multiple countries' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiBody({ type: BulkAccessUpdateDto })
+  @ApiResponse({ status: 200, description: 'Bulk access levels updated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid access level or countries' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
+  async updateBulkCountryAccess(
+    @Param('gameId') gameIdParam: string,
+    @Body() bulkDto: BulkAccessUpdateDto
+  ) {
+    const gameId = Number(gameIdParam);
+    if (!Number.isFinite(gameId)) {
+      throw new BadRequestException('Invalid gameId');
+    }
+
+    // Validate countries if provided
+    if (bulkDto.countries) {
+      for (const country of bulkDto.countries) {
+        if (!Object.values(Country).includes(country)) {
+          throw new BadRequestException(`Invalid country: ${country}`);
+        }
+      }
+    }
+
+    return await this.gameService.updateBulkCountryAccess(gameId, bulkDto);
   }
 }

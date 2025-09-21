@@ -148,4 +148,33 @@ export class ApiService {
   getCurrentAtoLines(gameId: number): Observable<any[]> {
     return this.get<any[]>(`ato/game/${gameId}/current`);
   }
+
+  /**
+   * Update political access for a country.
+   * POST /game/:gameId/political-access
+   */
+  postPoliticalAccess(
+    gameId: number,
+    body: {
+      country: string;
+      accessType: 'access' | 'overflight';
+      accessLevel: 'FULL_ACCESS' | 'OVERFLIGHT_ONLY' | 'NO_ACCESS';
+      source?: 'map' | 'panel';
+      at?: string;
+    }
+  ): Observable<{
+    success: boolean;
+    state: {
+      country: string;
+      access: string;
+      overflight: string;
+      updatedAt?: string;
+      version?: number;
+    };
+  }> {
+    return this.post<{ success: boolean; state: { country: string; access: string; overflight: string; updatedAt?: string; version?: number } }>(
+      `game/${gameId}/political-access`,
+      body
+    );
+  }
 }

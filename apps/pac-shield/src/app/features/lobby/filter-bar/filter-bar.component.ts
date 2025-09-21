@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 export interface FilterOptions {
   searchTerm: string;
   filterTeamType: 'ALL' | 'MOB' | 'CAOC' | 'CSPOC' | 'MEDCOM' | 'GM';
-  filterRole: 'ALL' | 'PLAYER' | 'COMMANDER' | 'DEPUTY' | 'STRATEGIST' | 'GM';
+  filterRole: 'ALL' | 'PLAYER' | 'COMMANDER' | 'DEPUTY' | 'LNO' | 'GM';
   filterUnassignedOnly: boolean;
   hideEmptyTeams: boolean;
   dense: boolean;
@@ -60,7 +60,7 @@ export interface FilterOptions {
           <mat-option value="GM">GM</mat-option>
           <mat-option value="COMMANDER">Commander</mat-option>
           <mat-option value="DEPUTY">Deputy</mat-option>
-          <mat-option value="STRATEGIST">Strategist</mat-option>
+          <mat-option value="LNO">LNO</mat-option>
           <mat-option value="PLAYER">Player</mat-option>
         </mat-select>
       </mat-form-field>

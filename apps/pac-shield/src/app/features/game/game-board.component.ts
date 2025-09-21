@@ -19,10 +19,14 @@ import { MOB_LOCATIONS, FOS_LOCATIONS } from '../../shared/config/static-locatio
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
 import { GameStatsComponent } from './game-stats/game-stats.component';
 import { GameStatsService } from './game-stats/game-stats.service';
-import { LocationPanelComponent } from './location-panel';
+import { LocationPanelComponent } from './location-panel/location-panel.component';
 import { FosStateService } from '../../shared/services/fos-state.service';
 import { WebSocketService } from '../../shared/services/websocket.service';
 import { PlayerRoleService } from '../../shared/services/player-role.service';
+import { CountryAccessToggleComponent } from './country-access-toggle/country-access-toggle.component';
+import { CountryOverlayService } from './services/country-overlay.service';
+import { ApiService } from '../../shared/services/api.service';
+import { AccessStatus, Country } from '../../generated/enums';
 
 @Component({
   selector: 'app-game-board',
@@ -35,7 +39,8 @@ import { PlayerRoleService } from '../../shared/services/player-role.service';
     HexGridComponent,
     LocationMarkersComponent,
     GameStatsComponent,
-    LocationPanelComponent
+    LocationPanelComponent,
+    CountryAccessToggleComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.scss']
@@ -67,6 +72,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   fosStateService = inject(FosStateService);  // Made public for template access
   private webSocketService = inject(WebSocketService);
   private playerRoleService = inject(PlayerRoleService);
+  private countryOverlayService = inject(CountryOverlayService);
+  private apiService = inject(ApiService);
   map!: Map;  // Made public for template access
   private mapReady = false;
   private hexGridCreated = false;
@@ -75,6 +82,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private hexClickHandler?: (e: any) => void;
   private hexMouseEnterHandler?: () => void;
   private hexMouseLeaveHandler?: () => void;
+
+  // Country access context menu handlers
+  private countryContextMenuHandler?: (e: any) => void;
+  private docClickHandler?: (e: MouseEvent) => void;
+  private docKeydownHandler?: (e: KeyboardEvent) => void;
+  private preventNativeContextMenuHandler?: (e: Event) => void;
 
   constructor() {
     // Setup theme change listener in injection context
@@ -95,6 +108,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectedVisualHexCoord: string | null = null;
   selectedH3Index: string | null = null;
+
+  // Right-click context menu state for GM-only country access updates
+  contextMenu: { show: boolean; x: number; y: number; country: Country | null } = {
+    show: false,
+    x: 0,
+    y: 0,
+    country: null
+  };
+
+  private currentGameId: number | null = null;
 
   // FOS activation tracking (deprecated - now handled by FosStateService)
   activeFosIds = new Set<string>();
@@ -549,6 +572,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Get the gameId from the route parameter
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {
+      this.currentGameId = Number(gameId);
       this.store.dispatch(GameActions.loadGameById({ gameId }));
 
       // Connect to WebSocket for real-time updates
@@ -630,6 +654,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Disconnect from WebSocket
     this.webSocketService.disconnect();
 
+    // Detach country context handlers and hide menu
+    this.detachCountryContextMenu();
+    this.hideCountryContextMenu();
+
     // Reset flags for cleanup
     this.hexGridCreated = false;
 
@@ -687,6 +715,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Mark map as ready for theme switching
     this.map.on('load', () => {
       this.mapReady = true;
+      // Initialize country overlay service with map reference
+      this.countryOverlayService.setMap(this.map);
     });
   }
 
@@ -1027,7 +1057,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Initialize some FOSs as active for demo purposes
-   */
+
+ */  // Close truncated comment
+
+  // Initialize some FOSs as active for demo purposes (development/demo only)
   private initializeDemoFosActivations(): void {
     // Activate and assign FOSs to different MOBs for demo
     this.activateFos('fos-01', 'kadena');    // Player's MOB (Kadena)
@@ -1035,5 +1068,176 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.activateFos('fos-06', 'andersen');  // Andersen MOB
     this.activateFos('fos-08', 'yokota');    // Yokota MOB
     this.activateFos('fos-10', 'osan');      // Osan MOB
+  }
+
+  /**
+   * Handle country access overlay toggle (from toolbar button)
+   * - Attach right-click context menu when visible
+   * - Detach and hide menu when hidden
+   */
+  onCountryAccessToggle(isVisible: boolean): void {
+    console.log('Country access overlay toggled:', isVisible);
+
+    if (!this.map || !this.mapReady) {
+      console.warn('Map not ready for country overlay toggle');
+      return;
+    }
+
+    // Ensure overlay service has the map reference
+    this.countryOverlayService.setMap(this.map);
+
+    // Align overlay visibility with toggle state (avoid blindly toggling)
+    if (isVisible !== this.countryOverlayService.isOverlayVisible()) {
+      this.countryOverlayService.toggleOverlay();
+    }
+
+    // Attach/detach right-click handler based on visibility
+    if (isVisible) {
+      this.attachCountryContextMenu();
+    } else {
+      this.detachCountryContextMenu();
+      this.hideCountryContextMenu();
+    }
+  }
+
+  // ========== Country Access Context Menu (GM-only) ==========
+
+  private attachCountryContextMenu(): void {
+    if (!this.map) return;
+
+    const layerId = this.countryOverlayService.getLayerId();
+
+    // Remove any previous handler to avoid duplication
+    if (this.countryContextMenuHandler) {
+      this.map.off('contextmenu', layerId as any, this.countryContextMenuHandler as any);
+    }
+
+    this.countryContextMenuHandler = (e: any) => {
+      // Guard: GM-only and overlay must be visible
+      if (!this.playerRoleService.isCurrentPlayerGameMaster()) return;
+      if (!this.countryOverlayService.isOverlayVisible()) return;
+
+      // Prevent browser context menu
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+      }
+
+      const feature = e?.features?.[0];
+      const iso3 = feature?.properties?.['ADM0_A3'];
+      if (!iso3) return;
+
+      const country = this.countryOverlayService.getCountryByIso3(iso3);
+      if (!country) return;
+
+      // Position menu at cursor
+      const pt = e?.point || { x: 0, y: 0 };
+      this.contextMenu = {
+        show: true,
+        x: pt.x,
+        y: pt.y,
+        country
+      };
+    };
+
+    // Attach MapLibre layer-scoped contextmenu handler
+    this.map.on('contextmenu', layerId as any, this.countryContextMenuHandler as any);
+
+    // Global listeners to close menu (do NOT capture; close after item click handler runs)
+    if (!this.docClickHandler) {
+      this.docClickHandler = (_ev: MouseEvent) => {
+        if (this.contextMenu.show) {
+          this.hideCountryContextMenu();
+        }
+      };
+      document.addEventListener('click', this.docClickHandler, false);
+    }
+
+    if (!this.docKeydownHandler) {
+      this.docKeydownHandler = (ev: KeyboardEvent) => {
+        if (ev.key === 'Escape') {
+          this.hideCountryContextMenu();
+        }
+      };
+      document.addEventListener('keydown', this.docKeydownHandler, false);
+    }
+
+    // Prevent native context menu on map canvas while our menu is open
+    if (!this.preventNativeContextMenuHandler && this.mapContainer?.nativeElement) {
+      this.preventNativeContextMenuHandler = (ev: Event) => {
+        if (this.contextMenu.show) {
+          ev.preventDefault();
+        }
+      };
+      this.mapContainer.nativeElement.addEventListener('contextmenu', this.preventNativeContextMenuHandler);
+    }
+  }
+
+  private detachCountryContextMenu(): void {
+    if (!this.map) return;
+
+    const layerId = this.countryOverlayService.getLayerId();
+
+    if (this.countryContextMenuHandler) {
+      this.map.off('contextmenu', layerId as any, this.countryContextMenuHandler as any);
+      this.countryContextMenuHandler = undefined;
+    }
+
+    if (this.docClickHandler) {
+      document.removeEventListener('click', this.docClickHandler, false);
+      this.docClickHandler = undefined;
+    }
+
+    if (this.docKeydownHandler) {
+      document.removeEventListener('keydown', this.docKeydownHandler, false);
+      this.docKeydownHandler = undefined;
+    }
+
+    if (this.preventNativeContextMenuHandler && this.mapContainer?.nativeElement) {
+      this.mapContainer.nativeElement.removeEventListener('contextmenu', this.preventNativeContextMenuHandler);
+      this.preventNativeContextMenuHandler = undefined;
+    }
+  }
+
+  private hideCountryContextMenu(): void {
+    this.contextMenu.show = false;
+  }
+
+  onSelectCountryAccess(level: AccessStatus): void {
+    const country = this.contextMenu.country;
+    // Always hide menu on selection
+    this.hideCountryContextMenu();
+    if (!country) return;
+
+    const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
+    const gameId = this.currentGameId ?? (Number.isFinite(parsedId) ? parsedId : null);
+    if (!Number.isFinite(gameId)) {
+      console.error('No valid gameId found for political access update');
+      return;
+    }
+
+    // Optimistic update
+    const current = this.countryOverlayService.getCountryAccess();
+    const prev = current[country];
+
+    this.countryOverlayService.updateCountryAccess(country, level);
+
+    this.apiService.postPoliticalAccess(gameId as number, {
+      country,
+      accessType: 'access',
+      accessLevel: level,
+      source: 'map',
+      at: new Date().toISOString()
+    }).subscribe({
+      next: () => {
+        // Success; WS will sync others
+      },
+      error: (err) => {
+        console.error('Failed to update political access:', err);
+        // Revert optimistic update on error
+        if (prev) {
+          this.countryOverlayService.updateCountryAccess(country, prev);
+        }
+      }
+    });
   }
 }

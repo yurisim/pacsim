@@ -34,7 +34,8 @@
       "Bash(npx nx show project:*)",
       "Bash(yarn:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

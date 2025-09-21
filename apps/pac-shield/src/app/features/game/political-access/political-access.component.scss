@@ -1,0 +1,209 @@
+// Political Access Component Styles
+.political-access-panel {
+  @apply p-4;
+}
+
+.panel-header {
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+}
+
+.country-card {
+  border: 1px solid var(--mat-sys-outline-variant);
+  transition: box-shadow 0.2s ease-in-out, transform 0.1s ease-in-out;
+
+  &:hover {
+    @apply shadow-md;
+    transform: translateY(-1px);
+  }
+}
+
+.country-header {
+  .flag-emoji {
+    @apply w-8 h-8 flex items-center justify-center text-xl;
+  }
+}
+
+.access-controls {
+  .mat-mdc-select {
+    @apply w-full;
+
+    .mat-mdc-select-value {
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  .mat-mdc-option {
+    &.text-md-primary {
+      .mdc-list-item__primary-text {
+        color: var(--mat-sys-primary);
+      }
+    }
+
+    &.text-md-tertiary {
+      .mdc-list-item__primary-text {
+        color: var(--mat-sys-tertiary);
+      }
+    }
+
+    &.text-md-error {
+      .mdc-list-item__primary-text {
+        color: var(--mat-sys-error);
+      }
+    }
+  }
+}
+
+.dice-section {
+  .dice-chip {
+    @apply transition-colors duration-200;
+
+    &:hover {
+      background-color: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+    }
+  }
+}
+
+.status-icons {
+  mat-icon {
+    @apply transition-colors duration-200;
+  }
+}
+
+.bulk-actions {
+  button {
+    @apply min-w-max;
+  }
+}
+
+.empty-state {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .political-access-panel {
+    @apply p-2;
+  }
+
+  .panel-header {
+    @apply flex-col items-start gap-2 px-3 py-2;
+
+    .flex {
+      @apply w-full justify-between;
+    }
+  }
+
+  .bulk-actions {
+    @apply flex-col;
+
+    button {
+      @apply w-full;
+    }
+  }
+
+  .country-grid {
+    @apply grid-cols-1;
+  }
+}
+
+// Material Design 3 token integration
+:host {
+  color: var(--md-sys-color-on-surface);
+}
+
+// Custom mat-chip styling for dice display
+.dice-chip {
+  --mdc-chip-container-shape: 8px;
+  --mdc-chip-label-text-font: var(--md-sys-typescale-body-small-font);
+
+  mat-icon {
+    --mat-icon-size: 16px;
+  }
+}
+
+// FOS chip styling
+.fos-section {
+  .fos-chips {
+    min-height: 32px;
+
+    mat-chip {
+      --mdc-chip-container-shape: 16px;
+      --mdc-chip-label-text-font: var(--md-sys-typescale-label-small-font);
+      font-size: 11px;
+      padding: 2px 8px;
+      min-height: 24px;
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      // Strategic value colors
+      &.fos-green {
+        background-color: var(--mat-sys-tertiary-container);
+        color: var(--mat-sys-on-tertiary-container);
+        border: 1px solid var(--mat-sys-tertiary);
+      }
+
+      &.fos-yellow {
+        background-color: var(--mat-sys-secondary-container);
+        color: var(--mat-sys-on-secondary-container);
+        border: 1px solid var(--mat-sys-secondary);
+      }
+
+      &.fos-red {
+        background-color: var(--mat-sys-error-container);
+        color: var(--mat-sys-on-error-container);
+        border: 1px solid var(--mat-sys-error);
+      }
+
+      // Occupancy status
+      &.occupied-fos {
+        font-weight: 600;
+
+        &.fos-green {
+          background-color: var(--mat-sys-tertiary);
+          color: var(--mat-sys-on-tertiary);
+        }
+
+        &.fos-yellow {
+          background-color: var(--mat-sys-secondary);
+          color: var(--mat-sys-on-secondary);
+        }
+
+        &.fos-red {
+          background-color: var(--mat-sys-error);
+          color: var(--mat-sys-on-error);
+        }
+      }
+
+      &.unoccupied-fos {
+        opacity: 0.7;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+// Occupancy display colors
+.text-md-error {
+  color: var(--mat-sys-error);
+}
+
+.text-md-warning {
+  color: var(--mat-sys-secondary);
+}
+
+.text-md-primary {
+  color: var(--mat-sys-primary);
+}
+
+.text-md-tertiary {
+  color: var(--mat-sys-tertiary);
+}

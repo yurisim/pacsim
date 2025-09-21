@@ -212,7 +212,7 @@ export class PlayerService {
 
     // Validate role if provided
     if (updatePlayerDto.role !== undefined) {
-      const validRoles = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
+      const validRoles = ['PLAYER', 'COMMANDER', 'DEPUTY', 'LNO', 'GM'];
       if (!validRoles.includes(updatePlayerDto.role as string)) {
         throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
       }

@@ -75,7 +75,7 @@ import { Player, Team } from '../../../generated';
   exportAs: 'gmPlayerMenus'
 })
 export class GmPlayerMenusComponent {
-  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'PLAYER'];
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
   @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
 
   @Output() changeRole = new EventEmitter<{player: Player, role: string}>();

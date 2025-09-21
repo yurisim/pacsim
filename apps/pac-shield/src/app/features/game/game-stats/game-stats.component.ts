@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +17,7 @@ import { CspocBoardComponent } from './cspoc-board/cspoc-board.component';
 import { MedcomDashboardComponent } from './medcom-dashboard/medcom-dashboard.component';
 import { GameLogComponent } from './game-log/game-log.component';
 import { ResponsiveNavComponent } from './responsive-nav/responsive-nav.component';
+import { PoliticalAccessComponent } from '../political-access/political-access.component';
 import { TeamType, PlayerRole } from '../../../generated/enums';
 
 /**
@@ -47,12 +48,13 @@ import { TeamType, PlayerRole } from '../../../generated/enums';
     FosDashboardComponent,
     CspocBoardComponent,
     MedcomDashboardComponent,
-    GameLogComponent
+    GameLogComponent,
+    PoliticalAccessComponent
   ],
   templateUrl: './game-stats.component.html',
   styleUrls: ['./game-stats.component.scss']
 })
-export class GameStatsComponent implements OnInit {
+export class GameStatsComponent implements OnInit, OnChanges {
   @Input() config: GameStatsConfig = {};
   @Input() loadDemoData = true;
   @Input() currentGameId: number | null = null;
@@ -81,6 +83,25 @@ export class GameStatsComponent implements OnInit {
     if (this.loadDemoData) {
       this.gameStatsService.loadDemoData();
     }
+
+    // Update navigation based on user role
+    this.updateNavigation();
+  }
+
+  // Computed property to check if user is GM
+  get isGameMaster(): boolean {
+    return this.currentUserRole === 'GM';
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Update navigation when user role changes
+    if (changes['currentUserRole']) {
+      this.updateNavigation();
+    }
+  }
+
+  private updateNavigation(): void {
+    this.navService.updateNavigationForRole(this.isGameMaster);
   }
 
   onTabChange(tabId: string): void {

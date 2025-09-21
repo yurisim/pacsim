@@ -45,7 +45,7 @@ import { MatButtonModule } from '@angular/material/button';
   `,
 })
 export class JoinTeamDialogComponent implements OnInit {
-  @Input() roles: string[] = ['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'];
+  @Input() roles: string[] = ['PLAYER', 'COMMANDER', 'DEPUTY', 'LNO', 'GM'];
   @Output() submitJoin = new EventEmitter<{ name: string; role: string; sessionId: string }>();
 
   private dialogRef = inject(MatDialogRef<JoinTeamDialogComponent, { name: string; role: string; sessionId: string }>, { optional: true });

@@ -120,7 +120,7 @@ describe('Player Settings API E2E', () => {
       const requests = [
         axios.patch(`/api/player/${playerId}`, { name: 'Name Update 1' }),
         axios.patch(`/api/player/${playerId}`, { role: 'COMMANDER' }),
-        axios.patch(`/api/player/${playerId}`, { name: 'Final Name', role: 'STRATEGIST' }),
+        axios.patch(`/api/player/${playerId}`, { name: 'Final Name', role: 'LNO' }),
       ];
 
       const responses = await Promise.all(requests);
@@ -134,8 +134,8 @@ describe('Player Settings API E2E', () => {
       const gameRes = await axios.get(`/api/game/${gameId}`);
       const finalPlayer = gameRes.data.players.find(p => p.id === parseInt(playerId));
       expect(finalPlayer.name).toBe('Final Name');
-      // Due to race conditions in concurrent updates, role could be either COMMANDER or STRATEGIST
-      expect(['COMMANDER', 'STRATEGIST']).toContain(finalPlayer.role);
+      // Due to race conditions in concurrent updates, role could be either COMMANDER or LNO
+      expect(['COMMANDER', 'LNO']).toContain(finalPlayer.role);
     });
   });
 
