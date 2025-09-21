@@ -1,0 +1,1 @@
+export { PoliticalAccessComponent } from './political-access.component';
