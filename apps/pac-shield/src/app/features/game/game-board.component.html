@@ -52,6 +52,49 @@
   </div>
   }
 
+  <!-- Country Access Toggle (above location panel) -->
+  <div class="absolute left-2 bottom-[200px] z-[94] pointer-events-auto">
+    <app-country-access-toggle
+      (toggleVisibility)="onCountryAccessToggle($event)">
+    </app-country-access-toggle>
+  </div>
+
+  <!-- GM Right-click Context Menu for Country Access -->
+  @if (contextMenu.show) {
+  <div
+    class="absolute z-[200] pointer-events-auto select-none"
+    [style.left.px]="contextMenu.x"
+    [style.top.px]="contextMenu.y"
+    (contextmenu)="$event.preventDefault()"
+    role="menu"
+    aria-label="Country Access Menu"
+  >
+    <div class="rounded-md shadow-lg border border-black/10 md-sys-bg-surface md-sys-color-on-surface bg-white min-w-[160px]">
+      <button
+        type="button"
+        role="menuitem"
+        class="w-full text-left px-3 py-2 hover:bg-black/5"
+        (click)="onSelectCountryAccess('FULL_ACCESS')">
+        Full Access
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        class="w-full text-left px-3 py-2 hover:bg-black/5"
+        (click)="onSelectCountryAccess('OVERFLIGHT_ONLY')">
+        Overflight Only
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        class="w-full text-left px-3 py-2 hover:bg-black/5"
+        (click)="onSelectCountryAccess('NO_ACCESS')">
+        No Access
+      </button>
+    </div>
+  </div>
+  }
+
   <!-- Location panel overlay (bottom left corner) -->
   <div class="absolute left-2 bottom-2 z-[95] pointer-events-auto">
     <app-location-panel
