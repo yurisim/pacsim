@@ -6,6 +6,8 @@ import { CreateGameDto, Game } from '../app/generated';
 import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 import { PlayerService } from '../app/player/player.service';
+import { EventsGateway } from '../app/events.gateway';
+import { PoliticalAccessLevel, PoliticalAccessType } from './dto/update-country-access.dto';
 
 /**
  * Domain service handling game lifecycle operations: creation, retrieval, room-code validation, and join orchestration.
@@ -18,12 +20,14 @@ import { PlayerService } from '../app/player/player.service';
 @Injectable()
 export class GameService {
   private readonly logger = new Logger(GameService.name);
+  private countryAccessByGame = new Map<number, Map<string, { access: PoliticalAccessLevel; overflight: PoliticalAccessLevel; updatedAt: string; version: number }>>();
 
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
     private gameGateway: GameGateway,
-    private playerService: PlayerService
+    private playerService: PlayerService,
+    private eventsGateway: EventsGateway
   ) { }
 
   /**
@@ -146,6 +150,121 @@ export class GameService {
     this.gameGateway.server.to(roomCode).emit('playerJoined', player);
 
     return this.authService.login(game.id, player.id);
+  }
+
+  // ---------------- Political Access (in-memory) ----------------
+  private getCountryMap(gameId: number) {
+    let m = this.countryAccessByGame.get(gameId);
+    if (!m) {
+      m = new Map<
+        string,
+        {
+          access: PoliticalAccessLevel;
+          overflight: PoliticalAccessLevel;
+          updatedAt: string;
+          version: number;
+        }
+      >();
+      this.countryAccessByGame.set(gameId, m);
+    }
+    return m;
+  }
+
+  getCountryAccess(
+    gameId: number,
+    country: string
+  ): {
+    access: PoliticalAccessLevel;
+    overflight: PoliticalAccessLevel;
+    updatedAt: string;
+    version: number;
+  } {
+    const map = this.getCountryMap(gameId);
+    const key = country.trim();
+    if (!map.has(key)) {
+      const now = new Date().toISOString();
+      map.set(key, {
+        access: PoliticalAccessLevel.NO_ACCESS,
+        overflight: PoliticalAccessLevel.NO_ACCESS,
+        updatedAt: now,
+        version: 0,
+      });
+    }
+    return map.get(key)!;
+  }
+
+  setCountryAccess(
+    gameId: number,
+    country: string,
+    accessType: PoliticalAccessType,
+    accessLevel: PoliticalAccessLevel,
+    _updatedBy: { playerId: number }
+  ): {
+    access: PoliticalAccessLevel;
+    overflight: PoliticalAccessLevel;
+    updatedAt: string;
+    version: number;
+  } {
+    const state = this.getCountryAccess(gameId, country);
+    if (accessType === PoliticalAccessType.ACCESS) {
+      state.access = accessLevel;
+    } else {
+      state.overflight = accessLevel;
+    }
+    state.version = (state.version ?? 0) + 1;
+    state.updatedAt = new Date().toISOString();
+    // persist back
+    const map = this.getCountryMap(gameId);
+    map.set(country.trim(), state);
+    return state;
+  }
+
+  async resolveRoomCode(gameId: number): Promise<string> {
+    const game = await this.prisma.game.findUnique({
+      where: { id: gameId },
+      select: { roomCode: true },
+    });
+    if (!game?.roomCode) {
+      throw new NotFoundException('Game not found');
+    }
+    return game.roomCode;
+  }
+
+  broadcastCountryAccessChanged(roomCode: string, payload: any) {
+    this.eventsGateway.sendToLobby(roomCode, 'countryAccessChanged', {
+      type: 'countryAccessChanged',
+      payload,
+    });
+  }
+
+  broadcastBulkCountryAccessChanged(roomCode: string, payload: any) {
+    this.eventsGateway.sendToLobby(roomCode, 'bulkCountryAccessChanged', {
+      type: 'bulkCountryAccessChanged',
+      payload,
+    });
+  }
+
+  bulkSetCountryAccess(
+    gameId: number,
+    accessLevel: PoliticalAccessLevel,
+    countries?: string[],
+    _updatedBy?: { playerId: number }
+  ): { countries: string[]; updatedAt: string } {
+    const map = this.getCountryMap(gameId);
+    const now = new Date().toISOString();
+    const targets =
+      countries?.map((c) => c.trim()).filter(Boolean) ?? Array.from(map.keys());
+
+    for (const c of targets) {
+      const state = this.getCountryAccess(gameId, c);
+      state.access = accessLevel;
+      state.overflight = accessLevel;
+      state.version = (state.version ?? 0) + 1;
+      state.updatedAt = now;
+      map.set(c, state);
+    }
+
+    return { countries: targets, updatedAt: now };
   }
 
   /**
