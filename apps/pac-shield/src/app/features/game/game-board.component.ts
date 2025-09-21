@@ -1225,7 +1225,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
     const gameId = this.currentGameId ?? (Number.isFinite(parsedId) ? parsedId : null);
     if (!Number.isFinite(gameId)) {
-      console.error('No valid gameId found for political access update');
+      console.error('No valid gameId found for country access update');
       return;
     }
 
@@ -1235,23 +1235,91 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.countryOverlayService.updateCountryAccess(country, level);
 
-    this.apiService.postPoliticalAccess(gameId as number, {
-      country,
-      accessType: 'access',
+    // Use latest Country Access API (CountryAccessController → /games/:gameId/country-access/bulk)
+    console.log(`Updating country access: ${country} to ${level}`);
+    this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
       accessLevel: level,
-      source: 'map',
-      at: new Date().toISOString()
+      countries: [country]
     }).subscribe({
-      next: () => {
-        // Success; WS will sync others
+      next: (response) => {
+        console.log('Country access update successful:', response);
+        // Success; websocket will sync other clients
       },
       error: (err) => {
-        console.error('Failed to update political access:', err);
+        console.error('Failed to update country access:', err);
+        console.error('Error details:', err.error || err.message || err);
+
         // Revert optimistic update on error
         if (prev) {
+          console.log(`Reverting ${country} back to ${prev} due to error`);
           this.countryOverlayService.updateCountryAccess(country, prev);
         }
+
+        // TODO: Add user-visible error notification here
+        // this.snackBar.open('Failed to update country access. Please try again.', 'OK', { duration: 5000 });
       }
+    });
+  }
+
+  /**
+   * Handle the "Overflight Only" action:
+   * - Prompt for NIC Number
+   * - Optimistically set to OVERFLIGHT_ONLY
+   * - Call bulk access update API with notes containing the NIC number (latest API supports notes)
+   * - Revert on error
+   */
+  onOverflightOnly(): void {
+    const country = this.contextMenu.country;
+    // Always hide menu on selection
+    this.hideCountryContextMenu();
+    if (!country) return;
+
+    const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
+    const gameId = this.currentGameId ?? (Number.isFinite(parsedId) ? parsedId : null);
+    if (!Number.isFinite(gameId)) {
+      console.error('No valid gameId found for country access update');
+      return;
+    }
+
+    // Open NIC number dialog
+    const dialogRef = this.dialog.open(OverflightNicDialogComponent, {
+      width: '360px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe((nicNumber?: number | null) => {
+      if (nicNumber == null || !Number.isFinite(nicNumber)) {
+        // Cancelled or invalid; do nothing
+        return;
+      }
+
+      const level: AccessStatus = 'OVERFLIGHT_ONLY';
+
+      // Optimistic update
+      const current = this.countryOverlayService.getCountryAccess();
+      const prev = current[country];
+      this.countryOverlayService.updateCountryAccess(country, level);
+
+      console.log(`Updating country access (Overflight Only): ${country} to ${level} with NIC ${nicNumber}`);
+
+      // Latest API: PUT /games/:gameId/country-access/bulk
+      // Payload supports optional "notes"; backend has no explicit NIC field, so we include NIC in notes.
+      this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
+        accessLevel: level,
+        countries: [country],
+        notes: `NIC:${nicNumber}`
+      }).subscribe({
+        next: (response) => {
+          console.log('Overflight Only update successful:', response);
+        },
+        error: (err) => {
+          console.error('Failed to set Overflight Only:', err);
+          // Revert optimistic update on error
+          if (prev) {
+            this.countryOverlayService.updateCountryAccess(country, prev);
+          }
+        }
+      });
     });
   }
 }
