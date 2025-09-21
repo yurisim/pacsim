@@ -28,7 +28,7 @@ enum PlayerRole {
   PLAYER = 'PLAYER',
   COMMANDER = 'COMMANDER',
   DEPUTY = 'DEPUTY',
-  STRATEGIST = 'STRATEGIST',
+  LNO = 'LNO',
 }
 
 
@@ -81,7 +81,7 @@ export class LobbyComponent implements OnInit {
   };
 
   // Fixed role order for grouping
-  readonly roleOrder: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'PLAYER'];
+  readonly roleOrder: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
 
   ngOnInit(): void {
     const gameId = this.route.snapshot.paramMap.get('gameId');

@@ -433,7 +433,7 @@ enum PlayerRole {
   PLAYER
   COMMANDER
   DEPUTY
-  STRATEGIST
+  LNO
   GM
 }
 

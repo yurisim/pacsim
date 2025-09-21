@@ -15,7 +15,7 @@ export class JoinGameDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsEnum(['PLAYER', 'COMMANDER', 'DEPUTY', 'STRATEGIST', 'GM'])
+  @IsEnum(['PLAYER', 'COMMANDER', 'DEPUTY', 'LNO', 'GM'])
   role?: PlayerRole;
 
   @ApiProperty({ required: false })
