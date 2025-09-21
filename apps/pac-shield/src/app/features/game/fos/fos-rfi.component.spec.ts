@@ -47,7 +47,9 @@ describe('FosRfiComponent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock console.error to prevent test failures from error logging
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {
+      // Intentionally empty to suppress console errors in tests
+    });
   });
 
   afterEach(() => {
