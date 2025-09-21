@@ -24,8 +24,8 @@ export class ResponsiveNavService {
   private sideNavOpenSubject = new BehaviorSubject<boolean>(false);
   sideNavOpen$ = this.sideNavOpenSubject.asObservable();
 
-  // Navigation items
-  readonly navItems: NavItem[] = [
+  // Base navigation items
+  private readonly baseNavItems: NavItem[] = [
     { id: 'scoreboard', label: 'Scoreboard', shortLabel: 'Score', icon: 'leaderboard' },
     { id: 'caoc', label: 'CAOC Dashboard', shortLabel: 'CAOC', icon: 'radar' },
     { id: 'mob', label: 'MOB Dashboard', shortLabel: 'MOB', icon: 'local_shipping' },
@@ -34,6 +34,14 @@ export class ResponsiveNavService {
     { id: 'medcom', label: 'MEDCOM', shortLabel: 'MEDCOM', icon: 'medical_services' },
     { id: 'log', label: 'Game Log', shortLabel: 'Log', icon: 'history' }
   ];
+
+  // GM-only navigation items
+  private readonly gmNavItems: NavItem[] = [
+    { id: 'political-access', label: 'Political Access', shortLabel: 'Access', icon: 'public' }
+  ];
+
+  // Dynamic navigation items based on user role
+  navItems: NavItem[] = [...this.baseNavItems];
 
   // Responsive breakpoints
   readonly isMobile$ = this.breakpointObserver.observe([
@@ -91,5 +99,13 @@ export class ResponsiveNavService {
 
   getNavItemIndex(id: string): number {
     return this.navItems.findIndex(item => item.id === id);
+  }
+
+  updateNavigationForRole(isGameMaster: boolean): void {
+    if (isGameMaster) {
+      this.navItems = [...this.baseNavItems, ...this.gmNavItems];
+    } else {
+      this.navItems = [...this.baseNavItems];
+    }
   }
 }

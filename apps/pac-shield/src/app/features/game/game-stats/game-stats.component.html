@@ -130,6 +130,19 @@
             </div>
           </div>
         }
+
+        @case ('political-access') {
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-political-access">
+            <div class="overflow-x-auto" data-testid="responsive-scroll-political-access">
+              <div data-testid="political-access-host">
+                <app-political-access
+                  [gameId]="currentGameId"
+                  [isReadOnly]="false"
+                ></app-political-access>
+              </div>
+            </div>
+          </div>
+        }
       }
     </div>
   } @else {
