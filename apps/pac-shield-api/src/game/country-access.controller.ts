@@ -1,19 +1,26 @@
 import { Controller, Get, Put, Param, Body, Headers, Res, HttpStatus, BadRequestException } from '@nestjs/common';
 import { Response } from 'express';
 import { GameService } from './game.service';
+import { UpdateDiceRollDto, BulkDiceRollDto, BulkAccessUpdateDto } from './dto/dice-roll.dto';
+import { Country } from '.prisma/client';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 interface UpdateCountryAccessBody {
   changes: Record<string, boolean | null>;
 }
 
+@ApiTags('Country Access')
 @Controller('games')
 export class CountryAccessController {
   constructor(private readonly gameService: GameService) {}
 
   @Get(':gameId/country-access')
+  @ApiOperation({ summary: 'Get country access snapshot for a game' })
+  @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Country access snapshot retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
   async getCountryAccess(
     @Param('gameId') gameIdParam: string,
-    @Headers('if-none-match') ifNoneMatch: string | undefined,
     @Res({ passthrough: true }) res: Response
   ) {
     const gameId = Number(gameIdParam);

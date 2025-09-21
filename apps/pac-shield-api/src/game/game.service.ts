@@ -7,6 +7,7 @@ import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 import { PlayerService } from '../app/player/player.service';
 import { EventsGateway } from '../app/events.gateway';
+import { UpdateDiceRollDto, BulkDiceRollDto, BulkAccessUpdateDto } from './dto/dice-roll.dto';
 
 /**
  * Domain service handling game lifecycle operations: creation, retrieval, room-code validation, and join orchestration.
