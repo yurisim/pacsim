@@ -2,10 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef 
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AircraftPool,
-  AircraftType,
-  AircraftInstance,
-  AircraftAllocationStatus,
-  Game
+  AircraftType
 } from '@prisma/client';
 import { AllocationNotificationService } from './allocation-notification.service';
 import { GameGateway } from '../../game/game.gateway';

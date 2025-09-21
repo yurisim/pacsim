@@ -54,7 +54,7 @@ jobs:
           npx nx serve pac-shield-api &
           echo "Waiting for backend to start..."
           timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done' || echo "Backend health check failed or timed out"
-          npx nx run-many -t lint
+          npx nx run-many -t lint --quiet
           npx nx run-many -t test
           npx nx run-many -t build
           npx nx run-many -t e2e

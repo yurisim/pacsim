@@ -86,6 +86,7 @@ model GameBoard {
   enrouteUSTRANSCOM EnrouteUSTRANSCOM[]
 }
 
+
 model PoliticalAccess {
   id         Int          @id @default(autoincrement())
   boardId    Int
@@ -93,6 +94,9 @@ model PoliticalAccess {
   country    Country
   access     AccessStatus
   overflight AccessStatus
+
+  @@unique([boardId, country])
+  @@index([boardId])
 }
 
 model CountryAccess {

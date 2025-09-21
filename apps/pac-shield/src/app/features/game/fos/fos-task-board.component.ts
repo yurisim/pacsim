@@ -56,8 +56,8 @@ export class FosTaskBoardComponent implements OnChanges {
   readonly operationalCategories = [
     {
       title: 'Establish',
-      color: 'md-sys-color-primary',
-      bgColor: 'md-sys-bg-primary-container',
+      color: 'md-sys-color-secondary',
+      bgColor: 'md-sys-bg-secondary-container',
       icon: 'construction',
       tasks: ['1 Bed Down', '2 Power', '3 C2', '4 Contracts']
     },
@@ -70,15 +70,15 @@ export class FosTaskBoardComponent implements OnChanges {
     },
     {
       title: 'Operate',
-      color: 'md-sys-color-tertiary',
-      bgColor: 'md-sys-bg-tertiary-container',
+      color: 'md-sys-color-secondary',
+      bgColor: 'md-sys-bg-secondary-container',
       icon: 'flight_takeoff',
       tasks: ['9 Airfield Ops', '10 Mobility', '11 ICT', '12 SFO']
     },
     {
       title: 'Maintain',
-      color: 'md-sys-color-error',
-      bgColor: 'md-sys-bg-error-container',
+      color: 'md-sys-color-secondary',
+      bgColor: 'md-sys-bg-secondary-container',
       icon: 'handyman',
       tasks: ['13 Host Nation', '14 Health & Welfare', '15 Base Recovery', '16 Logistics']
     }
@@ -152,5 +152,14 @@ export class FosTaskBoardComponent implements OnChanges {
         this.isLoading = false;
       },
     });
+  }
+
+  // Add these methods to your component class for better performance
+  trackByCategory(index: number, category: any): string {
+    return category.title;
+  }
+
+  trackByTask(index: number, task: string): string {
+    return task;
   }
 }

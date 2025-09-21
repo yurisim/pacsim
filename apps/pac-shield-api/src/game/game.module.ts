@@ -6,11 +6,12 @@ import { GameController } from './game.controller';
 import { GameGateway } from './game.gateway';
 import { PlayerModule } from '../app/player/player.module';
 import { EventsGateway } from '../app/events.gateway';
+import { CountryAccessController } from './country-access.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule, PlayerModule],
   providers: [GameService, GameGateway, EventsGateway],
-  controllers: [GameController],
+  controllers: [GameController, CountryAccessController],
   exports: [GameGateway],
 })
 export class GameModule {}

@@ -1,13 +1,12 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException, HttpException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
-import { TeamType, RunwayStatus, MOGLevel } from '.prisma/client';
+import { TeamType, RunwayStatus, MOGLevel, AccessStatus, Country } from '.prisma/client';
 import { CreateGameDto, Game } from '../app/generated';
 import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
 import { PlayerService } from '../app/player/player.service';
 import { EventsGateway } from '../app/events.gateway';
-import { PoliticalAccessLevel, PoliticalAccessType } from './dto/update-country-access.dto';
 
 /**
  * Domain service handling game lifecycle operations: creation, retrieval, room-code validation, and join orchestration.
@@ -20,7 +19,6 @@ import { PoliticalAccessLevel, PoliticalAccessType } from './dto/update-country-
 @Injectable()
 export class GameService {
   private readonly logger = new Logger(GameService.name);
-  private countryAccessByGame = new Map<number, Map<string, { access: PoliticalAccessLevel; overflight: PoliticalAccessLevel; updatedAt: string; version: number }>>();
 
   constructor(
     private prisma: PrismaService,
@@ -152,119 +150,126 @@ export class GameService {
     return this.authService.login(game.id, player.id);
   }
 
-  // ---------------- Political Access (in-memory) ----------------
-  private getCountryMap(gameId: number) {
-    let m = this.countryAccessByGame.get(gameId);
-    if (!m) {
-      m = new Map<
-        string,
-        {
-          access: PoliticalAccessLevel;
-          overflight: PoliticalAccessLevel;
-          updatedAt: string;
-          version: number;
-        }
-      >();
-      this.countryAccessByGame.set(gameId, m);
-    }
-    return m;
-  }
+  // =============================================================================
+  // Country Access - Database Operations (Database → Local Storage Pattern)
+  // =============================================================================
 
-  getCountryAccess(
-    gameId: number,
-    country: string
-  ): {
-    access: PoliticalAccessLevel;
-    overflight: PoliticalAccessLevel;
-    updatedAt: string;
-    version: number;
-  } {
-    const map = this.getCountryMap(gameId);
-    const key = country.trim();
-    if (!map.has(key)) {
-      const now = new Date().toISOString();
-      map.set(key, {
-        access: PoliticalAccessLevel.NO_ACCESS,
-        overflight: PoliticalAccessLevel.NO_ACCESS,
-        updatedAt: now,
-        version: 0,
-      });
-    }
-    return map.get(key)!;
-  }
-
-  setCountryAccess(
-    gameId: number,
-    country: string,
-    accessType: PoliticalAccessType,
-    accessLevel: PoliticalAccessLevel,
-    _updatedBy: { playerId: number }
-  ): {
-    access: PoliticalAccessLevel;
-    overflight: PoliticalAccessLevel;
-    updatedAt: string;
-    version: number;
-  } {
-    const state = this.getCountryAccess(gameId, country);
-    if (accessType === PoliticalAccessType.ACCESS) {
-      state.access = accessLevel;
-    } else {
-      state.overflight = accessLevel;
-    }
-    state.version = (state.version ?? 0) + 1;
-    state.updatedAt = new Date().toISOString();
-    // persist back
-    const map = this.getCountryMap(gameId);
-    map.set(country.trim(), state);
-    return state;
-  }
-
-  async resolveRoomCode(gameId: number): Promise<string> {
+  /**
+   * Return current snapshot of country access for a game using CountryAccess table.
+   * Database → Local Storage pattern: reads from database, cached on frontend.
+   */
+  public async getCountryAccessSnapshot(
+    gameId: number
+  ): Promise<{ countries: Record<string, boolean> }> {
     const game = await this.prisma.game.findUnique({
       where: { id: gameId },
-      select: { roomCode: true },
+      select: { id: true },
     });
-    if (!game?.roomCode) {
-      throw new NotFoundException('Game not found');
+    if (!game) {
+      throw new NotFoundException(`Game with ID "${gameId}" not found`);
     }
-    return game.roomCode;
-  }
 
-  broadcastCountryAccessChanged(roomCode: string, payload: any) {
-    this.eventsGateway.sendToLobby(roomCode, 'countryAccessChanged', {
-      type: 'countryAccessChanged',
-      payload,
+    const countryAccessRows = await this.prisma.countryAccess.findMany({
+      where: { gameId },
+      select: { country: true, accessLevel: true },
     });
+
+    const countries: Record<string, boolean> = {};
+    for (const row of countryAccessRows) {
+      countries[row.country] = row.accessLevel === AccessStatus.FULL_ACCESS;
+    }
+
+    return { countries };
   }
 
-  broadcastBulkCountryAccessChanged(roomCode: string, payload: any) {
-    this.eventsGateway.sendToLobby(roomCode, 'bulkCountryAccessChanged', {
-      type: 'bulkCountryAccessChanged',
-      payload,
-    });
-  }
-
-  bulkSetCountryAccess(
+  /**
+   * Apply country access changes using CountryAccess table.
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async applyCountryAccessChanges(
     gameId: number,
-    accessLevel: PoliticalAccessLevel,
-    countries?: string[],
-    _updatedBy?: { playerId: number }
-  ): { countries: string[]; updatedAt: string } {
-    const map = this.getCountryMap(gameId);
-    const now = new Date().toISOString();
-    const targets =
-      countries?.map((c) => c.trim()).filter(Boolean) ?? Array.from(map.keys());
+    changes: Record<string, boolean | null>
+  ): Promise<{ countries: Record<string, boolean> }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
 
-    for (const c of targets) {
-      const state = this.getCountryAccess(gameId, c);
-      state.access = accessLevel;
-      state.overflight = accessLevel;
-      state.version = (state.version ?? 0) + 1;
-      state.updatedAt = now;
-      map.set(c, state);
+      // Validate payload
+      if (changes == null || typeof changes !== 'object') {
+        throw new BadRequestException('Invalid payload: "changes" must be an object of { [country]: boolean | null }');
+      }
+      const keys = Object.keys(changes);
+      const validCountryValues = new Set(Object.values(Country) as string[]);
+      for (const key of keys) {
+        if (!validCountryValues.has(key)) {
+          throw new BadRequestException(`Unknown country: ${key}`);
+        }
+        const v = (changes as any)[key];
+        if (!(v === true || v === false || v === null)) {
+          throw new BadRequestException(`Invalid value for ${key}: must be true, false, or null`);
+        }
+      }
+
+      // Apply changes to CountryAccess table
+      for (const key of keys) {
+        const value = (changes as any)[key] as boolean | null;
+        const country = key as Country;
+
+        if (value === null) {
+          // Delete country access entry
+          await tx.countryAccess.deleteMany({
+            where: { gameId, country }
+          });
+        } else {
+          // Upsert country access entry
+          const accessLevel = value ? AccessStatus.FULL_ACCESS : AccessStatus.NO_ACCESS;
+          await tx.countryAccess.upsert({
+            where: {
+              gameId_country: { gameId, country }
+            },
+            update: {
+              accessLevel,
+              diceRoll: value ? 10 : 1, // High roll = access, low roll = no access
+            },
+            create: {
+              gameId,
+              country,
+              accessLevel,
+              diceRoll: value ? 10 : 1,
+            },
+          });
+        }
+      }
+
+      // Load latest snapshot to return
+      const allRows = await tx.countryAccess.findMany({
+        where: { gameId },
+        select: { country: true, accessLevel: true },
+      });
+      const countries: Record<string, boolean> = {};
+      for (const row of allRows) {
+        countries[row.country] = row.accessLevel === AccessStatus.FULL_ACCESS;
+      }
+
+      return { countries };
+    });
+
+    // Broadcast changes for real-time updates
+    try {
+      (this.gameGateway as any)?.publishCountryAccessUpdated?.(gameId, {
+        changes,
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast country access update failed for game ${gameId}: ${err}`);
     }
 
-    return { countries: targets, updatedAt: now };
+    return result;
   }
 
   /**

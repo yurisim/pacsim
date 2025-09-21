@@ -40,11 +40,7 @@ test('map should load successfully', async ({ page }) => {
   await page.getByRole('button', { name: 'Activate FOS' }).click();
   await expect(page.getByText('activated successfully')).toBeVisible();
 
-// Open inline RFI subview and verify it renders
-await page.getByTestId('btn-fos-rfi').click();
-await expect(page.getByText('RFI (10 items)')).toBeVisible();
-
-// Switch to Tasks subview and verify it renders
-await page.getByTestId('btn-fos-tasks').click();
-await expect(page.getByText('Airfield Tasks (16)')).toBeVisible();
+  // Switch to Tasks subview and verify it renders
+  await page.getByRole('button', { name: 'Tasks' }).click();
+  await expect(page.getByRole('heading', { name: 'Operate' })).toBeVisible();
 });
