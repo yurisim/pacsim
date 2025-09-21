@@ -128,7 +128,8 @@ export class PoliticalAccessComponent implements OnInit {
     // Initialize with default data - in real implementation, this would come from API
     const defaultCountryData: PoliticalAccessCard[] = country.map(countryCode => {
       const fosSites = this.countryFOS[countryCode] || [];
-      const fosOccupied = fosSites.filter(fos => fos.isOccupied).length;
+      // TODO: FOS occupation status should come from game state API, not hardcoded
+      const fosOccupied = 0; // Placeholder - should be loaded from backend
 
       return {
         country: countryCode,
@@ -343,19 +344,21 @@ export class PoliticalAccessComponent implements OnInit {
     return 'text-md-tertiary';
   }
 
-  getFosStatusIcon(fos: FOSReference): string {
-    return fos.isOccupied ? '✓' : '○';
+  getFosStatusIcon(fos: StaticLocation): string {
+    // TODO: Should check actual game state for FOS occupation status
+    return '○'; // Placeholder - occupation status should come from game state
   }
 
-  getFosChipClass(fos: FOSReference): string {
-    const baseClass = fos.isOccupied ? 'occupied-fos' : 'unoccupied-fos';
-    const colorClass = `fos-${fos.color}`;
+  getFosChipClass(fos: StaticLocation): string {
+    // TODO: Should check actual game state for FOS occupation status
+    const baseClass = 'unoccupied-fos'; // Placeholder - occupation status should come from game state
+    const colorClass = `fos-${fos.color || 'green'}`;
     return `${baseClass} ${colorClass}`;
   }
 
-  onFosClick(fos: FOSReference): void {
+  onFosClick(fos: StaticLocation): void {
     // TODO: Highlight FOS on map
-    console.log(`Clicked FOS ${fos.number}: ${fos.name} (${fos.isOccupied ? 'Occupied' : 'Available'})`);
+    console.log(`Clicked FOS ${fos.name}: ${fos.name} (Available)`); // TODO: Check actual occupation status
   }
 
   private emitCountryAccessChange(countryCode: Country, accessType: 'access' | 'overflight', newAccess: AccessStatus): void {

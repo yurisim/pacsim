@@ -158,11 +158,11 @@
           @for (fos of countryData.fosSites; track fos.id) {
           <mat-chip
             [class]="getFosChipClass(fos)"
-            [matTooltip]="fos.name + ' (' + fos.coordinates[0] + ', ' + fos.coordinates[1] + ')' + (fos.isOccupied ? ' - Occupied by ' + fos.occupiedByTeam : ' - Available')"
+            [matTooltip]="fos.name + ' (' + fos.coordinates[0] + ', ' + fos.coordinates[1] + ') - Available'"
             (click)="onFosClick(fos)"
             class="cursor-pointer text-xs">
             <span class="mr-1">{{ getFosStatusIcon(fos) }}</span>
-            <span>{{ fos.number }}</span>
+            <span>{{ fos.name }}</span>
           </mat-chip>
           }
         </div>
