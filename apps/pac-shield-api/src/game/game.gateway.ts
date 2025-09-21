@@ -345,6 +345,27 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Country access updated broadcast to room ${room}: v${payload.version}`);
   }
 
+  /**
+   * Publish bulk country access updated event to all clients in a game room.
+   * Used when multiple countries have their access level changed simultaneously.
+   */
+  publishBulkAccessUpdated(
+    gameId: number,
+    payload: { accessLevel: string; countries: string[] }
+  ): void {
+    const room = String(gameId);
+    this.server.to(room).emit('bulkCountryAccessChanged', {
+      type: 'bulkCountryAccessChanged',
+      payload: {
+        gameId,
+        accessLevel: payload.accessLevel,
+        countries: payload.countries
+      },
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Bulk country access updated broadcast to room ${room}: ${payload.countries.length} countries to ${payload.accessLevel}`);
+  }
+
   // =============================================================================
   // Team-Specific Room Management for Allocation Notifications
   // =============================================================================

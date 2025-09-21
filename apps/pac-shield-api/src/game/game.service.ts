@@ -449,12 +449,17 @@ export class GameService {
 
     // Broadcast bulk access update
     try {
-      (this.gameGateway as any)?.publishBulkAccessUpdated?.(gameId, {
-        accessLevel: bulkDto.accessLevel,
-        countries: result.countries.map(c => c.country),
-      });
+      if (this.gameGateway && typeof this.gameGateway.publishBulkAccessUpdated === 'function') {
+        this.gameGateway.publishBulkAccessUpdated(gameId, {
+          accessLevel: bulkDto.accessLevel,
+          countries: result.countries.map(c => c.country),
+        });
+        this.logger.log(`Bulk access update broadcast sent for game ${gameId}: ${result.countries.length} countries to ${bulkDto.accessLevel}`);
+      } else {
+        this.logger.warn(`GameGateway not available or publishBulkAccessUpdated method missing for game ${gameId}`);
+      }
     } catch (err) {
-      this.logger.warn(`Broadcast bulk access update failed for game ${gameId}: ${err}`);
+      this.logger.error(`Broadcast bulk access update failed for game ${gameId}: ${err}`, err instanceof Error ? err.stack : undefined);
     }
 
     return result;
