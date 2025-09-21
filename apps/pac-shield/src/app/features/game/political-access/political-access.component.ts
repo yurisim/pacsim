@@ -63,6 +63,7 @@ export class PoliticalAccessComponent implements OnInit {
   // Injected services
   private webSocketService = inject(WebSocketService);
   private countryOverlayService = inject(CountryOverlayService);
+  private countryAccessHttp = inject(CountryAccessHttpService);
 
   // Country flag emoji mapping
   private readonly countryFlags: Record<Country, string> = {
@@ -256,18 +257,78 @@ export class PoliticalAccessComponent implements OnInit {
   }
 
   private saveDiceRollToBackend(countryCode: Country, diceRoll: number): void {
-    // TODO: Implement WebSocket/HTTP API call to save dice roll
-    console.log(`Saving dice roll for ${countryCode}: ${diceRoll}`);
+    if (!this.gameId) {
+      console.error('Cannot save dice roll: gameId is null');
+      return;
+    }
+
+    this.countryAccessHttp.updateCountryDiceRoll(this.gameId, countryCode, {
+      diceRoll,
+      notes: `Dice roll updated for ${countryCode}`
+    }).subscribe({
+      next: (response) => {
+        console.log(`Successfully saved dice roll for ${countryCode}:`, response);
+        // Update the local state with the calculated access level from the backend
+        this.updateCountryDataWithBackendResponse(countryCode, response.diceRoll, response.accessLevel);
+      },
+      error: (error) => {
+        console.error(`Failed to save dice roll for ${countryCode}:`, error);
+        // TODO: Show user-friendly error message
+      }
+    });
   }
 
   private saveAllDiceRollsToBackend(countries: PoliticalAccessCard[]): void {
-    // TODO: Implement WebSocket/HTTP API call to save all dice rolls
-    console.log('Saving all dice rolls:', countries.map(c => ({country: c.country, diceRoll: c.diceRoll})));
+    if (!this.gameId) {
+      console.error('Cannot save dice rolls: gameId is null');
+      return;
+    }
+
+    const diceRolls = countries.map(c => ({
+      country: c.country,
+      diceRoll: c.diceRoll
+    }));
+
+    this.countryAccessHttp.updateBulkDiceRolls(this.gameId, {
+      diceRolls,
+      notes: 'Bulk dice roll update'
+    }).subscribe({
+      next: (response) => {
+        console.log('Successfully saved all dice rolls:', response);
+        // Update local state with backend-calculated access levels
+        response.countries.forEach(country => {
+          this.updateCountryDataWithBackendResponse(country.country, country.diceRoll, country.accessLevel);
+        });
+      },
+      error: (error) => {
+        console.error('Failed to save all dice rolls:', error);
+        // TODO: Show user-friendly error message
+      }
+    });
   }
 
   private saveBulkAccessToBackend(accessLevel: AccessStatus): void {
-    // TODO: Implement WebSocket/HTTP API call to save bulk access changes
-    console.log(`Setting all countries to: ${accessLevel}`);
+    if (!this.gameId) {
+      console.error('Cannot save bulk access: gameId is null');
+      return;
+    }
+
+    this.countryAccessHttp.updateBulkCountryAccess(this.gameId, {
+      accessLevel,
+      notes: `Bulk access update: ${accessLevel}`
+    }).subscribe({
+      next: (response) => {
+        console.log(`Successfully set all countries to ${accessLevel}:`, response);
+        // Update local state with backend response
+        response.countries.forEach(country => {
+          this.updateCountryAccessLevel(country.country, country.accessLevel);
+        });
+      },
+      error: (error) => {
+        console.error(`Failed to set bulk access to ${accessLevel}:`, error);
+        // TODO: Show user-friendly error message
+      }
+    });
   }
 
   getFosOccupancyDisplay(countryData: PoliticalAccessCard): string {
@@ -322,5 +383,50 @@ export class PoliticalAccessComponent implements OnInit {
 
     this.webSocketService.emit('bulkCountryAccessChanged', eventData);
     console.log('Emitted bulk country access change:', eventData);
+  }
+
+  /**
+   * Update country data with backend response (dice roll and calculated access level)
+   */
+  private updateCountryDataWithBackendResponse(countryCode: Country, diceRoll: number, accessLevel: AccessStatus): void {
+    const currentData = this.countryAccess();
+    const updatedData = currentData.map(country =>
+      country.country === countryCode
+        ? {
+            ...country,
+            diceRoll,
+            access: accessLevel,
+            overflight: accessLevel === 'FULL_ACCESS' ? 'FULL_ACCESS' as AccessStatus : accessLevel,
+            lastUpdated: new Date()
+          }
+        : country
+    );
+
+    this.countryAccess.set(updatedData);
+
+    // Update overlay service
+    this.countryOverlayService.updateCountryAccess(countryCode, accessLevel);
+  }
+
+  /**
+   * Update country access level only (for bulk operations)
+   */
+  private updateCountryAccessLevel(countryCode: Country, accessLevel: AccessStatus): void {
+    const currentData = this.countryAccess();
+    const updatedData = currentData.map(country =>
+      country.country === countryCode
+        ? {
+            ...country,
+            access: accessLevel,
+            overflight: accessLevel === 'FULL_ACCESS' ? 'FULL_ACCESS' as AccessStatus : accessLevel,
+            lastUpdated: new Date()
+          }
+        : country
+    );
+
+    this.countryAccess.set(updatedData);
+
+    // Update overlay service
+    this.countryOverlayService.updateCountryAccess(countryCode, accessLevel);
   }
 }
