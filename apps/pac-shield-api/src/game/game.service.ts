@@ -274,6 +274,205 @@ export class GameService {
   }
 
   /**
+   * Update dice roll for a specific country.
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async updateCountryDiceRoll(
+    gameId: number,
+    country: Country,
+    updateDto: UpdateDiceRollDto
+  ): Promise<{ country: Country; diceRoll: number; accessLevel: AccessStatus }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
+
+      // Calculate access level based on dice roll (standard ACE rules)
+      const accessLevel = this.calculateAccessLevel(updateDto.diceRoll);
+
+      // Upsert country access with new dice roll
+      const countryAccess = await tx.countryAccess.upsert({
+        where: {
+          gameId_country: { gameId, country }
+        },
+        update: {
+          diceRoll: updateDto.diceRoll,
+          accessLevel,
+          notes: updateDto.notes || null,
+        },
+        create: {
+          gameId,
+          country,
+          diceRoll: updateDto.diceRoll,
+          accessLevel,
+          notes: updateDto.notes || null,
+        },
+        select: { country: true, diceRoll: true, accessLevel: true },
+      });
+
+      return countryAccess;
+    });
+
+    // Broadcast dice roll update
+    try {
+      (this.gameGateway as any)?.publishDiceRollUpdated?.(gameId, {
+        country: result.country,
+        diceRoll: result.diceRoll,
+        accessLevel: result.accessLevel,
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast dice roll update failed for game ${gameId}: ${err}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Update dice rolls for multiple countries.
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async updateBulkDiceRolls(
+    gameId: number,
+    bulkDto: BulkDiceRollDto
+  ): Promise<{ countries: Array<{ country: Country; diceRoll: number; accessLevel: AccessStatus }> }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
+
+      // Validate dice rolls
+      for (const { diceRoll } of bulkDto.diceRolls) {
+        if (diceRoll < 1 || diceRoll > 20) {
+          throw new BadRequestException(`Invalid dice roll: ${diceRoll}. Must be between 1 and 20.`);
+        }
+      }
+
+      // Update all country dice rolls
+      const countries = [];
+      for (const { country, diceRoll } of bulkDto.diceRolls) {
+        const accessLevel = this.calculateAccessLevel(diceRoll);
+
+        const countryAccess = await tx.countryAccess.upsert({
+          where: {
+            gameId_country: { gameId, country }
+          },
+          update: {
+            diceRoll,
+            accessLevel,
+            notes: bulkDto.notes || null,
+          },
+          create: {
+            gameId,
+            country,
+            diceRoll,
+            accessLevel,
+            notes: bulkDto.notes || null,
+          },
+          select: { country: true, diceRoll: true, accessLevel: true },
+        });
+
+        countries.push(countryAccess);
+      }
+
+      return { countries };
+    });
+
+    // Broadcast bulk dice roll update
+    try {
+      (this.gameGateway as any)?.publishBulkDiceRollUpdated?.(gameId, {
+        countries: result.countries,
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast bulk dice roll update failed for game ${gameId}: ${err}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Update access level for multiple countries (bulk operation).
+   * Database → Local Storage pattern: persists to database, frontend will sync via cache.
+   */
+  public async updateBulkCountryAccess(
+    gameId: number,
+    bulkDto: BulkAccessUpdateDto
+  ): Promise<{ countries: Array<{ country: Country; accessLevel: AccessStatus }> }> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Ensure game exists
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { id: true },
+      });
+      if (!game) {
+        throw new NotFoundException(`Game with ID "${gameId}" not found`);
+      }
+
+      // Determine which countries to update
+      const targetCountries = bulkDto.countries || Object.values(Country);
+
+      // Update access level for all target countries
+      const countries = [];
+      for (const country of targetCountries) {
+        const countryAccess = await tx.countryAccess.upsert({
+          where: {
+            gameId_country: { gameId, country }
+          },
+          update: {
+            accessLevel: bulkDto.accessLevel,
+            notes: bulkDto.notes || null,
+          },
+          create: {
+            gameId,
+            country,
+            accessLevel: bulkDto.accessLevel,
+            diceRoll: 1, // Default low roll for restricted access
+            notes: bulkDto.notes || null,
+          },
+          select: { country: true, accessLevel: true },
+        });
+
+        countries.push(countryAccess);
+      }
+
+      return { countries };
+    });
+
+    // Broadcast bulk access update
+    try {
+      (this.gameGateway as any)?.publishBulkAccessUpdated?.(gameId, {
+        accessLevel: bulkDto.accessLevel,
+        countries: result.countries.map(c => c.country),
+      });
+    } catch (err) {
+      this.logger.warn(`Broadcast bulk access update failed for game ${gameId}: ${err}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculate access level based on dice roll using standard ACE rules.
+   * Dice Roll 1-5: NO_ACCESS
+   * Dice Roll 6-15: OVERFLIGHT_ONLY
+   * Dice Roll 16-20: FULL_ACCESS
+   */
+  private calculateAccessLevel(diceRoll: number): AccessStatus {
+    if (diceRoll >= 16) return AccessStatus.FULL_ACCESS;
+    if (diceRoll >= 6) return AccessStatus.OVERFLIGHT_ONLY;
+    return AccessStatus.NO_ACCESS;
+  }
+
+  /**
    * Generate a collision-resistant 6-char uppercase alphanumeric room code.
    * Uses Math.random; acceptable for human-friendly codes, not cryptographic.
    */
