@@ -7,6 +7,8 @@ import { map } from 'rxjs/operators';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Map } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
@@ -36,6 +38,8 @@ import { AccessStatus, Country } from '../../generated/enums';
     MatProgressSpinnerModule,
     MatButtonModule,
     MatIconModule,
+    MatMenuModule,
+    MatDialogModule,
     HexGridComponent,
     LocationMarkersComponent,
     GameStatsComponent,
@@ -62,6 +66,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(HexGridComponent) hexGrid!: HexGridComponent;
   @ViewChild(LocationMarkersComponent) locationMarkers!: LocationMarkersComponent;
   @ViewChild(GameStatsComponent) gameStatsComponent!: GameStatsComponent;
+  @ViewChild('countryMenuTrigger') countryMenuTrigger!: MatMenuTrigger;
 
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
@@ -1137,6 +1142,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
         y: pt.y,
         country
       };
+      // Open Angular Material menu at cursor position
+      this.countryMenuTrigger?.openMenu();
     };
 
     // Attach MapLibre layer-scoped contextmenu handler
@@ -1200,6 +1207,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private hideCountryContextMenu(): void {
     this.contextMenu.show = false;
+    try {
+      this.countryMenuTrigger?.closeMenu();
+    } catch (err) {
+      console.warn('Failed to close country menu:', err);
+    }
   }
 
   onSelectCountryAccess(level: AccessStatus): void {
