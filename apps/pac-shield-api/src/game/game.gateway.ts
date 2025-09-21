@@ -324,6 +324,27 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // =============================================================================
+  // Country Access Events
+  // =============================================================================
+
+  /**
+   * Publish country access updated event to all clients in a game room.
+   * Best-effort broadcast; consumers can refetch snapshot after receiving.
+   */
+  publishCountryAccessUpdated(
+    gameId: number,
+    payload: { version: number; changes: Record<string, boolean | null> }
+  ): void {
+    const room = String(gameId);
+    this.server.to(room).emit('countryAccessUpdated', {
+      type: 'countryAccessUpdated',
+      payload,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Country access updated broadcast to room ${room}: v${payload.version}`);
+  }
+
+  // =============================================================================
   // Team-Specific Room Management for Allocation Notifications
   // =============================================================================
 

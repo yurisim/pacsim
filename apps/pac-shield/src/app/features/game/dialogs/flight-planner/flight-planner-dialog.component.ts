@@ -16,7 +16,7 @@ import { filter, map, startWith, take, takeUntil } from 'rxjs/operators';
 import { ATOLine } from '../../../../generated/aTOLine/aTOLine.entity';
 import { CreateATOLineDto } from '../../../../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../../../../generated/aTOLine/update-aTOLine.dto';
-import { AircraftConfiguration, FlightIntention, AircraftType, AircraftStatus, PlayerRole } from '../../../../generated/enums';
+import { AircraftConfiguration, FlightIntention, AircraftType, AircraftStatus } from '../../../../generated/enums';
 import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraftInstance.entity';
 import { Player } from '../../../../generated/player/player.entity';
 import { FOS_LOCATIONS, MOB_LOCATIONS } from '../../../../shared/config/static-locations.config';
@@ -205,7 +205,7 @@ export class FlightPlannerDialogComponent implements OnInit, OnDestroy {
   /**
    * Handle aircraft selection from dropdown
    */
-  onAircraftSelected(event: any): void {
+  onAircraftSelected(event: { value: AircraftInstance }): void {
     const selectedAircraft = event.value as AircraftInstance;
     if (selectedAircraft) {
       // Auto-populate the call sign when aircraft is selected
@@ -391,7 +391,7 @@ export class FlightPlannerDialogComponent implements OnInit, OnDestroy {
         country: location.country,
       })),
       // FOS locations
-      ...Object.entries(FOS_LOCATIONS).map(([_id, location]) => ({
+      ...Object.entries(FOS_LOCATIONS).map(([, location]) => ({
         value: location.name,
         displayName: `${location.name} - ${location.country}`,
         type: 'FOS' as const,
@@ -406,7 +406,7 @@ export class FlightPlannerDialogComponent implements OnInit, OnDestroy {
       take(1),
       takeUntil(this.destroy$)
     ).subscribe(hexGrid => {
-      const hexLocationOptions: LocationOption[] = Object.entries(hexGrid).map(([h3Index, visualCoord]) => ({
+      const hexLocationOptions: LocationOption[] = Object.entries(hexGrid).map(([, visualCoord]) => ({
         value: visualCoord,
         displayName: `Hex ${visualCoord}`,
         type: 'Hex',
