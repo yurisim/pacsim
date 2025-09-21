@@ -537,3 +537,21 @@ export const ALL_STATIC_LOCATIONS: StaticLocation[] = [
   ...Object.values(MOB_LOCATIONS),
   ...Object.values(FOS_LOCATIONS),
 ];
+
+/**
+ * Groups FOS locations by country for easy lookup.
+ * Used by political access components to show FOS sites per country.
+ */
+export function getFOSByCountry(): Record<string, StaticLocation[]> {
+  const fosByCountry: Record<string, StaticLocation[]> = {};
+
+  Object.values(FOS_LOCATIONS).forEach(fos => {
+    const country = fos.country.toUpperCase();
+    if (!fosByCountry[country]) {
+      fosByCountry[country] = [];
+    }
+    fosByCountry[country].push(fos);
+  });
+
+  return fosByCountry;
+}
