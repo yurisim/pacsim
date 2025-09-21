@@ -16,6 +16,7 @@ export class CountryOverlayService {
 
   // Signal for overlay visibility (internal)
   private overlayVisibleSignal = signal(false);
+  private initialStateLoaded = false;
 
   // Reverse mapping and game context
   private iso3ToCountry: Record<string, Country> = {};
@@ -80,21 +81,40 @@ export class CountryOverlayService {
 
     this.webSocketService.listen<any>('bulkCountryAccessChanged').subscribe((evt) => {
       const payload = (evt as any)?.payload ?? evt;
-      if (!payload) return;
-      if (this.currentGameId != null && payload.gameId !== this.currentGameId) return;
+      if (!payload) {
+        console.warn('Received bulkCountryAccessChanged event with no payload');
+        return;
+      }
+      if (this.currentGameId != null && payload.gameId !== this.currentGameId) {
+        console.log(`Ignoring bulkCountryAccessChanged for game ${payload.gameId}, current game is ${this.currentGameId}`);
+        return;
+      }
 
       const level = payload.accessLevel as AccessStatus;
       const countries: string[] = Array.isArray(payload.countries) ? payload.countries : [];
-      if (countries.length === 0) return;
+      if (countries.length === 0) {
+        console.warn('Received bulkCountryAccessChanged event with no countries');
+        return;
+      }
+
+      console.log(`Received bulkCountryAccessChanged: ${countries.length} countries to ${level}`);
 
       // Batch update to avoid multiple refreshes
       const current = { ...this.countryAccessData() };
+      let updatedCount = 0;
       for (const c of countries) {
-        current[c as Country] = level;
+        if (country.includes(c as Country)) {
+          current[c as Country] = level;
+          updatedCount++;
+        }
       }
-      this.countryAccessData.set(current);
-      if (this.isOverlayVisible()) {
-        this.refreshOverlay();
+
+      if (updatedCount > 0) {
+        this.countryAccessData.set(current);
+        if (this.isOverlayVisible()) {
+          this.refreshOverlay();
+        }
+        console.log(`Updated ${updatedCount} countries via WebSocket`);
       }
     });
   }
@@ -103,12 +123,50 @@ export class CountryOverlayService {
     this.map = map;
   }
 
+  /**
+   * Load initial country access state from backend if not already loaded
+   */
+  private async loadInitialStateIfNeeded(): Promise<void> {
+    if (this.initialStateLoaded || !this.currentGameId) {
+      return;
+    }
+
+    try {
+      console.log(`Loading initial country access state for game ${this.currentGameId}`);
+
+      // Note: The backend getCountryAccessSnapshot API returns { countries: Record<string, boolean> }
+      // where true = FULL_ACCESS, false = NO_ACCESS (simplified)
+      const snapshot = await this.countryAccessHttp.getCountryAccessSnapshot(this.currentGameId).toPromise();
+
+      if (snapshot?.countries) {
+        const newData: Record<Country, AccessStatus> = { ...this.countryAccessData() };
+
+        // Map boolean values to AccessStatus enum
+        Object.entries(snapshot.countries).forEach(([countryKey, hasFullAccess]) => {
+          if (country.includes(countryKey as Country)) {
+            // Convert boolean to AccessStatus - true means FULL_ACCESS, false means NO_ACCESS
+            newData[countryKey as Country] = hasFullAccess ? 'FULL_ACCESS' : 'NO_ACCESS';
+          }
+        });
+
+        this.countryAccessData.set(newData);
+        this.initialStateLoaded = true;
+        console.log('Initial country access state loaded successfully', newData);
+      }
+    } catch (error) {
+      console.error('Failed to load initial country access state:', error);
+      // Keep using default values on error
+    }
+  }
+
   toggleOverlay(): void {
     const newVisibility = !this.overlayVisibleSignal();
     this.overlayVisibleSignal.set(newVisibility);
 
     if (newVisibility) {
-      this.showOverlay();
+      this.loadInitialStateIfNeeded().then(() => {
+        this.showOverlay();
+      });
     } else {
       this.hideOverlay();
     }
