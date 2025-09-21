@@ -68,6 +68,7 @@ export class AllocationWebSocketService implements OnDestroy {
    */
   disconnect(): void {
     if (this.socket) {
+      this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
     }
@@ -118,6 +119,9 @@ export class AllocationWebSocketService implements OnDestroy {
    */
   private setupEventListeners(): void {
     if (!this.socket) return;
+
+    // Remove any existing listeners to prevent memory leaks
+    this.socket.removeAllListeners();
 
     // Connection events
     this.socket.on('connect', () => {

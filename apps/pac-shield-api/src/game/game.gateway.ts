@@ -29,6 +29,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * - Logs the connection for diagnostics
    */
   handleConnection(client: Socket) {
+    client.setMaxListeners(15); // Increase from default 10 to prevent warnings
     const { gameId } = client.handshake.query;
     if (gameId) {
       client.join(gameId);
