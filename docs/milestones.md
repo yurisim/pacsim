@@ -10,7 +10,6 @@
 
 1.  **Implement Civilization-Style Main Layout:**
 
-    - [ ] **Create Application Shell:** A responsive layout with a main content area for the map, a collapsible right sidebar, and a bottom information panel.
     - [ ] **`TopBarComponent`:** Display `Block`, `Day`, `Turn`, `Game Phase` (Crisis/Conflict), and `Victory Condition` progress. This directly replicates the top section of the `Mission Dashboard`.
     - [ ] **`HexGridMapComponent`:** Render the main game board from Appendix A. It should be pannable and zoomable.
 
