@@ -1,7 +1,8 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Map } from 'maplibre-gl';
-import { AccessStatus, Country } from '../../../generated/enums';
+import { AccessStatus, Country, country } from '../../../generated/enums';
 import { WebSocketService } from '../../../shared/services/websocket.service';
+import { CountryAccessHttpService } from '../../../shared/services/country-access-http.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../core/store/app.state';
 import { selectGame } from '../../../core/store/game/game.selectors';
@@ -23,6 +24,7 @@ export class CountryOverlayService {
   // DI helpers
   private store = inject(Store<AppState>);
   private webSocketService = inject(WebSocketService);
+  private countryAccessHttp = inject(CountryAccessHttpService);
 
   // Country access data
   private countryAccessData = signal<Record<Country, AccessStatus>>({

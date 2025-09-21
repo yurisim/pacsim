@@ -27,7 +27,8 @@ import { WebSocketService } from '../../shared/services/websocket.service';
 import { PlayerRoleService } from '../../shared/services/player-role.service';
 import { CountryAccessToggleComponent } from './country-access-toggle/country-access-toggle.component';
 import { CountryOverlayService } from './services/country-overlay.service';
-import { ApiService } from '../../shared/services/api.service';
+import { OverflightNicDialogComponent } from './overflight-nic-dialog/overflight-nic-dialog.component';
+import { CountryAccessHttpService } from '../../shared/services/country-access-http.service';
 import { AccessStatus, Country } from '../../generated/enums';
 
 @Component({
@@ -78,7 +79,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private webSocketService = inject(WebSocketService);
   private playerRoleService = inject(PlayerRoleService);
   private countryOverlayService = inject(CountryOverlayService);
-  private apiService = inject(ApiService);
+  private countryAccessHttp = inject(CountryAccessHttpService);
+  private dialog = inject(MatDialog);
   map!: Map;  // Made public for template access
   private mapReady = false;
   private hexGridCreated = false;
