@@ -153,4 +153,13 @@ export class FosTaskBoardComponent implements OnChanges {
       },
     });
   }
+
+  // Add these methods to your component class for better performance
+  trackByCategory(index: number, category: any): string {
+    return category.title;
+  }
+
+  trackByTask(index: number, task: string): string {
+    return task;
+  }
 }
