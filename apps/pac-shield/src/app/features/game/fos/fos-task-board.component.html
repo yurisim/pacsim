@@ -1,0 +1,74 @@
+<div class="space-y-2">
+  <div class="flex items-center justify-between">
+    <div class="md-typescale-label-medium">Airfield Tasks (16)</div>
+    <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+      {{ fosId ? (canEdit ? 'Editable' : 'Read-only') : 'Activate FOS to manage tasks' }}
+    </div>
+  </div>
+
+  <app-error-alert
+    *ngIf="errorMsg"
+    [variant]="'error'"
+    [title]="'Tasks Error'"
+    [message]="errorMsg"
+    dataTestId="tasks-error"
+  ></app-error-alert>
+
+  <div class="flex items-center justify-center py-6" *ngIf="isLoading">
+    <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <div *ngIf="fosId; else preActivation" class="operational-grid">
+      <!-- 2x2 Grid of Operational Categories -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        @for (category of operationalCategories; track category.title) {
+          <div class="operational-category" [class]="category.bgColor">
+            <!-- Category Header -->
+            <div class="category-header">
+              <mat-icon [class]="category.color">{{ category.icon }}</mat-icon>
+              <h3 class="category-title" [class]="category.color">{{ category.title }}</h3>
+            </div>
+
+            <!-- 2x2 Grid of Tasks within Category -->
+            <div class="tasks-grid">
+              @for (task of category.tasks; track task) {
+                <div class="task-card" [class.task-completed]="isCompleted(task)">
+                  <div class="task-content">
+                    <div class="task-title">{{ task }}</div>
+                    <div class="task-status">
+                      <mat-chip
+                        [disableRipple]="true"
+                        [class]="isCompleted(task) ? 'status-done' : 'status-pending'"
+                      >
+                        {{ isCompleted(task) ? 'Done' : 'Pending' }}
+                      </mat-chip>
+                    </div>
+                    <div class="task-actions">
+                      <button
+                        mat-icon-button
+                        [color]="isCompleted(task) ? 'warn' : 'primary'"
+                        (click)="toggle(task)"
+                        [disabled]="!canToggle()"
+                        [matTooltip]="canToggle() ? (isCompleted(task) ? 'Mark as not complete' : 'Mark as complete') : 'Read-only'"
+                        class="task-toggle-btn"
+                      >
+                        <mat-icon>{{ isCompleted(task) ? 'undo' : 'check_circle' }}</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <ng-template #preActivation>
+      <div class="md-typescale-body-small md-sys-color-on-surface-variant text-center p-4">
+        Activate FOS to manage tasks.
+      </div>
+    </ng-template>
+  </div>
+</div>

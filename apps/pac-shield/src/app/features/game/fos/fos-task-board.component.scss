@@ -1,0 +1,238 @@
+/**
+ * FOS Task Board Component Styles
+ *
+ * Provides 2x2 operational grid layout for military training exercise tasks
+ */
+
+.operational-grid {
+  padding: 16px;
+}
+
+.operational-category {
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: var(--mat-sys-elevation-2);
+  }
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .category-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  min-height: 200px;
+}
+
+.task-card {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mat-sys-surface-container-low);
+    border-color: var(--mat-sys-outline);
+  }
+
+  &.task-completed {
+    background: var(--mat-sys-primary-container);
+    border-color: var(--mat-sys-primary);
+
+    .task-title {
+      color: var(--mat-sys-on-primary-container);
+    }
+  }
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 8px;
+}
+
+.task-title {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--mat-sys-on-surface);
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-status {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0;
+
+  mat-chip {
+    font-size: 10px;
+    height: 20px;
+    min-height: 20px;
+    padding: 0 8px;
+    border-radius: 10px;
+
+    &.status-done {
+      background-color: var(--mat-sys-tertiary-container);
+      color: var(--mat-sys-on-tertiary-container);
+    }
+
+    &.status-pending {
+      background-color: var(--mat-sys-surface-variant);
+      color: var(--mat-sys-on-surface-variant);
+      opacity: 0.7;
+    }
+  }
+}
+
+.task-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .task-toggle-btn {
+    width: 32px;
+    height: 32px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 1024px) {
+  .operational-grid {
+    padding: 12px;
+  }
+
+  .tasks-grid {
+    gap: 6px;
+    min-height: 180px;
+  }
+
+  .task-card {
+    padding: 10px;
+  }
+
+  .task-title {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .operational-grid {
+    padding: 8px;
+  }
+
+  // Stack categories vertically on mobile
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tasks-grid {
+    min-height: 160px;
+    gap: 4px;
+  }
+
+  .task-card {
+    padding: 8px;
+  }
+
+  .task-title {
+    font-size: 10px;
+    -webkit-line-clamp: 3;
+  }
+
+  .category-header {
+    margin-bottom: 8px;
+
+    .category-title {
+      font-size: 14px;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Animation for grid appearance
+@keyframes fadeInGrid {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.operational-category {
+  animation: fadeInGrid 0.3s ease-out;
+}
+
+// Dark theme adjustments
+:host-context(.dark-theme) {
+  .task-card {
+    &:hover {
+      background: var(--mat-sys-surface-container-high);
+    }
+
+    &.task-completed {
+      background: var(--mat-sys-primary-container);
+    }
+  }
+
+  .operational-category {
+    border-color: var(--mat-sys-outline);
+
+    &:hover {
+      box-shadow: var(--mat-sys-elevation-3);
+    }
+  }
+}
