@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EventsGateway } from '../events.gateway';
 import { ForwardOperatingSite } from '../generated';
+import { AirfieldTask } from '@prisma/client';
 
 /**
  * FOS Service for Forward Operating Site business logic and database operations.
@@ -200,6 +201,352 @@ export class FosService {
     this.logger.log(`FOS ${fos.fosDisplayNumber} deactivated in game ${fos.gameId}`);
 
     return deactivatedFOS;
+  }
+
+  /**
+   * Authorization helper: ensure the caller is GM or the owner (same team) of the specified FOS.
+   * Accepts either numeric player id or sessionId via JWT sub.
+   * Throws ForbiddenException or NotFoundException as appropriate.
+   */
+  async ensureOwnerOrGM(fosId: string, candidate: number | string): Promise<void> {
+    const fos = await this.prisma.forwardOperatingSite.findUnique({
+      where: { id: fosId },
+      select: { id: true, teamId: true },
+    });
+    if (!fos) {
+      throw new NotFoundException('FOS not found');
+    }
+
+    const candidateStr = String(candidate);
+    const isNumeric = /^\d+$/.test(candidateStr);
+    const player = await this.prisma.player.findUnique({
+      where: isNumeric ? { id: Number(candidateStr) } : { sessionId: candidateStr },
+      include: { team: true },
+    });
+
+    if (!player) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    // GM can always write
+    if (player.role === 'GM') {
+      return;
+    }
+
+    // Owner: same team that owns the FOS
+    if (fos.teamId != null && player.teamId === fos.teamId) {
+      return;
+    }
+
+    throw new ForbiddenException('Access denied - not owner or GM');
+  }
+
+  /**
+   * Authorization helper: ensure the caller is a Game Master.
+   * Accepts either numeric player id or sessionId via JWT sub.
+   * Throws ForbiddenException if not GM.
+   */
+  async ensureGM(candidate: number | string): Promise<void> {
+    const candidateStr = String(candidate);
+    const isNumeric = /^\d+$/.test(candidateStr);
+    const player = await this.prisma.player.findUnique({
+      where: isNumeric ? { id: Number(candidateStr) } : { sessionId: candidateStr },
+      select: { role: true },
+    });
+    if (!player || player.role !== 'GM') {
+      throw new ForbiddenException('Only GMs may perform this action');
+    }
+  }
+
+  /**
+   * Ensure that the requesting user is a GM in the same game as the specified FOS.
+   *
+   * @param candidate player ID or session ID
+   * @param fosId FOS UUID to validate game context
+   * @throws ForbiddenException if not a GM or not in the same game
+   * @throws NotFoundException if FOS not found
+   */
+  async ensureGMForFos(candidate: number | string, fosId: string): Promise<void> {
+    const candidateStr = String(candidate);
+    const isNumeric = /^\d+$/.test(candidateStr);
+
+    // Get player and FOS in parallel
+    const [player, fos] = await Promise.all([
+      this.prisma.player.findUnique({
+        where: isNumeric ? { id: Number(candidateStr) } : { sessionId: candidateStr },
+        select: { role: true, gameId: true },
+      }),
+      this.prisma.forwardOperatingSite.findUnique({
+        where: { id: fosId },
+        select: { gameId: true },
+      })
+    ]);
+
+    if (!player || player.role !== 'GM') {
+      throw new ForbiddenException('Only GMs may perform this action');
+    }
+
+    if (!fos) {
+      throw new NotFoundException('FOS not found');
+    }
+
+    if (player.gameId !== fos.gameId) {
+      throw new ForbiddenException('Access denied to this FOS');
+    }
+  }
+
+  // ========= RFI =========
+
+  /**
+   * Retrieve all RFI answers for a specific Forward Operating Site.
+   *
+   * Returns all answered RFI entries for the given FOS UUID, ordered by database ID.
+   * Used by the GET /fos/:id/rfi endpoint to display current RFI status to users.
+   *
+   * **Data Structure**: Returns AnsweredRFI objects with rfiKey, rfiValue, fosId, timestamps
+   * **Ordering**: Results are ordered by database ID for consistent display
+   * **Empty Result**: Returns empty array if no RFI answers exist for the FOS
+   *
+   * @param fosId - Database UUID of the Forward Operating Site
+   * @returns Promise<AnsweredRFI[]> Array of all RFI answers for the FOS
+   *
+   * @example
+   * const rfiAnswers = await getRfiAnswersByFosId('uuid-123');
+   * // Returns: [{ rfiKey: 'CFR', rfiValue: '2', fosId: 'uuid-123', ... }]
+   */
+  async getRfiAnswersByFosId(fosId: string) {
+    return this.prisma.answeredRFI.findMany({
+      where: { fosId },
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  /**
+   * Create or update a single RFI answer for a Forward Operating Site.
+   *
+   * **Upsert Operation**: Creates new answer if none exists, updates existing value otherwise
+   * **Validation**: Ensures rfiValue is valid ('1', '2', or '3') and FOS exists
+   * **Database Constraint**: Uses compound unique constraint (fosId + rfiKey) for upsert
+   * **Authorization**: Should be called only after GM authorization check in controller
+   *
+   * **RFI Value Meanings:**
+   * - '1': Minimal capability/condition
+   * - '2': Moderate capability/condition
+   * - '3': Satisfactory capability/condition
+   *
+   * @param fosId - Database UUID of the Forward Operating Site
+   * @param rfiKey - RFI category key (e.g., 'CFR', 'Mobility', 'Ramp', 'ATC', 'Equipment', 'Bed Down', 'Fuel', 'Security', 'Community', 'Medical')
+   * @param rfiValue - Answer value, must be '1', '2', or '3'
+   * @returns Promise<AnsweredRFI> The created or updated RFI answer
+   * @throws BadRequestException When rfiValue is not '1', '2', or '3'
+   * @throws NotFoundException When FOS with specified UUID does not exist
+   *
+   * @example
+   * const answer = await upsertRfiAnswer('uuid-123', 'CFR', '2');
+   * // Creates or updates CFR answer to '2' for the specified FOS
+   */
+  async upsertRfiAnswer(fosId: string, rfiKey: string, rfiValue: string) {
+    if (!['1', '2', '3'].includes(rfiValue)) {
+      throw new BadRequestException('rfiValue must be "1", "2", or "3"');
+    }
+    // Ensure FOS exists (FK will enforce but we give cleaner error)
+    const exists = await this.prisma.forwardOperatingSite.findUnique({ where: { id: fosId }, select: { id: true } });
+    if (!exists) {
+      throw new NotFoundException('FOS not found');
+    }
+    return this.prisma.answeredRFI.upsert({
+      where: { fosId_rfiKey: { fosId, rfiKey } },
+      create: { fosId, rfiKey, rfiValue },
+      update: { rfiValue },
+    });
+  }
+
+  /**
+   * Roll dice for an RFI answer and save the result to the database.
+   *
+   * Generates a random value between 1-3 and upserts it as the RFI answer.
+   * This method provides the backend implementation for the frontend dice roll feature.
+   *
+   * **Random Generation**: Uses Math.random() to generate values 1, 2, or 3
+   * **Database Operations**: Upserts to answeredRFI table, overwriting existing values
+   * **Validation**: Ensures FOS exists before attempting to save
+   *
+   * @param fosId - Database UUID of the Forward Operating Site
+   * @param rfiKey - RFI category key (e.g., 'CFR', 'Mobility', 'Ramp')
+   * @returns Promise<AnsweredRFI[]> Complete list of RFI answers for the FOS
+   * @throws NotFoundException When FOS with specified UUID does not exist
+   *
+   * @example
+   * const rfiAnswers = await rollDiceForRfi('uuid-123', 'CFR');
+   * // Returns all RFI answers for the FOS, with 'CFR' set to random value 1-3
+   */
+  async rollDiceForRfi(fosId: string, rfiKey: string) {
+    // Validate FOS exists
+    const exists = await this.prisma.forwardOperatingSite.findUnique({
+      where: { id: fosId },
+      select: { id: true }
+    });
+    if (!exists) {
+      throw new NotFoundException('FOS not found');
+    }
+
+    // Generate random value between 1-3
+    const randomValue = Math.floor(Math.random() * 3) + 1;
+    const rfiValue = String(randomValue);
+
+    this.logger.log(`Rolling dice for FOS ${fosId}, RFI key ${rfiKey}: rolled ${rfiValue}`);
+
+    // Upsert the rolled value to database
+    await this.prisma.answeredRFI.upsert({
+      where: { fosId_rfiKey: { fosId, rfiKey } },
+      create: { fosId, rfiKey, rfiValue },
+      update: { rfiValue },
+    });
+
+    // Return all RFI answers for this FOS (consistent with manual upsert)
+    return this.getRfiAnswersByFosId(fosId);
+  }
+
+  /**
+   * Retrieve RFI answers by game ID and FOS display number (helper method).
+   *
+   * **Purpose**: Allows querying RFI data before FOS activation using display number
+   * **Use Case**: Pre-activation browsing of RFI status from game overview
+   * **Implementation**: Internally resolves display number to FOS UUID then calls getRfiAnswersByFosId
+   * **Graceful Handling**: Returns empty array if displayNumber not provided or FOS not found
+   *
+   * **Workflow:**
+   * 1. Look up FOS by gameId + fosDisplayNumber compound key
+   * 2. If found, retrieve all RFI answers using the FOS UUID
+   * 3. If not found or displayNumber is null, return empty array
+   *
+   * @param gameId - Database ID of the game
+   * @param displayNumber - Optional FOS display number (1-45). If null/undefined, returns empty array
+   * @returns Promise<AnsweredRFI[]> Array of RFI answers, or empty array if FOS not found
+   *
+   * @example
+   * const answers = await getRfiAnswersByGameAndDisplay(123, 7);
+   * // Returns RFI answers for FOS display number 7 in game 123, or [] if not found
+   */
+  async getRfiAnswersByGameAndDisplay(gameId: number, displayNumber?: number) {
+    if (displayNumber == null) return [];
+    const fos = await this.prisma.forwardOperatingSite.findUnique({
+      where: { gameId_fosDisplayNumber: { gameId, fosDisplayNumber: displayNumber } },
+      select: { id: true },
+    });
+    if (!fos) return [];
+    return this.getRfiAnswersByFosId(fos.id);
+  }
+
+  // ========= Tasks =========
+
+  async getCompletedTasks(fosId: string): Promise<AirfieldTask[]> {
+    const fos = await this.prisma.forwardOperatingSite.findUnique({
+      where: { id: fosId },
+      select: { completedTasks: true },
+    });
+    if (!fos) {
+      throw new NotFoundException('FOS not found');
+    }
+    return fos.completedTasks ?? [];
+  }
+
+  async updateTaskCompletion(fosId: string, task: AirfieldTask, completed: boolean): Promise<AirfieldTask[]> {
+    // Validate that task is a valid enum value (runtime check)
+    if (!(task in AirfieldTask)) {
+      throw new BadRequestException('Invalid task');
+    }
+    const fos = await this.prisma.forwardOperatingSite.findUnique({
+      where: { id: fosId },
+      select: { completedTasks: true },
+    });
+    if (!fos) {
+      throw new NotFoundException('FOS not found');
+    }
+    const current = new Set<AirfieldTask>(fos.completedTasks ?? []);
+    if (completed) {
+      current.add(task);
+    } else {
+      current.delete(task);
+    }
+    const updated = Array.from(current.values());
+    const res = await this.prisma.forwardOperatingSite.update({
+      where: { id: fosId },
+      data: { completedTasks: { set: updated } },
+      select: { completedTasks: true, gameId: true },
+    });
+    // Broadcast updated FOS list to the room
+    await this.broadcastFOSUpdate(res.gameId);
+    return res.completedTasks;
+  }
+
+  // ========= Ownership =========
+
+  async getOwnedFos(gameId: number, teamId?: number) {
+    return this.prisma.forwardOperatingSite.findMany({
+      where: {
+        gameId,
+        teamId: teamId ?? undefined,
+      },
+      select: {
+        id: true,
+        gameId: true,
+        fosDisplayNumber: true,
+        isActive: true,
+        teamId: true,
+        turnActivated: true,
+        consecutiveStrikes: true,
+        isFullyAssessed: true,
+      },
+      orderBy: [{ teamId: 'asc' }, { fosDisplayNumber: 'asc' }],
+    });
+  }
+
+  async getFosSummary(gameId: number) {
+    // Fetch teams (id + name)
+    const teams = await this.prisma.team.findMany({
+      where: { gameId },
+      select: { id: true, name: true },
+      orderBy: { id: 'asc' },
+    });
+
+    // Fetch all FOS for the game
+    const foss = await this.prisma.forwardOperatingSite.findMany({
+      where: { gameId },
+      select: { id: true, teamId: true, isActive: true, consecutiveStrikes: true },
+    });
+
+    // Pre-compute RFI counts per FOS
+    const fosIds = foss.map(f => f.id);
+    const rfiAll = fosIds.length
+      ? await this.prisma.answeredRFI.findMany({ where: { fosId: { in: fosIds } }, select: { fosId: true } })
+      : [];
+    const rfiCountByFos = new Map<string, number>();
+    for (const r of rfiAll) {
+      rfiCountByFos.set(r.fosId, (rfiCountByFos.get(r.fosId) ?? 0) + 1);
+    }
+
+    // Aggregate per team
+    const summary = teams.map(t => {
+      const owned = foss.filter(f => f.teamId === t.id);
+      const totalOwned = owned.length;
+      const active = owned.filter(f => f.isActive).length;
+      const dormant = owned.filter(f => !f.isActive).length; // typically 0 because we null teamId on deactivate
+      const fullyAssessed = owned.filter(f => (rfiCountByFos.get(f.id) ?? 0) >= 10).length;
+      const strikesAtRisk = owned.filter(f => (f.consecutiveStrikes ?? 0) >= 2).length;
+
+      return {
+        teamId: t.id,
+        teamName: t.name,
+        totalOwned,
+        active,
+        dormant,
+        fullyAssessed,
+        strikesAtRisk,
+      };
+    });
+
+    return summary;
   }
 
   /**

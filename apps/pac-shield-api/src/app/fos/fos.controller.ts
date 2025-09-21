@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, BadRequestException, UseGuards, Query, Req } from '@nestjs/common';
 import { FosService } from './fos.service';
 import { ForwardOperatingSite } from '../generated';
 import { ApiOperation, ApiParam, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FosManagementGuard } from '../auth/fos-management.guard';
+import { UpsertRfiDto } from './dto/upsert-rfi.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import { RollDiceDto } from './dto/roll-dice.dto';
 
 /**
  * FOS REST API Controller for Forward Operating Site management.
@@ -16,6 +19,10 @@ import { FosManagementGuard } from '../auth/fos-management.guard';
  * - GET    /fos/game/:gameId                    -> get all FOSs for a game
  * - POST   /fos/:fosDisplayNumber/activate     -> activate FOS by display number and assign to team
  * - PATCH  /fos/:id/deactivate                 -> deactivate FOS by UUID
+ * - GET    /fos/:id/rfi                        -> get RFI answers for a FOS
+ * - POST   /fos/:id/rfi                        -> upsert RFI answer (GM only)
+ * - POST   /fos/:id/rfi/roll-dice              -> roll dice for RFI answer (GM only)
+ * - GET    /fos/game/:gameId/rfi               -> get RFI answers by game and display number
  */
 @Controller('fos')
 export class FosController {
@@ -192,5 +199,165 @@ export class FosController {
   })
   async deactivateFOS(@Param('id') id: string): Promise<ForwardOperatingSite> {
     return this.fosService.deactivateFOS(id);
+  }
+
+  // ========= RFI =========
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/rfi')
+  @ApiOperation({ summary: 'Get RFI answers for a FOS' })
+  async getRfiByFos(@Param('id') fosId: string) {
+    return this.fosService.getRfiAnswersByFosId(fosId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/rfi')
+  @ApiOperation({ summary: 'Upsert a single RFI answer for a FOS' })
+  async upsertRfi(
+    @Param('id') fosId: string,
+    @Body() body: UpsertRfiDto,
+    @Req() req: any,
+  ) {
+    // Enforce writer is GM only and in the same game
+    await this.fosService.ensureGMForFos(req?.user?.sub ?? req?.user?.playerId, fosId);
+    await this.fosService.upsertRfiAnswer(fosId, body.rfiKey, body.rfiValue);
+    // Return the full updated list to match frontend expectations
+    return this.fosService.getRfiAnswersByFosId(fosId);
+  }
+
+  /**
+   * Roll dice for an RFI answer (GM only).
+   *
+   * Generates a random value between 1-3 and saves it as the RFI answer.
+   * This endpoint is used by the frontend dice roll feature to allow GMs
+   * to randomly assign RFI values instead of manually selecting them.
+   *
+   * **Authorization**: GM role required
+   * **Database Operations**: Upserts the rolled value to answeredRFI table
+   *
+   * @param fosId - The database UUID of the FOS
+   * @param body - Request body containing the RFI key to roll for
+   * @returns Promise<AnsweredRFI[]> Complete list of RFI answers for the FOS
+   *
+   * @example
+   * POST /fos/uuid-string/rfi/roll-dice
+   * Body: { "rfiKey": "CFR" }
+   * Returns: [
+   *   {
+   *     "rfiKey": "CFR",
+   *     "rfiValue": "2",
+   *     "fosId": "uuid-string",
+   *     "updatedAt": "2023-...",
+   *     ...
+   *   }
+   * ]
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/rfi/roll-dice')
+  @ApiOperation({ summary: 'Roll dice for RFI answer (GM only)' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'Database UUID of the FOS'
+  })
+  @ApiBody({
+    type: RollDiceDto,
+    description: 'Roll dice request body containing the RFI key'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dice rolled successfully, RFI value updated with random result (1-3)',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          rfiKey: { type: 'string' },
+          rfiValue: { type: 'string', enum: ['1', '2', '3'] },
+          fosId: { type: 'string' },
+          updatedAt: { type: 'string' }
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - GM role required'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found - FOS with specified UUID does not exist'
+  })
+  async rollDiceForRfi(
+    @Param('id') fosId: string,
+    @Body() body: RollDiceDto,
+    @Req() req: any,
+  ) {
+    // Enforce GM only and in the same game
+    await this.fosService.ensureGMForFos(req?.user?.sub ?? req?.user?.playerId, fosId);
+
+    return this.fosService.rollDiceForRfi(fosId, body.rfiKey);
+  }
+
+  // Optional: read by game/display for pre-activation browsing (returns [] if none)
+  @UseGuards(JwtAuthGuard)
+  @Get('game/:gameId/rfi')
+  @ApiOperation({ summary: 'Get RFI answers by game and display number (optional helper)' })
+  async getRfiByGameAndDisplay(
+    @Param('gameId', ParseIntPipe) gameId: number,
+    @Query('displayNumber') displayNumber?: string,
+  ) {
+    const dn = displayNumber != null ? Number(displayNumber) : undefined;
+    return this.fosService.getRfiAnswersByGameAndDisplay(gameId, dn as any);
+  }
+
+  // ========= Tasks =========
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/tasks')
+  @ApiOperation({ summary: 'Get completed tasks for a FOS' })
+  async getTasks(@Param('id') fosId: string) {
+    return this.fosService.getCompletedTasks(fosId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/tasks')
+  @ApiOperation({ summary: 'Update completion for a single AirfieldTask on a FOS' })
+  async updateTask(
+    @Param('id') fosId: string,
+    @Body() body: UpdateTaskDto,
+    @Req() req: any,
+  ) {
+    // Enforce writer is owner or GM
+    await this.fosService.ensureOwnerOrGM(fosId, req?.user?.sub ?? req?.user?.playerId);
+    return this.fosService.updateTaskCompletion(fosId, body.task, body.completed);
+  }
+
+  // ========= Ownership / Summary =========
+
+  @UseGuards(JwtAuthGuard)
+  @Get('owned')
+  @ApiOperation({ summary: 'List FOS owned by team for a game (teamId optional filter)' })
+  async getOwned(
+    @Query('gameId') gameId: string,
+    @Query('teamId') teamId?: string,
+  ) {
+    const gid = Number(gameId);
+    if (!gid || Number.isNaN(gid)) {
+      throw new BadRequestException('gameId is required and must be a number');
+    }
+    const tid = teamId != null ? Number(teamId) : undefined;
+    return this.fosService.getOwnedFos(gid, tid);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('summary')
+  @ApiOperation({ summary: 'Aggregated FOS ownership summary across teams for a game' })
+  async getSummary(@Query('gameId') gameId: string) {
+    const gid = Number(gameId);
+    if (!gid || Number.isNaN(gid)) {
+      throw new BadRequestException('gameId is required and must be a number');
+    }
+    return this.fosService.getFosSummary(gid);
   }
 }
