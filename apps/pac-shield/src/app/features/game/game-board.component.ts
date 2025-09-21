@@ -15,7 +15,7 @@ import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; //
 import { ThemeService } from '../../shared/services/theme.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
-import { MOB_LOCATIONS } from '../../shared/config/static-locations.config';
+import { MOB_LOCATIONS, FOS_LOCATIONS } from '../../shared/config/static-locations.config';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
 import { GameStatsComponent } from './game-stats/game-stats.component';
 import { GameStatsService } from './game-stats/game-stats.service';
@@ -151,6 +151,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // For backward compatibility - will be replaced with observables in template
   isGameMaster = false;
+
+  // Location panel deep-link control
+  panelCollapsed = true;
+  initialSubview: 'none' | 'rfi' | 'tasks' = 'none';
 
   // Game statistics from service (reactive signals)
   gameStats = this.gameStatsService.gameStats;
@@ -576,6 +580,32 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Initialize FOS state with offline-first approach
       this.fosStateService.initializeForGame(Number(gameId));
+    }
+
+    // Parse optional deep-link query params
+    const qp = this.route.snapshot.queryParamMap;
+    const fosDisplayStr = qp.get('fos');
+    const panel = qp.get('panel'); // expect 'fos'
+    const view = qp.get('view') as ('rfi' | 'tasks' | null);
+
+    if (panel === 'fos') {
+      this.panelCollapsed = false; // open panel
+    }
+    if (view === 'rfi' || view === 'tasks') {
+      this.initialSubview = view;
+    }
+
+    if (fosDisplayStr) {
+      const dn = parseInt(fosDisplayStr, 10);
+      if (!isNaN(dn)) {
+        const fosKey = `fos-${dn.toString().padStart(2, '0')}`;
+        const staticFos = FOS_LOCATIONS[fosKey];
+        if (staticFos) {
+          // Programmatically select the hex for this FOS
+          this.selectedH3Index = staticFos.h3Index;
+          // selectedVisualHexCoord mapping may not be ready; it's optional for panel operation
+        }
+      }
     }
 
     // Subscribe to game changes to join the appropriate room

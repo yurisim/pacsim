@@ -106,6 +106,8 @@
       [fosMobAssignments]="fosMobAssignments"
       [currentPlayerMob]="currentPlayerMob"
       [isGameMaster]="(isGameMaster$ | async) ?? false"
+      [collapsed]="panelCollapsed"
+      [initialSubview]="initialSubview"
       (actionClicked)="onLocationAction($event)"
       (fosStatusChanged)="onFosStatusChanged($event)"
     >

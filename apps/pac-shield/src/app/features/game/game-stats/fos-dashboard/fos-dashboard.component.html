@@ -1,33 +1,95 @@
 <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container p-3">
   <div class="flex items-center gap-2 mb-2">
     <mat-icon>flight_takeoff</mat-icon>
-    <div class="md-typescale-title-medium">FOS Dashboard</div>
+    <div class="md-typescale-title-medium">Ownership Overview</div>
   </div>
   <mat-divider></mat-divider>
 
-  <div class="mt-3">
-    <div class="md-typescale-label-medium mb-1">RFI Status</div>
-    <div class="flex flex-wrap gap-2">
-      @for (rfi of rfiCategories; track rfi) {
-        <mat-chip>{{ rfi }}: ?</mat-chip>
-      }
+  <div class="mt-3 md-typescale-body-small md-sys-color-on-surface-variant">
+    Read-only list of FOS currently owned in this game. Click Open or a map marker to drill-in (FOS panel → RFI).
+  </div>
+
+  @if (errorMsg) {
+    <div class="mt-3 md-typescale-body-small md-sys-color-on-error-container md-sys-bg-error-container p-2 rounded">
+      {{ errorMsg }}
+    </div>
+  }
+
+  <!-- Mini-map + Filters -->
+  <div class="mt-3 flex flex-col gap-2">
+    <!-- Team filter (GM/CFACC only) -->
+    @if (showTeamFilter) {
+      <div class="flex items-center gap-2">
+        <mat-icon class="text-base">group</mat-icon>
+        <label class="md-typescale-body-small" for="ownership-team-filter">Team:</label>
+        <select id="ownership-team-filter"
+                aria-label="Filter by team"
+                class="border rounded px-2 py-1"
+                data-testid="ownership-team-filter"
+                (change)="onTeamFilterChange(($any($event.target)).value)">
+          <option value="ALL">All Teams</option>
+          @for (t of teamsForFilter; track t.id) {
+            <option [value]="t.id">{{ t.name }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <!-- Compact Hex Mini-Map (read-only) -->
+    <div data-testid="ownership-mini-map" class="rounded md-elevation-1 md-sys-bg-surface p-2 inline-block">
+      <svg [attr.width]="miniWidth"
+           [attr.height]="miniHeight"
+           role="img"
+           aria-label="Owned FOS mini-map">
+        @for (m of markers; track m.dn) {
+          <!-- Marker circle -->
+          <circle [attr.cx]="m.x"
+                  [attr.cy]="m.y"
+                  r="5"
+                  [attr.fill]="m.color"
+                  [attr.stroke]="m.color"
+                  stroke-width="1"
+                  [attr.data-testid]="'ownership-open-link-' + m.dn"
+                  [attr.aria-label]="m.title"
+                  style="cursor: pointer"
+                  (click)="openFos(m.dn)"></circle>
+        }
+      </svg>
     </div>
   </div>
 
-  <div class="mt-3">
-    <div class="md-typescale-label-medium mb-1">MOG</div>
-    <div class="flex items-center gap-2">
-      <mat-icon>local_parking</mat-icon>
-      <div class="md-typescale-body-medium">2 C-17 & 7 Fighters (placeholder)</div>
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-6">
+      <mat-icon class="animate-pulse">autorenew</mat-icon>
     </div>
-  </div>
-
-  <div class="mt-3">
-    <div class="md-typescale-label-medium mb-1">Airfield Tasks (16)</div>
-    <div class="grid grid-cols-2 gap-2">
-      @for (task of tasks; track task) {
-        <mat-chip class="interactive-surface">{{ task }}</mat-chip>
+  } @else {
+    <div class="mt-3 space-y-2" data-testid="ownership-list">
+      @if (filteredItems.length === 0) {
+        <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+          No owned FOS yet.
+        </div>
+      } @else {
+        @for (it of filteredItems; track it.fosDisplayNumber) {
+          <div class="flex items-center justify-between gap-3 p-2 rounded-md md-elevation-1 interactive-surface">
+            <div class="flex items-center gap-3">
+              <mat-icon>place</mat-icon>
+              <div>
+                <div class="md-typescale-label-medium">FOS {{ it.fosDisplayNumber }}</div>
+                <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+                  {{ it.ownerTeamName || 'Unassigned' }} • {{ it.status }}
+                  @if (it.assessed) { <span class="ml-2">• Assessed</span> }
+                </div>
+              </div>
+            </div>
+            <button mat-stroked-button
+                    color="primary"
+                    [attr.data-testid]="'ownership-open-link-' + it.fosDisplayNumber"
+                    (click)="openFos(it.fosDisplayNumber)">
+              Open
+            </button>
+          </div>
+        }
       }
     </div>
-  </div>
+  }
 </mat-card>

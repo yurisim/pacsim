@@ -38,6 +38,15 @@ export class HomeComponent {
   showGameMasterSetup = false;
   createdGame: Game | null = null;
 
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  get currentPlayerName(): string | null {
+    const player = this.authService.getPlayer();
+    return player?.name || null;
+  }
+
   createGame(): void {
     // Do not disconnect the socket here; guard no longer runs on root so we can keep the status "Connected".
     this.isLoading = true;
@@ -100,5 +109,18 @@ export class HomeComponent {
 
   navigateToJoin(): void {
     this.router.navigate(['/join']);
+  }
+
+  continueGameSession(): void {
+    const gameId = this.authService.getGameId();
+    if (gameId) {
+      this.router.navigate(['/lobby', gameId]);
+    }
+  }
+
+  onGameMasterSetupBack(): void {
+    this.showGameMasterSetup = false;
+    this.createdGame = null;
+    this.roomCode = null;
   }
 }

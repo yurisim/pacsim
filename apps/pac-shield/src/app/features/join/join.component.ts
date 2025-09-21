@@ -303,4 +303,8 @@ export class JoinComponent {
   shouldShowContinueOption(): boolean {
     return this.hasValidJWT && !!this.currentPlayer && !!this.currentGameId;
   }
+
+  onBackToHome(): void {
+    this.router.navigate(['/']);
+  }
 }

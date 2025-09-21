@@ -46,16 +46,27 @@
           <!-- (complete)="onPinComplete($event)" -->
         </div>
 
-        <button
-          matButton="filled"
-          color="primary"
-          (click)="onSubmit()"
-          [disabled]="!isFormValid"
-        >
-          <span class="">Continue</span>
-          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-        </button>
       </div>
     </mat-card-content>
+
+    <mat-card-actions class="flex gap-3 md-padding-lg justify-center mt-4">
+      <button
+        matButton="tonal"
+        (click)="onBack()"
+      >
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        <span class="md-typescale-label-large">Back</span>
+      </button>
+
+      <button
+        matButton="filled"
+        color="primary"
+        (click)="onSubmit()"
+        [disabled]="!isFormValid"
+      >
+        <span class="">Continue</span>
+        <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+    </mat-card-actions>
   </mat-card>
 </div>

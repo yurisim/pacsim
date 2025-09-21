@@ -20,6 +20,15 @@ async function bootstrap() {
     transform: true,
     whitelist: true,
     forbidNonWhitelisted: true,
+    validationError: {
+      target: false,
+      value: false,
+    },
+    exceptionFactory: (errors) => {
+      const logger = new Logger('ValidationPipe');
+      logger.error('Validation failed:', JSON.stringify(errors, null, 2));
+      return new (require('@nestjs/common').BadRequestException)(errors);
+    },
   }));
 
   const config = new DocumentBuilder()

@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MOB_LOCATIONS, FOS_LOCATIONS, StaticLocation } from '../../../shared/config/static-locations.config';
 import { GameStatsService } from '../game-stats/game-stats.service';
@@ -16,6 +16,8 @@ import { FosStateService } from '../../../shared/services/fos-state.service';
 import { PlayerRoleService } from '../../../shared/services/player-role.service';
 import { ForwardOperatingSite, Team } from '../../../generated';
 import { FosActivationDialogComponent, FosActivationDialogData, FosActivationDialogResult } from './fos-activation-dialog.component';
+import { FosRfiComponent } from '../fos/fos-rfi.component';
+import { FosTaskBoardComponent } from '../fos/fos-task-board.component';
 
 /**
  * Asset action interface - represents an action that can be performed on an asset
@@ -62,7 +64,8 @@ export interface TileAsset {
     MatCardModule,
     MatTabsModule,
     MatDividerModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatDialogModule
   ],
   templateUrl: './location-panel.component.html',
   styleUrls: ['./location-panel.component.scss']
@@ -79,6 +82,7 @@ export class LocationPanelComponent implements OnChanges {
   @Input() collapsed = true;
   @Output() actionClicked = new EventEmitter<{ action: AssetAction, asset: TileAsset }>();
   @Output() collapsedChange = new EventEmitter<boolean>();
+  @Input() initialSubview: 'none' | 'rfi' | 'tasks' = 'none'; // Deep-link support from GameBoardComponent; no-op here
   @Output() fosStatusChanged = new EventEmitter<{ fosId: string, isActive: boolean, teamId?: number }>();
 
   private gameStatsService = inject(GameStatsService);
@@ -96,6 +100,40 @@ export class LocationPanelComponent implements OnChanges {
   selectedMobAsset = signal<TileAsset | null>(null);
   selectedFosAsset = signal<TileAsset | null>(null);
   selectedPlaneAsset = signal<TileAsset | null>(null);
+
+
+  // Derived context for the currently selected FOS (static + db if active)
+  selectedFosStatic = computed(() => {
+    const h3 = this.selectedH3Index;
+    const sel = this.selectedFosAsset();
+    if (!h3 || !sel) return null;
+    const fosAtHex = this.getFosAtHex(h3);
+    return fosAtHex.find(f => f.id === sel.id) || null;
+  });
+
+  selectedFosDisplayNumber = computed<number | null>(() => {
+    const sel = this.selectedFosAsset();
+    if (!sel) return null;
+    const n = parseInt(sel.name.replace(/\D/g, '') || '0');
+    return Number.isFinite(n) && n > 0 ? n : null;
+  });
+
+  selectedDbFos = computed<ForwardOperatingSite | null>(() => {
+    const displayNum = this.selectedFosDisplayNumber();
+    if (!displayNum) return null;
+    return this.fosList().find(f => f.fosDisplayNumber === displayNum) || null;
+  });
+
+  selectedFosId = computed<string | null>(() => this.selectedDbFos()?.id ?? null);
+
+  isOwner = computed<boolean>(() => {
+    const selStatic = this.selectedFosStatic();
+    if (!selStatic) return false;
+    const ownerMob = this.fosMobAssignments[selStatic.id];
+    return !!ownerMob && ownerMob === this.currentPlayerMob;
+  });
+
+  canEdit = computed<boolean>(() => this.isOwner() || this.isGameMaster);
 
   // Computed signal for FOS asset with reactive actions
   selectedFosAssetWithActions = computed(() => {
@@ -282,98 +320,72 @@ export class LocationPanelComponent implements OnChanges {
   }
 
   /**
-   * Get FOS actions based on activation status, ownership, and permissions
+   * Get FOS actions based on activation status and permissions.
+   *
+   * Rationale (docs/user-guide.md):
+   * - Keep only FOS activation state controls (Activate/Deactivate) per 5.2.3 "Selection of FOS Locations".
+   * - Operational/convenience actions (Fortify, Scout, Resupply, Build Ramp, Deploy Arresting Gear/Runway Lighting, etc.)
+   *   are consolidated into in-panel subviews:
+   *     • RFI (3.2.1 "Request for Information", 5.2.4 "Request RFIs")
+   *     • Tasks (3.6 "Airfield Capabilities" incl. Camouflage & Base Hardening, Base Recovery, Mobility Support)
+   * - CAOC-only actions (e.g., PPR per 3.3) are not Location Panel buttons.
    */
   private getFosActions(fos: StaticLocation & { dbFos?: ForwardOperatingSite }): AssetAction[] {
-    const baseActions: AssetAction[] = [];
+    const actions: AssetAction[] = [];
 
-    // Check activation status using signal-based tracking
+    // Activation status via signal-based tracking
     const isActive = this.activeFosIds().has(fos.id);
 
-    // Check if player's MOB owns this FOS or is GM
-    const fosMobId = this.fosMobAssignments[fos.id];
-    const isOwner = fosMobId === this.currentPlayerMob;
-    const hasFullControl = isOwner || this.isGameMaster;
-
     if (isActive) {
-      // FOS is active - show operational actions based on ownership
-
-      if (hasFullControl) {
-        // Full control - owner or GM can perform all actions
-        baseActions.push(
-          { id: 'fortify', icon: 'security', label: 'Fortify', tooltip: 'Fortify position' },
-          { id: 'deploy', icon: 'send', label: 'Deploy', tooltip: 'Deploy units from this FOS', color: 'primary' },
-          { id: 'scout', icon: 'explore', label: 'Scout', tooltip: 'Scout surrounding area' },
-          { id: 'resupply', icon: 'inventory_2', label: 'Resupply', tooltip: 'Request supplies' },
-          { id: 'upgrade', icon: 'upgrade', label: 'Upgrade', tooltip: 'Upgrade FOS capabilities' },
-          { id: 'intel', icon: 'radar', label: 'Intel', tooltip: 'Gather intelligence' },
-          { id: 'transfer', icon: 'swap_horiz', label: 'Transfer', tooltip: 'Transfer control to another MOB' }
-        );
-
-        // Add deactivation for owners/GM/MOB Commanders
-        if (this.canManageFos()) {
-          baseActions.push(
-            { id: 'deactivate', icon: 'power_settings_new', label: 'Deactivate', tooltip: 'Deactivate this FOS', color: 'warn' }
-          );
+      // When active, show RFI and Tasks for all users, plus Deactivate for authorized users
+      actions.push(
+        {
+          id: 'rfi',
+          icon: 'assignment',
+          label: 'RFI',
+          tooltip: 'Request for Information'
+        },
+        {
+          id: 'tasks',
+          icon: 'checklist',
+          label: 'Tasks',
+          tooltip: 'View and manage FOS tasks'
         }
+      );
 
-        // GM-only actions
-        if (this.isGameMaster) {
-          baseActions.push(
-            { id: 'gm-edit', icon: 'edit', label: 'Edit', tooltip: 'GM: Edit FOS properties', color: 'accent' },
-            { id: 'gm-delete', icon: 'delete', label: 'Delete', tooltip: 'GM: Remove FOS from game', color: 'warn', disabled: false }
-          );
-        }
-      } else {
-        // Limited actions for non-owners (can only observe)
-        baseActions.push(
-          { id: 'view-intel', icon: 'visibility', label: 'View Intel', tooltip: 'View public information' },
-          { id: 'request-access', icon: 'vpn_key', label: 'Request Access', tooltip: 'Request access from owner' }
-        );
-
-        // Show which MOB controls it
-        if (fosMobId) {
-          const mobName = MOB_LOCATIONS[fosMobId]?.name || fosMobId;
-          baseActions.push(
-            { id: 'view-owner', icon: 'home', label: mobName, tooltip: `Controlled by ${mobName} MOB`, disabled: true }
-          );
-        }
+      if (this.canManageFos()) {
+        actions.push({
+          id: 'deactivate',
+          icon: 'power_settings_new',
+          label: 'Deactivate',
+          tooltip: 'Deactivate this FOS',
+          color: 'warn'
+        });
       }
     } else {
-      // FOS is inactive - show activation option based on permissions
+      // When inactive, show Activate (role guarded) or disabled info
       if (this.canManageFos()) {
-        // GMs and MOB Commanders can activate
         const tooltipText = this.isGameMaster ? 'GM: Activate this FOS' : 'Activate this FOS';
-        baseActions.push(
-          { id: 'activate', icon: 'power_settings_new', label: 'Activate', tooltip: tooltipText, color: 'accent' }
-        );
-
-        if (this.isGameMaster) {
-          baseActions.push(
-            { id: 'gm-assign', icon: 'assignment_ind', label: 'Assign MOB', tooltip: 'GM: Assign to a MOB', color: 'accent' }
-          );
-        }
+        actions.push({
+          id: 'activate',
+          icon: 'power_settings_new',
+          label: 'Activate',
+          tooltip: tooltipText,
+          color: 'accent'
+        });
       } else {
-        // Non-authorized players see disabled activation button with explanation
-        baseActions.push(
-          {
-            id: 'activate',
-            icon: 'power_settings_new',
-            label: 'Activate',
-            tooltip: 'Only GMs and MOB Commanders can activate FOS',
-            color: 'accent',
-            disabled: true
-          }
-        );
+        actions.push({
+          id: 'activate',
+          icon: 'power_settings_new',
+          label: 'Activate',
+          tooltip: 'Only GMs and MOB Commanders can activate FOS',
+          color: 'accent',
+          disabled: true
+        });
       }
     }
 
-    // Emergency evacuation available for all active FOSs
-    if (fos.dbFos?.isActive) {
-      baseActions.push({ id: 'evacuate', icon: 'emergency', label: 'Evacuate', tooltip: 'Emergency evacuation', color: 'warn' });
-    }
-
-    return baseActions;
+    return actions;
   }
 
   /**
@@ -467,6 +479,18 @@ export class LocationPanelComponent implements OnChanges {
     // Handle FOS deactivation specially
     if (action.id === 'deactivate' && asset.type === 'FOS') {
       this.handleFosDeactivation(asset);
+      return;
+    }
+
+    // Handle RFI dialog
+    if (action.id === 'rfi' && asset.type === 'FOS') {
+      this.openRfiDialog();
+      return;
+    }
+
+    // Handle Tasks dialog
+    if (action.id === 'tasks' && asset.type === 'FOS') {
+      this.openTasksDialog();
       return;
     }
 
@@ -658,6 +682,70 @@ export class LocationPanelComponent implements OnChanges {
   }
 
   /**
+   * Open RFI dialog for the selected FOS
+   */
+  openRfiDialog(): void {
+    const selectedFos = this.selectedFosAsset();
+    const fosDisplayNumber = this.selectedFosDisplayNumber();
+    const fosId = this.selectedFosId();
+
+    if (!selectedFos || !fosDisplayNumber) {
+      this.snackBar.open('No FOS selected', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Create a dialog component inline using the existing FosRfiComponent
+    const dialogRef = this.dialog.open(FosRfiDialogComponent, {
+      data: {
+        fosId: fosId,
+        fosDisplayNumber: fosDisplayNumber,
+        fosName: selectedFos.name,
+        gameId: this.gameId,
+        canEdit: this.canEdit()
+      },
+      width: '800px',
+      maxHeight: '90vh',
+      panelClass: 'fos-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('RFI dialog closed', result);
+    });
+  }
+
+  /**
+   * Open Tasks dialog for the selected FOS
+   */
+  openTasksDialog(): void {
+    const selectedFos = this.selectedFosAsset();
+    const fosDisplayNumber = this.selectedFosDisplayNumber();
+    const fosId = this.selectedFosId();
+
+    if (!selectedFos || !fosDisplayNumber) {
+      this.snackBar.open('No FOS selected', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Create a dialog component inline using the existing FosTaskBoardComponent
+    const dialogRef = this.dialog.open(FosTasksDialogComponent, {
+      data: {
+        fosId: fosId,
+        fosDisplayNumber: fosDisplayNumber,
+        fosName: selectedFos.name,
+        gameId: this.gameId,
+        canEdit: this.canEdit()
+      },
+      width: '900px',
+      maxHeight: '90vh',
+      panelClass: 'fos-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Tasks dialog closed', result);
+    });
+  }
+
+  /**
    * Check if current player can manage FOS (GM or MOB Commander)
    * Now uses the centralized PlayerRoleService
    */
@@ -665,4 +753,115 @@ export class LocationPanelComponent implements OnChanges {
     return this.playerRoleService.canCurrentPlayerManageFos();
   }
 
+}
+
+/**
+ * Dialog data interface for FOS dialogs
+ */
+export interface FosDialogData {
+  fosId: string | null;
+  fosDisplayNumber: number;
+  fosName: string;
+  gameId: number | null;
+  canEdit: boolean;
+}
+
+/**
+ * RFI Dialog Component - wraps the FosRfiComponent in a dialog
+ */
+@Component({
+  selector: 'app-fos-rfi-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    FosRfiComponent
+  ],
+  template: `
+    <div class="fos-dialog-header flex items-center justify-between p-4 border-b">
+      <h2 class="md-typescale-headline-small m-0">{{ data.fosName }} - RFI</h2>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="fos-dialog-content p-4">
+      <app-fos-rfi
+        [fosId]="data.fosId"
+        [fosDisplayNumber]="data.fosDisplayNumber"
+        [gameId]="data.gameId"
+        [canEdit]="data.canEdit"
+      ></app-fos-rfi>
+    </div>
+  `,
+  styles: [`
+    .fos-dialog-header {
+      background: var(--mat-sys-surface-container);
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+    .fos-dialog-content {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+  `]
+})
+export class FosRfiDialogComponent {
+  // Use inject() in place of constructor injection (lint rule)
+  private dialogRef = inject(MatDialogRef<FosRfiDialogComponent>);
+  public data = inject<FosDialogData>(MAT_DIALOG_DATA);
+
+  close(): void {
+    this.dialogRef.close();
+  }
+}
+
+/**
+ * Tasks Dialog Component - wraps the FosTaskBoardComponent in a dialog
+ */
+@Component({
+  selector: 'app-fos-tasks-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    FosTaskBoardComponent
+  ],
+  template: `
+    <div class="fos-dialog-header flex items-center justify-between p-4 border-b">
+      <h2 class="md-typescale-headline-small m-0">{{ data.fosName }} - Tasks</h2>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="fos-dialog-content p-4">
+      <app-fos-task-board
+        [fosId]="data.fosId"
+        [fosDisplayNumber]="data.fosDisplayNumber"
+        [gameId]="data.gameId"
+        [canEdit]="data.canEdit"
+      ></app-fos-task-board>
+    </div>
+  `,
+  styles: [`
+    .fos-dialog-header {
+      background: var(--mat-sys-surface-container);
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+    .fos-dialog-content {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+  `]
+})
+export class FosTasksDialogComponent {
+  // Use inject() in place of constructor injection (lint rule)
+  private dialogRef = inject(MatDialogRef<FosTasksDialogComponent>);
+  public data = inject<FosDialogData>(MAT_DIALOG_DATA);
+
+  close(): void {
+    this.dialogRef.close();
+  }
 }
