@@ -56,6 +56,7 @@ export interface GameMasterInfo {
 })
 export class GameMasterSetupComponent {
   complete = output<GameMasterInfo>();
+  back = output<void>();
 
   lastName = '';
   pin = '';
@@ -71,5 +72,9 @@ export class GameMasterSetupComponent {
         pin: this.pin,
       });
     }
+  }
+
+  onBack(): void {
+    this.back.emit();
   }
 }

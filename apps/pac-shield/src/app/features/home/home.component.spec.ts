@@ -33,7 +33,9 @@ describe('HomeComponent', () => {
 
     mockAuthService = {
       createGameMaster: jest.fn(),
-      getGameId: jest.fn()
+      getGameId: jest.fn(),
+      isAuthenticated: jest.fn().mockReturnValue(false),
+      currentPlayerName: jest.fn().mockReturnValue('')
     } as unknown as jest.Mocked<AuthService>;
 
     mockNotificationService = {

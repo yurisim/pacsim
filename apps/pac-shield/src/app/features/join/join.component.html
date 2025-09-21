@@ -146,14 +146,10 @@
 
     <mat-card-actions class="flex gap-3 md-padding-lg justify-center mt-4">
       <button
-        matButton="outlined"
-        color="primary"
-        (click)="router.navigate(['/'])"
-        class=""
+        matButton="tonal"
+        (click)="onBackToHome()"
       >
-        <mat-icon
-          aria-hidden="true"
-        >arrow_back</mat-icon>
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
         <span class="md-typescale-label-large">Back</span>
       </button>
 
@@ -292,20 +288,17 @@
       </div>
     </mat-card-content>
 
-    <mat-card-actions class="flex gap-2 mt-4 justify-center">
+    <mat-card-actions class="flex gap-3 mt-4 justify-center">
       <button
-        matButton="outlined"
-        color="primary"
+        matButton="tonal"
         (click)="onBackToJoin()"
         [disabled]="isLoading"
-        class="justify-center"
       >
-        <mat-icon
-          aria-hidden="true"
-        >arrow_back</mat-icon>
-        Back
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        <span class="md-typescale-label-large">Back</span>
       </button>
     </mat-card-actions>
+
   </mat-card>
 
   <!-- New Person Flow -->
@@ -364,18 +357,14 @@
       </div>
     </mat-card-content>
 
-    <mat-card-actions class="flex gap-2 mt-4 justify-center">
+    <mat-card-actions class="flex gap-3 mt-4 justify-center">
       <button
-        matButton="outlined"
-        color="primary"
+        matButton="tonal"
         (click)="onBackToJoin()"
         [disabled]="isLoading"
-        class="justify-center"
       >
-        <mat-icon
-          aria-hidden="true"
-        >arrow_back</mat-icon>
-        Back
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        <span class="md-typescale-label-large">Back</span>
       </button>
 
       <button
