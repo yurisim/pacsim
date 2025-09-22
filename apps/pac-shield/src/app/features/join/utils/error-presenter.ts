@@ -14,6 +14,7 @@ const defaultErrorMap: ErrorMap = {
   invalidPin: () => 'The PIN you entered is incorrect. Please try again.',
   digitsOnly: () => 'Only digits are allowed.',
   exactLength: (e: { length: number }) => `Must be exactly ${e?.length} characters.`,
+  nameFormat: () => 'Username must be in format: first.lastname (e.g., j.smith)',
 };
 
 export function mapFieldError(control: AbstractControl, customMap?: Partial<ErrorMap>): string | null {

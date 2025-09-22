@@ -113,7 +113,7 @@
         <!-- Player Name (shown after room is valid) -->
         <div *ngIf="shouldShowPlayerName()">
           <mat-form-field appearance="outline">
-            <mat-label>Player Name</mat-label>
+            <mat-label>Username (Format: j.smith)</mat-label>
             <mat-icon
               matPrefix
               aria-hidden="true"
@@ -131,7 +131,7 @@
             "
             class="md-typescale-body-small md-sys-color-error mt-1"
           >
-            Player name is required
+            {{ fieldError('playerName') }}
           </div>
         </div>
 
@@ -315,13 +315,23 @@
     <mat-card-content>
       <div [formGroup]="newPersonForm" class="flex flex-col gap-4">
         <mat-form-field appearance="outline">
-          <mat-label>New Player Name</mat-label>
+          <mat-label>New Username (Format: j.smith)</mat-label>
           <mat-icon
             matPrefix
             aria-hidden="true"
           >person</mat-icon>
           <input matInput formControlName="newPlayerName" />
         </mat-form-field>
+
+        <div
+          *ngIf="
+            newPersonForm.get('newPlayerName')?.invalid &&
+            newPersonForm.get('newPlayerName')?.touched
+          "
+          class="md-typescale-body-small md-sys-color-error mt-1"
+        >
+          {{ newPersonFieldError('newPlayerName') }}
+        </div>
 
         <div class="flex gap-2 justify-center items-center">
           <button

@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { nameFormatValidator } from './validators/name-format.validator';
+import { mapFieldError } from './utils/error-presenter';
 import { Player } from '../../models/player.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -65,7 +67,7 @@ export class JoinComponent {
   constructor() {
     this.joinForm = this.fb.group({
       gameId: ['', Validators.required],
-      playerName: ['', Validators.required],
+      playerName: ['', [Validators.required, nameFormatValidator()]],
     });
 
     this.pinForm = this.fb.group({
@@ -73,7 +75,7 @@ export class JoinComponent {
     });
 
     this.newPersonForm = this.fb.group({
-      newPlayerName: ['', Validators.required],
+      newPlayerName: ['', [Validators.required, nameFormatValidator()]],
     });
 
     // Check if user has a valid JWT and populate name
@@ -306,5 +308,15 @@ export class JoinComponent {
 
   onBackToHome(): void {
     this.router.navigate(['/']);
+  }
+
+  fieldError(controlName: string): string | null {
+    const control = this.joinForm.get(controlName);
+    return control ? mapFieldError(control) : null;
+  }
+
+  newPersonFieldError(controlName: string): string | null {
+    const control = this.newPersonForm.get(controlName);
+    return control ? mapFieldError(control) : null;
   }
 }

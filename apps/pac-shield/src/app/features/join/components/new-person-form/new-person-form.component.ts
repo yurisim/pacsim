@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { NewPersonFormValue, NameCheckState } from '../../models/join.models';
 import { mapFieldError } from '../../utils/error-presenter';
 import { pinValidator } from '../../validators/pin.validator';
+import { nameFormatValidator } from '../../validators/name-format.validator';
 import { InputOtpComponent } from '../../../../shared/components/input-otp/input-otp.component';
 
 type NewPersonForm = FormGroup<{
@@ -56,7 +57,7 @@ export class NewPersonFormComponent implements OnChanges {
   @Output() createNew = new EventEmitter<{ name: string; pin: string }>();
 
   form: NewPersonForm = this.fb.group({
-    newPlayerName: this.fb.control('', { validators: [Validators.required, Validators.minLength(2)] }),
+    newPlayerName: this.fb.control('', { validators: [Validators.required, nameFormatValidator()] }),
     pin: this.fb.control('', { validators: [pinValidator(4)] }),
   });
 

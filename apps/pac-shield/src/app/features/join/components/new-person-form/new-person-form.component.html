@@ -23,14 +23,14 @@
   </div>
 
   <mat-form-field appearance="outline" class="w-full">
-    <mat-label>New Player Name</mat-label>
+    <mat-label>Username (Format: j.smith)</mat-label>
     <mat-icon matPrefix aria-hidden="true">person</mat-icon>
     <input
       matInput
       formControlName="newPlayerName"
       (keydown.enter)="onCheck()"
       data-testid="new-player-name-input"
-      aria-label="New player name"
+      aria-label="New username"
     />
   </mat-form-field>
 
