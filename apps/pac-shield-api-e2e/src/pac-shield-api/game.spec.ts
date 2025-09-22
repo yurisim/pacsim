@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 describe('Game Controller E2E', () => {
   describe('POST /api/game/create', () => {
@@ -42,8 +42,9 @@ describe('Game Controller E2E', () => {
         playerName: 'Test Player',
       });
     } catch (error) {
-      expect(error.response.status).toBe(404);
-      expect(error.response.data.message).toBe('Invalid room code');
+      const axiosError = error as AxiosError;
+      expect(axiosError.response?.status).toBe(404);
+      expect((axiosError.response?.data as any)?.message).toBe('Invalid room code');
     }
   });
   });

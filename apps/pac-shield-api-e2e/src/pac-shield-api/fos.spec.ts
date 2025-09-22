@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 
 describe('FOS Controller E2E', () => {
   let gameId: number;
@@ -144,8 +144,9 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.message).toBe('FOS is already active');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
+        expect((axiosError.response?.data as any)?.message).toBe('FOS is already active');
       }
     });
 
@@ -159,8 +160,9 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(403);
-        expect(error.response.data.message).toBe('Access denied to this team');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(403);
+        expect((axiosError.response?.data as any)?.message).toBe('Access denied to this team');
       }
     });
 
@@ -174,7 +176,8 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(400);
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
       }
 
       // Test missing turnActivated
@@ -184,7 +187,8 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(400);
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
       }
     });
   });
@@ -231,8 +235,9 @@ describe('FOS Controller E2E', () => {
         await api.patch(`/api/fos/00000000-0000-0000-0000-000000000000/deactivate`);
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(404);
-        expect(error.response.data.message).toBe('FOS not found');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(404);
+        expect((axiosError.response?.data as any)?.message).toBe('FOS not found');
       }
     });
 
@@ -254,8 +259,9 @@ describe('FOS Controller E2E', () => {
         await api.patch(`/api/fos/${activeFosId}/deactivate`);
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.message).toBe('FOS is already inactive');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
+        expect((axiosError.response?.data as any)?.message).toBe('FOS is already inactive');
       }
     });
   });
@@ -379,7 +385,8 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(400);
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
       }
     });
 
@@ -400,8 +407,9 @@ describe('FOS Controller E2E', () => {
         });
         fail('Expected request to fail');
       } catch (error) {
-        expect(error.response.status).toBe(403);
-        expect(error.response.data.message).toBe('Access denied to this team');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(403);
+        expect((axiosError.response?.data as any)?.message).toBe('Access denied to this team');
       }
     });
 
