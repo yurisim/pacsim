@@ -27,7 +27,7 @@ import { WebSocketService } from '../../shared/services/websocket.service';
 import { PlayerRoleService } from '../../shared/services/player-role.service';
 import { CountryAccessToggleComponent } from './country-access-toggle/country-access-toggle.component';
 import { CountryOverlayService } from './services/country-overlay.service';
-import { OverflightNicDialogComponent } from './overflight-nic-dialog/overflight-nic-dialog.component';
+import { CountryAccessDialogComponent, CountryAccessDialogData } from './country-access-dialog/country-access-dialog.component';
 import { CountryAccessHttpService } from '../../shared/services/country-access-http.service';
 import { AccessStatus, Country } from '../../generated/enums';
 
@@ -1229,43 +1229,74 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Optimistic update
-    const current = this.countryOverlayService.getCountryAccess();
-    const prev = current[country];
+    // Determine dialog action based on access level
+    let action: 'grant' | 'revoke';
+    if (level === 'FULL_ACCESS') {
+      action = 'grant';
+    } else if (level === 'NO_ACCESS') {
+      action = 'revoke';
+    } else {
+      console.error('Unexpected access level in onSelectCountryAccess:', level);
+      return;
+    }
 
-    this.countryOverlayService.updateCountryAccess(country, level);
+    // Open confirmation dialog
+    const dialogData: CountryAccessDialogData = {
+      action,
+      country,
+      accessLevel: level
+    };
 
-    // Use latest Country Access API (CountryAccessController → /games/:gameId/country-access/bulk)
-    console.log(`Updating country access: ${country} to ${level}`);
-    this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
-      accessLevel: level,
-      countries: [country]
-    }).subscribe({
-      next: (response) => {
-        console.log('Country access update successful:', response);
-        // Success; websocket will sync other clients
-      },
-      error: (err) => {
-        console.error('Failed to update country access:', err);
-        console.error('Error details:', err.error || err.message || err);
+    const dialogRef = this.dialog.open(CountryAccessDialogComponent, {
+      width: '500px',
+      disableClose: true,
+      data: dialogData
+    });
 
-        // Revert optimistic update on error
-        if (prev) {
-          console.log(`Reverting ${country} back to ${prev} due to error`);
-          this.countryOverlayService.updateCountryAccess(country, prev);
-        }
-
-        // TODO: Add user-visible error notification here
-        // this.snackBar.open('Failed to update country access. Please try again.', 'OK', { duration: 5000 });
+    dialogRef.afterClosed().subscribe((confirmed?: boolean) => {
+      if (!confirmed) {
+        // Cancelled; do nothing
+        return;
       }
+
+      // Optimistic update
+      const current = this.countryOverlayService.getCountryAccess();
+      const prev = current[country];
+
+      this.countryOverlayService.updateCountryAccess(country, level);
+
+      // Use latest Country Access API (CountryAccessController → /games/:gameId/country-access/bulk)
+      console.log(`Updating country access: ${country} to ${level}`);
+      this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
+        accessLevel: level,
+        countries: [country]
+      }).subscribe({
+        next: (response) => {
+          console.log('Country access update successful:', response);
+          // Success; websocket will sync other clients
+        },
+        error: (err) => {
+          console.error('Failed to update country access:', err);
+          console.error('Error details:', err.error || err.message || err);
+
+          // Revert optimistic update on error
+          if (prev) {
+            console.log(`Reverting ${country} back to ${prev} due to error`);
+            this.countryOverlayService.updateCountryAccess(country, prev);
+          }
+
+          // TODO: Add user-visible error notification here
+          // this.snackBar.open('Failed to update country access. Please try again.', 'OK', { duration: 5000 });
+        }
+      });
     });
   }
 
   /**
    * Handle the "Overflight Only" action:
-   * - Prompt for NIC Number
+   * - Show confirmation dialog
    * - Optimistically set to OVERFLIGHT_ONLY
-   * - Call bulk access update API with notes containing the NIC number (latest API supports notes)
+   * - Call bulk access update API
    * - Revert on error
    */
   onOverflightOnly(): void {
@@ -1281,15 +1312,22 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Open NIC number dialog
-    const dialogRef = this.dialog.open(OverflightNicDialogComponent, {
-      width: '360px',
-      disableClose: true
+    // Open confirmation dialog
+    const dialogData: CountryAccessDialogData = {
+      action: 'overflight',
+      country,
+      accessLevel: 'OVERFLIGHT_ONLY'
+    };
+
+    const dialogRef = this.dialog.open(CountryAccessDialogComponent, {
+      width: '500px',
+      disableClose: true,
+      data: dialogData
     });
 
-    dialogRef.afterClosed().subscribe((nicNumber?: number | null) => {
-      if (nicNumber == null || !Number.isFinite(nicNumber)) {
-        // Cancelled or invalid; do nothing
+    dialogRef.afterClosed().subscribe((confirmed?: boolean) => {
+      if (!confirmed) {
+        // Cancelled; do nothing
         return;
       }
 
@@ -1300,14 +1338,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       const prev = current[country];
       this.countryOverlayService.updateCountryAccess(country, level);
 
-      console.log(`Updating country access (Overflight Only): ${country} to ${level} with NIC ${nicNumber}`);
+      console.log(`Updating country access (Overflight Only): ${country} to ${level}`);
 
       // Latest API: PUT /games/:gameId/country-access/bulk
-      // Payload supports optional "notes"; backend has no explicit NIC field, so we include NIC in notes.
       this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
         accessLevel: level,
-        countries: [country],
-        notes: `NIC:${nicNumber}`
+        countries: [country]
       }).subscribe({
         next: (response) => {
           console.log('Overflight Only update successful:', response);
