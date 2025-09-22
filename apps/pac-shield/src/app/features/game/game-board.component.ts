@@ -240,9 +240,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // THIS AREA IS VERY BRITTLE, TRY NOT TO modify or move unless you are sure that you can move it thoroughly
 
-    // WHY THESE SPECIFIC IDs: These are the exact source/layer IDs created in overlayHexGrid()
+
+    // WHY THESE SPECIFIC IDs: These are the exact source/layer IDs created in overlayHexGrid() and country overlay
     const preservedSources = ['hex-grid'];
-    const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected'];
+    const preservedLayers = ['hex-grid-fill', 'hex-grid-outline', 'hex-labels', 'hex-grid-selected', 'country-access-overlay'];
 
     // WHY FILTER: Find actual layer objects from previous style, ignore missing ones
     const preservedLayerObjects = preservedLayers.map(layerId =>
@@ -456,6 +457,15 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.updateMarkerColors();  // WHY: HTML markers need new theme colors (no recreation needed)
       this.map.resize();          // WHY: Container layout may have changed
+
+      // Restore country overlay if it was active before theme change
+      if (this.countryOverlayService.isOverlayVisible()) {
+        requestAnimationFrame(() => {
+          this.countryOverlayService.toggleOverlay(); // Turn off
+          this.countryOverlayService.toggleOverlay(); // Turn back on to restore
+        });
+      }
+
       colorsUpdated = true;       // Mark colors as updated
     });
 

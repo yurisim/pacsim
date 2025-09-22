@@ -254,7 +254,7 @@ export class CountryOverlayService {
   private hideOverlay(): void {
     if (!this.map) return;
 
-    // Remove layer
+    // Remove overlay layer
     if (this.map.getLayer(this.LAYER_ID)) {
       this.map.removeLayer(this.LAYER_ID);
     }
@@ -266,6 +266,7 @@ export class CountryOverlayService {
     // For vector tile layers, we need to recreate the layer with updated paint expressions
     this.showOverlay();
   }
+
 
   // Readonly accessor for visibility (avoid exposing Signal directly)
   isOverlayVisible(): boolean {
