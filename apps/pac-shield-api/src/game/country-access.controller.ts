@@ -10,6 +10,22 @@ interface UpdateCountryAccessBody {
 }
 
 @ApiTags('Country Access')
+/**
+ * REST API controller for managing per-country political access within a game.
+ *
+ * Responsibilities:
+ * - Retrieve the current access snapshot (Full Access, Overflight Only, No Access)
+ * - Update dice rolls for a single country or in bulk, computing resulting access levels
+ * - Perform bulk access-level updates across one or more countries
+ * - Validate inputs and return appropriate HTTP status codes
+ *
+ * Notes:
+ * - This controller is backed by the database and supersedes legacy in-memory endpoints
+ *   previously defined in GameController.
+ * - Swagger decorators provide request/response documentation for OpenAPI.
+ *
+ * @class CountryAccessController
+ */
 @Controller('games')
 export class CountryAccessController {
   constructor(private readonly gameService: GameService) {}
