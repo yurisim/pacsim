@@ -2,6 +2,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ErrorAlertComponent } from './error-alert.component';
 
+/**
+ * Test suite for ErrorAlertComponent visuals, behavior, and accessibility.
+ *
+ * This test suite covers:
+ * - Rendering of title and message (string and array forms)
+ * - Dismiss action behavior when dismissible
+ * - Accessibility role and aria-live attributes by variant
+ *
+ * @group Shared Component Tests
+ */
 describe('ErrorAlertComponent', () => {
   let fixture: ComponentFixture<ErrorAlertComponent>;
   let component: ErrorAlertComponent;
@@ -21,6 +31,10 @@ describe('ErrorAlertComponent', () => {
     }).compileComponents();
   });
 
+  /**
+   * Verifies that a string message and optional title render correctly.
+   * @test
+   */
   it('renders string message and optional title', () => {
     create({ variant: 'info', title: 'Heads up', message: 'Informational message' });
     const host = fixture.nativeElement as HTMLElement;
@@ -29,6 +43,10 @@ describe('ErrorAlertComponent', () => {
     expect(host.textContent).toContain('Informational message');
   });
 
+  /**
+   * Verifies that an array of messages renders as individual list items.
+   * @test
+   */
   it('renders array message as list items', () => {
     create({ variant: 'warning', message: ['Line 1', 'Line 2'] });
 
@@ -38,6 +56,10 @@ describe('ErrorAlertComponent', () => {
     expect(items[1].nativeElement.textContent.trim()).toBe('Line 2');
   });
 
+  /**
+   * Ensures a dismissible alert emits the dismissed event when close is clicked.
+   * @test
+   */
   it('emits dismissed when close button clicked if dismissible', () => {
     create({ variant: 'error', message: 'Error occurred', dismissible: true });
 
@@ -52,6 +74,9 @@ describe('ErrorAlertComponent', () => {
     expect(emitted).toBe(true);
   });
 
+  /**
+   * Accessibility behavior matrix for role and aria-live attributes by variant.
+   */
   describe('a11y role and aria-live defaults by variant', () => {
     it.each([
       ['error', 'alert', 'assertive'],
