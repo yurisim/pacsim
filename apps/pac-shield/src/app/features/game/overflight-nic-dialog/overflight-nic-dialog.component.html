@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>Set Overflight Only</h2>
+
+<div mat-dialog-content class="flex flex-col gap-3">
+  <p>Set country access to "Overflight Only"?</p>
+  <p class="text-sm text-gray-600">This will allow aircraft to fly over the country but not land or operate from bases within it.</p>
+</div>
+
+<div mat-dialog-actions class="flex justify-end gap-2">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-button="filled" type="button" (click)="submit()">
+    Set Overflight Only
+  </button>
+</div>
