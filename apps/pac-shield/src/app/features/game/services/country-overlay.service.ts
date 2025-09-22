@@ -240,7 +240,7 @@ export class CountryOverlayService {
           ...colorMatchConditions,
           '#999999' // Default gray
         ] as any,
-        'fill-opacity': 0.4,
+        'fill-opacity': 1.0, // Solid colors for clear political access indication
         'fill-outline-color': [
           'match',
           ['get', 'ADM0_A3'],
