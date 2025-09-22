@@ -31,11 +31,50 @@ import {
   templateUrl: './location-markers.component.html',
   styleUrls: ['./location-markers.component.scss']
 })
+/**
+ * Renders and manages MOB and FOS markers on the MapLibre map.
+ *
+ * Responsibilities:
+ * - Create/remove HTML markers for MOB and FOS static locations
+ * - React to theme changes for color updates without re-creating markers
+ * - React to FOS activation changes from FosStateService/WebSocket
+ * - Provide public APIs for activation toggles and debugging info
+ *
+ * Inputs control visibility and styling of markers. Outputs are not required
+ * because this component operates on the provided Map instance directly.
+ *
+ * @class
+ */
 export class LocationMarkersComponent implements OnDestroy, OnChanges {
+  /**
+   * MapLibre GL map instance used to anchor and render HTML markers.
+   * @public
+   */
   @Input() map!: Map;
+
+  /**
+   * Toggle to render or hide MOB markers.
+   * @public
+   */
   @Input() showMobMarkers = true;
+
+  /**
+   * Toggle to render or hide FOS markers.
+   * @public
+   */
   @Input() showFosMarkers = true;
+
+  /**
+   * Optional style configuration for marker icon/label sizes and spacing.
+   * @public
+   */
   @Input() markerConfig: Partial<MarkerStyleConfig> = {};
+
+  /**
+   * DEPRECATED: Local FOS activation tracking.
+   * Prefer FosStateService signals for activation and call updateFosActivationFromService().
+   * @public
+   */
   @Input() activeFosIds: Set<string> = new Set(); // Track which FOSs are active (deprecated, use fosStateService)
 
   private themeService = inject(ThemeService);
@@ -489,6 +528,11 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * Public method to refresh all markers
    * Can be called externally if needed
    */
+  /**
+   * Rebuilds all markers from scratch using current inputs and service state.
+   * Safe to call when style/theme changes require full re-render.
+   * @returns void
+   */
   public refreshMarkers(): void {
     this.cleanupMarkers();
     this.initializeMarkers();
@@ -498,6 +542,12 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
   /**
    * Public method to get marker counts
    * Useful for debugging or status displays
+   */
+  /**
+   * Returns the count of markers currently rendered by type.
+   * @returns Object with MOB and FOS counts
+   * @example
+   * const { mob, fos } = locationMarkers.getMarkerCounts();
    */
   public getMarkerCounts(): { mob: number; fos: number } {
     return {
@@ -510,6 +560,12 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * Public method to activate a specific FOS
    * @param fosId The ID of the FOS to activate
    */
+  /**
+   * Activates a Forward Operating Site (FOS) marker by ID.
+   * Applies full opacity and updates color based on theme and FOS color.
+   * @param fosId The FOS identifier (e.g., "fos-01")
+   * @returns void
+   */
   public activateFos(fosId: string): void {
     if (!this.activeFosIds.has(fosId)) {
       this.activeFosIds.add(fosId);
@@ -521,6 +577,12 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * Public method to deactivate a specific FOS
    * @param fosId The ID of the FOS to deactivate
    */
+  /**
+   * Deactivates a Forward Operating Site (FOS) marker by ID.
+   * Applies reduced opacity and updates color for deactivated state.
+   * @param fosId The FOS identifier (e.g., "fos-01")
+   * @returns void
+   */
   public deactivateFos(fosId: string): void {
     if (this.activeFosIds.has(fosId)) {
       this.activeFosIds.delete(fosId);
@@ -531,6 +593,11 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
   /**
    * Public method to toggle FOS activation status
    * @param fosId The ID of the FOS to toggle
+   */
+  /**
+   * Toggles FOS activation for a given ID.
+   * @param fosId The FOS identifier to toggle (e.g., "fos-01")
+   * @returns void
    */
   public toggleFosActivation(fosId: string): void {
     if (this.activeFosIds.has(fosId)) {
@@ -566,6 +633,10 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * Public method to get current activation status of all FOSs
    * @returns Array of FOS IDs and their activation status
    */
+  /**
+   * Gets the activation status of all FOS markers currently present on the map.
+   * @returns Array of { id, name, isActive } for each FOS marker
+   */
   public getFosActivationStatus(): Array<{ id: string; name: string; isActive: boolean }> {
     return this.fosMarkers.map(markerRef => ({
       id: markerRef.fosData.id,
@@ -578,12 +649,21 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
    * Public method to activate multiple FOSs at once
    * @param fosIds Array of FOS IDs to activate
    */
+  /**
+   * Activates multiple FOS markers in a single operation.
+   * @param fosIds Array of FOS identifiers to activate (e.g., ["fos-01", "fos-02"])
+   * @returns void
+   */
   public activateMultipleFos(fosIds: string[]): void {
     fosIds.forEach(id => this.activateFos(id));
   }
 
   /**
    * Public method to deactivate all FOSs
+   */
+  /**
+   * Deactivates all FOS markers currently rendered and updates their visual state.
+   * @returns void
    */
   public deactivateAllFos(): void {
     this.activeFosIds.clear();

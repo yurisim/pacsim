@@ -63,10 +63,33 @@ import { AccessStatus, Country } from '../../generated/enums';
  * - Integration with game state management for asset display
  */
 export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
+  /**
+   * Reference to the div container that hosts the MapLibre GL map instance.
+   * Marked static so it's available during ngAfterViewInit.
+   */
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
+
+  /**
+   * Child component responsible for creating and managing the H3 hex grid overlay.
+   * Provides events for hex selection and utilities for color updates on theme change.
+   */
   @ViewChild(HexGridComponent) hexGrid!: HexGridComponent;
+
+  /**
+   * Child component that renders HTML-based markers for MOBs and FOS locations.
+   * Handles its own lifecycle and theme reactions.
+   */
   @ViewChild(LocationMarkersComponent) locationMarkers!: LocationMarkersComponent;
+
+  /**
+   * Child component that displays aggregated game statistics (scoreboard, logs, etc).
+   * Accessed for coordination with the main map when necessary.
+   */
   @ViewChild(GameStatsComponent) gameStatsComponent!: GameStatsComponent;
+
+  /**
+   * Material menu trigger used to open/close the GM country-access context menu at cursor position.
+   */
   @ViewChild('countryMenuTrigger') countryMenuTrigger!: MatMenuTrigger;
 
   private store = inject(Store<AppState>);
@@ -81,8 +104,21 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private countryOverlayService = inject(CountryOverlayService);
   private countryAccessHttp = inject(CountryAccessHttpService);
   private dialog = inject(MatDialog);
-  map!: Map;  // Made public for template access
+  /**
+   * MapLibre GL map instance once initialized.
+   * Exposed for template-bound components that require a direct Map reference.
+   */
+  map!: Map;
+
+  /**
+   * Indicates the base map style and resources have completed initial load,
+   * allowing safe style switching and overlay operations.
+   */
   private mapReady = false;
+
+  /**
+   * Guards against duplicate hex grid creation across style reloads.
+   */
   private hexGridCreated = false;
 
   // Keep references to event handlers so we can reliably remove/rebind on style changes
@@ -96,6 +132,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private docKeydownHandler?: (e: KeyboardEvent) => void;
   private preventNativeContextMenuHandler?: (e: Event) => void;
 
+  /**
+   * Creates the component and wires reactive theme change handling.
+   *
+   * Uses Angular's effect() to react to ThemeService changes and call a safe
+   * map style switch routine that preserves custom layers/sources.
+   * All services are acquired via Angular's inject() API rather than constructor params.
+   */
   constructor() {
     // Setup theme change listener in injection context
     effect(() => {
@@ -104,19 +147,56 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Stream of the current game state as stored in NgRx.
+   */
   game$ = this.store.select(selectGame);
+
+  /**
+   * Stream indicating whether the game state is currently being loaded.
+   */
   isLoading$ = this.store.select(selectGameLoading);
+
+  /**
+   * Stream of any error encountered while loading or mutating the game state.
+   */
   error$ = this.store.select(selectGameError);
 
   // Computed properties from game data
+
+  /**
+   * Stream of the current game ID or null when not available.
+   */
   gameId$ = this.game$.pipe(map(game => game?.id || null));
+
+  /**
+   * Stream of the current turn number (defaults to 1 when undefined).
+   */
   currentTurn$ = this.game$.pipe(map(game => game?.turn || 1));
+
+  /**
+   * Stream of available teams for the game (empty array when undefined).
+   */
   availableTeams$ = this.game$.pipe(map(game => game?.teams || []));
 
+  /**
+   * Human-readable visual coordinate of the last selected hex (e.g., "505", "506A").
+   * Null when no hex is selected.
+   */
   selectedVisualHexCoord: string | null = null;
+  /**
+   * H3 internal index of the last selected hex (e.g., "81623ffffffffff").
+   * Null when no hex is selected.
+   */
   selectedH3Index: string | null = null;
 
   // Right-click context menu state for GM-only country access updates
+  /**
+   * State container for the GM-only country-access context menu.
+   * - show: whether the menu is currently visible
+   * - x/y: pixel coordinates on the map canvas for menu placement
+   * - country: the ISO3 enum value of the selected country or null when none
+   */
   contextMenu: { show: boolean; x: number; y: number; country: Country | null } = {
     show: false,
     x: 0,
@@ -124,14 +204,34 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     country: null
   };
 
+  /**
+   * Cached numeric game identifier extracted from the route.
+   * Used for API calls where an immediate primitive is required.
+   */
   private currentGameId: number | null = null;
 
   // FOS activation tracking (deprecated - now handled by FosStateService)
+  /**
+   * Set of currently active Forward Operating Sites (FOS) identifiers.
+   * Presence indicates the site is active and should be rendered as such.
+   */
   activeFosIds = new Set<string>();
+  /**
+   * Mapping of FOS ID to assigned MOB ID (e.g., 'kadena').
+   * Used for ownership display and logging.
+   */
   fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID (e.g., 'kadena')
 
   // Current player information from auth service and game state
+  /**
+   * Snapshot of the authenticated player from AuthService.
+   * Used for ownership/permission checks where an immediate value is needed.
+   */
   currentPlayer = this.authService.getPlayer();
+ /**
+  * Stream of the current user's team type (e.g., 'GM', 'MOB') resolved from game and auth state.
+  * Emits null when the user is not associated with a team.
+  */
   currentUserTeam$ = this.game$.pipe(
     map(game => {
       const authPlayer = this.authService.getPlayer();
@@ -147,31 +247,81 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     })
   );
   // Use centralized role service instead of local derivation
+ /**
+  * Stream of the current user's role, provided by PlayerRoleService.
+  */
   currentUserRole$ = this.playerRoleService.currentRole$;
 
   // Legacy properties for compatibility
+ /**
+  * Demo-only default: MOB controlled by the current player.
+  * TODO: Replace with real state once MOB ownership is derived from the backend.
+  */
   currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
 
   // Use centralized role service for derived properties
+ /**
+  * Emits true when the authenticated user has the Game Master role.
+  */
   isGameMaster$ = this.playerRoleService.isGameMaster$;
+ /**
+  * Emits true when the authenticated user has the MOB Commander role.
+  */
   isMobCommander$ = this.playerRoleService.isMobCommander$;
 
   // For backward compatibility - will be replaced with observables in template
+ /**
+  * Legacy imperative flag for Game Master checks.
+  * Prefer using isGameMaster$; this property will be removed once templates are fully reactive.
+  */
   isGameMaster = false;
 
   // Location panel deep-link control
+ /**
+  * Controls whether the location panel starts collapsed.
+  */
   panelCollapsed = true;
+ /**
+  * Which subview of the location panel should be opened initially (when deep-linked).
+  * - 'none' leaves the default view
+  * - 'rfi' jumps to the Requests For Information view
+  * - 'tasks' jumps to the FOS tasks view
+  */
   initialSubview: 'none' | 'rfi' | 'tasks' = 'none';
 
   // Game statistics from service (reactive signals)
+ /**
+  * Reactive signal of aggregated game statistics (turn/day/phase, points, etc.).
+  */
   gameStats = this.gameStatsService.gameStats;
+ /**
+  * Reactive signal of current ATO (Air Tasking Order) lines visible to the user.
+  */
   atoLines = this.gameStatsService.atoLines;
+ /**
+  * Reactive signal of assets (aircraft, personnel, equipment) with their current state.
+  */
   gameAssets = this.gameStatsService.gameAssets;
+ /**
+  * Reactive signal of recent, formatted game log entries for display.
+  */
   gameLog = this.gameStatsService.gameLog;
+ /**
+  * Computed total score (mission, demoralization, resource points) for convenient binding.
+  */
   totalScore = this.gameStatsService.totalScore;
+ /**
+  * Human-readable label for the current turn (e.g., "Day 2 • Turn 3").
+  */
   currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   // Hex grid configuration
+ /**
+  * Configuration for the H3-based hex grid overlay used on the Game Board.
+  * - centerLat/centerLng: Geographic anchor of the grid (Hainan Island)
+  * - h3Resolution: H3 resolution controlling hex size
+  * - kRingSize: Radius (in hexes) to render around the center
+  */
   hexGridConfig = {
     centerLat: 18.2,  // Hainan Island
     centerLng: 109.5,
@@ -1119,6 +1269,17 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ========== Country Access Context Menu (GM-only) ==========
 
+  /**
+   * Attaches a MapLibre layer-scoped contextmenu handler that is enabled only for Game Masters.
+   * Also wires global click/keydown listeners to close the menu and prevents the native
+   * context menu while our custom menu is visible.
+   *
+   * Preconditions:
+   * - Map instance must be initialized
+   * - Country overlay service must provide a valid layer ID
+   *
+   * @returns void
+   */
   private attachCountryContextMenu(): void {
     if (!this.map) return;
 
@@ -1191,10 +1352,16 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private detachCountryContextMenu(): void {
-    if (!this.map) return;
+ /**
+  * Detaches the contextmenu handler and related global event listeners.
+  * Safe to call multiple times; missing handlers are ignored.
+  *
+  * @returns void
+  */
+ private detachCountryContextMenu(): void {
+   if (!this.map) return;
 
-    const layerId = this.countryOverlayService.getLayerId();
+   const layerId = this.countryOverlayService.getLayerId();
 
     if (this.countryContextMenuHandler) {
       this.map.off('contextmenu', layerId as any, this.countryContextMenuHandler as any);
@@ -1217,22 +1384,39 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private hideCountryContextMenu(): void {
-    this.contextMenu.show = false;
-    try {
-      this.countryMenuTrigger?.closeMenu();
-    } catch (err) {
-      console.warn('Failed to close country menu:', err);
-    }
-  }
+ /**
+  * Hides the context menu and attempts to close the Angular Material menu trigger.
+  * Errors are swallowed and logged to avoid impacting the user experience.
+  *
+  * @returns void
+  */
+ private hideCountryContextMenu(): void {
+   this.contextMenu.show = false;
+   try {
+     this.countryMenuTrigger?.closeMenu();
+   } catch (err) {
+     console.warn('Failed to close country menu:', err);
+   }
+ }
 
-  onSelectCountryAccess(level: AccessStatus): void {
-    const country = this.contextMenu.country;
-    // Always hide menu on selection
-    this.hideCountryContextMenu();
-    if (!country) return;
+ /**
+  * Handles selection of a new country access level from the GM context menu.
+  * Performs an optimistic update to the overlay, calls the bulk update API,
+  * and reverts on error.
+  *
+  * @param level The desired access level to apply to the selected country
+  * @returns void
+  * @example
+  * // User selects FULL_ACCESS from the context menu
+  * onSelectCountryAccess('FULL_ACCESS');
+  */
+ onSelectCountryAccess(level: AccessStatus): void {
+   const country = this.contextMenu.country;
+   // Always hide menu on selection
+   this.hideCountryContextMenu();
+   if (!country) return;
 
-    const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
+   const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
     const gameId = this.currentGameId ?? (Number.isFinite(parsedId) ? parsedId : null);
     if (!Number.isFinite(gameId)) {
       console.error('No valid gameId found for country access update');

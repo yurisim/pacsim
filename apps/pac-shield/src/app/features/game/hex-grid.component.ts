@@ -48,13 +48,46 @@ interface HexFeatureProperties {
   template: ''
 })
 export class HexGridComponent implements OnDestroy {
+  /**
+   * MapLibre GL map instance on which the hex grid will be rendered.
+   * @public
+   */
   @Input() map!: Map;
+
+  /**
+   * Latitude of the grid center (defaults to Hainan Island).
+   * @public
+   */
   @Input() centerLat = 18.2; // Hainan Island default
+
+  /**
+   * Longitude of the grid center (defaults to Hainan Island).
+   * @public
+   */
   @Input() centerLng = 109.5; // Hainan Island default
+
+  /**
+   * H3 resolution controlling the hex size (lower = larger hex).
+   * @public
+   */
   @Input() h3Resolution = 1;
+
+  /**
+   * Radius (in hexes) from the center to render (k-ring size).
+   * @public
+   */
   @Input() kRingSize = 7;
 
+  /**
+   * Emits when a hex is selected via click, providing IDs and center coordinates.
+   * @event
+   */
   @Output() hexSelected = new EventEmitter<HexSelectionEvent>();
+
+  /**
+   * Emits when a hex is hovered (or null when hover ends).
+   * @event
+   */
   @Output() hexHovered = new EventEmitter<HexSelectionEvent | null>();
 
   private themeService = inject(ThemeService);
@@ -70,6 +103,10 @@ export class HexGridComponent implements OnDestroy {
   private hexMouseLeaveHandler?: () => void;
 
   // Layer configuration constants
+  /**
+   * MapLibre layer identifiers used by the hex grid overlay.
+   * @private
+   */
   private readonly LAYER_IDS = {
     fill: 'hex-grid-fill',
     outline: 'hex-grid-outline',
@@ -77,6 +114,10 @@ export class HexGridComponent implements OnDestroy {
     selected: 'hex-grid-selected'
   };
 
+  /**
+   * MapLibre GeoJSON source identifier for the hex grid.
+   * @private
+   */
   private readonly SOURCE_ID = 'hex-grid';
 
   /**
