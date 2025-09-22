@@ -199,7 +199,7 @@ describe('FOS Controller E2E', () => {
     beforeAll(async () => {
       // Find an active FOS to use for testing
       const fosRes = await axios.get(`/api/fos/game/${gameId}`);
-      const activeFos = fosRes.data.find(f => f.isActive);
+      const activeFos = fosRes.data.find((f: any) => f.isActive);
 
       if (activeFos) {
         activeFosId = activeFos.id;
@@ -291,14 +291,14 @@ describe('FOS Controller E2E', () => {
 
       // 1. Verify initial state is inactive
       const initialRes = await axios.get(`/api/fos/game/${gameId}`);
-      const initialFos = initialRes.data.find(f => f.id === workflowFosId);
+      const initialFos = initialRes.data.find((f: any) => f.id === workflowFosId);
       expect(initialFos).toBeDefined();
       expect(initialFos.isActive).toBe(false);
       expect(initialFos.teamId).toBeNull();
 
       // 2. Activate the FOS using fosDisplayNumber
       const currentTurn = 5;
-      const fosToActivate = initialRes.data.find(f => f.id === workflowFosId);
+      const fosToActivate = initialRes.data.find((f: any) => f.id === workflowFosId);
       const activateRes = await api.post(`/api/fos/${fosToActivate.fosDisplayNumber}/activate`, {
         teamId,
         turnActivated: currentTurn,
@@ -309,7 +309,7 @@ describe('FOS Controller E2E', () => {
 
       // 3. Verify activation persisted
       const activeRes = await axios.get(`/api/fos/game/${gameId}`);
-      const activeFos = activeRes.data.find(f => f.id === workflowFosId);
+      const activeFos = activeRes.data.find((f: any) => f.id === workflowFosId);
       expect(activeFos.isActive).toBe(true);
       expect(activeFos.teamId).toBe(teamId);
 
@@ -321,7 +321,7 @@ describe('FOS Controller E2E', () => {
 
       // 5. Verify deactivation persisted
       const finalRes = await axios.get(`/api/fos/game/${gameId}`);
-      const finalFos = finalRes.data.find(f => f.id === workflowFosId);
+      const finalFos = finalRes.data.find((f: any) => f.id === workflowFosId);
       expect(finalFos.isActive).toBe(false);
       expect(finalFos.teamId).toBeNull();
     });
@@ -341,7 +341,7 @@ describe('FOS Controller E2E', () => {
 
       // Activate, deactivate, then reactivate
       const fosRes = await axios.get(`/api/fos/game/${gameId}`);
-      const fosToUse = fosRes.data.find(f => f.id === workflowFosId);
+      const fosToUse = fosRes.data.find((f: any) => f.id === workflowFosId);
       await api.post(`/api/fos/${fosToUse.fosDisplayNumber}/activate`, {
         teamId,
         turnActivated: 1,
@@ -398,7 +398,7 @@ describe('FOS Controller E2E', () => {
 
       // Get fosDisplayNumber from the FOS entity
       const fosRes = await axios.get(`/api/fos/game/${gameId}`);
-      const edgeCaseFos = fosRes.data.find(f => f.id === edgeCaseFosId);
+      const edgeCaseFos = fosRes.data.find((f: any) => f.id === edgeCaseFosId);
 
       try {
         await api.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
@@ -428,7 +428,7 @@ describe('FOS Controller E2E', () => {
 
       // Get fosDisplayNumber from the FOS entity
       const fosRes = await axios.get(`/api/fos/game/${gameId}`);
-      const edgeCaseFos = fosRes.data.find(f => f.id === edgeCaseFosId);
+      const edgeCaseFos = fosRes.data.find((f: any) => f.id === edgeCaseFosId);
 
       // Test with turn 0
       const zeroTurnRes = await api.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
@@ -462,7 +462,7 @@ describe('FOS Controller E2E', () => {
 
       // Get fosDisplayNumber from the FOS entity
       const fosRes = await axios.get(`/api/fos/game/${gameId}`);
-      const edgeCaseFos = fosRes.data.find(f => f.id === edgeCaseFosId);
+      const edgeCaseFos = fosRes.data.find((f: any) => f.id === edgeCaseFosId);
 
       // Activate and verify persistence
       await api.post(`/api/fos/${edgeCaseFos.fosDisplayNumber}/activate`, {
@@ -472,7 +472,7 @@ describe('FOS Controller E2E', () => {
 
       // Check that the state was persisted by making a new request
       const persistRes = await axios.get(`/api/fos/game/${gameId}`);
-      const persistedFos = persistRes.data.find(f => f.id === edgeCaseFosId);
+      const persistedFos = persistRes.data.find((f: any) => f.id === edgeCaseFosId);
 
       expect(persistedFos.isActive).toBe(true);
       expect(persistedFos.teamId).toBe(teamId);
