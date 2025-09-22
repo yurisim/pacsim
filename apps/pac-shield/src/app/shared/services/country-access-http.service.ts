@@ -50,19 +50,46 @@ export interface BulkAccessUpdateResponse {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * HTTP client for managing per-country political access state within a game.
+ *
+ * Responsibilities:
+ * - Retrieve the current access snapshot for all configured countries
+ * - Update an individual country's dice roll and resulting access
+ * - Perform bulk dice roll updates across multiple countries
+ * - Perform bulk access-level updates (e.g., set Overflight Only for selected countries)
+ *
+ * All requests are scoped by gameId and map to the pac-shield-api REST endpoints.
+ *
+ * @class CountryAccessHttpService
+ */
 export class CountryAccessHttpService {
   private http = inject(HttpClient);
   private readonly baseUrl = '/api/games';
 
   /**
-   * Get country access snapshot for a game
+   * Retrieve the full political access snapshot for all countries in a game.
+   *
+   * @param gameId Unique identifier of the game
+   * @returns Observable that emits the current snapshot mapping countries to AccessStatus
+   * @example
+   * countryAccessHttp.getCountryAccessSnapshot(42).subscribe(snapshot => {
+   *   console.log(snapshot.countries.JAPAN); // "FULL_ACCESS" | "OVERFLIGHT_ONLY" | "NO_ACCESS"
+   * });
    */
   getCountryAccessSnapshot(gameId: number): Observable<CountryAccessSnapshot> {
     return this.http.get<CountryAccessSnapshot>(`${this.baseUrl}/${gameId}/country-access`);
   }
 
   /**
-   * Update dice roll for a specific country
+   * Update the dice roll for a specific country and receive the resulting access level.
+   *
+   * Server applies game rules to translate the dice roll into an AccessStatus.
+   *
+   * @param gameId Unique identifier of the game
+   * @param country Country enum value to update
+   * @param request Payload containing the diceRoll and optional notes
+   * @returns Observable with the updated dice roll and computed access level
    */
   updateCountryDiceRoll(
     gameId: number,
@@ -76,7 +103,11 @@ export class CountryAccessHttpService {
   }
 
   /**
-   * Update dice rolls for multiple countries
+   * Bulk-update dice rolls across multiple countries and receive their resulting access levels.
+   *
+   * @param gameId Unique identifier of the game
+   * @param request Payload with per-country dice roll values and optional notes
+   * @returns Observable containing updated dice rolls and access levels for all affected countries
    */
   updateBulkDiceRolls(
     gameId: number,
@@ -89,7 +120,14 @@ export class CountryAccessHttpService {
   }
 
   /**
-   * Update access level for multiple countries (bulk operation)
+   * Bulk-update access level for one or more countries (e.g., set Overflight Only).
+   *
+   * When request.countries is omitted, the backend may apply the access level globally,
+   * depending on API implementation and permissions.
+   *
+   * @param gameId Unique identifier of the game
+   * @param request Payload describing the new accessLevel and optional list of countries
+   * @returns Observable of the countries updated and their resulting access levels
    */
   updateBulkCountryAccess(
     gameId: number,
