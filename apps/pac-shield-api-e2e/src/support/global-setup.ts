@@ -1,6 +1,11 @@
 import { waitForPortOpen } from '@nx/node/utils';
 import { Socket } from 'net';
 
+// Extend globalThis to include our custom properties
+declare global {
+  var __TEARDOWN_MESSAGE__: string;
+}
+
 async function isPortInUse(port: number, host: string, timeoutMs = 1000): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     const socket = new Socket();
