@@ -1,118 +1,256 @@
-<div class="space-y-4 p-2 sm:p-4">
-  <!-- Header Section -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-      Airfield Tasks (16)
+<!-- FOS Task Board - CLAUDE.md Compliant Implementation -->
+<div class="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+  <!-- Header Section with Progress -->
+  <div class="flex flex-col space-y-4">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    >
+      <h2 class="md-typescale-headline-small md-sys-color-on-surface">
+        Airfield Tasks (16)
+      </h2>
+      <div class="md-typescale-body-small md-sys-color-on-surface-variant">
+        @if (fosId) {
+        {{ canEdit ? 'Editable' : 'Read-only' }}
+        } @else { Activate FOS to manage tasks }
+      </div>
     </div>
-    <div class="text-xs text-gray-600 dark:text-gray-400">
-      {{ fosId ? (canEdit ? 'Editable' : 'Read-only') : 'Activate FOS to manage tasks' }}
-    </div>
+
+    <!-- Overall Progress Card (only show when FOS is active) -->
+    @if (fosId && !isLoading) {
+    <mat-card class="md-elevation-1 md-sys-bg-primary-container">
+      <mat-card-content class="p-4">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
+          <div class="flex items-center gap-3">
+            <mat-icon class="md-sys-color-on-primary-container text-2xl"
+              >analytics</mat-icon
+            >
+            <div>
+              <h3
+                class="md-typescale-title-medium md-sys-color-on-primary-container font-medium"
+              >
+                Overall Progress
+              </h3>
+              <p
+                class="md-typescale-body-small md-sys-color-on-primary-container opacity-80"
+              >
+                {{ getTotalCompletion().completed }} of
+                {{ getTotalCompletion().total }} tasks completed
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <div
+                class="md-typescale-headline-small md-sys-color-on-primary-container font-bold"
+              >
+                {{ getTotalCompletion().percentage }}%
+              </div>
+            </div>
+            <mat-icon
+              class="text-3xl"
+              [class.md-sys-color-tertiary]="
+                getTotalCompletion().percentage === 100
+              "
+              [class.md-sys-color-on-primary-container]="
+                getTotalCompletion().percentage < 100
+              "
+            >
+              {{
+                getTotalCompletion().percentage === 100
+                  ? 'check_circle'
+                  : 'radio_button_unchecked'
+              }}
+            </mat-icon>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
   </div>
 
   <!-- Error Alert -->
+  @if (errorMsg) {
   <app-error-alert
-    *ngIf="errorMsg"
     [variant]="'error'"
     [title]="'Tasks Error'"
     [message]="errorMsg"
     dataTestId="tasks-error"
-    class="mb-4">
+    class="mb-4"
+  >
   </app-error-alert>
+  }
 
   <!-- Loading Spinner -->
-  <div class="flex items-center justify-center py-8" *ngIf="isLoading">
-    <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+  @if (isLoading) {
+  <div class="flex items-center justify-center py-8">
+    <mat-progress-spinner
+      mode="indeterminate"
+      diameter="40"
+      class="md-sys-color-primary"
+    >
+    </mat-progress-spinner>
   </div>
+  }
 
   <!-- Main Content -->
-  <div *ngIf="!isLoading">
-    <!-- Active FOS Content -->
-    <div *ngIf="fosId; else preActivation" class="space-y-4 sm:space-y-6">
-      <!-- Responsive Grid: 1 column mobile, 2 columns tablet+ -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+  @if (!isLoading) { @if (fosId) {
+  <!-- Active FOS Content -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+    @for (category of operationalCategories; track trackByCategory($index,
+    category)) {
+    <mat-card
+      class="md-elevation-2 md-shape-corner-md transition-all duration-300 hover:md-elevation-3"
+    >
+      <mat-card-header class="md-card-header-center mb-6">
         <div
-          *ngFor="let category of operationalCategories; trackBy: trackByCategory"
-          class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700
-                 border border-gray-200 dark:border-gray-600 rounded-xl p-4 sm:p-6
-                 transition-all duration-300 hover:shadow-lg">
-
-          <!-- Category Header -->
-          <div class="flex items-center gap-3 mb-4 sm:mb-6 pb-3 border-b border-gray-200 dark:border-gray-600">
-            <div class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12
-                        bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <mat-icon class="text-blue-600 dark:text-blue-400 text-xl sm:text-2xl">
-                {{ category.icon }}
-              </mat-icon>
-            </div>
-            <h3 class="text-base sm:text-lg font-semibold text-blue-800 dark:text-blue-200 uppercase tracking-wide">
-              {{ category.title }}
-            </h3>
+          mat-card-avatar
+          class="flex items-center justify-center w-14 h-14 md-shape-corner-sm transition-colors duration-200"
+          [class.md-sys-bg-tertiary-container]="
+            getCategoryCompletion(category) === 100
+          "
+          [class.md-sys-bg-primary-container]="
+            getCategoryCompletion(category) < 100
+          "
+        >
+          <mat-icon
+            class="transition-colors duration-200"
+            [class.md-sys-color-on-tertiary-container]="
+              getCategoryCompletion(category) === 100
+            "
+            [class.md-sys-color-on-primary-container]="
+              getCategoryCompletion(category) < 100
+            "
+          >
+            {{
+              getCategoryCompletion(category) === 100
+                ? 'check_circle'
+                : category.icon
+            }}
+          </mat-icon>
+        </div>
+        <mat-card-title
+          class="md-typescale-title-large md-sys-color-on-surface md-card-title-center"
+        >
+          {{ category.title }}
+          <div
+            class="md-typescale-body-medium md-sys-color-on-surface-variant font-normal mt-2"
+          >
+            {{ getCategoryCompletion(category) }}% Complete
           </div>
+        </mat-card-title>
+        <mat-card-subtitle
+          class="md-typescale-body-medium md-sys-color-on-surface-variant text-center mt-2"
+        >
+          {{ category.description }}
+        </mat-card-subtitle>
+      </mat-card-header>
 
-          <!-- Tasks Grid: Single column on mobile, 2x2 on larger screens -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div
-              *ngFor="let task of category.tasks; trackBy: trackByTask"
-              class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600
-                     rounded-lg p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300
-                     dark:hover:border-gray-500"
-              [class.ring-2]="isCompleted(task)"
-              [class.ring-green-200]="isCompleted(task)"
-              [class.bg-green-50]="isCompleted(task)"
-              [class.dark:bg-green-900/20]="isCompleted(task)"
-              [class.dark:ring-green-700]="isCompleted(task)">
-
-              <!-- Task Content -->
-              <div class="space-y-3">
-                <!-- Task Title -->
-                <h4 class="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100 leading-tight">
+      <mat-card-content class="px-6 pb-6">
+        <!-- Tasks Grid: 2x2 layout within each category card -->
+        <div class="grid grid-cols-2 gap-4">
+          @for (task of category.tasks; track trackByTask($index, task)) {
+          <mat-card
+            class="md-elevation-1 transition-all duration-200 hover:md-elevation-2 group min-h-[140px] flex flex-col"
+            [class.md-sys-bg-tertiary-container]="isCompleted(task)"
+            [class.md-sys-bg-surface-variant]="!isCompleted(task)"
+            [style.border]="
+              isCompleted(task) ? '2px solid var(--mat-sys-tertiary)' : 'none'
+            "
+          >
+            <mat-card-content
+              class="p-4 space-y-3 flex flex-col justify-between h-full"
+            >
+              <!-- Task Title with Info Button -->
+              <div
+                class="relative flex items-center justify-center min-h-[36px]"
+              >
+                <h4
+                  class="md-typescale-body-medium font-medium text-center leading-tight"
+                  [class.md-sys-color-on-tertiary-container]="isCompleted(task)"
+                  [class.md-sys-color-on-surface]="!isCompleted(task)"
+                >
                   {{ task }}
                 </h4>
+                <button
+                  mat-icon-button
+                  [matTooltip]="getTaskTooltip(task)"
+                  matTooltipClass="task-tooltip"
+                  [matTooltipShowDelay]="500"
+                  class="absolute right-0 opacity-70 hover:opacity-100 transition-opacity"
+                  [class.md-sys-color-on-tertiary-container]="isCompleted(task)"
+                  [class.md-sys-color-on-surface-variant]="!isCompleted(task)"
+                  (click)="$event.stopPropagation()"
+                >
+                  <mat-icon>info</mat-icon>
+                </button>
+              </div>
 
+              <!-- Status Section -->
+              <div class="space-y-2 flex flex-col items-center">
                 <!-- Status Chip -->
-                <div class="flex justify-center">
-                  <mat-chip
-                    [disableRipple]="true"
-                    class="text-xs px-3 py-1 rounded-full font-medium"
-                    [class]="isCompleted(task)
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'">
-                    {{ isCompleted(task) ? 'Done' : 'Pending' }}
-                  </mat-chip>
-                </div>
+                <mat-chip
+                  [disabled]="true"
+                  class="text-xs font-medium px-3 py-1"
+                  [class.md-sys-bg-tertiary]="isCompleted(task)"
+                  [class.md-sys-color-on-tertiary]="isCompleted(task)"
+                  [class.md-sys-bg-surface-container]="!isCompleted(task)"
+                  [class.md-sys-color-on-surface-variant]="!isCompleted(task)"
+                >
+                  @if (isCompleted(task)) {
+                  <mat-icon class="mr-1 text-sm">check_circle</mat-icon>
+                  Done } @else {
+                  <mat-icon class="mr-1 text-sm">schedule</mat-icon>
+                  Pending }
+                </mat-chip>
 
                 <!-- Action Button -->
-                <div class="flex justify-center pt-2">
-                  <button
-                    mat-icon-button
-                    (click)="toggle(task)"
-                    [disabled]="!canToggle()"
-                    [matTooltip]="canToggle() ? (isCompleted(task) ? 'Mark as not complete' : 'Mark as complete') : 'Read-only'"
-                    class="w-12 h-12 sm:w-14 sm:h-14 rounded-full transition-all duration-200
-                           hover:scale-110 focus:scale-110 active:scale-95
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    [class]="isCompleted(task)
-                      ? 'text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20'
-                      : 'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20'">
-                    <mat-icon class="text-xl sm:text-2xl">
-                      {{ isCompleted(task) ? 'undo' : 'check_circle' }}
-                    </mat-icon>
-                  </button>
-                </div>
+                <button
+                  matButton="tonal"
+                  [disabled]="!canToggle()"
+                  [matTooltip]="
+                    canToggle()
+                      ? isCompleted(task)
+                        ? 'Mark as not complete'
+                        : 'Mark as complete'
+                      : 'Read-only'
+                  "
+                  class="px-4 py-1 text-sm transition-transform group-hover:scale-105 active:scale-95 disabled:opacity-50"
+                  (click)="toggle(task)"
+                >
+                  <mat-icon class="mr-1 text-base">
+                    {{ isCompleted(task) ? 'undo' : 'check_circle' }}
+                  </mat-icon>
+                  <span class="md-typescale-label-medium">
+                    {{ isCompleted(task) ? 'Undo' : 'Complete' }}
+                  </span>
+                </button>
               </div>
-            </div>
-          </div>
+            </mat-card-content>
+          </mat-card>
+          }
         </div>
-      </div>
-    </div>
-
-    <!-- Pre-activation Template -->
-    <ng-template #preActivation>
-      <div class="text-center py-8 sm:py-12">
-        <div class="text-gray-500 dark:text-gray-400 text-sm sm:text-base">
-          Activate FOS to manage tasks.
-        </div>
-      </div>
-    </ng-template>
+      </mat-card-content>
+    </mat-card>
+    }
   </div>
+  } @else {
+  <!-- Pre-activation State -->
+  <div class="text-center py-12">
+    <mat-card class="max-w-md mx-auto md-elevation-1">
+      <mat-card-content class="p-8">
+        <mat-icon class="text-6xl md-sys-color-on-surface-variant mb-4">
+          radio_button_unchecked
+        </mat-icon>
+        <h3 class="md-typescale-headline-small md-sys-color-on-surface mb-2">
+          FOS Not Activated
+        </h3>
+        <p class="md-typescale-body-medium md-sys-color-on-surface-variant">
+          Activate a Forward Operating Site to begin managing tasks.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  } }
 </div>
