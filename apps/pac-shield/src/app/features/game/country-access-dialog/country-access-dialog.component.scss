@@ -1,0 +1,20 @@
+:host {
+  // Country access status colors (matching the map overlay colors)
+  --country-access-full: #4CAF50;
+  --country-access-overflight: #FF9800;
+  --country-access-none: #F44336;
+}
+
+.country-access-indicator {
+  &.full-access {
+    background-color: var(--country-access-full);
+  }
+
+  &.overflight-only {
+    background-color: var(--country-access-overflight);
+  }
+
+  &.no-access {
+    background-color: var(--country-access-none);
+  }
+}
