@@ -563,8 +563,8 @@ export function generateTestIds(testName: string) {
 
   return {
     gameId: `test_${prefix}_${timestamp}_${random}`,
-    playerName: `Player_${timestamp}_${random}`,
-    gmName: `GM_${timestamp}_${random}`,
+    playerName: `p.${random}`,
+    gmName: `gm.${random}`,
     roomCode: '', // Will be populated after game creation
   };
 }
@@ -584,7 +584,7 @@ export async function createIsolatedGame(
   } = {}
 ): Promise<{ roomCode: string; gameId: string; players: any[] }> {
   const {
-    gameMasterName = `GM_${Date.now()}`,
+    gameMasterName = `gm.${Date.now()}`,
     victoryConditionMP = 100,
     players = []
   } = options;
@@ -677,13 +677,13 @@ export async function setupGameScenario(
       const gameData = await createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
         players: [
-          { name: 'ConflictUser', pin: '5555' }
+          { name: 'c.user', pin: '5555' }
         ]
       });
 
       return {
         ...gameData,
-        conflictName: 'ConflictUser'
+        conflictName: 'c.user'
       };
     }
 
@@ -691,9 +691,9 @@ export async function setupGameScenario(
       return createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
         players: [
-          { name: 'Player1', pin: '1111' },
-          { name: 'Player2', pin: '2222' },
-          { name: 'Player3', pin: '3333' }
+          { name: 'p.one', pin: '1111' },
+          { name: 'p.two', pin: '2222' },
+          { name: 'p.three', pin: '3333' }
         ]
       });
     }
@@ -702,7 +702,7 @@ export async function setupGameScenario(
       return createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
         players: [
-          { name: 'PinUser', pin: '9999' }
+          { name: 'p.user', pin: '9999' }
         ]
       });
     }

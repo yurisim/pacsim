@@ -1,0 +1,8 @@
+
+ NX   Running target serve for project pac-shield-api and 1 task it depends on:
+
+
+
+> nx run pac-shield-api:build
+
+> webpack-cli build --node-env=production

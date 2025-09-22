@@ -47,7 +47,7 @@ test.describe('Home create game flow', () => {
 
     // Create a stale session for a different game
     const staleGame = await createGame(api, 100);
-    const staleJoin = await joinGame(api, staleGame.roomCode, 'StaleUser');
+    const staleJoin = await joinGame(api, staleGame.roomCode, 's.user');
     const staleToken: string = staleJoin.token;
 
     const staleGameId = decodeJwtGameId(staleToken);
@@ -69,7 +69,7 @@ test.describe('Home create game flow', () => {
     await expect(page.getByText('Game Master Setup')).toBeVisible();
 
     // Fill GM form
-    await page.getByLabel('Last Name').fill('TestGM');
+    await page.getByLabel('Username').fill('t.gm');
     await fillGameMasterPin(page, '1234');
 
     await page.getByRole('button', { name: 'Continue' }).click();
