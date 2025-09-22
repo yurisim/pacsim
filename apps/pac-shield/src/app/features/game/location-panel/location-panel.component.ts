@@ -1,3 +1,4 @@
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +19,8 @@ import { ForwardOperatingSite, Team } from '../../../generated';
 import { FosActivationDialogComponent, FosActivationDialogData, FosActivationDialogResult } from './fos-activation-dialog.component';
 import { FosRfiComponent } from '../fos/fos-rfi.component';
 import { FosTaskBoardComponent } from '../fos/fos-task-board.component';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 /**
  * Asset action interface - represents an action that can be performed on an asset
@@ -91,10 +94,16 @@ export class LocationPanelComponent implements OnChanges {
   private playerRoleService = inject(PlayerRoleService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private breakpointObserver = inject(BreakpointObserver);
 
   // Use signals from FosStateService for reactive updates
   fosList = this.fosStateService.fosList;
   activeFosIds = this.fosStateService.activeFosIds;
+
+  isHandset = toSignal(
+    this.breakpointObserver.observe(Breakpoints.Handset).pipe(map(result => result.matches)),
+    { initialValue: false }
+  );
 
   // Selected asset for each type (using signals for reactivity)
   selectedMobAsset = signal<TileAsset | null>(null);
@@ -703,9 +712,10 @@ export class LocationPanelComponent implements OnChanges {
         gameId: this.gameId,
         canEdit: this.canEdit()
       },
-      width: '800px',
+      width: '100vw',
+      maxWidth: 'min(95vw, 1200px)',
       maxHeight: '90vh',
-      panelClass: 'fos-dialog'
+      panelClass: 'fos-dialog-responsive'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -735,9 +745,10 @@ export class LocationPanelComponent implements OnChanges {
         gameId: this.gameId,
         canEdit: this.canEdit()
       },
-      width: '900px',
+      width: '100vw',
+      maxWidth: 'min(95vw, 1200px)',
       maxHeight: '90vh',
-      panelClass: 'fos-dialog'
+      panelClass: 'fos-dialog-responsive'
     });
 
     dialogRef.afterClosed().subscribe(result => {
