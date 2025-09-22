@@ -50,10 +50,10 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
         'input[formControlName="playerName"]'
       ]);
 
-      await playerNameInput.fill('ConflictUser');
+      await playerNameInput.fill('c.user');
 
       // Verify we're on conflict step with proper UI elements
-      await expect(page.getByText(`A player named "${'ConflictUser'}" already exists in this game`))
+      await expect(page.getByText(`A player named "c.user" already exists in this game`))
         .toBeVisible({ timeout: 5000 });
 
       // Click "I'm a new person" with fallback selectors
@@ -70,7 +70,7 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
 
       newNameInput.click();
 
-      const uniqueName = `${testIds.playerName}_unique`;
+      const uniqueName = testIds.playerName;
       await newNameInput.fill(uniqueName);
 
       // Ensure Create button disabled until PIN is valid
@@ -306,11 +306,11 @@ test.describe('Enhanced Join Flow - Reliability Fixes', () => {
         'input[formControlName="playerName"]'
       ]);
 
-      await playerNameInput.fill('PinUser');
+      await playerNameInput.fill('p.user');
 
 
       // Verify conflict resolution UI
-      await expect(page.getByText('A player named "PinUser" already exists in this game'))
+      await expect(page.getByText('A player named "p.user" already exists in this game'))
         .toBeVisible({ timeout: 5000 });
 
       // Verify PIN entry field becomes available
