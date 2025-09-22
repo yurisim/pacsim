@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Country, AccessStatus } from '../../generated/enums';
 
 export interface CountryAccessSnapshot {
-  countries: Record<string, boolean>;
+  countries: Record<string, AccessStatus>;
 }
 
 export interface UpdateDiceRollRequest {

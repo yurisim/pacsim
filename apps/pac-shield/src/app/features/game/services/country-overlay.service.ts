@@ -134,18 +134,18 @@ export class CountryOverlayService {
     try {
       console.log(`Loading initial country access state for game ${this.currentGameId}`);
 
-      // Note: The backend getCountryAccessSnapshot API returns { countries: Record<string, boolean> }
-      // where true = FULL_ACCESS, false = NO_ACCESS (simplified)
+      // Note: The backend getCountryAccessSnapshot API returns { countries: Record<string, AccessStatus> }
+      // with full access status including OVERFLIGHT_ONLY
       const snapshot = await this.countryAccessHttp.getCountryAccessSnapshot(this.currentGameId).toPromise();
 
       if (snapshot?.countries) {
         const newData: Record<Country, AccessStatus> = { ...this.countryAccessData() };
 
-        // Map boolean values to AccessStatus enum
-        Object.entries(snapshot.countries).forEach(([countryKey, hasFullAccess]) => {
+        // Map AccessStatus values directly
+        Object.entries(snapshot.countries).forEach(([countryKey, accessStatus]) => {
           if (country.includes(countryKey as Country)) {
-            // Convert boolean to AccessStatus - true means FULL_ACCESS, false means NO_ACCESS
-            newData[countryKey as Country] = hasFullAccess ? 'FULL_ACCESS' : 'NO_ACCESS';
+            // Use the access status directly from the backend
+            newData[countryKey as Country] = accessStatus as AccessStatus;
           }
         });
 
