@@ -30,13 +30,13 @@ describe('AccountSelectorComponent', () => {
     component.accountChange.subscribe(spy);
 
     const input = fixture.debugElement.query(By.css('[data-testid="player-name-input"]')).nativeElement as HTMLInputElement;
-    input.value = 'Alice';
+    input.value = 'a.smith';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(spy).toHaveBeenCalled();
     const emitted: AccountSummary | null = spy.mock.calls[0][0];
-    expect(emitted).toEqual({ id: undefined, name: 'Alice' });
+    expect(emitted).toEqual({ id: undefined, name: 'a.smith' });
   });
 
   it('emits null when input cleared', () => {

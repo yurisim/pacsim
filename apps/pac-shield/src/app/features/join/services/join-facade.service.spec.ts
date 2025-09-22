@@ -14,8 +14,8 @@ class MockLobbyComponent {}
 
 class AuthServiceStub {
   validateRoomCode = jest.fn().mockReturnValue(of({ valid: true }));
-  joinGame = jest.fn().mockReturnValue(of({ token: 't', player: { id: '1', name: 'Bob', sessionId: 's' } }));
-  joinGameWithPin = jest.fn().mockReturnValue(of({ token: 't', player: { id: '1', name: 'Bob', sessionId: 's' } }));
+  joinGame = jest.fn().mockReturnValue(of({ token: 't', player: { id: '1', name: 'b.jones', sessionId: 's' } }));
+  joinGameWithPin = jest.fn().mockReturnValue(of({ token: 't', player: { id: '1', name: 'b.jones', sessionId: 's' } }));
   checkPlayerNameAvailability = jest.fn().mockReturnValue(of({ isAvailable: true }));
   getGameId = jest.fn().mockReturnValue('ABC123');
   isAuthenticated = jest.fn().mockReturnValue(false);
@@ -57,7 +57,7 @@ describe('JoinFacadeService', () => {
 
     const routerSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    service.join('ABC123', 'Bob');
+    service.join('ABC123', 'b.jones');
     tick(); // complete join observable
 
     // Should navigate to lobby with gameId
@@ -83,7 +83,7 @@ describe('JoinFacadeService', () => {
 
     const initialStep = service.step();
     
-    service.join('ABC123', 'Bob');
+    service.join('ABC123', 'b.jones');
     tick();
 
     expect(service.step()).toBe(JoinStep.NameConflict);
@@ -101,14 +101,14 @@ describe('JoinFacadeService', () => {
       )
     );
 
-    service.verifyPin('ABC123', 'Bob', '1234');
+    service.verifyPin('ABC123', 'b.jones', '1234');
     tick();
 
     expect(service.error()).toContain('incorrect');
   }));
 
   it('checkNewName should update nameCheck.available', fakeAsync(() => {
-    service.checkNewName('ABC123', 'NewGuy');
+    service.checkNewName('ABC123', 'n.guy');
     // debounce 300ms in pipeline
     tick(300);
 

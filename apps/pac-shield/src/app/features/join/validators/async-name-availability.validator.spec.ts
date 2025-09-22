@@ -19,7 +19,7 @@ describe('nameAvailabilityValidator()', () => {
   });
 
   it('returns null when available', fakeAsync(() => {
-    const control = new FormControl<string>('NewGuy');
+    const control = new FormControl<string>('n.guy');
     const validator = TestBed.runInInjectionContext(() => nameAvailabilityValidator(() => 'ABC123'));
 
     let result: ValidationErrors | null | undefined;
@@ -30,7 +30,7 @@ describe('nameAvailabilityValidator()', () => {
 
     const req = httpMock.expectOne('/api/player/check-name-availability');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ roomCode: 'ABC123', playerName: 'NewGuy' });
+    expect(req.request.body).toEqual({ roomCode: 'ABC123', playerName: 'n.guy' });
 
     req.flush({ isAvailable: true });
     tick();
@@ -39,7 +39,7 @@ describe('nameAvailabilityValidator()', () => {
   }));
 
   it('returns {nameTaken:true} when not available', fakeAsync(() => {
-    const control = new FormControl<string>('Existing');
+    const control = new FormControl<string>('e.existing');
     const validator = TestBed.runInInjectionContext(() => nameAvailabilityValidator(() => 'ABC123'));
 
     let result: ValidationErrors | null | undefined;
@@ -55,7 +55,7 @@ describe('nameAvailabilityValidator()', () => {
   }));
 
   it('returns {availabilityError:true} on network error', fakeAsync(() => {
-    const control = new FormControl<string>('AnyName');
+    const control = new FormControl<string>('a.name');
     const validator = TestBed.runInInjectionContext(() => nameAvailabilityValidator(() => 'ABC123'));
 
     let result: ValidationErrors | null | undefined;
