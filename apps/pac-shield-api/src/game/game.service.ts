@@ -161,7 +161,7 @@ export class GameService {
    */
   public async getCountryAccessSnapshot(
     gameId: number
-  ): Promise<{ countries: Record<string, boolean> }> {
+  ): Promise<{ countries: Record<string, AccessStatus> }> {
     const game = await this.prisma.game.findUnique({
       where: { id: gameId },
       select: { id: true },
@@ -175,9 +175,9 @@ export class GameService {
       select: { country: true, accessLevel: true },
     });
 
-    const countries: Record<string, boolean> = {};
+    const countries: Record<string, AccessStatus> = {};
     for (const row of countryAccessRows) {
-      countries[row.country] = row.accessLevel === AccessStatus.FULL_ACCESS;
+      countries[row.country] = row.accessLevel;
     }
 
     return { countries };
