@@ -1,6 +1,11 @@
 import { killPort } from '@nx/node/utils';
 /* eslint-disable */
 
+// Extend globalThis to include our custom properties
+declare global {
+  var __TEARDOWN_MESSAGE__: string;
+}
+
 module.exports = async function () {
   // Put clean up logic here (e.g. stopping services, docker-compose, etc.).
   // Hint: `globalThis` is shared between setup and teardown.

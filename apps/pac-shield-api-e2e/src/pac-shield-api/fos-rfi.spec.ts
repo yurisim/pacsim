@@ -29,7 +29,7 @@ describe('FOS RFI Endpoints E2E', () => {
     const teams: Array<{ id: number; type: string }> = gameDet.data?.teams ?? [];
     const gmTeam = teams.find(t => String(t.type) === 'GM');
     expect(gmTeam).toBeDefined();
-    ownerTeamId = gmTeam.id;
+    ownerTeamId = gmTeam!.id;
 
     // Elevate role to GM and join GM team
     await axios.patch(`/api/player/${ownerPlayerId}`, { role: 'GM' });
@@ -289,7 +289,7 @@ describe('FOS RFI Endpoints E2E', () => {
       const gameDet = await axios.get(`/api/game/${gameId}`);
       const teams: Array<{ id: number; type: string }> = gameDet.data?.teams ?? [];
       const gmTeam = teams.find(t => String(t.type) === 'GM');
-      await axios.post(`/api/player/${crossGmId}/join-team`, { teamId: gmTeam.id });
+      await axios.post(`/api/player/${crossGmId}/join-team`, { teamId: gmTeam!.id });
 
       const apiCrossGm = axios.create({
         baseURL: axios.defaults.baseURL,
@@ -340,7 +340,7 @@ describe('FOS RFI Endpoints E2E', () => {
       const game2Det = await axios.get(`/api/game/${game2Id}`);
       const game2Teams: Array<{ id: number; type: string }> = game2Det.data?.teams ?? [];
       const game2GmTeam = game2Teams.find(t => String(t.type) === 'GM');
-      await axios.post(`/api/player/${game2GmId}/join-team`, { teamId: game2GmTeam.id });
+      await axios.post(`/api/player/${game2GmId}/join-team`, { teamId: game2GmTeam!.id });
 
       const apiGame2Gm = axios.create({
         baseURL: axios.defaults.baseURL,

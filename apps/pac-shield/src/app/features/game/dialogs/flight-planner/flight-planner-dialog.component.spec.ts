@@ -18,6 +18,20 @@ import { of } from 'rxjs';
 import { provideMockStore } from '@ngrx/store/testing';
 import { initialGameState } from '../../../../core/store/game/game.state';
 
+/**
+ * Test suite for FlightPlannerDialogComponent
+ *
+ * This test suite covers:
+ * - Initialization of location option catalogs (MOB, FOS, Hex) with backend-compatible values
+ * - Reactive autocomplete filtering by value, display name, and country
+ * - Display function behavior for known/unknown/empty values
+ * - Retrieval helpers for location options and MOB backend value mapping
+ * - Form integration and submission payload validation
+ * - Coverage across expected countries and strategic locations
+ * - UI integration ensuring filtered observables emit and handle partial/case-insensitive matches
+ *
+ * @group Dialog Component Tests
+ */
 describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
   let component: FlightPlannerDialogComponent;
   let fixture: ComponentFixture<FlightPlannerDialogComponent>;
@@ -106,6 +120,10 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     fixture.detectChanges();
   });
 
+  /**
+   * Verifies that all location option catalogs are generated with correct structure
+   * and include expected entries for MOB and FOS.
+   */
   describe('Location Options Initialization', () => {
     it('should initialize all location options with correct structure', () => {
       expect(component.allLocationOptions).toBeDefined();
@@ -157,6 +175,10 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Ensures that reactive filtering works by value, display name, and country,
+   * including case-insensitive and empty/null input behaviors.
+   */
   describe('Autocomplete Filtering', () => {
     it('should filter locations by value', () => {
       const startLocationControl = component.flightPlanForm.get('startLocation');
@@ -264,6 +286,10 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Verifies display function returns human-readable labels for known values and
+   * sensible fallbacks for unknown/empty inputs.
+   */
   describe('Display Function', () => {
     it('should return display name for valid location value', () => {
       const kadenaDisplay = component.displayLocationFn('Kadena AB');
@@ -284,6 +310,9 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Confirms helper for retrieving a full option by its value and handling invalid values.
+   */
   describe('Location Option Retrieval', () => {
     it('should return correct location option for valid value', () => {
       const kadenaOption = component.getLocationOption('Kadena AB');
@@ -299,6 +328,9 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Ensures that internal MOB identifiers map to the backend-expected labels used by the API.
+   */
   describe('MOB Backend Value Mapping', () => {
     it('should correctly map MOB IDs to backend values', () => {
       // Access private method for testing (using bracket notation)
@@ -312,6 +344,9 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Validates form integration: existence of all filtered streams and submission payload correctness.
+   */
   describe('Form Integration', () => {
     it('should have autocomplete observables for all location fields', () => {
       expect(component.filteredStartLocations$).toBeDefined();
@@ -346,6 +381,10 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Confirms that all expected countries and strategic locations are represented in option catalogs,
+   * and that the distribution between MOB and FOS entries matches expectations.
+   */
   describe('Location Coverage', () => {
     it('should include locations from all expected countries', () => {
       const countries = [...new Set(component.allLocationOptions.map(opt => opt.country))];
@@ -384,6 +423,10 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
     });
   });
 
+  /**
+   * Ensures UI-facing filtered streams emit on subscription and when form values change,
+   * and that partial matching is supported for friendly search.
+   */
   describe('Autocomplete UI Integration', () => {
     it('should provide filtered options that update reactively', () => {
       const startLocationControl = component.flightPlanForm.get('startLocation');

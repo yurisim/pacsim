@@ -52,66 +52,63 @@
   </div>
   }
 
-  <!-- Country Access Toggle (above location panel) -->
-  <div class="absolute left-2 bottom-[200px] z-[94] pointer-events-auto">
-    <app-country-access-toggle
-      (toggleVisibility)="onCountryAccessToggle($event)">
-    </app-country-access-toggle>
-  </div>
-
-  <!-- GM Right-click Context Menu for Country Access -->
-  @if (contextMenu.show) {
-  <div
-    class="absolute z-[200] pointer-events-auto select-none"
+  <!-- GM Right-click Context Menu for Country Access (Angular Material mat-menu) -->
+  <!-- Invisible trigger anchored at cursor position; opened programmatically from TS -->
+  <button
+    #countryMenuTrigger="matMenuTrigger"
+    [matMenuTriggerFor]="countryAccessMenu"
+    class="fixed opacity-0 pointer-events-none"
     [style.left.px]="contextMenu.x"
     [style.top.px]="contextMenu.y"
-    (contextmenu)="$event.preventDefault()"
-    role="menu"
-    aria-label="Country Access Menu"
-  >
-    <div class="rounded-md shadow-lg border border-black/10 md-sys-bg-surface md-sys-color-on-surface bg-white min-w-[160px]">
-      <button
-        type="button"
-        role="menuitem"
-        class="w-full text-left px-3 py-2 hover:bg-black/5"
-        (click)="onSelectCountryAccess('FULL_ACCESS')">
-        Full Access
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        class="w-full text-left px-3 py-2 hover:bg-black/5"
-        (click)="onSelectCountryAccess('OVERFLIGHT_ONLY')">
-        Overflight Only
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        class="w-full text-left px-3 py-2 hover:bg-black/5"
-        (click)="onSelectCountryAccess('NO_ACCESS')">
-        No Access
-      </button>
-    </div>
-  </div>
-  }
+    style="width:1px;height:1px;padding:0;border:0;"
+    aria-hidden="true"
+    tabindex="-1">
+  </button>
 
-  <!-- Location panel overlay (bottom left corner) -->
+  <mat-menu
+    #countryAccessMenu="matMenu"
+    xPosition="after"
+    yPosition="below"
+    class="country-access-menu">
+    <button mat-menu-item (click)="onSelectCountryAccess('FULL_ACCESS')">
+      <mat-icon>check_circle</mat-icon>
+      <span>Grant Access</span>
+    </button>
+    <button mat-menu-item (click)="onOverflightOnly()">
+      <mat-icon>flight</mat-icon>
+      <span>Overflight Only</span>
+    </button>
+    <button mat-menu-item (click)="onSelectCountryAccess('NO_ACCESS')">
+      <mat-icon>cancel</mat-icon>
+      <span>Revoke Access</span>
+    </button>
+  </mat-menu>
+
+  <!-- Bottom left control panel - flex row layout -->
   <div class="absolute left-2 bottom-2 z-[95] pointer-events-auto">
-    <app-location-panel
-      [selectedHex]="selectedVisualHexCoord"
-      [selectedH3Index]="selectedH3Index"
-      [gameId]="(gameId$ | async) ?? null"
-      [currentTurn]="(currentTurn$ | async) ?? 1"
-      [availableTeams]="(availableTeams$ | async) ?? []"
-      [fosMobAssignments]="fosMobAssignments"
-      [currentPlayerMob]="currentPlayerMob"
-      [isGameMaster]="(isGameMaster$ | async) ?? false"
-      [collapsed]="panelCollapsed"
-      [initialSubview]="initialSubview"
-      (actionClicked)="onLocationAction($event)"
-      (fosStatusChanged)="onFosStatusChanged($event)"
-    >
-    </app-location-panel>
+    <div class="flex flex-col items-start gap-2">
+      <!-- Country Access Toggle -->
+      <app-country-access-toggle
+        (toggleVisibility)="onCountryAccessToggle($event)">
+      </app-country-access-toggle>
+
+      <!-- Location Panel -->
+      <app-location-panel
+        [selectedHex]="selectedVisualHexCoord"
+        [selectedH3Index]="selectedH3Index"
+        [gameId]="(gameId$ | async) ?? null"
+        [currentTurn]="(currentTurn$ | async) ?? 1"
+        [availableTeams]="(availableTeams$ | async) ?? []"
+        [fosMobAssignments]="fosMobAssignments"
+        [currentPlayerMob]="currentPlayerMob"
+        [isGameMaster]="(isGameMaster$ | async) ?? false"
+        [collapsed]="panelCollapsed"
+        [initialSubview]="initialSubview"
+        (actionClicked)="onLocationAction($event)"
+        (fosStatusChanged)="onFosStatusChanged($event)"
+      >
+      </app-location-panel>
+    </div>
   </div>
 
   <!-- Jamming Debug Panel (top right corner) - DISABLED -->

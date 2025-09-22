@@ -17,8 +17,13 @@ export class GameController {
   /**
    * POST /game/create
    * Creates a new game and generates a unique 6-char room code.
+   *
    * @param createGameDto Victory conditions and other init params.
-   * @returns Persisted Game record with id and roomCode.
+   * @returns Persisted Game record with id and roomCode
+   * @example
+   * // POST /game/create
+   * // Body: { victoryTarget: 100, ... }
+   * // Returns: { id: 1, roomCode: "ABC123", ... }
    */
   @Post('create')
   async createGame(@Body() createGameDto: CreateGameDto) {
@@ -28,6 +33,12 @@ export class GameController {
   /**
    * GET /game/:id
    * Retrieves a game by numeric id (used by lobby/game screens).
+   *
+   * @param id The numeric game id as a string path parameter
+   * @returns Game record for the specified id
+   * @example
+   * // GET /game/1
+   * // Returns: { id: 1, roomCode: "ABC123", teams: [...] }
    */
   @Get(':id')
   async getGameById(@Param('id') id: string) {
@@ -37,7 +48,12 @@ export class GameController {
   /**
    * GET /game/validate/:roomCode
    * Lightweight existence check before user attempts to join.
-   * @returns { valid: boolean, gameId?: number }
+   *
+   * @param roomCode The 6-character room code for the game
+   * @returns Object indicating validity and the resolved gameId when valid
+   * @example
+   * // GET /game/validate/ABC123
+   * // Returns: { valid: true, gameId: 1 }
    */
   @Get('validate/:roomCode')
   async validateRoomCode(@Param('roomCode') roomCode: string) {
@@ -48,7 +64,13 @@ export class GameController {
    * POST /game/join
    * Creates a player in the specified game and returns a session JWT.
    * Name conflict + PIN resume flow is implemented by the PlayerService.
-   * @returns { token: string }
+   *
+   * @param joinGameDto Payload containing roomCode, playerName, and optional pin for resume
+   * @returns Object containing a signed JWT token and player details
+   * @example
+   * // POST /game/join
+   * // Body: { roomCode: "ABC123", playerName: "Ranger", pin: "1234" }
+   * // Returns: { token: "...", player: { id: 5, name: "Ranger", ... } }
    */
   @Post('join')
   async joinGame(@Body() joinGameDto: JoinGameDto) {

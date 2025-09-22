@@ -29,7 +29,7 @@ describe('Player Settings API E2E', () => {
     // For testing purposes, we'll make a request to get player info
     const gameRes = await axios.get(`/api/game/${gameId}`);
     const players = gameRes.data.players;
-    playerId = players.find(p => p.name === 'Test Player')?.id;
+    playerId = players.find((p: any) => p.name === 'Test Player')?.id;
   });
 
   describe('PATCH /api/player/:id/name', () => {
@@ -45,7 +45,7 @@ describe('Player Settings API E2E', () => {
       
       // Verify the change persists in the game data
       const gameRes = await axios.get(`/api/game/${gameId}`);
-      const updatedPlayer = gameRes.data.players.find(p => p.id === parseInt(playerId));
+      const updatedPlayer = gameRes.data.players.find((p: any) => p.id === parseInt(playerId));
       expect(updatedPlayer.name).toBe(newName);
     });
 
@@ -75,7 +75,7 @@ describe('Player Settings API E2E', () => {
       
       // Verify the changes persist in the game data
       const gameRes = await axios.get(`/api/game/${gameId}`);
-      const updatedPlayer = gameRes.data.players.find(p => p.id === parseInt(playerId));
+      const updatedPlayer = gameRes.data.players.find((p: any) => p.id === parseInt(playerId));
       expect(updatedPlayer.name).toBe(newName);
       expect(updatedPlayer.role).toBe(newRole);
     });
@@ -132,7 +132,7 @@ describe('Player Settings API E2E', () => {
 
       // Final state should have the last name update and one of the role updates
       const gameRes = await axios.get(`/api/game/${gameId}`);
-      const finalPlayer = gameRes.data.players.find(p => p.id === parseInt(playerId));
+      const finalPlayer = gameRes.data.players.find((p: any) => p.id === parseInt(playerId));
       expect(finalPlayer.name).toBe('Final Name');
       // Due to race conditions in concurrent updates, role could be either COMMANDER or LNO
       expect(['COMMANDER', 'LNO']).toContain(finalPlayer.role);
@@ -158,11 +158,11 @@ describe('Player Settings API E2E', () => {
       
       // Verify both players are in the updated game state
       expect(gameRes.data.players).toHaveLength(2);
-      const updatedFirstPlayer = gameRes.data.players.find(p => p.id === parseInt(playerId));
+      const updatedFirstPlayer = gameRes.data.players.find((p: any) => p.id === parseInt(playerId));
       expect(updatedFirstPlayer.name).toBe('Updated First Player');
       expect(updatedFirstPlayer.role).toBe('GM');
       
-      const secondPlayer = gameRes.data.players.find(p => p.name === 'Second Player');
+      const secondPlayer = gameRes.data.players.find((p: any) => p.name === 'Second Player');
       expect(secondPlayer).toBeDefined();
       expect(secondPlayer.role).toBe('PLAYER'); // Should remain unchanged
     });

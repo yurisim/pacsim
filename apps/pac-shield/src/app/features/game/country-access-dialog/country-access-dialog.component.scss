@@ -1,0 +1,38 @@
+:host {
+  // Country access status colors (matching the map overlay colors)
+  // Light mode colors (light shades)
+  --country-access-full-light: #A5D6A7;
+  --country-access-overflight-light: #FFCC80;
+  --country-access-none-light: #FFCDD2;
+
+  // Dark mode colors (dark shades)
+  --country-access-full-dark: #2E7D32;
+  --country-access-overflight-dark: #E65100;
+  --country-access-none-dark: #C62828;
+
+  // Use light mode colors by default
+  --country-access-full: var(--country-access-full-light);
+  --country-access-overflight: var(--country-access-overflight-light);
+  --country-access-none: var(--country-access-none-light);
+}
+
+// Dark mode overrides
+:host-context(.dark-mode) {
+  --country-access-full: var(--country-access-full-dark);
+  --country-access-overflight: var(--country-access-overflight-dark);
+  --country-access-none: var(--country-access-none-dark);
+}
+
+.country-access-indicator {
+  &.full-access {
+    background-color: var(--country-access-full);
+  }
+
+  &.overflight-only {
+    background-color: var(--country-access-overflight);
+  }
+
+  &.no-access {
+    background-color: var(--country-access-none);
+  }
+}

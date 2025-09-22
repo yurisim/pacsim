@@ -161,7 +161,7 @@ export class GameService {
    */
   public async getCountryAccessSnapshot(
     gameId: number
-  ): Promise<{ countries: Record<string, boolean> }> {
+  ): Promise<{ countries: Record<string, AccessStatus> }> {
     const game = await this.prisma.game.findUnique({
       where: { id: gameId },
       select: { id: true },
@@ -175,9 +175,9 @@ export class GameService {
       select: { country: true, accessLevel: true },
     });
 
-    const countries: Record<string, boolean> = {};
+    const countries: Record<string, AccessStatus> = {};
     for (const row of countryAccessRows) {
-      countries[row.country] = row.accessLevel === AccessStatus.FULL_ACCESS;
+      countries[row.country] = row.accessLevel;
     }
 
     return { countries };
@@ -449,12 +449,17 @@ export class GameService {
 
     // Broadcast bulk access update
     try {
-      (this.gameGateway as any)?.publishBulkAccessUpdated?.(gameId, {
-        accessLevel: bulkDto.accessLevel,
-        countries: result.countries.map(c => c.country),
-      });
+      if (this.gameGateway && typeof this.gameGateway.publishBulkAccessUpdated === 'function') {
+        this.gameGateway.publishBulkAccessUpdated(gameId, {
+          accessLevel: bulkDto.accessLevel,
+          countries: result.countries.map(c => c.country),
+        });
+        this.logger.log(`Bulk access update broadcast sent for game ${gameId}: ${result.countries.length} countries to ${bulkDto.accessLevel}`);
+      } else {
+        this.logger.warn(`GameGateway not available or publishBulkAccessUpdated method missing for game ${gameId}`);
+      }
     } catch (err) {
-      this.logger.warn(`Broadcast bulk access update failed for game ${gameId}: ${err}`);
+      this.logger.error(`Broadcast bulk access update failed for game ${gameId}: ${err}`, err instanceof Error ? err.stack : undefined);
     }
 
     return result;

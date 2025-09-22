@@ -382,7 +382,7 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
       // Retrieve and verify it's persisted
       const getRes = await gmApi.get(`/api/games/${gameId}/country-access`);
       expect(getRes.data.countries).toHaveProperty('MALAYSIA');
-      expect(getRes.data.countries.MALAYSIA).toBe(true); // FULL_ACCESS maps to true
+      expect(getRes.data.countries.MALAYSIA).toBe('FULL_ACCESS'); // FULL_ACCESS enum value
     });
 
     it('should persist bulk access changes and be retrievable via GET', async () => {
@@ -392,10 +392,10 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
         notes: 'Integration test bulk update'
       });
 
-      // Retrieve and verify all are NO_ACCESS (false)
+      // Retrieve and verify all are NO_ACCESS
       const getRes = await gmApi.get(`/api/games/${gameId}/country-access`);
       for (const [country, access] of Object.entries(getRes.data.countries)) {
-        expect(access).toBe(false); // NO_ACCESS maps to false
+        expect(access).toBe('NO_ACCESS'); // NO_ACCESS enum value
       }
 
       // Now set specific countries to FULL_ACCESS
@@ -407,9 +407,9 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
 
       // Retrieve and verify mixed state
       const getRes2 = await gmApi.get(`/api/games/${gameId}/country-access`);
-      expect(getRes2.data.countries.JAPAN).toBe(true);
-      expect(getRes2.data.countries.SINGAPORE).toBe(true);
-      expect(getRes2.data.countries.PHILIPPINES).toBe(false); // Should remain NO_ACCESS
+      expect(getRes2.data.countries.JAPAN).toBe('FULL_ACCESS');
+      expect(getRes2.data.countries.SINGAPORE).toBe('FULL_ACCESS');
+      expect(getRes2.data.countries.PHILIPPINES).toBe('NO_ACCESS'); // Should remain NO_ACCESS
     });
   });
 });

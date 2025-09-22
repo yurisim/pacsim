@@ -3,6 +3,16 @@ import { By } from '@angular/platform-browser';
 import { TeamsTabComponent } from './teams-tab.component';
 import { Team, Player } from '../../../generated';
 
+/**
+ * Test suite for TeamsTabComponent behavior and composition
+ *
+ * This test suite covers:
+ * - Composition: verifies team lists are rendered via child components (no direct loops)
+ * - Event re-emission: joinTeam and assignOneUnassigned bubble correctly with payloads
+ * - Basic rendering with provided team inputs and filter defaults
+ *
+ * @group Lobby/Teams Tab Component Tests
+ */
 describe('TeamsTabComponent (refactor)', () => {
   let fixture: ComponentFixture<TeamsTabComponent>;
   let component: TeamsTabComponent;
@@ -53,6 +63,12 @@ describe('TeamsTabComponent (refactor)', () => {
     fixture.detectChanges();
   });
 
+  /**
+   * Verifies that team lists are rendered via the app-team-list child component
+   * rather than looping and rendering team cards directly in this component.
+   * Ensures the intended composition pattern is followed.
+   * @test
+   */
   it('renders lists via team-list composition (no direct team-card loops)', () => {
     const lists = fixture.debugElement.queryAll(By.css('app-team-list'));
     expect(lists.length).toBeGreaterThan(0);
@@ -61,6 +77,11 @@ describe('TeamsTabComponent (refactor)', () => {
     expect(lists.length).toBe(3);
   });
 
+  /**
+   * Ensures the component re-emits joinTeam events from nested children with the
+   * original Team payload so container parents can handle the action.
+   * @test
+   */
   it('re-emits joinTeam from nested list/cards with the correct team payload', () => {
     let emitted: Team | null = null;
     component.joinTeam.subscribe((t) => (emitted = t));
@@ -73,6 +94,11 @@ describe('TeamsTabComponent (refactor)', () => {
     expect(emitted).toEqual(teams[0]);
   });
 
+  /**
+   * Ensures the component re-emits assignOneUnassigned events from nested children
+   * using the correct team identifier.
+   * @test
+   */
   it('re-emits assignOneUnassigned with team id from nested list', () => {
     let emittedId: number | null = null;
     component.assignOneUnassigned.subscribe((id) => (emittedId = id));

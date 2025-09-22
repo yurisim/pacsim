@@ -1,0 +1,44 @@
+<h2 mat-dialog-title class="flex items-center gap-2">
+  <mat-icon>{{ icon }}</mat-icon>
+  {{ title }}
+</h2>
+
+<div mat-dialog-content class="flex flex-col gap-3">
+  <p>{{ description }}</p>
+
+  <div class="p-3 rounded-lg md-sys-bg-surface-variant md-sys-color-on-surface-variant text-sm">
+    <div class="flex items-center gap-2 mb-2">
+      <mat-icon class="text-sm">info</mat-icon>
+      <span class="font-medium">Access Level Details:</span>
+    </div>
+    <div class="space-y-1 text-xs">
+      @switch (data.action) {
+        @case ('grant') {
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded country-access-indicator full-access"></div>
+            <span><strong>Full Access:</strong> All military operations permitted</span>
+          </div>
+        }
+        @case ('revoke') {
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded country-access-indicator no-access"></div>
+            <span><strong>No Access:</strong> All military operations prohibited</span>
+          </div>
+        }
+        @case ('overflight') {
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded country-access-indicator overflight-only"></div>
+            <span><strong>Overflight Only:</strong> Transit permitted, no landing/basing</span>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions class="flex justify-end gap-2">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-button="filled" type="button" (click)="confirm()">
+    {{ confirmButtonText }}
+  </button>
+</div>

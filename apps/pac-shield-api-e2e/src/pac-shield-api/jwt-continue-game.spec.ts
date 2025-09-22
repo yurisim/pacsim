@@ -19,7 +19,7 @@
  * prevents name collisions across and within games, and verifies consistent
  * room-code validation behavior.
  */
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 describe('JWT and Continue Game API E2E', () => {
   let gameId: number;
@@ -105,10 +105,11 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown name conflict error');
       } catch (error) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.code).toBe('NAME_CONFLICT');
-        expect(error.response.data.existingPlayer).toBe(true);
-        expect(error.response.data.message).toContain('already exists');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
+        expect((axiosError.response?.data as any)?.code).toBe('NAME_CONFLICT');
+        expect((axiosError.response?.data as any)?.existingPlayer).toBe(true);
+        expect((axiosError.response?.data as any)?.message).toContain('already exists');
       }
     });
 
@@ -155,9 +156,10 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown invalid PIN error');
       } catch (error) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.code).toBe('INVALID_PIN');
-        expect(error.response.data.message).toContain('Invalid PIN');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
+        expect((axiosError.response?.data as any)?.code).toBe('INVALID_PIN');
+        expect((axiosError.response?.data as any)?.message).toContain('Invalid PIN');
       }
     });
 
@@ -178,9 +180,10 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown no PIN set error');
       } catch (error) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.code).toBe('NO_PIN_SET');
-        expect(error.response.data.message).toContain('no PIN set');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
+        expect((axiosError.response?.data as any)?.code).toBe('NO_PIN_SET');
+        expect((axiosError.response?.data as any)?.message).toContain('no PIN set');
       }
     });
 
@@ -203,9 +206,10 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown invalid PIN error');
       } catch (error) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.code).toBe('INVALID_PIN');
-        expect(error.response.data.message).toContain('Invalid PIN');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
+        expect((axiosError.response?.data as any)?.code).toBe('INVALID_PIN');
+        expect((axiosError.response?.data as any)?.message).toContain('Invalid PIN');
       }
 
       // Try to rejoin with correct PIN '5555'
@@ -325,8 +329,9 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown invalid room code error');
       } catch (error) {
-        expect(error.response.status).toBe(404);
-        expect(error.response.data.message).toBe('Invalid room code');
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(404);
+        expect((axiosError.response?.data as any)?.message).toBe('Invalid room code');
       }
     });
 
@@ -338,7 +343,8 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown validation error');
       } catch (error) {
-        expect(error.response.status).toBe(400);
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
       }
     });
 
@@ -351,7 +357,8 @@ describe('JWT and Continue Game API E2E', () => {
         });
         fail('Should have thrown validation error for empty name');
       } catch (error) {
-        expect(error.response.status).toBe(400);
+        const axiosError = error as AxiosError;
+        expect(axiosError.response?.status).toBe(400);
       }
     });
 
