@@ -1,4 +1,4 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, effect } from '@angular/core';
 import { Map } from 'maplibre-gl';
 import { AccessStatus, Country, country } from '../../../generated/enums';
 import { WebSocketService } from '../../../shared/services/websocket.service';
@@ -6,10 +6,27 @@ import { CountryAccessHttpService } from '../../../shared/services/country-acces
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../core/store/app.state';
 import { selectGame } from '../../../core/store/game/game.selectors';
+import { ThemeService } from '../../../shared/services/theme.service';
 
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Manages the political access country overlay rendered on the MapLibre map.
+ *
+ * Responsibilities:
+ * - Maintain and expose overlay visibility state
+ * - Load and reactively update per-country AccessStatus (Full, Overflight, None)
+ * - Listen to WebSocket events for real-time sync across clients
+ * - Render and refresh a themed vector overlay layer with correct colors per status
+ *
+ * Usage:
+ * - Call setMap() once the Map instance is ready
+ * - Call toggleOverlay() to show/hide the overlay (loads initial state on first show)
+ * - Call updateCountryAccess() for optimistic UI updates prior to server confirmation
+ *
+ * @class CountryOverlayService
+ */
 export class CountryOverlayService {
   private map: Map | null = null;
   private readonly LAYER_ID = 'country-access-overlay';
@@ -26,8 +43,15 @@ export class CountryOverlayService {
   private store = inject(Store<AppState>);
   private webSocketService = inject(WebSocketService);
   private countryAccessHttp = inject(CountryAccessHttpService);
+  private themeService = inject(ThemeService);
 
-  // Country access data
+  /**
+   * Reactive store of country → AccessStatus used to paint the overlay.
+   * Initialized to NO_ACCESS for all configured countries and updated from:
+   * - Initial HTTP snapshot
+   * - Optimistic UI updates
+   * - WebSocket events (single and bulk)
+   */
   private countryAccessData = signal<Record<Country, AccessStatus>>({
     'JAPAN': 'NO_ACCESS',
     'PHILIPPINES': 'NO_ACCESS',
@@ -61,6 +85,16 @@ export class CountryOverlayService {
     // Build reverse mapping once from forward mapping
     Object.entries(this.countryIsoMapping).forEach(([country, iso3]) => {
       this.iso3ToCountry[iso3] = country as Country;
+    });
+
+    // Setup theme change listener - refresh overlay when theme changes
+    // This follows the same pattern as location markers for reactive theme switching
+    effect(() => {
+      const isDarkMode = this.themeService.isDarkMode();
+      // Only refresh if overlay is visible to avoid unnecessary work
+      if (this.isOverlayVisible()) {
+        this.refreshOverlay();
+      }
     });
 
     // Track current gameId for WS filtering
@@ -119,12 +153,22 @@ export class CountryOverlayService {
     });
   }
 
+  /**
+   * Provide the MapLibre GL map instance to render the overlay on.
+   * Must be called before showing the overlay.
+   *
+   * @param map MapLibre GL map instance
+   * @returns void
+   */
   setMap(map: Map): void {
     this.map = map;
   }
 
   /**
-   * Load initial country access state from backend if not already loaded
+   * Load the initial per-country access state from the backend, once per game.
+   * No-ops if data is already loaded or game id is not available yet.
+   *
+   * @returns Promise that resolves when the snapshot (if needed) has been applied
    */
   private async loadInitialStateIfNeeded(): Promise<void> {
     if (this.initialStateLoaded || !this.currentGameId) {
@@ -159,6 +203,12 @@ export class CountryOverlayService {
     }
   }
 
+  /**
+   * Toggle the overlay's visibility.
+   * When enabling, ensures initial state is loaded before rendering.
+   *
+   * @returns void
+   */
   toggleOverlay(): void {
     const newVisibility = !this.overlayVisibleSignal();
     this.overlayVisibleSignal.set(newVisibility);
@@ -172,6 +222,14 @@ export class CountryOverlayService {
     }
   }
 
+  /**
+   * Update a single country's AccessStatus and refresh the overlay if visible.
+   * Intended for optimistic UI updates; server/WebSocket updates will reconcile state.
+   *
+   * @param country Country enum value to update
+   * @param access New access level to apply
+   * @returns void
+   */
   updateCountryAccess(country: Country, access: AccessStatus): void {
     const currentData = this.countryAccessData();
     this.countryAccessData.set({
@@ -184,6 +242,12 @@ export class CountryOverlayService {
     }
   }
 
+  /**
+   * Render the country access overlay layer using current AccessStatus values.
+   * Safely removes any previous instance of the layer before re-adding.
+   *
+   * @returns void
+   */
   private showOverlay(): void {
     if (!this.map) return;
 
@@ -201,26 +265,9 @@ export class CountryOverlayService {
     Object.entries(this.countryAccessData()).forEach(([country, access]) => {
       const isoCode = this.countryIsoMapping[country as Country];
 
-      let fillColor: string;
-      let borderColor: string;
-
-      switch (access) {
-        case 'FULL_ACCESS':
-          fillColor = '#4CAF50';
-          borderColor = '#2E7D32';
-          break;
-        case 'OVERFLIGHT_ONLY':
-          fillColor = '#FF9800';
-          borderColor = '#F57C00';
-          break;
-        case 'NO_ACCESS':
-          fillColor = '#F44336';
-          borderColor = '#C62828';
-          break;
-        default:
-          fillColor = '#999999';
-          borderColor = '#666666';
-      }
+      const colors = this.getAccessColors(access);
+      const fillColor = colors.fill;
+      const borderColor = colors.border;
 
       colorMatchConditions.push(isoCode, fillColor);
       borderColorMatchConditions.push(isoCode, borderColor);
@@ -251,6 +298,11 @@ export class CountryOverlayService {
     }, 'countries-label'); // Add below country labels but above the base country layer
   }
 
+  /**
+   * Remove the overlay layer if present.
+   *
+   * @returns void
+   */
   private hideOverlay(): void {
     if (!this.map) return;
 
@@ -260,6 +312,12 @@ export class CountryOverlayService {
     }
   }
 
+  /**
+   * Refresh overlay paint expressions to reflect current AccessStatus values.
+   * Re-creates the layer as MapLibre paint expression updates may not apply directly.
+   *
+   * @returns void
+   */
   private refreshOverlay(): void {
     if (!this.map || !this.isOverlayVisible()) return;
 
@@ -268,21 +326,71 @@ export class CountryOverlayService {
   }
 
 
-  // Readonly accessor for visibility (avoid exposing Signal directly)
+  /**
+   * Compute theme-appropriate fill and border colors for a given AccessStatus.
+   * Dark mode uses more subdued variants for better contrast.
+   *
+   * @param access Current access level for a country
+   * @returns Object with CSS color strings for fill and border
+   */
+  private getAccessColors(access: AccessStatus): { fill: string; border: string } {
+    const isDarkMode = this.themeService.isDarkMode();
+
+    switch (access) {
+      case 'FULL_ACCESS':
+        return isDarkMode
+          ? { fill: '#2E7D32', border: '#1B5E20' }  // Dark green for dark mode
+          : { fill: '#81C784', border: '#66BB6A' }; // Medium green for light mode
+
+      case 'OVERFLIGHT_ONLY':
+        return isDarkMode
+          ? { fill: '#E65100', border: '#BF360C' }  // Dark orange for dark mode
+          : { fill: '#FFB74D', border: '#FFA726' }; // Medium orange for light mode
+
+      case 'NO_ACCESS':
+        return isDarkMode
+          ? { fill: '#C62828', border: '#B71C1C' }  // Dark red for dark mode
+          : { fill: '#EF5350', border: '#E53935' }; // Medium red for light mode
+
+      default:
+        return isDarkMode
+          ? { fill: '#616161', border: '#424242' }  // Darker gray for dark mode
+          : { fill: '#E0E0E0', border: '#BDBDBD' }; // Lighter gray for light mode
+    }
+  }
+
+  /**
+   * Indicates whether the overlay is currently visible.
+   * This is a read-only accessor that does not expose the underlying signal.
+   *
+   * @returns True when overlay is visible, false otherwise
+   */
   isOverlayVisible(): boolean {
     return this.overlayVisibleSignal();
   }
 
-  // Expose stable layer id without hardcoding in consumers
+  /**
+   * Exposes the stable overlay layer identifier for consumers (e.g., event binding).
+   * @returns The layer id string used when adding the overlay to the map
+   */
   getLayerId(): string {
     return this.LAYER_ID;
   }
 
-  // Map ISO3 -> Country (built once from forward mapping)
+  /**
+   * Convert an ISO3 country code (from map data) to the app's Country enum.
+   *
+   * @param iso3 ISO3 country code from the vector tile layer (e.g., "JPN")
+   * @returns Matching Country enum value or null when not in the configured set
+   */
   getCountryByIso3(iso3: string): Country | null {
     return (this.iso3ToCountry[iso3] as Country) ?? null;
   }
 
+  /**
+   * Get a snapshot of current country access mapping for external consumers.
+   * @returns Record of Country → AccessStatus
+   */
   getCountryAccess(): Record<Country, AccessStatus> {
     return this.countryAccessData();
   }
