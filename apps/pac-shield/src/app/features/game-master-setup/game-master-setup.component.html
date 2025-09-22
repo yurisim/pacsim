@@ -7,20 +7,24 @@
       >
     </mat-card-header>
     <mat-card-content>
-      <div class="flex flex-col gap-6 items-center">
-        <div class="text-left">
-          <mat-form-field appearance="outline">
-            <mat-label
-              >Last Name <span class="md-sys-color-error">*</span></mat-label
-            >
+      <form [formGroup]="form" class="flex flex-col gap-6 items-center">
+        <div class="text-left w-full max-w-sm">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Username (Format: j.smith) <span class="md-sys-color-error">*</span></mat-label>
             <input
               matInput
-              id="lastName"
+              id="username"
               type="text"
-              [(ngModel)]="lastName"
+              formControlName="username"
               maxlength="50"
             />
           </mat-form-field>
+          <div
+            *ngIf="form.get('username')?.invalid && form.get('username')?.touched"
+            class="md-typescale-body-small md-sys-color-error mt-1"
+          >
+            {{ fieldError('username') }}
+          </div>
         </div>
 
         <div class="text-center">
@@ -40,13 +44,17 @@
           <app-input-otp
             [length]="4"
             [integerOnly]="true"
-            [(ngModel)]="pin"
+            formControlName="pin"
             ariaLabel="4-digit PIN for Game Master"
           ></app-input-otp>
-          <!-- (complete)="onPinComplete($event)" -->
+          <div
+            *ngIf="form.get('pin')?.invalid && form.get('pin')?.touched"
+            class="md-typescale-body-small md-sys-color-error mt-1"
+          >
+            {{ fieldError('pin') }}
+          </div>
         </div>
-
-      </div>
+      </form>
     </mat-card-content>
 
     <mat-card-actions class="flex gap-3 md-padding-lg justify-center mt-4">
