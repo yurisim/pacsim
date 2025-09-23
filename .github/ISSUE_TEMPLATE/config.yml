@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/yurisim/pacsim/wiki
+    about: Check the project wiki for setup guides and documentation
+  - name: 💬 Discussions
+    url: https://github.com/yurisim/pacsim/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🔧 Development Setup
+    url: https://github.com/yurisim/pacsim/blob/master/CLAUDE.md
+    about: Development setup and coding standards
