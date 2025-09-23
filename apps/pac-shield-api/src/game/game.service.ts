@@ -292,8 +292,8 @@ export class GameService {
         throw new NotFoundException(`Game with ID "${gameId}" not found`);
       }
 
-      // Calculate access level based on dice roll (standard ACE rules)
-      const accessLevel = this.calculateAccessLevel(updateDto.diceRoll);
+      // Calculate access level based on country-specific dice roll rules
+      const accessLevel = this.calculateAccessLevel(country, updateDto.diceRoll);
 
       // Upsert country access with new dice roll
       const countryAccess = await tx.countryAccess.upsert({
@@ -360,7 +360,7 @@ export class GameService {
       // Update all country dice rolls
       const countries = [];
       for (const { country, diceRoll } of bulkDto.diceRolls) {
-        const accessLevel = this.calculateAccessLevel(diceRoll);
+        const accessLevel = this.calculateAccessLevel(country, diceRoll);
 
         const countryAccess = await tx.countryAccess.upsert({
           where: {
@@ -480,15 +480,44 @@ export class GameService {
   }
 
   /**
-   * Calculate access level based on dice roll using standard ACE rules.
-   * Dice Roll 1-5: NO_ACCESS
-   * Dice Roll 6-15: OVERFLIGHT_ONLY
-   * Dice Roll 16-20: FULL_ACCESS
+   * Calculate access level based on country-specific dice roll rules:
+   * Japan: Always FULL_ACCESS
+   * Indonesia, Brunei, India: 1-3=NO_ACCESS, 4=OVERFLIGHT_ONLY, 5-10=FULL_ACCESS
+   * Malaysia, Singapore: 1-2=NO_ACCESS, 3=OVERFLIGHT_ONLY, 4-10=FULL_ACCESS
+   * Laos, Vietnam: 1=NO_ACCESS, 2=OVERFLIGHT_ONLY, 3-10=FULL_ACCESS
+   * Default (Philippines, Thailand, Cambodia): 1-3=NO_ACCESS, 4-7=OVERFLIGHT_ONLY, 8-10=FULL_ACCESS
    */
-  private calculateAccessLevel(diceRoll: number): AccessStatus {
-    if (diceRoll >= 8) return AccessStatus.FULL_ACCESS;
-    if (diceRoll >= 4) return AccessStatus.OVERFLIGHT_ONLY;
-    return AccessStatus.NO_ACCESS;
+  private calculateAccessLevel(country: Country, diceRoll: number): AccessStatus {
+    // Japan always has full access
+    if (country === Country.JAPAN) {
+      return AccessStatus.FULL_ACCESS;
+    }
+
+    // Group 1: Indonesia, Brunei, India
+    if (country === Country.INDONESIA || country === Country.BRUNEI || country === Country.INDIA) {
+      if (diceRoll >= 1 && diceRoll <= 3) return AccessStatus.NO_ACCESS;
+      if (diceRoll === 4) return AccessStatus.OVERFLIGHT_ONLY;
+      return AccessStatus.FULL_ACCESS;
+    }
+
+    // Group 2: Malaysia, Singapore
+    if (country === Country.MALAYSIA || country === Country.SINGAPORE) {
+      if (diceRoll >= 1 && diceRoll <= 2) return AccessStatus.NO_ACCESS;
+      if (diceRoll === 3) return AccessStatus.OVERFLIGHT_ONLY;
+      return AccessStatus.FULL_ACCESS;
+    }
+
+    // Group 3: Laos, Vietnam
+    if (country === Country.LAOS || country === Country.VIETNAM) {
+      if (diceRoll === 1) return AccessStatus.NO_ACCESS;
+      if (diceRoll === 2) return AccessStatus.OVERFLIGHT_ONLY;
+      return AccessStatus.FULL_ACCESS;
+    }
+
+    // Default rules for other countries (Philippines, Thailand, Cambodia)
+    if (diceRoll >= 1 && diceRoll <= 3) return AccessStatus.NO_ACCESS;
+    if (diceRoll >= 4 && diceRoll <= 7) return AccessStatus.OVERFLIGHT_ONLY;
+    return AccessStatus.FULL_ACCESS;
   }
 
   /**
