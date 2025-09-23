@@ -108,6 +108,10 @@ describe('JoinFacadeService', () => {
   }));
 
   it('checkNewName should update nameCheck.available', fakeAsync(() => {
+    // Arrange: validate room first so checkNewName will make API call
+    service.validateRoom('ABC123');
+    tick(800); // wait for room validation to complete
+
     service.checkNewName('ABC123', 'n.guy');
     // debounce 300ms in pipeline
     tick(300);
