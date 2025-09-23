@@ -39,7 +39,7 @@ describe('nameFormatValidator', () => {
     expect(validator(control)).toEqual({ nameFormat: true });
   });
 
-  it('should return nameFormat error for capitalized last name', () => {
+  it('should return nameFormat error for capitalized surname', () => {
     const control = new FormControl('j.Smith');
     expect(validator(control)).toEqual({ nameFormat: true });
   });
@@ -64,7 +64,7 @@ describe('nameFormatValidator', () => {
     expect(validator(control)).toEqual({ nameFormat: true });
   });
 
-  it('should return nameFormat error for just dot and last name', () => {
+  it('should return nameFormat error for just dot and surname', () => {
     const control = new FormControl('.smith');
     expect(validator(control)).toEqual({ nameFormat: true });
   });

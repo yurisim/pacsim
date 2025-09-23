@@ -41,7 +41,7 @@ test.describe('JWT Integration and Continue Game Flow', () => {
     await expect(page.getByText('Game Master Setup')).toBeVisible();
 
     // Fill out Game Master Setup form
-    await page.getByLabel('Last Name').fill('ConflictTestGM');
+    await page.getByLabel('Username').fill('c.gm');
     await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 

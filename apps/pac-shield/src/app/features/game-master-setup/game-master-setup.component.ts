@@ -24,7 +24,7 @@ export interface GameMasterInfo {
  * - Acts as a small, presentational step in the &quot;Start New Game&quot; flow on the Home screen.
  *
  * Key responsibilities:
- * - Render a Material form for last name and a 4-digit PIN (via InputOtpComponent).
+ * - Render a Material form for username and a 4-digit PIN (via InputOtpComponent).
  * - Maintain local form state (template-driven) and expose a computed isFormValid.
  * - On submit, emit a single &#39;complete&#39; Output with { lastName, pin } (see GameMasterInfo).
  * - Do not make API calls or navigate; delegates side-effects to the parent container.

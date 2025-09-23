@@ -38,7 +38,7 @@ test.describe('Placeholder test', () => {
 
 //   // Fill out Game Master Setup form
 //   await expect(page.getByText('Game Master Setup')).toBeVisible();
-//   await page.getByLabel('Last Name').fill('TestGM');
+//   await page.getByLabel('Username').fill('t.gm');
 //   await fillGameMasterPin(page, '1234');
 //   await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -187,7 +187,7 @@ test.describe('Placeholder test', () => {
 //   await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
 //   await page.getByRole('button', { name: 'Start New Game' }).click();
 //   await expect(page.getByText('Game Master Setup')).toBeVisible();
-//   await page.getByLabel('Last Name').fill('TestGM2');
+//   await page.getByLabel('Username').fill('t.gmtwo');
 //   await fillGameMasterPin(page, '1234');
 //   await page.getByRole('button', { name: 'Continue' }).click();
 //   await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
