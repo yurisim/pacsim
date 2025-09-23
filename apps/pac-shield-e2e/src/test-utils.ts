@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page, expect, request, type APIRequestContext } from '@playwright/test';
 
 /**
  * Test utilities for PAC Shield E2E tests
@@ -787,4 +787,184 @@ export function createTestIsolation(page: Page, testName: string) {
   };
 
   return { setup, cleanup };
+}
+
+// === COMMON GAME CREATION PATTERNS ===
+
+/**
+ * Standard game creation via API - extracted from multiple test files
+ * @param api - API request context or page object
+ * @param victoryConditionMP - Victory condition (default: 100)
+ * @returns Promise with game data
+ */
+export async function createGame(api: APIRequestContext | Page, victoryConditionMP = 100) {
+  let apiContext: APIRequestContext;
+  const shouldDispose = false;
+
+  if ('request' in api) {
+    // It's a Page object, use its request context
+    apiContext = api.request;
+  } else {
+    // It's already an APIRequestContext, use it directly
+    apiContext = api;
+  }
+
+  const res = await apiContext.post('http://localhost:3000/api/game/create', {
+    data: { victoryConditionMP },
+  });
+  expect(res.status()).toBe(201);
+  const gameData = await res.json();
+
+  if (shouldDispose) {
+    // Clean up the context we created (currently never happens in this version)
+    await apiContext.dispose();
+  }
+
+  return { gameId: gameData.id as number, roomCode: gameData.roomCode as string };
+}
+
+/**
+ * Standard player join via API - extracted from multiple test files
+ * @param api - API request context
+ * @param roomCode - Room code to join
+ * @param playerName - Player name
+ * @param pin - Optional PIN for existing players
+ * @param role - Optional role (GM, PLAYER, etc.)
+ * @returns Promise with join data
+ */
+export async function joinGameViaApi(
+  api: APIRequestContext,
+  roomCode: string,
+  playerName: string,
+  pin?: string,
+  role?: string
+) {
+  const joinRes = await api.post('http://localhost:3000/api/player/join', {
+    data: { roomCode, playerName, ...(pin ? { pin } : {}), ...(role ? { role } : {}) },
+  });
+  expect(joinRes.ok()).toBeTruthy();
+  expect(joinRes.status()).toBe(201);
+  const { token, player } = await joinRes.json();
+  return { token: token as string, playerId: (player?.id ?? player?.playerId) as number };
+}
+
+/**
+ * Combined game creation and player join - used in many tests
+ * @param api - API request context
+ * @param playerName - Player name
+ * @param victoryConditionMP - Victory condition (default: 100)
+ * @returns Promise with complete game data
+ */
+export async function createGameAndJoin(
+  api: APIRequestContext,
+  playerName: string,
+  victoryConditionMP = 100
+) {
+  const { gameId, roomCode } = await createGame(api, victoryConditionMP);
+  const { token, playerId } = await joinGameViaApi(api, roomCode, playerName);
+  return { gameId, roomCode, token, playerId };
+}
+
+/**
+ * Standard home page game creation flow via UI - extracted from multiple tests
+ * @param page - Playwright page object
+ * @param gmName - Game master name (default: 't.gm')
+ * @param pin - Game master PIN (default: '1234')
+ * @returns Promise<void>
+ */
+export async function createGameViaUI(page: Page, gmName = 't.gm', pin = '1234'): Promise<void> {
+  // Navigate to home and wait for connection
+  await page.goto('/');
+  await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
+  await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
+
+  // Click Start New Game
+  await page.getByRole('button', { name: 'Start New Game' }).click();
+
+  // Wait for Game Master Setup form
+  await expect(page.getByText('Game Master Setup')).toBeVisible();
+
+  // Fill out GM form
+  await page.getByLabel('Username').fill(gmName);
+  await fillGameMasterPin(page, pin);
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Wait for lobby to load
+  await expect(page).toHaveURL(/\/lobby\/\d+$/);
+  await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
+}
+
+/**
+ * Extract room code from lobby page - common pattern across tests
+ * @param page - Playwright page object
+ * @returns Promise<string> - The room code
+ */
+export async function extractRoomCodeFromLobby(page: Page): Promise<string> {
+  const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+  await expect(roomCodeButton).toBeVisible();
+  return await roomCodeButton.locator('p').evaluate(el => el.textContent?.trim() || '');
+}
+
+/**
+ * Set up JWT token in localStorage - common pattern for auth tests
+ * @param page - Playwright page object
+ * @param token - JWT token
+ * @param playerId - Player ID
+ * @returns Promise<void>
+ */
+export async function setJwtToken(page: Page, token: string, playerId: string | number): Promise<void> {
+  await page.addInitScript(([jwt, pid]) => {
+    localStorage.setItem('pac-shield-jwt', String(jwt));
+    localStorage.setItem('playerId', String(pid));
+  }, [token, playerId]);
+}
+
+/**
+ * Get JWT token from localStorage for validation
+ * @param page - Playwright page object
+ * @returns Promise<string | null>
+ */
+export async function getJwtToken(page: Page): Promise<string | null> {
+  return await page.evaluate(() => localStorage.getItem('pac-shield-jwt'));
+}
+
+/**
+ * Decode JWT payload for testing - extracted from multiple tests
+ * @param token - JWT token string
+ * @returns Decoded payload or null if invalid
+ */
+export function decodeJwtGameId(token: string): string | null {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'));
+    return String(payload.gameId ?? '');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Wait for WebSocket connection - common pattern across all tests
+ * @param page - Playwright page object
+ * @param timeout - Timeout in milliseconds (default: 10000)
+ * @returns Promise<void>
+ */
+export async function waitForConnection(page: Page, timeout = 10000): Promise<void> {
+  await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible({ timeout });
+  await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible({ timeout });
+}
+
+/**
+ * Standard lobby validation - common pattern across tests
+ * @param page - Playwright page object
+ * @param expectedRoomCode - Optional room code to verify
+ * @returns Promise<void>
+ */
+export async function expectLobbyLoaded(page: Page, expectedRoomCode?: string): Promise<void> {
+  await expect(page).toHaveURL(/\/lobby\/\d+$/);
+  await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
+
+  if (expectedRoomCode) {
+    const roomCodeButton = page.getByRole('button', { name: /copy room code/i });
+    await expect(roomCodeButton.locator('p')).toContainText(expectedRoomCode);
+  }
 }
