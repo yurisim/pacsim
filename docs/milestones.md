@@ -14,10 +14,6 @@
     - [ ] **`HexGridMapComponent`:** Render the main game board from Appendix A. It should be pannable and zoomable.
 
 2.  **Recreate Core Dashboard Widgets (from `Mission Dashboard` Excel Sheet):**
-
-    - [ ] **`BaseAccessWidgetComponent`:**
-      - [ ] Display country flags with their current access level ("Full Access," "Overflight," "No Access") and the underlying dice roll value.
-      - [ ] Use dynamic CSS to apply green, yellow, and red color-coding.
     - [ ] **`AircraftApportionmentWidgetComponent`:**
       - [ ] Display the current number of apportioned C-17, C-130, and C-5 aircraft with their icons and call signs (MOOSE, ARROW, BOSCO).
     - [ ] **`AirfieldCapacityStatusWidgetComponent` (CFACC View):**
