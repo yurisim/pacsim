@@ -42,5 +42,5 @@ test('map should load successfully', async ({ page }) => {
 
   // Switch to Tasks subview and verify it renders
   await page.getByRole('button', { name: 'Tasks' }).click();
-  await expect(page.getByRole('heading', { name: 'Operate' })).toBeVisible();
+  await page.getByRole('heading', { name: 'Overall Progress' }).click();
 });
