@@ -578,7 +578,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // WHY style.load: Fires when new style is completely loaded and applied
     this.map.once('style.load', () => {
       console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
-      this.map.setProjection({ type: 'globe' }); // WHY: Theme change can reset projection
+      this.map.setProjection({ type: 'mercator' }); // Set to Mercator
 
       // Use HexGridComponent's updateColors method if available
       if (this.hexGrid) {
@@ -850,8 +850,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Initial setup when map first loads
     this.map.on('style.load', () => {
-      // Set globe projection after style loads
-      this.map.setProjection({ type: 'globe' });
+      // Set Mercator projection after style loads
+      this.map.setProjection({ type: 'mercator' });
       // Add delay to ensure style is completely ready
       setTimeout(() => {
         this.initializeHexGrid(); // Initialize hex grid using HexGridComponent
