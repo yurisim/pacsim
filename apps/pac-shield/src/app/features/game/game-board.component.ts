@@ -856,6 +856,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.mapReady = true;
       // Initialize country overlay service with map reference
       this.countryOverlayService.setMap(this.map);
+
+      // Initialize overlay state from localStorage if gameId is available
+      if (this.currentGameId) {
+        this.countryOverlayService.initializeOverlayState(this.currentGameId);
+      }
     });
   }
 
