@@ -99,9 +99,19 @@ export class FosRfiService {
    * Generates a random value between 1-3 and saves it
    */
   rollDice(fosId: string, rfiKey: string): Observable<FosRfiEntry[]> {
+    console.log(`[DICE DEBUG] Service rollDice called - FOS: ${fosId}, RFI: ${rfiKey}`);
+
     return this.api.post<any[]>(`fos/${fosId}/rfi/roll-dice`, { rfiKey }).pipe(
-      map((updated) => this.normalize(updated)),
+      tap((rawResponse) => {
+        console.log(`[DICE DEBUG] Raw API response:`, rawResponse);
+      }),
+      map((updated) => {
+        const normalized = this.normalize(updated);
+        console.log(`[DICE DEBUG] Normalized response:`, normalized);
+        return normalized;
+      }),
       tap((updated) => {
+        console.log(`[DICE DEBUG] Updating cache for FOS: ${fosId}`);
         // Refresh fosId cache
         this.cache.set(this.makeFosKey(fosId), updated);
         // Invalidate any displayNumber cache entries referencing this FOS (best-effort)
@@ -109,6 +119,7 @@ export class FosRfiService {
         for (const k of Array.from(this.cache.keys())) {
           if (k.startsWith('game:')) this.cache.delete(k);
         }
+        console.log(`[DICE DEBUG] Cache updated successfully`);
       })
     );
   }
