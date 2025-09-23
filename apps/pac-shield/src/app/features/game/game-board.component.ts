@@ -84,6 +84,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   @ViewChild(GameStatsComponent) gameStatsComponent!: GameStatsComponent;
 
+  /**
+   * Child component that toggles the country access overlay.
+   * Accessed to sync its state with the overlay service.
+   */
+  @ViewChild(CountryAccessToggleComponent) countryAccessToggle!: CountryAccessToggleComponent;
+
 
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
@@ -860,6 +866,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Initialize overlay state from localStorage if gameId is available
       if (this.currentGameId) {
         this.countryOverlayService.initializeOverlayState(this.currentGameId);
+
+        // Sync the toggle button state with the overlay service after initialization
+        setTimeout(() => {
+          if (this.countryAccessToggle) {
+            this.countryAccessToggle.syncWithOverlayService();
+          }
+        }, 0);
       }
     });
   }
@@ -1233,6 +1246,13 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Pass gameId for localStorage persistence
       this.countryOverlayService.toggleOverlay(this.currentGameId || undefined);
     }
+
+    // Ensure toggle button stays in sync after any overlay changes
+    setTimeout(() => {
+      if (this.countryAccessToggle) {
+        this.countryAccessToggle.syncWithOverlayService();
+      }
+    }, 0);
   }
 
   /**

@@ -54,8 +54,8 @@
 
 
   <!-- Bottom left control panel - flex row layout -->
-  <div class="absolute left-2 bottom-2 z-[95] pointer-events-auto">
-    <div class="flex flex-col items-start gap-2">
+  <div class="absolute left-0 sm:left-2 bottom-2 z-[95] pointer-events-auto w-full sm:w-auto right-0 sm:right-auto">
+    <div class="flex flex-col items-start sm:items-start gap-2 w-full">
       <!-- Country Access Toggle -->
       <app-country-access-toggle
         (toggleVisibility)="onCountryAccessToggle($event)"
