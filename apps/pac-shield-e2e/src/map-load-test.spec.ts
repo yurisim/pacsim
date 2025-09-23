@@ -43,4 +43,18 @@ test('map should load successfully', async ({ page }) => {
   // Switch to Tasks subview and verify it renders
   await page.getByRole('button', { name: 'Tasks' }).click();
   await page.getByRole('heading', { name: 'Overall Progress' }).click();
+
+  // Test FOS deactivation with confirmation dialog
+  await page.getByRole('button', { name: 'Deactivate' }).click();
+
+  // Verify confirmation dialog appears
+  await expect(page.getByText('Deactivate FOS 7')).toBeVisible();
+  await expect(page.getByText('Are you sure you want to deactivate this FOS?')).toBeVisible();
+
+  // Confirm deactivation
+  await page.getByRole('button', { name: 'Deactivate FOS' }).click();
+  await expect(page.getByText('deactivated successfully')).toBeVisible();
+
+  // Verify the button changed back to "Activate" after deactivation
+  await expect(page.getByRole('button', { name: 'Activate' })).toBeVisible();
 });
