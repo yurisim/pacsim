@@ -8,7 +8,7 @@ describe('AccountRoomFormComponent', () => {
   let component: AccountRoomFormComponent;
   let fixture: ComponentFixture<AccountRoomFormComponent>;
 
-  const value: AccountFormValue = { gameId: 'ABC123', playerName: 'Bob' };
+  const value: AccountFormValue = { gameId: 'ABC123', playerName: 'b.jones' };
   const roomValid: RoomStatus = { status: 'valid', message: null, code: 'ABC123' };
   const roomPending: RoomStatus = { status: 'pending', message: null, code: 'ABC123' };
   const roomInvalid: RoomStatus = { status: 'invalid', message: 'Invalid room code', code: 'ABC123' };
@@ -31,11 +31,11 @@ describe('AccountRoomFormComponent', () => {
     component.submitted.subscribe(spy);
 
     // Ensure form is valid by patching values correctly (PIN now required)
-    component.form.patchValue({ gameId: 'ABC123', playerName: 'Bob', pin: '2468' });
+    component.form.patchValue({ gameId: 'ABC123', playerName: 'b.jones', pin: '2468' });
 
     // Trigger submit
     component.onSubmit();
-    expect(spy).toHaveBeenCalledWith({ gameId: 'ABC123', playerName: 'Bob', pin: '2468' });
+    expect(spy).toHaveBeenCalledWith({ gameId: 'ABC123', playerName: 'b.jones', pin: '2468' });
   });
 
   it('shows spinner when room validation is pending and disables submit', () => {
@@ -65,7 +65,7 @@ describe('AccountRoomFormComponent', () => {
   it('emits playerNameChanged when typing name', () => {
     const spy = jest.fn();
     component.playerNameChanged.subscribe(spy);
-    component.onPlayerNameInput('Alice');
-    expect(spy).toHaveBeenCalledWith('Alice');
+    component.onPlayerNameInput('a.smith');
+    expect(spy).toHaveBeenCalledWith('a.smith');
   });
 });

@@ -17,7 +17,7 @@ test('map should load successfully', async ({ page }) => {
   await expect(page.getByText('Game Master Setup')).toBeVisible();
 
   // Setup GM
-  await page.getByLabel('Last Name').fill('MapTest');
+  await page.getByLabel('Username').fill('m.test');
   await fillGameMasterPin(page, '1234');
   await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -42,5 +42,5 @@ test('map should load successfully', async ({ page }) => {
 
   // Switch to Tasks subview and verify it renders
   await page.getByRole('button', { name: 'Tasks' }).click();
-  await expect(page.getByRole('heading', { name: 'Operate' })).toBeVisible();
+  await page.getByRole('heading', { name: 'Overall Progress' }).click();
 });

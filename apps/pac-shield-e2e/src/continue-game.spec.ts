@@ -20,7 +20,7 @@ test.describe('Continue Game functionality', () => {
     // First, create a game and join it to establish a valid JWT
     await page.goto('/');
 
-    const userName = 'TestPlayer';
+    const userName = 't.player';
 
     // Create a game
     await page.getByRole('button', { name: 'Start New Game' }).click();
@@ -29,7 +29,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByText('Game Master Setup')).toBeVisible();
 
     // Fill out Game Master Setup form
-    await page.getByLabel('Last Name').fill(userName);
+    await page.getByLabel('Username').fill(userName);
     await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -88,7 +88,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByText('Game Master Setup')).toBeVisible();
 
     // Fill out Game Master Setup form
-    await page.getByLabel('Last Name').fill('GameMaster');
+    await page.getByLabel('Username').fill('g.master');
     await fillGameMasterPin(page, '5678');
     await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -107,7 +107,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByTestId('player-name-input')).toBeVisible();
 
     // Enter player name and join
-    await page.fill('[data-testid="player-name-input"]', 'NewPlayer');
+    await page.fill('[data-testid="player-name-input"]', 'n.player');
 
     await page.getByRole('textbox', { name: 'OTP Input digit 1' }).click();
     await page.getByRole('textbox', { name: 'OTP Input digit 1' }).fill('1');
@@ -160,7 +160,7 @@ test.describe('Continue Game functionality', () => {
     // Setup: Create and join a game first
     await page.goto('/');
 
-    const userName = 'LayoutTest';
+    const userName = 'l.test';
 
     await page.getByRole('button', { name: 'Start New Game' }).click();
 
@@ -168,7 +168,7 @@ test.describe('Continue Game functionality', () => {
     await expect(page.getByText('Game Master Setup')).toBeVisible();
 
     // Fill out Game Master Setup form
-    await page.getByLabel('Last Name').fill(userName);
+    await page.getByLabel('Username').fill(userName);
     await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 

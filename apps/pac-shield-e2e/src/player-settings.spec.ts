@@ -30,7 +30,7 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.getByText('Game Master Setup')).toBeVisible();
 
     // Fill out Game Master Setup form
-    await page.getByLabel('Last Name').fill('TestGM');
+    await page.getByLabel('Username').fill('t.gm');
     await fillGameMasterPin(page, '1234');
     await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -85,7 +85,7 @@ test.describe('Player Settings in Lobby', () => {
   test('should allow changing player name through settings dialog', async ({
     page,
   }) => {
-    const newPlayerName = 'Updated Player Name';
+    const newPlayerName = 'u.name';
 
     // Open player settings dialog
     await page.getByRole('button', { name: 'Profile' }).click();
@@ -102,7 +102,7 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.locator('[role="dialog"]')).toBeHidden();
 
     // Verify the updated name appears in the player settings section
-    await expect(page.getByText('Name: Updated Player Name')).toBeVisible();
+    await expect(page.getByText('Name: u.name')).toBeVisible();
   });
 
   /**
@@ -152,7 +152,7 @@ test.describe('Player Settings in Lobby', () => {
   test('should allow changing both name and role simultaneously', async ({
     page,
   }) => {
-    const newPlayerName = 'Commander Player';
+    const newPlayerName = 'c.player';
 
     // Open player settings dialog
     await page.getByRole('button', { name: 'Edit Profile' }).click();
@@ -190,7 +190,7 @@ test.describe('Player Settings in Lobby', () => {
   test('should cancel changes and restore original values when Cancel is clicked', async ({
     page,
   }) => {
-    const originalName = 'Original Name';
+    const originalName = 'o.name';
 
     // First set an original name
     await page.getByRole('button', { name: 'Edit Profile' }).click();
@@ -202,7 +202,7 @@ test.describe('Player Settings in Lobby', () => {
     // Open dialog again and make changes but cancel them
     await page.getByRole('button', { name: 'Edit Profile' }).click();
     await page.getByLabel('Name').clear();
-    await page.getByLabel('Name').fill('Changed Name');
+    await page.getByLabel('Name').fill('c.name');
 
 
     await page.locator('svg').click();
@@ -215,7 +215,7 @@ test.describe('Player Settings in Lobby', () => {
     await expect(page.locator('[role="dialog"]')).toBeHidden();
     // Verify original name is preserved in the lobby player list
 
-    await expect(page.getByText('Original Name')).toBeVisible();
+    await expect(page.getByText('o.name')).toBeVisible();
   });
 
   /**

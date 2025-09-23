@@ -76,7 +76,7 @@ describe('JoinShellComponent (integration)', () => {
     facade.setVm({
       step: JoinStep.AccountRoom,
       room: { status: 'valid', message: null, code: 'ABC123' },
-      accountForm: { gameId: 'ABC123', playerName: 'Bob' },
+      accountForm: { gameId: 'ABC123', playerName: 'b.jones' },
       canSubmitAccount: true,
       busy: false,
     });
@@ -93,8 +93,8 @@ describe('JoinShellComponent (integration)', () => {
     expect(facade.validateRoom).toHaveBeenCalledWith('ABC123');
 
     // Submit -> join (PIN now required and forwarded)
-    account.submitted.emit({ gameId: 'ABC123', playerName: 'Bob', pin: '2468' });
-    expect(facade.join).toHaveBeenCalledWith('ABC123', 'Bob', '2468');
+    account.submitted.emit({ gameId: 'ABC123', playerName: 'b.jones', pin: '2468' });
+    expect(facade.join).toHaveBeenCalledWith('ABC123', 'b.jones', '2468');
   });
 
   it('conflict path: forwards verifyPin and switchToNewPerson events', () => {
@@ -102,7 +102,7 @@ describe('JoinShellComponent (integration)', () => {
     facade.setVm({
       step: JoinStep.NameConflict,
       room: { status: 'valid', message: null, code: 'ROOM99' },
-      accountForm: { gameId: 'ROOM99', playerName: 'Bob' },
+      accountForm: { gameId: 'ROOM99', playerName: 'b.jones' },
       busy: false,
     });
     fixture.detectChanges();
@@ -114,7 +114,7 @@ describe('JoinShellComponent (integration)', () => {
     expect(conflict).toBeTruthy();
 
     conflict.verifyPin.emit({ pin: '1234' });
-    expect(facade.verifyPin).toHaveBeenCalledWith('ROOM99', 'Bob', '1234');
+    expect(facade.verifyPin).toHaveBeenCalledWith('ROOM99', 'b.jones', '1234');
 
     conflict.newPersonClicked.emit();
     expect(facade.switchToNewPerson).toHaveBeenCalled();
@@ -125,7 +125,7 @@ describe('JoinShellComponent (integration)', () => {
     facade.setVm({
       step: JoinStep.NewPerson,
       room: { status: 'valid', message: null, code: 'ROOM77' },
-      accountForm: { gameId: 'ROOM77', playerName: 'Alice' },
+      accountForm: { gameId: 'ROOM77', playerName: 'a.smith' },
       nameCheck: { pending: false, available: true, error: null },
       busy: false,
     });
@@ -137,17 +137,17 @@ describe('JoinShellComponent (integration)', () => {
 
     expect(newPerson).toBeTruthy();
 
-    newPerson.checkAvailability.emit('NewGuy');
-    expect(facade.checkNewName).toHaveBeenCalledWith('ROOM77', 'NewGuy');
+    newPerson.checkAvailability.emit('n.guy');
+    expect(facade.checkNewName).toHaveBeenCalledWith('ROOM77', 'n.guy');
 
-    newPerson.createNew.emit({ name: 'NewGuy', pin: '2468' });
-    expect(facade.createNewPlayer).toHaveBeenCalledWith('ROOM77', 'NewGuy', '2468');
+    newPerson.createNew.emit({ name: 'n.guy', pin: '2468' });
+    expect(facade.createNewPlayer).toHaveBeenCalledWith('ROOM77', 'n.guy', '2468');
   });
 
   it('continue session card: forwards continue click', () => {
     // Show continue card
     facade.setVm({
-      jwt: { hasValid: true, player: { id: '1', name: 'Zed', sessionId: 's' }, gameId: 'ROOM1' },
+      jwt: { hasValid: true, player: { id: '1', name: 'z.smith', sessionId: 's' }, gameId: 'ROOM1' },
     });
     fixture.detectChanges();
 

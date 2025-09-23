@@ -21,14 +21,14 @@ describe('MembersListComponent', () => {
       {
         role: 'COMMANDER',
         players: [
-          { id: 1, name: 'Alice' },
+          { id: 1, name: 'a.smith' },
         ],
       },
       {
         role: 'PLAYER',
         players: [
-          { id: 2, name: 'Bob' },
-          { id: 3, name: 'Cara' },
+          { id: 2, name: 'b.jones' },
+          { id: 3, name: 'c.davis' },
         ],
       },
     ];

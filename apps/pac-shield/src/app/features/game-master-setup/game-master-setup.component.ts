@@ -1,6 +1,6 @@
-import { Component, output } from '@angular/core';
+import { Component, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,9 +8,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { InputOtpComponent } from '../../shared/components/input-otp/input-otp.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { nameFormatValidator } from '../join/validators/name-format.validator';
+import { mapFieldError } from '../join/utils/error-presenter';
 
 export interface GameMasterInfo {
-  lastName: string;
+  username: string;
   pin: string;
 }
 
@@ -22,7 +24,7 @@ export interface GameMasterInfo {
  * - Acts as a small, presentational step in the &quot;Start New Game&quot; flow on the Home screen.
  *
  * Key responsibilities:
- * - Render a Material form for last name and a 4-digit PIN (via InputOtpComponent).
+ * - Render a Material form for username and a 4-digit PIN (via InputOtpComponent).
  * - Maintain local form state (template-driven) and expose a computed isFormValid.
  * - On submit, emit a single &#39;complete&#39; Output with { lastName, pin } (see GameMasterInfo).
  * - Do not make API calls or navigate; delegates side-effects to the parent container.
@@ -42,7 +44,7 @@ export interface GameMasterInfo {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -55,26 +57,36 @@ export interface GameMasterInfo {
   styleUrls: ['./game-master-setup.component.scss'],
 })
 export class GameMasterSetupComponent {
+  private fb = inject(FormBuilder);
+
   complete = output<GameMasterInfo>();
   back = output<void>();
 
-  lastName = '';
-  pin = '';
+  form: FormGroup = this.fb.group({
+    username: ['', [Validators.required, nameFormatValidator()]],
+    pin: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]]
+  });
 
   get isFormValid(): boolean {
-    return this.lastName.trim().length > 0 && this.pin.length === 4;
+    return this.form.valid;
   }
 
   onSubmit(): void {
     if (this.isFormValid) {
+      const formValue = this.form.value;
       this.complete.emit({
-        lastName: this.lastName.trim(),
-        pin: this.pin,
+        username: formValue.username.trim(),
+        pin: formValue.pin,
       });
     }
   }
 
   onBack(): void {
     this.back.emit();
+  }
+
+  fieldError(controlName: string): string | null {
+    const control = this.form.get(controlName);
+    return control ? mapFieldError(control) : null;
   }
 }

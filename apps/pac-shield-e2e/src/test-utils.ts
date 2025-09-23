@@ -356,11 +356,11 @@ export async function clearStorage(page: Page): Promise<void> {
 /**
  * Set invalid JWT token in localStorage for testing error scenarios
  * @param page - Playwright Page object
- * @param playerName - Optional player name for fake player data (default: 'FakePlayer')
+ * @param playerName - Optional player name for fake player data (default: 'f.player')
  * @param playerId - Optional player ID for fake player data (default: 999)
  * @returns Promise<void>
  */
-export async function setInvalidJwt(page: Page, playerName = 'FakePlayer', playerId = 999): Promise<void> {
+export async function setInvalidJwt(page: Page, playerName = 'f.player', playerId = 999): Promise<void> {
   try {
     await page.evaluate(({ name, id }) => {
       try {
@@ -561,10 +561,13 @@ export function generateTestIds(testName: string) {
   const random = Math.random().toString(36).substring(7);
   const prefix = testName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
 
+  // Generate valid lowercase letter-only suffix for usernames (pattern: /^[a-z]\.[a-z]+$/)
+  const randomLetters = Math.random().toString(36).replace(/[0-9]/g, '').substring(2, 8) || 'test';
+
   return {
     gameId: `test_${prefix}_${timestamp}_${random}`,
-    playerName: `Player_${timestamp}_${random}`,
-    gmName: `GM_${timestamp}_${random}`,
+    playerName: `p.${randomLetters}`,
+    gmName: `g.${randomLetters}`,
     roomCode: '', // Will be populated after game creation
   };
 }
@@ -584,7 +587,7 @@ export async function createIsolatedGame(
   } = {}
 ): Promise<{ roomCode: string; gameId: string; players: any[] }> {
   const {
-    gameMasterName = `GM_${Date.now()}`,
+    gameMasterName = `gm.${Date.now()}`,
     victoryConditionMP = 100,
     players = []
   } = options;
@@ -677,13 +680,13 @@ export async function setupGameScenario(
       const gameData = await createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
         players: [
-          { name: 'ConflictUser', pin: '5555' }
+          { name: 'c.user', pin: '5555' }
         ]
       });
 
       return {
         ...gameData,
-        conflictName: 'ConflictUser'
+        conflictName: 'c.user'
       };
     }
 
@@ -691,9 +694,9 @@ export async function setupGameScenario(
       return createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
         players: [
-          { name: 'Player1', pin: '1111' },
-          { name: 'Player2', pin: '2222' },
-          { name: 'Player3', pin: '3333' }
+          { name: 'p.one', pin: '1111' },
+          { name: 'p.two', pin: '2222' },
+          { name: 'p.three', pin: '3333' }
         ]
       });
     }
@@ -702,7 +705,7 @@ export async function setupGameScenario(
       return createIsolatedGame(page, {
         gameMasterName: testIds.gmName,
         players: [
-          { name: 'PinUser', pin: '9999' }
+          { name: 'p.user', pin: '9999' }
         ]
       });
     }

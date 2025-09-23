@@ -12,6 +12,7 @@ import { RoomCodeFieldComponent } from '../room-code-field/room-code-field.compo
 import { StatusBannerComponent } from '../status-banner/status-banner.component';
 import { AccountSelectorComponent } from '../account-selector/account-selector.component';
 import { pinValidator } from '../../validators/pin.validator';
+import { nameFormatValidator } from '../../validators/name-format.validator';
 import { InputOtpComponent } from '../../../../shared/components/input-otp/input-otp.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs/operators';
@@ -72,7 +73,7 @@ export class AccountRoomFormComponent implements OnChanges {
 
   form: AccountForm = this.fb.group({
     gameId: this.fb.control('', { validators: [roomCodeValidator(6)] }),
-    playerName: this.fb.control('', { validators: [Validators.required] }),
+    playerName: this.fb.control('', { validators: [Validators.required, nameFormatValidator()] }),
     // Required PIN for securing name
     pin: this.fb.control('', { validators: [Validators.required, pinValidator(4)] }),
   });

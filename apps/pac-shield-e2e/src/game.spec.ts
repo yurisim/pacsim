@@ -30,7 +30,7 @@ test('should create a new game and navigate to the game board', async ({
   await expect(page.getByText('Game Master Setup')).toBeVisible();
 
   // Fill out Game Master Setup form
-  await page.getByLabel('Last Name').fill('TestGM');
+  await page.getByLabel('Username').fill('t.gm');
   await fillGameMasterPin(page, '1234');
   await page.getByRole('button', { name: 'Continue' }).click();
 

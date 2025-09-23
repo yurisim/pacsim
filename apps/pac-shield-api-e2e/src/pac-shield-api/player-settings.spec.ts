@@ -130,7 +130,7 @@ describe('Player Settings API E2E', () => {
         expect(res.status).toBe(200);
       });
 
-      // Final state should have the last name update and one of the role updates
+      // Final state should have the username update and one of the role updates
       const gameRes = await axios.get(`/api/game/${gameId}`);
       const finalPlayer = gameRes.data.players.find((p: any) => p.id === parseInt(playerId));
       expect(finalPlayer.name).toBe('Final Name');
