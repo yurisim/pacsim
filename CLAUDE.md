@@ -110,7 +110,10 @@ npx nx prisma-db-reset pac-shield-api    # Reset database (destructive)
 npx nx test pac-shield               # Frontend tests
 npx nx test pac-shield-api          # Backend tests
 
-# E2E tests (use MCP Playwright server in WARP, not terminal commands)
+# E2E API tests
+npx nx e2e pac-shield-api-e2e        # API integration tests
+
+# E2E Browser tests (use MCP Playwright server)
 # Terminal E2E commands are disabled - use browser automation tools instead
 ```
 
@@ -121,6 +124,14 @@ npx nx test pac-shield-api          # Backend tests
 npx nx lint pac-shield
 npx nx lint pac-shield-api
 ```
+
+## Development Workflow Guidelines
+
+### Server Management
+- **NEVER kill existing node processes** during development
+- If E2E tests report "port already in use", assume the correct server is running
+- E2E tests depend on the API server being available and will reuse existing instances
+- Killing processes can disrupt other development activities and break hot reload
 
 ### Synthetic Jamming Testing
 
