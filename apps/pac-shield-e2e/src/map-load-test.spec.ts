@@ -1,28 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { fillGameMasterPin } from './test-utils';
+import { createGameViaUI, expectLobbyLoaded } from './test-utils';
 
 /**
  * Barebones map loading test.
  * Simple verification that the MapLibre GL map loads without errors.
  */
 test('map should load successfully', async ({ page }) => {
-  // Create game and navigate to map
-  await page.goto('/');
+  // Create game using shared utility
+  await createGameViaUI(page, 'm.test', '1234');
 
-  // Wait for connection
-  await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
-
-  // Create new game
-  await page.getByRole('button', { name: 'Start New Game' }).click();
-  await expect(page.getByText('Game Master Setup')).toBeVisible();
-
-  // Setup GM
-  await page.getByLabel('Username').fill('m.test');
-  await fillGameMasterPin(page, '1234');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  // Verify lobby is loaded
+  await expectLobbyLoaded(page);
 
   // Navigate to map
-  await expect(page.getByRole('heading', { name: 'Game Lobby' })).toBeVisible();
   await page.getByRole('button', { name: 'View Pacific Map' }).click();
 
   // Verify map loads
