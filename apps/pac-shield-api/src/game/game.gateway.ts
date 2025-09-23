@@ -366,6 +366,35 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Bulk country access updated broadcast to room ${room}: ${payload.countries.length} countries to ${payload.accessLevel}`);
   }
 
+  /**
+   * Publish bulk dice roll updated event to all clients in a game room.
+   * Used when multiple countries have their dice rolls and resulting access levels updated.
+   */
+  publishBulkDiceRollUpdated(
+    gameId: number,
+    payload: { countries: Array<{ country: any; diceRoll: number; accessLevel: any }> }
+  ): void {
+    const room = String(gameId);
+
+    this.logger.log(`🎲 publishBulkDiceRollUpdated called for room ${room} with ${payload.countries.length} countries`);
+    this.logger.log(`🎲 Countries data:`, JSON.stringify(payload.countries));
+
+    const eventData = {
+      type: 'bulkDiceRollUpdated',
+      payload: {
+        gameId,
+        countries: payload.countries
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    this.logger.log(`🎲 Emitting bulkDiceRollUpdated event:`, JSON.stringify(eventData));
+
+    this.server.to(room).emit('bulkDiceRollUpdated', eventData);
+
+    this.logger.log(`✅ Bulk dice roll updated broadcast sent to room ${room}: ${payload.countries.length} countries`);
+  }
+
   // =============================================================================
   // Team-Specific Room Management for Allocation Notifications
   // =============================================================================

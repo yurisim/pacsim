@@ -352,8 +352,8 @@ export class GameService {
 
       // Validate dice rolls
       for (const { diceRoll } of bulkDto.diceRolls) {
-        if (diceRoll < 1 || diceRoll > 20) {
-          throw new BadRequestException(`Invalid dice roll: ${diceRoll}. Must be between 1 and 20.`);
+        if (diceRoll < 1 || diceRoll > 10) {
+          throw new BadRequestException(`Invalid dice roll: ${diceRoll}. Must be between 1 and 10.`);
         }
       }
 
@@ -389,9 +389,23 @@ export class GameService {
 
     // Broadcast bulk dice roll update
     try {
-      (this.gameGateway as any)?.publishBulkDiceRollUpdated?.(gameId, {
+      this.logger.log(`Attempting to broadcast dice roll update for game ${gameId} with ${result.countries.length} countries`);
+
+      if (!this.gameGateway) {
+        this.logger.warn('GameGateway is not available');
+        return result;
+      }
+
+      if (typeof (this.gameGateway as any).publishBulkDiceRollUpdated !== 'function') {
+        this.logger.warn('publishBulkDiceRollUpdated method is not available on GameGateway');
+        return result;
+      }
+
+      (this.gameGateway as any).publishBulkDiceRollUpdated(gameId, {
         countries: result.countries,
       });
+
+      this.logger.log(`Successfully called publishBulkDiceRollUpdated for game ${gameId}`);
     } catch (err) {
       this.logger.warn(`Broadcast bulk dice roll update failed for game ${gameId}: ${err}`);
     }
@@ -472,8 +486,8 @@ export class GameService {
    * Dice Roll 16-20: FULL_ACCESS
    */
   private calculateAccessLevel(diceRoll: number): AccessStatus {
-    if (diceRoll >= 16) return AccessStatus.FULL_ACCESS;
-    if (diceRoll >= 6) return AccessStatus.OVERFLIGHT_ONLY;
+    if (diceRoll >= 8) return AccessStatus.FULL_ACCESS;
+    if (diceRoll >= 4) return AccessStatus.OVERFLIGHT_ONLY;
     return AccessStatus.NO_ACCESS;
   }
 
