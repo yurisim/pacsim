@@ -24,29 +24,29 @@
   <!-- Responsive grid: 1 column on mobile, 2 columns on larger screens -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     @for (roll of diceRolls(); track roll.country) {
-      <div class="p-4 rounded-lg md-sys-bg-surface-variant">
+      <div class="p-4 rounded-lg md-sys-bg-surface-variant hover:shadow-md transition-shadow duration-200">
         <!-- Country name -->
         <div class="font-medium md-sys-color-on-surface text-base mb-2">
           {{ getCountryDisplayName(roll.country) }}
         </div>
 
         <!-- Status comparison -->
-        <div class="flex items-center gap-2 mb-3 text-sm">
+        <div class="flex items-center gap-3 mb-3 text-sm min-w-0">
           <!-- Current status -->
           <mat-chip
             [ngStyle]="getStatusStyles(roll.currentStatus)"
-            class="current-status-chip"
+            class="current-status-chip flex-shrink-0"
           >
             {{ getStatusDisplayText(roll.currentStatus) }}
           </mat-chip>
 
           <!-- Arrow -->
-          <mat-icon class="md-sys-color-on-surface-variant">arrow_forward</mat-icon>
+          <mat-icon class="md-sys-color-on-surface-variant flex-shrink-0">arrow_forward</mat-icon>
 
           <!-- Future status -->
           <mat-chip
             [ngStyle]="getStatusStyles(roll.futureStatus)"
-            class="future-status-chip"
+            class="future-status-chip flex-shrink-0"
           >
             {{ getStatusDisplayText(roll.futureStatus) }}
           </mat-chip>
