@@ -52,44 +52,14 @@
   </div>
   }
 
-  <!-- GM Right-click Context Menu for Country Access (Angular Material mat-menu) -->
-  <!-- Invisible trigger anchored at cursor position; opened programmatically from TS -->
-  <button
-    #countryMenuTrigger="matMenuTrigger"
-    [matMenuTriggerFor]="countryAccessMenu"
-    class="fixed opacity-0 pointer-events-none"
-    [style.left.px]="contextMenu.x"
-    [style.top.px]="contextMenu.y"
-    style="width:1px;height:1px;padding:0;border:0;"
-    aria-hidden="true"
-    tabindex="-1">
-  </button>
-
-  <mat-menu
-    #countryAccessMenu="matMenu"
-    xPosition="after"
-    yPosition="below"
-    class="country-access-menu">
-    <button mat-menu-item (click)="onSelectCountryAccess('FULL_ACCESS')">
-      <mat-icon>check_circle</mat-icon>
-      <span>Grant Access</span>
-    </button>
-    <button mat-menu-item (click)="onOverflightOnly()">
-      <mat-icon>flight</mat-icon>
-      <span>Overflight Only</span>
-    </button>
-    <button mat-menu-item (click)="onSelectCountryAccess('NO_ACCESS')">
-      <mat-icon>cancel</mat-icon>
-      <span>Revoke Access</span>
-    </button>
-  </mat-menu>
 
   <!-- Bottom left control panel - flex row layout -->
   <div class="absolute left-2 bottom-2 z-[95] pointer-events-auto">
     <div class="flex flex-col items-start gap-2">
       <!-- Country Access Toggle -->
       <app-country-access-toggle
-        (toggleVisibility)="onCountryAccessToggle($event)">
+        (toggleVisibility)="onCountryAccessToggle($event)"
+        (openDiceRollDialog)="onOpenDiceRollDialog()">
       </app-country-access-toggle>
 
       <!-- Location Panel -->

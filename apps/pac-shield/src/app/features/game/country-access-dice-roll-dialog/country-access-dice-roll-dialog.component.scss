@@ -1,0 +1,57 @@
+// Host container - let Angular Material handle dialog sizing
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+// Status chip styling - only what Angular Material requires
+:host ::ng-deep .mat-mdc-chip {
+  --mdc-chip-label-text-size: 12px;
+  min-height: 24px;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: fit-content;
+
+  // Ensure text colors are applied
+  .mdc-evolution-chip__text-label {
+    color: inherit !important;
+  }
+}
+
+// Backup styles with higher specificity (in case ngStyle doesn't work)
+:host ::ng-deep .current-status-chip,
+:host ::ng-deep .future-status-chip {
+  &.status-full-access {
+    background-color: #4caf50 !important;
+    color: white !important;
+    --mdc-chip-elevated-container-color: #4caf50 !important;
+    --mdc-chip-label-text-color: white !important;
+
+    .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+  }
+
+  &.status-overflight-only {
+    background-color: #ff9800 !important;
+    color: white !important;
+    --mdc-chip-elevated-container-color: #ff9800 !important;
+    --mdc-chip-label-text-color: white !important;
+
+    .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+  }
+
+  &.status-no-access {
+    background-color: #f44336 !important;
+    color: white !important;
+    --mdc-chip-elevated-container-color: #f44336 !important;
+    --mdc-chip-label-text-color: white !important;
+
+    .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+  }
+}

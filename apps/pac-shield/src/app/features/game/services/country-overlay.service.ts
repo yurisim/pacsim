@@ -3,6 +3,7 @@ import { Map } from 'maplibre-gl';
 import { AccessStatus, Country, country } from '../../../generated/enums';
 import { WebSocketService } from '../../../shared/services/websocket.service';
 import { CountryAccessHttpService } from '../../../shared/services/country-access-http.service';
+import { LocalStorageService } from '../../../shared/services/local-storage.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../core/store/app.state';
 import { selectGame } from '../../../core/store/game/game.selectors';
@@ -43,7 +44,11 @@ export class CountryOverlayService {
   private store = inject(Store<AppState>);
   private webSocketService = inject(WebSocketService);
   private countryAccessHttp = inject(CountryAccessHttpService);
+  private localStorage = inject(LocalStorageService);
   private themeService = inject(ThemeService);
+
+  // LocalStorage key for overlay visibility state
+  private readonly OVERLAY_STORAGE_KEY = 'country-overlay-visible';
 
   /**
    * Reactive store of country → AccessStatus used to paint the overlay.
@@ -151,6 +156,57 @@ export class CountryOverlayService {
         console.log(`Updated ${updatedCount} countries via WebSocket`);
       }
     });
+
+    // Subscribe to dice roll updates via WebSocket
+    this.webSocketService.listen<any>('bulkDiceRollUpdated').subscribe((evt) => {
+      console.log('🎲 WebSocket bulkDiceRollUpdated received:', evt);
+
+      const payload = (evt as any)?.payload ?? evt;
+      if (!payload) {
+        console.warn('❌ Received bulkDiceRollUpdated event with no payload');
+        return;
+      }
+
+      console.log('🎲 Payload data:', payload);
+
+      if (this.currentGameId != null && payload.gameId !== this.currentGameId) {
+        console.log(`❌ Ignoring bulkDiceRollUpdated for game ${payload.gameId}, current game is ${this.currentGameId}`);
+        return;
+      }
+
+      const countries: Array<{ country: Country; diceRoll: number; accessLevel: AccessStatus }> =
+        Array.isArray(payload.countries) ? payload.countries : [];
+      if (countries.length === 0) {
+        console.warn('❌ Received bulkDiceRollUpdated event with no countries');
+        return;
+      }
+
+      console.log(`🎲 Processing ${countries.length} countries:`, countries);
+      console.log('🗺️ Overlay visible?', this.isOverlayVisible());
+      console.log('🗺️ Current country access data before update:', this.countryAccessData());
+
+      // Update each country individually to ensure proper signal propagation and layer refresh
+      let updatedCount = 0;
+      for (const countryUpdate of countries) {
+        if (country.includes(countryUpdate.country as Country)) {
+          console.log(`🎯 Updating ${countryUpdate.country}: ${countryUpdate.accessLevel}`);
+          this.updateCountryAccess(countryUpdate.country as Country, countryUpdate.accessLevel);
+          updatedCount++;
+        } else {
+          console.log(`❌ Country ${countryUpdate.country} not found in country enum`);
+        }
+      }
+
+      if (updatedCount > 0) {
+        console.log(`✅ Updated ${updatedCount} countries via dice roll WebSocket`);
+        console.log('🗺️ Country access data after update:', this.countryAccessData());
+
+        // Force a complete overlay refresh to ensure all updates are visible
+        if (this.isOverlayVisible()) {
+          this.refreshOverlay();
+        }
+      }
+    });
   }
 
   /**
@@ -196,6 +252,11 @@ export class CountryOverlayService {
         this.countryAccessData.set(newData);
         this.initialStateLoaded = true;
         console.log('Initial country access state loaded successfully', newData);
+
+        // Force refresh overlay colors after loading new data
+        if (this.isOverlayVisible()) {
+          this.updateOverlayColors();
+        }
       }
     } catch (error) {
       console.error('Failed to load initial country access state:', error);
@@ -206,16 +267,25 @@ export class CountryOverlayService {
   /**
    * Toggle the overlay's visibility.
    * When enabling, ensures initial state is loaded before rendering.
+   * Optionally saves state to localStorage when gameId is provided.
    *
+   * @param gameId Optional game ID for localStorage persistence
    * @returns void
    */
-  toggleOverlay(): void {
+  toggleOverlay(gameId?: number): void {
     const newVisibility = !this.overlayVisibleSignal();
     this.overlayVisibleSignal.set(newVisibility);
+
+    // Save state to localStorage if gameId is available
+    if (gameId !== undefined) {
+      this.saveOverlayState(newVisibility, gameId);
+    }
 
     if (newVisibility) {
       this.loadInitialStateIfNeeded().then(() => {
         this.showOverlay();
+        // Ensure colors are updated with current data
+        this.updateOverlayColors();
       });
     } else {
       this.hideOverlay();
@@ -231,13 +301,81 @@ export class CountryOverlayService {
    * @returns void
    */
   updateCountryAccess(country: Country, access: AccessStatus): void {
+    console.log(`🔄 updateCountryAccess called: ${country} -> ${access}`);
+
     const currentData = this.countryAccessData();
+    const oldAccess = currentData[country];
+
     this.countryAccessData.set({
       ...currentData,
       [country]: access
     });
 
+    console.log(`🔄 Signal updated: ${country} changed from ${oldAccess} to ${access}`);
+
     if (this.isOverlayVisible()) {
+      console.log('🗺️ Overlay is visible, calling updateOverlayColors()');
+      // Use efficient paint property update instead of recreating the layer
+      this.updateOverlayColors();
+    } else {
+      console.log('❌ Overlay is NOT visible, skipping color update');
+    }
+  }
+
+  /**
+   * Efficiently update overlay colors using setPaintProperty instead of recreating the layer.
+   * This follows the same pattern as hex grid color updates for theme changes.
+   */
+  private updateOverlayColors(): void {
+    console.log(`🎨 updateOverlayColors called`);
+    console.log(`🗺️ Map exists: ${!!this.map}`);
+    console.log(`🗺️ Layer exists: ${!!(this.map && this.map.getLayer(this.LAYER_ID))}`);
+
+    if (!this.map || !this.map.getLayer(this.LAYER_ID)) {
+      console.log('❌ Cannot update colors: map or layer missing');
+      return;
+    }
+
+    try {
+      // Build match expression arrays for colors
+      const colorMatchConditions: (string | string[])[] = [];
+      const borderColorMatchConditions: (string | string[])[] = [];
+
+      console.log('🎨 Building color conditions from current data:', this.countryAccessData());
+
+      Object.entries(this.countryAccessData()).forEach(([country, access]) => {
+        const isoCode = this.countryIsoMapping[country as Country];
+        const colors = this.getAccessColors(access);
+        const fillColor = colors.fill;
+        const borderColor = colors.border;
+
+        console.log(`🎨 ${country} (${isoCode}): ${access} -> fill: ${fillColor}, border: ${borderColor}`);
+
+        colorMatchConditions.push(isoCode, fillColor);
+        borderColorMatchConditions.push(isoCode, borderColor);
+      });
+
+      console.log('🎨 Final color match conditions:', colorMatchConditions);
+
+      // Update the paint properties directly (much more efficient than layer recreation)
+      this.map.setPaintProperty(this.LAYER_ID, 'fill-color', [
+        'match',
+        ['get', 'ADM0_A3'],
+        ...colorMatchConditions,
+        '#999999' // Default gray
+      ] as any);
+
+      this.map.setPaintProperty(this.LAYER_ID, 'fill-outline-color', [
+        'match',
+        ['get', 'ADM0_A3'],
+        ...borderColorMatchConditions,
+        '#666666' // Default border
+      ] as any);
+
+      console.log('✅ Country overlay colors updated via setPaintProperty');
+    } catch (error) {
+      console.error('❌ Error updating overlay colors, falling back to full refresh:', error);
+      // Fallback to full refresh if setPaintProperty fails
       this.refreshOverlay();
     }
   }
@@ -375,6 +513,64 @@ export class CountryOverlayService {
    */
   getLayerId(): string {
     return this.LAYER_ID;
+  }
+
+  /**
+   * Initialize overlay state from localStorage on game load.
+   * Should be called after map is ready and gameId is available.
+   *
+   * @param gameId Current game ID for context
+   * @returns void
+   */
+  initializeOverlayState(gameId: number): void {
+    if (!this.map) {
+      console.warn('Cannot initialize overlay state - map not ready');
+      return;
+    }
+
+    const savedState = this.loadOverlayState(gameId);
+
+    if (savedState !== null) {
+      // Update the signal to match saved state
+      this.overlayVisibleSignal.set(savedState);
+
+      // If overlay should be visible, activate it
+      if (savedState) {
+        this.loadInitialStateIfNeeded().then(() => {
+          this.showOverlay();
+          // Force refresh colors in case data was already loaded
+          this.updateOverlayColors();
+        });
+      }
+    }
+  }
+
+  /**
+   * Save overlay visibility state to localStorage
+   * @param visible Whether overlay is visible
+   * @param gameId Current game ID for context
+   */
+  private saveOverlayState(visible: boolean, gameId: number): void {
+    try {
+      this.localStorage.setCache(this.OVERLAY_STORAGE_KEY, visible, gameId);
+    } catch (error) {
+      console.warn('Failed to save overlay state:', error);
+    }
+  }
+
+  /**
+   * Load overlay visibility state from localStorage
+   * @param gameId Current game ID for context
+   * @returns Previous overlay state or null if not found/invalid
+   */
+  private loadOverlayState(gameId: number): boolean | null {
+    try {
+      const state = this.localStorage.getCache<boolean>(this.OVERLAY_STORAGE_KEY, gameId, 1440); // 24 hour cache
+      return state;
+    } catch (error) {
+      console.warn('Failed to load overlay state:', error);
+      return null;
+    }
   }
 
   /**

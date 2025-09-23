@@ -7,7 +7,6 @@ import { map } from 'rxjs/operators';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Map } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
@@ -27,9 +26,8 @@ import { WebSocketService } from '../../shared/services/websocket.service';
 import { PlayerRoleService } from '../../shared/services/player-role.service';
 import { CountryAccessToggleComponent } from './country-access-toggle/country-access-toggle.component';
 import { CountryOverlayService } from './services/country-overlay.service';
-import { CountryAccessDialogComponent, CountryAccessDialogData } from './country-access-dialog/country-access-dialog.component';
+import { CountryAccessDiceRollDialogComponent } from './country-access-dice-roll-dialog/country-access-dice-roll-dialog.component';
 import { CountryAccessHttpService } from '../../shared/services/country-access-http.service';
-import { AccessStatus, Country } from '../../generated/enums';
 
 @Component({
   selector: 'app-game-board',
@@ -39,7 +37,6 @@ import { AccessStatus, Country } from '../../generated/enums';
     MatProgressSpinnerModule,
     MatButtonModule,
     MatIconModule,
-    MatMenuModule,
     MatDialogModule,
     HexGridComponent,
     LocationMarkersComponent,
@@ -87,10 +84,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   @ViewChild(GameStatsComponent) gameStatsComponent!: GameStatsComponent;
 
-  /**
-   * Material menu trigger used to open/close the GM country-access context menu at cursor position.
-   */
-  @ViewChild('countryMenuTrigger') countryMenuTrigger!: MatMenuTrigger;
 
   private store = inject(Store<AppState>);
   private route = inject(ActivatedRoute);
@@ -126,11 +119,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private hexMouseEnterHandler?: () => void;
   private hexMouseLeaveHandler?: () => void;
 
-  // Country access context menu handlers
-  private countryContextMenuHandler?: (e: any) => void;
-  private docClickHandler?: (e: MouseEvent) => void;
-  private docKeydownHandler?: (e: KeyboardEvent) => void;
-  private preventNativeContextMenuHandler?: (e: Event) => void;
 
   /**
    * Creates the component and wires reactive theme change handling.
@@ -190,19 +178,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   selectedH3Index: string | null = null;
 
-  // Right-click context menu state for GM-only country access updates
-  /**
-   * State container for the GM-only country-access context menu.
-   * - show: whether the menu is currently visible
-   * - x/y: pixel coordinates on the map canvas for menu placement
-   * - country: the ISO3 enum value of the selected country or null when none
-   */
-  contextMenu: { show: boolean; x: number; y: number; country: Country | null } = {
-    show: false,
-    x: 0,
-    y: 0,
-    country: null
-  };
 
   /**
    * Cached numeric game identifier extracted from the route.
@@ -821,9 +796,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Disconnect from WebSocket
     this.webSocketService.disconnect();
 
-    // Detach country context handlers and hide menu
-    this.detachCountryContextMenu();
-    this.hideCountryContextMenu();
 
     // Reset flags for cleanup
     this.hexGridCreated = false;
@@ -884,6 +856,11 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.mapReady = true;
       // Initialize country overlay service with map reference
       this.countryOverlayService.setMap(this.map);
+
+      // Initialize overlay state from localStorage if gameId is available
+      if (this.currentGameId) {
+        this.countryOverlayService.initializeOverlayState(this.currentGameId);
+      }
     });
   }
 
@@ -1239,8 +1216,6 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Handle country access overlay toggle (from toolbar button)
-   * - Attach right-click context menu when visible
-   * - Detach and hide menu when hidden
    */
   onCountryAccessToggle(isVisible: boolean): void {
     console.log('Country access overlay toggled:', isVisible);
@@ -1255,301 +1230,51 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Align overlay visibility with toggle state (avoid blindly toggling)
     if (isVisible !== this.countryOverlayService.isOverlayVisible()) {
-      this.countryOverlayService.toggleOverlay();
+      // Pass gameId for localStorage persistence
+      this.countryOverlayService.toggleOverlay(this.currentGameId || undefined);
     }
-
-    // Attach/detach right-click handler based on visibility
-    if (isVisible) {
-      this.attachCountryContextMenu();
-    } else {
-      this.detachCountryContextMenu();
-      this.hideCountryContextMenu();
-    }
-  }
-
-  // ========== Country Access Context Menu (GM-only) ==========
-
-  /**
-   * Attaches a MapLibre layer-scoped contextmenu handler that is enabled only for Game Masters.
-   * Also wires global click/keydown listeners to close the menu and prevents the native
-   * context menu while our custom menu is visible.
-   *
-   * Preconditions:
-   * - Map instance must be initialized
-   * - Country overlay service must provide a valid layer ID
-   *
-   * @returns void
-   */
-  private attachCountryContextMenu(): void {
-    if (!this.map) return;
-
-    const layerId = this.countryOverlayService.getLayerId();
-
-    // Remove any previous handler to avoid duplication
-    if (this.countryContextMenuHandler) {
-      this.map.off('contextmenu', layerId as any, this.countryContextMenuHandler as any);
-    }
-
-    this.countryContextMenuHandler = (e: any) => {
-      // Guard: GM-only and overlay must be visible
-      if (!this.playerRoleService.isCurrentPlayerGameMaster()) return;
-      if (!this.countryOverlayService.isOverlayVisible()) return;
-
-      // Prevent browser context menu
-      if (e && typeof e.preventDefault === 'function') {
-        e.preventDefault();
-      }
-
-      const feature = e?.features?.[0];
-      const iso3 = feature?.properties?.['ADM0_A3'];
-      if (!iso3) return;
-
-      const country = this.countryOverlayService.getCountryByIso3(iso3);
-      if (!country) return;
-
-      // Position menu at cursor
-      const pt = e?.point || { x: 0, y: 0 };
-      this.contextMenu = {
-        show: true,
-        x: pt.x,
-        y: pt.y,
-        country
-      };
-      // Open Angular Material menu at cursor position
-      this.countryMenuTrigger?.openMenu();
-    };
-
-    // Attach MapLibre layer-scoped contextmenu handler
-    this.map.on('contextmenu', layerId as any, this.countryContextMenuHandler as any);
-
-    // Global listeners to close menu (do NOT capture; close after item click handler runs)
-    if (!this.docClickHandler) {
-      this.docClickHandler = (_ev: MouseEvent) => {
-        if (this.contextMenu.show) {
-          this.hideCountryContextMenu();
-        }
-      };
-      document.addEventListener('click', this.docClickHandler, false);
-    }
-
-    if (!this.docKeydownHandler) {
-      this.docKeydownHandler = (ev: KeyboardEvent) => {
-        if (ev.key === 'Escape') {
-          this.hideCountryContextMenu();
-        }
-      };
-      document.addEventListener('keydown', this.docKeydownHandler, false);
-    }
-
-    // Prevent native context menu on map canvas while our menu is open
-    if (!this.preventNativeContextMenuHandler && this.mapContainer?.nativeElement) {
-      this.preventNativeContextMenuHandler = (ev: Event) => {
-        if (this.contextMenu.show) {
-          ev.preventDefault();
-        }
-      };
-      this.mapContainer.nativeElement.addEventListener('contextmenu', this.preventNativeContextMenuHandler);
-    }
-  }
-
- /**
-  * Detaches the contextmenu handler and related global event listeners.
-  * Safe to call multiple times; missing handlers are ignored.
-  *
-  * @returns void
-  */
- private detachCountryContextMenu(): void {
-   if (!this.map) return;
-
-   const layerId = this.countryOverlayService.getLayerId();
-
-    if (this.countryContextMenuHandler) {
-      this.map.off('contextmenu', layerId as any, this.countryContextMenuHandler as any);
-      this.countryContextMenuHandler = undefined;
-    }
-
-    if (this.docClickHandler) {
-      document.removeEventListener('click', this.docClickHandler, false);
-      this.docClickHandler = undefined;
-    }
-
-    if (this.docKeydownHandler) {
-      document.removeEventListener('keydown', this.docKeydownHandler, false);
-      this.docKeydownHandler = undefined;
-    }
-
-    if (this.preventNativeContextMenuHandler && this.mapContainer?.nativeElement) {
-      this.mapContainer.nativeElement.removeEventListener('contextmenu', this.preventNativeContextMenuHandler);
-      this.preventNativeContextMenuHandler = undefined;
-    }
-  }
-
- /**
-  * Hides the context menu and attempts to close the Angular Material menu trigger.
-  * Errors are swallowed and logged to avoid impacting the user experience.
-  *
-  * @returns void
-  */
- private hideCountryContextMenu(): void {
-   this.contextMenu.show = false;
-   try {
-     this.countryMenuTrigger?.closeMenu();
-   } catch (err) {
-     console.warn('Failed to close country menu:', err);
-   }
- }
-
- /**
-  * Handles selection of a new country access level from the GM context menu.
-  * Performs an optimistic update to the overlay, calls the bulk update API,
-  * and reverts on error.
-  *
-  * @param level The desired access level to apply to the selected country
-  * @returns void
-  * @example
-  * // User selects FULL_ACCESS from the context menu
-  * onSelectCountryAccess('FULL_ACCESS');
-  */
- onSelectCountryAccess(level: AccessStatus): void {
-   const country = this.contextMenu.country;
-   // Always hide menu on selection
-   this.hideCountryContextMenu();
-   if (!country) return;
-
-   const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
-    const gameId = this.currentGameId ?? (Number.isFinite(parsedId) ? parsedId : null);
-    if (!Number.isFinite(gameId)) {
-      console.error('No valid gameId found for country access update');
-      return;
-    }
-
-    // Determine dialog action based on access level
-    let action: 'grant' | 'revoke';
-    if (level === 'FULL_ACCESS') {
-      action = 'grant';
-    } else if (level === 'NO_ACCESS') {
-      action = 'revoke';
-    } else {
-      console.error('Unexpected access level in onSelectCountryAccess:', level);
-      return;
-    }
-
-    // Open confirmation dialog
-    const dialogData: CountryAccessDialogData = {
-      action,
-      country,
-      accessLevel: level
-    };
-
-    const dialogRef = this.dialog.open(CountryAccessDialogComponent, {
-      width: '500px',
-      disableClose: true,
-      data: dialogData
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed?: boolean) => {
-      if (!confirmed) {
-        // Cancelled; do nothing
-        return;
-      }
-
-      // Optimistic update
-      const current = this.countryOverlayService.getCountryAccess();
-      const prev = current[country];
-
-      this.countryOverlayService.updateCountryAccess(country, level);
-
-      // Use latest Country Access API (CountryAccessController → /games/:gameId/country-access/bulk)
-      console.log(`Updating country access: ${country} to ${level}`);
-      this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
-        accessLevel: level,
-        countries: [country]
-      }).subscribe({
-        next: (response) => {
-          console.log('Country access update successful:', response);
-          // Success; websocket will sync other clients
-        },
-        error: (err) => {
-          console.error('Failed to update country access:', err);
-          console.error('Error details:', err.error || err.message || err);
-
-          // Revert optimistic update on error
-          if (prev) {
-            console.log(`Reverting ${country} back to ${prev} due to error`);
-            this.countryOverlayService.updateCountryAccess(country, prev);
-          }
-
-          // TODO: Add user-visible error notification here
-          // this.snackBar.open('Failed to update country access. Please try again.', 'OK', { duration: 5000 });
-        }
-      });
-    });
   }
 
   /**
-   * Handle the "Overflight Only" action:
-   * - Show confirmation dialog
-   * - Optimistically set to OVERFLIGHT_ONLY
-   * - Call bulk access update API
-   * - Revert on error
+   * Handle opening the dice roll dialog (from long-press on country access toggle)
+   * Only available to Game Masters
    */
-  onOverflightOnly(): void {
-    const country = this.contextMenu.country;
-    // Always hide menu on selection
-    this.hideCountryContextMenu();
-    if (!country) return;
-
-    const parsedId = Number(this.route.snapshot.paramMap.get('gameId'));
-    const gameId = this.currentGameId ?? (Number.isFinite(parsedId) ? parsedId : null);
-    if (!Number.isFinite(gameId)) {
-      console.error('No valid gameId found for country access update');
+  onOpenDiceRollDialog(): void {
+    // Guard: GM-only functionality
+    if (!this.playerRoleService.isCurrentPlayerGameMaster()) {
+      console.warn('Dice roll dialog is only available to Game Masters');
       return;
     }
 
-    // Open confirmation dialog
-    const dialogData: CountryAccessDialogData = {
-      action: 'overflight',
-      country,
-      accessLevel: 'OVERFLIGHT_ONLY'
-    };
+    // Ensure we have a valid game ID
+    if (!this.currentGameId) {
+      console.error('No valid gameId available for dice roll dialog');
+      return;
+    }
 
-    const dialogRef = this.dialog.open(CountryAccessDialogComponent, {
-      width: '500px',
-      disableClose: true,
-      data: dialogData
+    console.log('Opening country access dice roll dialog');
+
+    // Open the mobile-friendly dice roll dialog with gameId data
+    const dialogRef = this.dialog.open(CountryAccessDiceRollDialogComponent, {
+      width: window.innerWidth < 768 ? 'fit-content' : '50vw',
+      maxWidth: window.innerWidth < 768 ? '95vw' : '800px',
+      height: 'auto',
+      maxHeight: '90vh',
+      disableClose: false,
+      panelClass: 'dice-roll-dialog',
+      data: { gameId: this.currentGameId }
     });
 
-    dialogRef.afterClosed().subscribe((confirmed?: boolean) => {
-      if (!confirmed) {
-        // Cancelled; do nothing
-        return;
+    // Handle dialog result
+    dialogRef.afterClosed().subscribe((saved?: boolean) => {
+      if (saved) {
+        console.log('Dice rolls were saved successfully');
+        // WebSocket broadcasting is handled automatically by the CountryAccessHttpService
+        // and the existing country overlay service will update via WebSocket events
+      } else {
+        console.log('Dice roll dialog was cancelled');
       }
-
-      const level: AccessStatus = 'OVERFLIGHT_ONLY';
-
-      // Optimistic update
-      const current = this.countryOverlayService.getCountryAccess();
-      const prev = current[country];
-      this.countryOverlayService.updateCountryAccess(country, level);
-
-      console.log(`Updating country access (Overflight Only): ${country} to ${level}`);
-
-      // Latest API: PUT /games/:gameId/country-access/bulk
-      this.countryAccessHttp.updateBulkCountryAccess(gameId as number, {
-        accessLevel: level,
-        countries: [country]
-      }).subscribe({
-        next: (response) => {
-          console.log('Overflight Only update successful:', response);
-        },
-        error: (err) => {
-          console.error('Failed to set Overflight Only:', err);
-          // Revert optimistic update on error
-          if (prev) {
-            this.countryOverlayService.updateCountryAccess(country, prev);
-          }
-        }
-      });
     });
   }
+
 }

@@ -1,0 +1,114 @@
+<div mat-dialog-title class="flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <mat-icon class="md-sys-color-primary">casino</mat-icon>
+    <span>Country Access Dice Rolls</span>
+  </div>
+
+  <!-- Randomize All Button -->
+  <button
+    matButton="tonal"
+    [disabled]="saving()"
+    (click)="randomizeAllDice()"
+    class="flex items-center gap-2"
+  >
+    <mat-icon>shuffle</mat-icon>
+    Randomize All
+  </button>
+</div>
+
+<div mat-dialog-content class="pt-4">
+  <p class="text-sm md-sys-color-on-surface-variant mb-4">
+    Click dice icons to randomly roll (1-10) or use "Randomize All". Status changes preview below.
+  </p>
+
+  <!-- Responsive grid: 1 column on mobile, 2 columns on larger screens -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    @for (roll of diceRolls(); track roll.country) {
+      <div class="p-4 rounded-lg md-sys-bg-surface-variant hover:shadow-md transition-shadow duration-200">
+        <!-- Country name -->
+        <div class="font-medium md-sys-color-on-surface text-base mb-2">
+          {{ getCountryDisplayName(roll.country) }}
+        </div>
+
+        <!-- Status comparison -->
+        <div class="flex items-center gap-3 mb-3 text-sm min-w-0">
+          <!-- Current status -->
+          <mat-chip
+            [ngStyle]="getStatusStyles(roll.currentStatus)"
+            class="current-status-chip flex-shrink-0"
+          >
+            {{ getStatusDisplayText(roll.currentStatus) }}
+          </mat-chip>
+
+          <!-- Arrow -->
+          <mat-icon class="md-sys-color-on-surface-variant flex-shrink-0">arrow_forward</mat-icon>
+
+          <!-- Future status -->
+          <mat-chip
+            [ngStyle]="getStatusStyles(roll.futureStatus)"
+            class="future-status-chip flex-shrink-0"
+          >
+            {{ getStatusDisplayText(roll.futureStatus) }}
+          </mat-chip>
+        </div>
+
+        <!-- Dice control -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm md-sys-color-on-surface-variant">Roll:</span>
+
+          <div class="flex items-center gap-2">
+            <button
+              matIconButton
+              [disabled]="saving() || roll.isRolling"
+              (click)="rollDiceValue(roll.country)"
+              class="w-10 h-10 md:w-11 md:h-11 transition-transform duration-200 hover:scale-110 disabled:hover:scale-100"
+              [class.animate-pulse]="roll.isRolling"
+              [attr.aria-label]="'Roll dice for ' + getCountryDisplayName(roll.country)"
+            >
+              <mat-icon class="md-sys-color-primary text-2xl md:text-3xl">casino</mat-icon>
+            </button>
+
+            <!-- Dice value display -->
+            <div class="w-8 h-8 md:w-9 md:h-9 rounded-md bg-md-sys-primary text-md-sys-on-primary flex items-center justify-center text-sm md:text-base font-bold transition-all duration-300"
+                 [class.bg-md-sys-secondary]="roll.isRolling"
+                 [class.text-md-sys-on-secondary]="roll.isRolling">
+              @if (roll.isRolling) {
+                <mat-icon class="text-base md:text-lg animate-spin">autorenew</mat-icon>
+              } @else {
+                {{ roll.diceValue }}
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<div mat-dialog-actions class="flex justify-end gap-2 pt-4">
+  <button
+    matButton="outlined"
+    (click)="cancel()"
+    [disabled]="saving()"
+  >
+    Cancel
+  </button>
+
+  <button
+    matButton="filled"
+    (click)="save()"
+    [disabled]="saving()"
+    class="min-w-[100px]"
+  >
+    @if (saving()) {
+      <mat-progress-spinner
+        mode="indeterminate"
+        diameter="20"
+        class="mr-2"
+      ></mat-progress-spinner>
+      Saving...
+    } @else {
+      Save
+    }
+  </button>
+</div>

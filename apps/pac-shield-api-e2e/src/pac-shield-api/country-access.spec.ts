@@ -140,24 +140,51 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
       });
     });
 
-    it('should calculate correct access levels based on dice roll', async () => {
-      // Test NO_ACCESS (1-5)
+    it('should calculate correct access levels based on country-specific dice roll rules', async () => {
+      // Test Philippines (default rules): 1-3 = No Access, 4-7 = Overflight, 8-10 = Full Access
       const noAccessRes = await gmApi.put(`/api/games/${gameId}/country-access/PHILIPPINES/dice-roll`, {
         diceRoll: 3
       });
       expect(noAccessRes.data.accessLevel).toBe('NO_ACCESS');
 
-      // Test OVERFLIGHT_ONLY (6-15)
-      const overflightRes = await gmApi.put(`/api/games/${gameId}/country-access/INDONESIA/dice-roll`, {
+      // Test Indonesia (Group 1): 1-3 = No Access, 4 = Overflight, 5-10 = Full Access
+      const indonesiaOverflightRes = await gmApi.put(`/api/games/${gameId}/country-access/INDONESIA/dice-roll`, {
+        diceRoll: 4
+      });
+      expect(indonesiaOverflightRes.data.accessLevel).toBe('OVERFLIGHT_ONLY');
+
+      const indonesiaFullRes = await gmApi.put(`/api/games/${gameId}/country-access/INDONESIA/dice-roll`, {
         diceRoll: 10
       });
-      expect(overflightRes.data.accessLevel).toBe('OVERFLIGHT_ONLY');
+      expect(indonesiaFullRes.data.accessLevel).toBe('FULL_ACCESS');
 
-      // Test FULL_ACCESS (16-20)
-      const fullAccessRes = await gmApi.put(`/api/games/${gameId}/country-access/SINGAPORE/dice-roll`, {
-        diceRoll: 20
+      // Test Singapore (Group 2): 1-2 = No Access, 3 = Overflight, 4-10 = Full Access
+      const singaporeOverflightRes = await gmApi.put(`/api/games/${gameId}/country-access/SINGAPORE/dice-roll`, {
+        diceRoll: 3
       });
-      expect(fullAccessRes.data.accessLevel).toBe('FULL_ACCESS');
+      expect(singaporeOverflightRes.data.accessLevel).toBe('OVERFLIGHT_ONLY');
+
+      const singaporeFullRes = await gmApi.put(`/api/games/${gameId}/country-access/SINGAPORE/dice-roll`, {
+        diceRoll: 4
+      });
+      expect(singaporeFullRes.data.accessLevel).toBe('FULL_ACCESS');
+
+      // Test Vietnam (Group 3): 1 = No Access, 2 = Overflight, 3-10 = Full Access
+      const vietnamOverflightRes = await gmApi.put(`/api/games/${gameId}/country-access/VIETNAM/dice-roll`, {
+        diceRoll: 2
+      });
+      expect(vietnamOverflightRes.data.accessLevel).toBe('OVERFLIGHT_ONLY');
+
+      const vietnamFullRes = await gmApi.put(`/api/games/${gameId}/country-access/VIETNAM/dice-roll`, {
+        diceRoll: 3
+      });
+      expect(vietnamFullRes.data.accessLevel).toBe('FULL_ACCESS');
+
+      // Test Japan (always Full Access regardless of dice roll)
+      const japanRes = await gmApi.put(`/api/games/${gameId}/country-access/JAPAN/dice-roll`, {
+        diceRoll: 1
+      });
+      expect(japanRes.data.accessLevel).toBe('FULL_ACCESS');
     });
 
     it('should reject invalid dice roll values', async () => {
@@ -184,7 +211,7 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
 
     it('should reject invalid country codes', async () => {
       const p = gmApi.put(`/api/games/${gameId}/country-access/INVALID_COUNTRY/dice-roll`, {
-        diceRoll: 15
+        diceRoll: 5
       });
       await expect(p).rejects.toMatchObject({
         response: {
@@ -198,7 +225,7 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
 
     it('should return 404 for non-existent game', async () => {
       const p = gmApi.put(`/api/games/99999/country-access/JAPAN/dice-roll`, {
-        diceRoll: 15
+        diceRoll: 5
       });
       await expect(p).rejects.toMatchObject({
         response: {
@@ -214,9 +241,9 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
   describe('PUT /games/:gameId/country-access/dice-rolls', () => {
     it('should update dice rolls for multiple countries', async () => {
       const diceRolls = [
-        { country: 'JAPAN' as Country, diceRoll: 19 },
-        { country: 'PHILIPPINES' as Country, diceRoll: 7 },
-        { country: 'INDONESIA' as Country, diceRoll: 2 }
+        { country: 'JAPAN' as Country, diceRoll: 10 }, // Japan always gets FULL_ACCESS
+        { country: 'PHILIPPINES' as Country, diceRoll: 7 }, // Default rules: 7 = OVERFLIGHT_ONLY
+        { country: 'INDONESIA' as Country, diceRoll: 2 }  // Group 1: 2 = NO_ACCESS
       ];
 
       const res = await gmApi.put(`/api/games/${gameId}/country-access/dice-rolls`, {
@@ -227,32 +254,32 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
       expect(res.status).toBe(200);
       expect(res.data.countries).toHaveLength(3);
 
-      // Check that access levels are calculated correctly
+      // Check that access levels are calculated correctly with new country-specific rules
       const japan = res.data.countries.find((c: any) => c.country === 'JAPAN');
       expect(japan).toMatchObject({
         country: 'JAPAN',
-        diceRoll: 19,
-        accessLevel: 'FULL_ACCESS'
+        diceRoll: 10,
+        accessLevel: 'FULL_ACCESS' // Japan always gets FULL_ACCESS
       });
 
       const philippines = res.data.countries.find((c: any) => c.country === 'PHILIPPINES');
       expect(philippines).toMatchObject({
         country: 'PHILIPPINES',
         diceRoll: 7,
-        accessLevel: 'OVERFLIGHT_ONLY'
+        accessLevel: 'OVERFLIGHT_ONLY' // Default rules: 4-7 = OVERFLIGHT_ONLY
       });
 
       const indonesia = res.data.countries.find((c: any) => c.country === 'INDONESIA');
       expect(indonesia).toMatchObject({
         country: 'INDONESIA',
         diceRoll: 2,
-        accessLevel: 'NO_ACCESS'
+        accessLevel: 'NO_ACCESS' // Group 1: 1-3 = NO_ACCESS
       });
     });
 
     it('should reject invalid dice roll values in bulk update', async () => {
       const diceRolls = [
-        { country: 'JAPAN' as Country, diceRoll: 25 }, // Invalid - too high
+        { country: 'JAPAN' as Country, diceRoll: 11 }, // Invalid - too high (max is 10)
         { country: 'PHILIPPINES' as Country, diceRoll: 7 }
       ];
 
@@ -271,7 +298,7 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
 
     it('should reject invalid country codes in bulk update', async () => {
       const diceRolls = [
-        { country: 'INVALID_COUNTRY' as unknown as Country, diceRoll: 15 }
+        { country: 'INVALID_COUNTRY' as unknown as Country, diceRoll: 5 }
       ];
 
       const p = gmApi.put(`/api/games/${gameId}/country-access/dice-rolls`, {
