@@ -128,6 +128,7 @@ npx nx lint pac-shield-api
 ## Development Workflow Guidelines
 
 ### Server Management
+
 - **NEVER kill existing node processes** during development
 - If E2E tests report "port already in use", assume the correct server is running
 - E2E tests depend on the API server being available and will reuse existing instances
@@ -173,6 +174,7 @@ console.log(fosStateService.getCacheInfo());
 ## Critical Development Rules
 
 ### 🚨🚫 ABSOLUTELY NO BARREL EXPORTS 🚫🚨
+
 **⚠️ CRITICAL WARNING: DO NOT CREATE index.ts FILES FOR BARREL EXPORTS ⚠️**
 
 **NEVER, EVER, UNDER ANY CIRCUMSTANCES CREATE `index.ts` FILES FOR BARREL EXPORTS IN THIS ANGULAR APPLICATION!**
@@ -185,6 +187,7 @@ console.log(fosStateService.getCacheInfo());
 - **✅ ALWAYS** use full import paths like `./component/component.component`
 
 **WHY THIS RULE EXISTS:**
+
 - Barrel exports DESTROY Angular's tree-shaking capabilities
 - Barrel exports cause MASSIVE bundle size increases
 - Barrel exports HURT performance in Angular applications
