@@ -1256,8 +1256,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Open the mobile-friendly dice roll dialog with gameId data
     const dialogRef = this.dialog.open(CountryAccessDiceRollDialogComponent, {
-      width: '90vw',
-      maxWidth: '600px',
+      width: window.innerWidth < 768 ? 'fit-content' : '50vw',
+      maxWidth: window.innerWidth < 768 ? '95vw' : '800px',
       height: 'auto',
       maxHeight: '90vh',
       disableClose: false,

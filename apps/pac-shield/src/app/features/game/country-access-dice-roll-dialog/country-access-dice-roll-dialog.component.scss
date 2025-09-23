@@ -1,20 +1,17 @@
-// Responsive dialog sizing
+// Host container - let Angular Material handle dialog sizing
 :host {
   display: block;
-  min-width: 320px;
-  max-width: 700px;
   width: 100%;
-
-  @media (min-width: 768px) {
-    width: 600px;
-  }
+  max-width: 100%;
 }
 
-// Status chip styling with enhanced specificity
+// Status chip styling - only what Angular Material requires
 :host ::ng-deep .mat-mdc-chip {
   --mdc-chip-label-text-size: 12px;
   min-height: 24px;
   font-weight: 500;
+  white-space: nowrap;
+  min-width: fit-content;
 
   // Ensure text colors are applied
   .mdc-evolution-chip__text-label {
