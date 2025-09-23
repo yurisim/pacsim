@@ -3,11 +3,12 @@ import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDest
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Map } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
@@ -22,12 +23,14 @@ import { GameStatsComponent } from './game-stats/game-stats.component';
 import { GameStatsService } from './game-stats/game-stats.service';
 import { LocationPanelComponent } from './location-panel/location-panel.component';
 import { FosStateService } from '../../shared/services/fos-state.service';
+import { FosService } from './services/fos.service';
 import { WebSocketService } from '../../shared/services/websocket.service';
 import { PlayerRoleService } from '../../shared/services/player-role.service';
 import { CountryAccessToggleComponent } from './country-access-toggle/country-access-toggle.component';
 import { CountryOverlayService } from './services/country-overlay.service';
 import { CountryAccessDiceRollDialogComponent } from './country-access-dice-roll-dialog/country-access-dice-roll-dialog.component';
 import { CountryAccessHttpService } from '../../shared/services/country-access-http.service';
+import { FosDeactivationDialogComponent, FosDeactivationDialogData, FosDeactivationDialogResult } from './location-panel/fos-deactivation-dialog.component';
 
 @Component({
   selector: 'app-game-board',
@@ -103,6 +106,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private countryOverlayService = inject(CountryOverlayService);
   private countryAccessHttp = inject(CountryAccessHttpService);
   private dialog = inject(MatDialog);
+  private fosService = inject(FosService);
+  private snackBar = inject(MatSnackBar);
   /**
    * MapLibre GL map instance once initialized.
    * Exposed for template-bound components that require a direct Map reference.
@@ -1173,31 +1178,120 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Deactivate a FOS (make it 50% transparent) and remove MOB assignment
-   * @param fosId The ID of the FOS to deactivate
+   * Deactivate a FOS via API call, after showing confirmation dialog
+   * @param fosId The static FOS ID to deactivate
    */
   deactivateFos(fosId: string): void {
-    if (this.activeFosIds.has(fosId)) {
-      this.activeFosIds.delete(fosId);
-
-      // Remove MOB assignment
-      const previousMobId = this.fosMobAssignments[fosId];
-      delete this.fosMobAssignments[fosId];
-
-      // Update LocationMarkersComponent if it's available
-      if (this.locationMarkers) {
-        this.locationMarkers.deactivateFos(fosId);
-      }
-
-      console.log(`FOS ${fosId} deactivated`);
-
-      // Update game stats to reflect deactivation
-      const previousMobName = previousMobId ? (MOB_LOCATIONS[previousMobId]?.name || previousMobId) : null;
-      this.gameStatsService.addLogEntry(
-        `FOS ${fosId} has been deactivated${previousMobName ? ` (was controlled by ${previousMobName})` : ''}`,
-        'warning'
-      );
+    // Find the database FOS by matching the static FOS ID to display number
+    const staticFos = FOS_LOCATIONS[fosId];
+    if (!staticFos) {
+      console.error(`Static FOS not found: ${fosId}`);
+      this.snackBar.open('FOS not found', 'Close', { duration: 3000 });
+      return;
     }
+
+    // Extract display number from FOS name (e.g., "FOS 7" -> 7)
+    const fosDisplayNumber = parseInt(staticFos.name.replace(/\D/g, '') || '0');
+    if (!fosDisplayNumber) {
+      console.error(`Invalid FOS display number for: ${fosId}`);
+      this.snackBar.open('Invalid FOS identifier', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Find the database FOS UUID using the display number
+    const dbFos = this.fosStateService.fosList().find(fos => fos.fosDisplayNumber === fosDisplayNumber);
+    if (!dbFos) {
+      console.error(`Database FOS not found for display number: ${fosDisplayNumber}`);
+      this.snackBar.open('FOS not found in database', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Only deactivate if currently active
+    if (!this.activeFosIds.has(fosId)) {
+      this.snackBar.open('FOS is already inactive', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Get assigned team name for the dialog
+    const assignedMobId = this.fosMobAssignments[fosId];
+    const assignedTeamName = assignedMobId ? (MOB_LOCATIONS[assignedMobId]?.name || assignedMobId) : undefined;
+
+    // Get current turn from observable
+    this.currentTurn$.pipe(
+      take(1)
+    ).subscribe(currentTurn => {
+      // Show confirmation dialog
+      const dialogData: FosDeactivationDialogData = {
+        fosName: staticFos.name,
+        fosDisplayNumber: fosDisplayNumber,
+        currentTurn: currentTurn,
+        assignedTeamName: assignedTeamName
+      };
+
+      const dialogRef = this.dialog.open(FosDeactivationDialogComponent, {
+        data: dialogData,
+        width: '480px',
+        disableClose: true
+      });
+
+      dialogRef.afterClosed().subscribe((result: FosDeactivationDialogResult) => {
+        if (result?.confirmed) {
+          this.performFosDeactivation(fosId, dbFos.id, fosDisplayNumber, assignedMobId);
+        }
+      });
+    });
+  }
+
+  /**
+   * Perform the actual FOS deactivation API call after confirmation
+   * @param fosId The static FOS ID
+   * @param dbFosId The database FOS UUID
+   * @param fosDisplayNumber The FOS display number
+   * @param previousMobId The previously assigned MOB ID
+   */
+  private performFosDeactivation(fosId: string, dbFosId: string, fosDisplayNumber: number, previousMobId?: string): void {
+    // Call the API to deactivate using the database UUID
+    this.fosService.deactivateFOS(dbFosId).subscribe({
+      next: (_updatedFos) => {
+        // Success - update local state immediately
+        this.activeFosIds.delete(fosId);
+
+        // Remove MOB assignment
+        delete this.fosMobAssignments[fosId];
+
+        // Update LocationMarkersComponent if it's available
+        if (this.locationMarkers) {
+          this.locationMarkers.deactivateFos(fosId);
+        }
+
+        console.log(`FOS ${fosId} deactivated via API`);
+
+        // Update game stats to reflect deactivation
+        const previousMobName = previousMobId ? (MOB_LOCATIONS[previousMobId]?.name || previousMobId) : null;
+        this.gameStatsService.addLogEntry(
+          `FOS ${fosDisplayNumber} has been deactivated${previousMobName ? ` (was controlled by ${previousMobName})` : ''}`,
+          'warning'
+        );
+
+        // Show success message
+        this.snackBar.open(`FOS ${fosDisplayNumber} deactivated successfully!`, 'Close', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Failed to deactivate FOS:', error);
+
+        // Show appropriate error message based on status code
+        let errorMessage = 'Failed to deactivate FOS';
+        if (error.status === 403) {
+          errorMessage = 'You do not have permission to deactivate this FOS';
+        } else if (error.status === 404) {
+          errorMessage = 'FOS not found';
+        } else if (error.status === 400) {
+          errorMessage = 'FOS is already inactive';
+        }
+
+        this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
+      }
+    });
   }
 
   /**
