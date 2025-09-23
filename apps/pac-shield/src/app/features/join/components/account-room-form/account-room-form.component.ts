@@ -79,18 +79,7 @@ export class AccountRoomFormComponent implements OnChanges {
   });
 
   constructor() {
-    // Debounced name changes for availability check
-    this.form.controls.playerName.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        map((v) => (v || '').toString().trim()),
-        filter((name) => this.isRoomValid && name.length >= 2),
-        takeUntilDestroyed()
-      )
-      .subscribe((name) => {
-        this.nameAvailabilityRequested.emit(name);
-      });
+    // Manual name checking only - no automatic checking
   }
 
   /**
@@ -187,5 +176,17 @@ export class AccountRoomFormComponent implements OnChanges {
   }
   get isRoomInvalid(): boolean {
     return this.roomStatus.status === 'invalid';
+  }
+
+  canCheckName(): boolean {
+    const name = (this.form.controls.playerName.value || '').toString().trim();
+    return this.isRoomValid && name.length >= 2 && !this.isBusy;
+  }
+
+  onCheckNameClick(): void {
+    if (!this.canCheckName()) return;
+
+    const name = (this.form.controls.playerName.value || '').toString().trim();
+    this.nameAvailabilityRequested.emit(name);
   }
 }

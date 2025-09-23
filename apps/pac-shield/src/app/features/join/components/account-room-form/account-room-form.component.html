@@ -22,13 +22,28 @@
 
   <!-- Player Name (shown after room is valid) -->
   <div *ngIf="isRoomValid">
-    <app-account-selector
-      [selectedAccount]="{ name: form.controls.playerName.value || '' }"
-      [disabled]="false"
-      [ariaDescribedById]="nameErrorId"
-      [errorText]="form.controls.playerName.invalid && form.controls.playerName.touched ? fieldError(form.controls.playerName) : null"
-      (accountChange)="onAccountChange($event)"
-    ></app-account-selector>
+    <div class="flex gap-2 items-start">
+      <div class="flex-1">
+        <app-account-selector
+          [selectedAccount]="{ name: form.controls.playerName.value || '' }"
+          [disabled]="false"
+          [ariaDescribedById]="nameErrorId"
+          [errorText]="form.controls.playerName.invalid && form.controls.playerName.touched ? fieldError(form.controls.playerName) : null"
+          (accountChange)="onAccountChange($event)"
+        ></app-account-selector>
+      </div>
+      <button
+        matButton="outlined"
+        type="button"
+        (click)="onCheckNameClick()"
+        [disabled]="!canCheckName()"
+        class="mt-2"
+        data-testid="check-name-button"
+      >
+        <mat-icon aria-hidden="true">{{nameAvailable === undefined && isBusy ? 'hourglass_top' : 'search'}}</mat-icon>
+        <span>{{nameAvailable === undefined && isBusy ? 'Checking...' : 'Check Name'}}</span>
+      </button>
+    </div>
 
     <!-- Minimal name availability messaging (optional UX) -->
     <div
@@ -41,9 +56,6 @@
       </ng-container>
       <ng-container *ngIf="nameAvailable === false">
         <span class="text-red-600">This name is already in use</span>
-      </ng-container>
-      <ng-container *ngIf="nameAvailable === undefined && (form.controls.playerName.value || '').toString().trim().length >= 2">
-        <span>Checking…</span>
       </ng-container>
     </div>
 
