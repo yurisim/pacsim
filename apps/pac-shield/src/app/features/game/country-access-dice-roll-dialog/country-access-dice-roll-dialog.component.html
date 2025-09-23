@@ -61,17 +61,19 @@
               matIconButton
               [disabled]="saving() || roll.isRolling"
               (click)="rollDiceValue(roll.country)"
-              class="dice-button"
-              [class.rolling]="roll.isRolling"
+              class="w-10 h-10 md:w-11 md:h-11 transition-transform duration-200 hover:scale-110 disabled:hover:scale-100"
+              [class.animate-pulse]="roll.isRolling"
               [attr.aria-label]="'Roll dice for ' + getCountryDisplayName(roll.country)"
             >
-              <mat-icon class="md-sys-color-primary">casino</mat-icon>
+              <mat-icon class="md-sys-color-primary text-2xl md:text-3xl">casino</mat-icon>
             </button>
 
             <!-- Dice value display -->
-            <div class="dice-value" [class.rolling]="roll.isRolling">
+            <div class="w-8 h-8 md:w-9 md:h-9 rounded-md bg-md-sys-primary text-md-sys-on-primary flex items-center justify-center text-sm md:text-base font-bold transition-all duration-300"
+                 [class.bg-md-sys-secondary]="roll.isRolling"
+                 [class.text-md-sys-on-secondary]="roll.isRolling">
               @if (roll.isRolling) {
-                <mat-icon class="rolling-icon">autorenew</mat-icon>
+                <mat-icon class="text-base md:text-lg animate-spin">autorenew</mat-icon>
               } @else {
                 {{ roll.diceValue }}
               }
