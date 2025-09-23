@@ -35,7 +35,11 @@
       "Bash(yarn:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(PORT=3001 npx nx serve pac-shield-api)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install",
+      "Bash(npx playwright:*)"
     ],
     "deny": [],
     "ask": []
