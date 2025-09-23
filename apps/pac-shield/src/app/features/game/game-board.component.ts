@@ -17,6 +17,7 @@ import { latLngToCell, cellToBoundary, cellToLatLng, gridDisk } from 'h3-js'; //
 import { ThemeService } from '../../shared/services/theme.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { HexGridComponent, HexSelectionEvent } from './hex-grid.component';
+import { HexGridConfig } from './services/hex-grid.service';
 import { MOB_LOCATIONS, FOS_LOCATIONS } from '../../shared/config/static-locations.config';
 import { LocationMarkersComponent } from './location-markers/location-markers.component';
 import { GameStatsComponent } from './game-stats/game-stats.component';
@@ -308,11 +309,12 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   * - h3Resolution: H3 resolution controlling hex size
   * - kRingSize: Radius (in hexes) to render around the center
   */
-  hexGridConfig = {
-    centerLat: 18.2,  // Hainan Island
-    centerLng: 109.5,
-    h3Resolution: 1,
-    kRingSize: 7
+  hexGridConfig: HexGridConfig = {
+    hexSize: 1, // This will be in degrees
+    centerX: 109.5,
+    centerY: 18.2,
+    width: 20,
+    height: 20,
   };
 
   /**
@@ -415,10 +417,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private initializeHexGrid(): void {
     if (this.hexGrid && this.map) {
       this.hexGrid.map = this.map;
-      this.hexGrid.centerLat = this.hexGridConfig.centerLat;
-      this.hexGrid.centerLng = this.hexGridConfig.centerLng;
-      this.hexGrid.h3Resolution = this.hexGridConfig.h3Resolution;
-      this.hexGrid.kRingSize = this.hexGridConfig.kRingSize;
+      this.hexGrid.gridConfig = this.hexGridConfig;
       this.hexGrid.initializeHexGrid();
     }
   }
@@ -428,7 +427,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onHexSelected(event: HexSelectionEvent): void {
     this.selectedVisualHexCoord = event.visualCoordinate;
-    this.selectedH3Index = event.h3Index;
+    this.selectedH3Index = null; // h3Index is no longer used
     console.log('Hex selected:', event);
     // Additional logic for hex selection can be added here
   }
