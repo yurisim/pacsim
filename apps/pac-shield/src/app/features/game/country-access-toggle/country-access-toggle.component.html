@@ -3,7 +3,13 @@
     mat-icon-button
     [class.active]="isVisible()"
     (click)="onToggle()"
-    matTooltip="Toggle Country Access Overlay"
+    (mousedown)="onPressStart($event)"
+    (mouseup)="onPressEnd($event)"
+    (mouseleave)="onPressEnd($event)"
+    (touchstart)="onPressStart($event)"
+    (touchend)="onPressEnd($event)"
+    (touchcancel)="onPressEnd($event)"
+    matTooltip="Toggle Country Access Overlay (Long-press for dice roll dialog)"
     class="toggle-button">
     <mat-icon>public</mat-icon>
   </button>
