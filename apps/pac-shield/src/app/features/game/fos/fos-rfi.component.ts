@@ -153,20 +153,29 @@ export class FosRfiComponent implements OnChanges {
   }
 
   rollDice(key: string): void {
-    if (!this.canAnswer() || !this.isGameMaster()) return;
+    console.log(`[DICE DEBUG] Frontend rollDice called for key: ${key}`);
+
+    if (!this.canAnswer() || !this.isGameMaster()) {
+      console.log(`[DICE DEBUG] Cannot answer - canAnswer: ${this.canAnswer()}, isGM: ${this.isGameMaster()}`);
+      return;
+    }
 
     const fosId = this.fosId!;
+    console.log(`[DICE DEBUG] Starting dice roll for FOS ID: ${fosId}, RFI key: ${key}`);
+
     this.isLoading = true;
 
     this.rfi.rollDice(fosId, key).subscribe({
       next: (updated) => {
+        console.log(`[DICE DEBUG] Dice roll API response received:`, updated);
         this.hydrate(updated);
         this.isLoading = false;
         const rolledValue = this.answeredValue(key);
+        console.log(`[DICE DEBUG] Rolled value extracted: ${rolledValue} for key: ${key}`);
         this.snack.open(`Dice rolled: ${rolledValue} for ${key}`, 'Close', { duration: 3000 });
       },
       error: (err) => {
-        console.error('Dice roll failed:', err);
+        console.error('[DICE DEBUG] Dice roll failed:', err);
         this.errorMsg = 'Failed to roll dice';
         this.isLoading = false;
       },

@@ -281,8 +281,20 @@ export class JoinFacadeService {
         : (arg1 || '').toUpperCase();
     const name = (arg2 === undefined ? arg1 : arg2) || '';
 
-    if (!roomCode || !name.trim()) {
-      // Clear pending to avoid misleading "Checking…" when we cannot check
+    if (!name.trim()) {
+      // Clear name check state when name is empty
+      this.nameCheckSignal.set({ pending: false, available: null, error: null });
+      return;
+    }
+
+    if (!roomCode) {
+      // Don't set pending if room code is missing - this prevents the stall
+      this.nameCheckSignal.set({ pending: false, available: null, error: null });
+      return;
+    }
+
+    // Only check availability if room is valid to prevent API calls with invalid room codes
+    if (this.roomStatusSignal().status !== 'valid') {
       this.nameCheckSignal.set({ pending: false, available: null, error: null });
       return;
     }

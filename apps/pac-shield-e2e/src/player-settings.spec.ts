@@ -1,43 +1,14 @@
-import { test, expect, request } from '@playwright/test';
-import { fillGameMasterPin } from './test-utils';
+import { test, expect } from '@playwright/test';
+import { createGameViaUI, expectLobbyLoaded } from './test-utils';
 
 test.describe('Player Settings in Lobby', () => {
-  let roomCode: string;
 
   test.beforeEach(async ({ page }) => {
-    // Create a new game via API to get a room code
-    const apiContext = await request.newContext();
-    const createRes = await apiContext.post(
-      'http://localhost:3000/api/game/create',
-      {
-        data: { victoryConditionMP: 100 },
-      }
-    );
-    const gameData = await createRes.json();
-    roomCode = gameData.roomCode;
-    await apiContext.dispose();
+    // Create game and navigate to lobby using shared utility
+    await createGameViaUI(page, 't.gm', '1234');
 
-    // Navigate to the homepage and start a new game
-    await page.goto('/');
-
-    // Wait for WebSocket connection to be established
-    await expect(page.locator('mat-icon:has-text("wifi")')).toBeVisible();
-    await expect(page.locator('span', { hasText: 'Connected' })).toBeVisible();
-
-    await page.getByRole('button', { name: 'Start New Game' }).click();
-
-    // Wait for Game Master Setup form to appear
-    await expect(page.getByText('Game Master Setup')).toBeVisible();
-
-    // Fill out Game Master Setup form
-    await page.getByLabel('Username').fill('t.gm');
-    await fillGameMasterPin(page, '1234');
-    await page.getByRole('button', { name: 'Continue' }).click();
-
-    // Wait for lobby to load
-    await expect(
-      page.getByRole('heading', { name: 'Game Lobby' })
-    ).toBeVisible();
+    // Verify lobby is loaded
+    await expectLobbyLoaded(page);
   });
 
   /**

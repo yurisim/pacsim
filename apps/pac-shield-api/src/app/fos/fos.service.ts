@@ -381,30 +381,46 @@ export class FosService {
    * // Returns all RFI answers for the FOS, with 'CFR' set to random value 1-3
    */
   async rollDiceForRfi(fosId: string, rfiKey: string) {
+    this.logger.debug(`[DICE DEBUG] Starting dice roll for FOS ${fosId}, RFI key ${rfiKey}`);
+
     // Validate FOS exists
     const exists = await this.prisma.forwardOperatingSite.findUnique({
       where: { id: fosId },
-      select: { id: true }
+      select: { id: true, fosDisplayNumber: true }
     });
     if (!exists) {
+      this.logger.error(`[DICE DEBUG] FOS not found: ${fosId}`);
       throw new NotFoundException('FOS not found');
     }
 
+    this.logger.debug(`[DICE DEBUG] FOS found: display number ${exists.fosDisplayNumber}`);
+
     // Generate random value between 1-3
-    const randomValue = Math.floor(Math.random() * 3) + 1;
+    const mathRandom = Math.random();
+    const randomValue = Math.floor(mathRandom * 3) + 1;
     const rfiValue = String(randomValue);
 
-    this.logger.log(`Rolling dice for FOS ${fosId}, RFI key ${rfiKey}: rolled ${rfiValue}`);
+    this.logger.log(`[DICE DEBUG] Rolling dice for FOS ${fosId} (display #${exists.fosDisplayNumber}), RFI key ${rfiKey}: Math.random()=${mathRandom}, rolled ${rfiValue}`);
 
-    // Upsert the rolled value to database
-    await this.prisma.answeredRFI.upsert({
-      where: { fosId_rfiKey: { fosId, rfiKey } },
-      create: { fosId, rfiKey, rfiValue },
-      update: { rfiValue },
-    });
+    try {
+      // Upsert the rolled value to database
+      const upsertResult = await this.prisma.answeredRFI.upsert({
+        where: { fosId_rfiKey: { fosId, rfiKey } },
+        create: { fosId, rfiKey, rfiValue },
+        update: { rfiValue },
+      });
 
-    // Return all RFI answers for this FOS (consistent with manual upsert)
-    return this.getRfiAnswersByFosId(fosId);
+      this.logger.debug(`[DICE DEBUG] Database upsert successful for FOS ${fosId}, RFI ${rfiKey}: ${JSON.stringify(upsertResult)}`);
+
+      // Return all RFI answers for this FOS (consistent with manual upsert)
+      const allAnswers = await this.getRfiAnswersByFosId(fosId);
+      this.logger.debug(`[DICE DEBUG] Returning ${allAnswers.length} RFI answers for FOS ${fosId}`);
+
+      return allAnswers;
+    } catch (error) {
+      this.logger.error(`[DICE DEBUG] Database operation failed for FOS ${fosId}, RFI ${rfiKey}:`, error);
+      throw error;
+    }
   }
 
   /**
