@@ -62,10 +62,49 @@ describe('AccountRoomFormComponent', () => {
     expect(spy).toHaveBeenCalledWith('XYZ123');
   });
 
-  it('emits playerNameChanged when typing name', () => {
+  it('emits playerNameChanged when typing name and auto-converts to lowercase', () => {
     const spy = jest.fn();
     component.playerNameChanged.subscribe(spy);
-    component.onPlayerNameInput('a.smith');
+    component.onPlayerNameInput('A.Smith');
     expect(spy).toHaveBeenCalledWith('a.smith');
+  });
+
+  it('auto-converts mixed case usernames in various scenarios', () => {
+    const spy = jest.fn();
+    component.playerNameChanged.subscribe(spy);
+
+    // Test various mixed case scenarios
+    component.onPlayerNameInput('J.SMITH');
+    expect(spy).toHaveBeenCalledWith('j.smith');
+
+    component.onPlayerNameInput('m.Johnson');
+    expect(spy).toHaveBeenCalledWith('m.johnson');
+
+    component.onPlayerNameInput('K.O\'CONNOR');
+    expect(spy).toHaveBeenCalledWith('k.o\'connor');
+  });
+
+  it('updates form control value when player name input changes', () => {
+    component.onPlayerNameInput('B.Wilson');
+    expect(component.form.controls.playerName.value).toBe('b.wilson');
+  });
+
+  it('emits lowercase username on form submission', () => {
+    const spy = jest.fn();
+    component.submitted.subscribe(spy);
+
+    // Set form values including mixed case username
+    component.form.patchValue({
+      gameId: 'ABC123',
+      playerName: 'C.TAYLOR',
+      pin: '9876'
+    });
+
+    component.onSubmit();
+    expect(spy).toHaveBeenCalledWith({
+      gameId: 'ABC123',
+      playerName: 'c.taylor',
+      pin: '9876'
+    });
   });
 });
