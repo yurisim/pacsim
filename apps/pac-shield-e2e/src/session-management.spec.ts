@@ -180,7 +180,7 @@ test.describe('Session Management and JWT Integration', () => {
     const joinResponse = await page.request.post('http://localhost:3000/api/player/join', {
       data: {
         roomCode: roomCode,
-        playerName: 'ConflictUser',
+        playerName: 'c.user',
         pin: '5555'
       }
     });
@@ -191,14 +191,14 @@ test.describe('Session Management and JWT Integration', () => {
     await page.goto('/join');
     await fillRoomCodeOtp(page, roomCode);
     await expect(page.locator('mat-icon:has-text("check_circle")')).toBeVisible(); // Wait for validation
-    await page.fill('input[data-testid="player-name-input"]', 'ConflictUser');
+    await page.fill('input[data-testid="player-name-input"]', 'c.user');
 
     // Click Check Name button to trigger availability check
     await page.getByTestId('check-name-button').click();
 
-    // Should trigger name conflict since ConflictUser already exists
+    // Should trigger name conflict since c.user already exists
     await expect(
-      page.getByText('A player named "ConflictUser" already exists in this game')
+      page.getByText('A player named "c.user" already exists in this game')
     ).toBeVisible();
 
     // Should show PIN entry component
