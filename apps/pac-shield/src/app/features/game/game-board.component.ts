@@ -214,10 +214,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * Used for ownership/permission checks where an immediate value is needed.
    */
   currentPlayer = this.authService.getPlayer();
- /**
-  * Stream of the current user's team type (e.g., 'GM', 'MOB') resolved from game and auth state.
-  * Emits null when the user is not associated with a team.
-  */
+  /**
+   * Stream of the current user's team type (e.g., 'GM', 'MOB') resolved from game and auth state.
+   * Emits null when the user is not associated with a team.
+   */
   currentUserTeam$ = this.game$.pipe(
     map(game => {
       const authPlayer = this.authService.getPlayer();
@@ -233,81 +233,81 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     })
   );
   // Use centralized role service instead of local derivation
- /**
-  * Stream of the current user's role, provided by PlayerRoleService.
-  */
+  /**
+   * Stream of the current user's role, provided by PlayerRoleService.
+   */
   currentUserRole$ = this.playerRoleService.currentRole$;
 
   // Legacy properties for compatibility
- /**
-  * Demo-only default: MOB controlled by the current player.
-  * TODO: Replace with real state once MOB ownership is derived from the backend.
-  */
+  /**
+   * Demo-only default: MOB controlled by the current player.
+   * TODO: Replace with real state once MOB ownership is derived from the backend.
+   */
   currentPlayerMob = 'kadena'; // Demo: current player controls Kadena MOB
 
   // Use centralized role service for derived properties
- /**
-  * Emits true when the authenticated user has the Game Master role.
-  */
+  /**
+   * Emits true when the authenticated user has the Game Master role.
+   */
   isGameMaster$ = this.playerRoleService.isGameMaster$;
- /**
-  * Emits true when the authenticated user has the MOB Commander role.
-  */
+  /**
+   * Emits true when the authenticated user has the MOB Commander role.
+   */
   isMobCommander$ = this.playerRoleService.isMobCommander$;
 
   // For backward compatibility - will be replaced with observables in template
- /**
-  * Legacy imperative flag for Game Master checks.
-  * Prefer using isGameMaster$; this property will be removed once templates are fully reactive.
-  */
+  /**
+   * Legacy imperative flag for Game Master checks.
+   * Prefer using isGameMaster$; this property will be removed once templates are fully reactive.
+   */
   isGameMaster = false;
 
   // Location panel deep-link control
- /**
-  * Controls whether the location panel starts collapsed.
-  */
+  /**
+   * Controls whether the location panel starts collapsed.
+   */
   panelCollapsed = true;
- /**
-  * Which subview of the location panel should be opened initially (when deep-linked).
-  * - 'none' leaves the default view
-  * - 'rfi' jumps to the Requests For Information view
-  * - 'tasks' jumps to the FOS tasks view
-  */
+  /**
+   * Which subview of the location panel should be opened initially (when deep-linked).
+   * - 'none' leaves the default view
+   * - 'rfi' jumps to the Requests For Information view
+   * - 'tasks' jumps to the FOS tasks view
+   */
   initialSubview: 'none' | 'rfi' | 'tasks' = 'none';
 
   // Game statistics from service (reactive signals)
- /**
-  * Reactive signal of aggregated game statistics (turn/day/phase, points, etc.).
-  */
+  /**
+   * Reactive signal of aggregated game statistics (turn/day/phase, points, etc.).
+   */
   gameStats = this.gameStatsService.gameStats;
- /**
-  * Reactive signal of current ATO (Air Tasking Order) lines visible to the user.
-  */
+  /**
+   * Reactive signal of current ATO (Air Tasking Order) lines visible to the user.
+   */
   atoLines = this.gameStatsService.atoLines;
- /**
-  * Reactive signal of assets (aircraft, personnel, equipment) with their current state.
-  */
+  /**
+   * Reactive signal of assets (aircraft, personnel, equipment) with their current state.
+   */
   gameAssets = this.gameStatsService.gameAssets;
- /**
-  * Reactive signal of recent, formatted game log entries for display.
-  */
+  /**
+   * Reactive signal of recent, formatted game log entries for display.
+   */
   gameLog = this.gameStatsService.gameLog;
- /**
-  * Computed total score (mission, demoralization, resource points) for convenient binding.
-  */
+  /**
+   * Computed total score (mission, demoralization, resource points) for convenient binding.
+   */
   totalScore = this.gameStatsService.totalScore;
- /**
-  * Human-readable label for the current turn (e.g., "Day 2 • Turn 3").
-  */
+  /**
+   * Human-readable label for the current turn (e.g., "Day 2 • Turn 3").
+   */
   currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   // Hex grid configuration
- /**
-  * Configuration for the H3-based hex grid overlay used on the Game Board.
-  * - centerLat/centerLng: Geographic anchor of the grid (Hainan Island)
-  * - h3Resolution: H3 resolution controlling hex size
-  * - kRingSize: Radius (in hexes) to render around the center
-  */
+  /**
+   * Configuration for the H3-based hex grid overlay used on the Game Board.
+   * - centerLat/centerLng: Geographic anchor of the grid (Hainan Island)
+   * - h3Resolution: H3 resolution controlling hex size
+   * - kRingSize: Radius (in hexes) to render around the center
+   */
   hexGridConfig = {
     centerLat: 18.2,  // Hainan Island
     centerLng: 109.5,
