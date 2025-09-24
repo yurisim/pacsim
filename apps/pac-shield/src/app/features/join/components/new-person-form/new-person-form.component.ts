@@ -96,7 +96,7 @@ export class NewPersonFormComponent implements OnChanges {
    * - Preventing empty name checks
    */
   onCheck(): void {
-    const name = (this.form.controls.newPlayerName.value || '').trim();
+    const name = (this.form.controls.newPlayerName.value || '').trim().toLowerCase();
     if (name) {
       this.checkAvailability.emit(name);
     }
@@ -113,7 +113,7 @@ export class NewPersonFormComponent implements OnChanges {
    * - Preventing creation with unavailable or invalid names
    */
   onCreate(): void {
-    const name = (this.form.controls.newPlayerName.value || '').trim();
+    const name = (this.form.controls.newPlayerName.value || '').trim().toLowerCase();
     const pin = (this.form.controls.pin.value || '').trim();
     if (name && this.nameCheck.available === true && this.form.controls.pin.valid) {
       this.createNew.emit({ name, pin });

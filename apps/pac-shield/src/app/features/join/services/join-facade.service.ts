@@ -140,7 +140,7 @@ export class JoinFacadeService {
       .pipe(
         debounceTime(300),
         distinctUntilChanged(
-          (a, b) => a.roomCode === b.roomCode && a.name.trim() === b.name.trim()
+          (a, b) => a.roomCode === b.roomCode && a.name.trim().toLowerCase() === b.name.trim().toLowerCase()
         ),
         switchMap(({ roomCode, name }) =>
           this.auth.checkPlayerNameAvailability(roomCode, name).pipe(
@@ -301,7 +301,7 @@ export class JoinFacadeService {
 
     this.nameCheckSignal.set({ pending: true, available: null, error: null });
     this.errorSignal.set(null);
-    this.nameCheckRequests$.next({ roomCode, name });
+    this.nameCheckRequests$.next({ roomCode, name: name.toLowerCase() });
   }
 
   createNewPlayer(roomCode: string, newName: string, pin: string): void {

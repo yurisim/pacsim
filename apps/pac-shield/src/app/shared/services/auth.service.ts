@@ -41,7 +41,7 @@ export class AuthService {
    */
   joinGame(roomCode: string, playerName: string, pin?: string) {
     this.webSocketService.connect(roomCode);
-    const body: any = { roomCode, playerName, ...(pin ? { pin } : {}) };
+    const body: any = { roomCode, playerName: playerName.toLowerCase(), ...(pin ? { pin } : {}) };
     return this.apiService
       .post<{ token: string; player: Player }>('player/join', body)
       .pipe(
@@ -64,7 +64,7 @@ export class AuthService {
   joinGameWithPin(roomCode: string, playerName: string, pin: string) {
     this.webSocketService.connect(roomCode);
     return this.apiService
-      .post<{ token: string; player: Player }>('player/join', { roomCode, playerName, pin })
+      .post<{ token: string; player: Player }>('player/join', { roomCode, playerName: playerName.toLowerCase(), pin })
       .pipe(
         tap(({ token, player }) => {
           this.setToken(token);
@@ -90,7 +90,7 @@ export class AuthService {
    * Used to drive name conflict UI and PIN entry flow.
    */
   checkPlayerNameAvailability(roomCode: string, playerName: string) {
-    return this.apiService.post<{ isAvailable: boolean }>('player/check-name-availability', { roomCode, playerName });
+    return this.apiService.post<{ isAvailable: boolean }>('player/check-name-availability', { roomCode, playerName: playerName.toLowerCase() });
   }
 
   /**
@@ -102,7 +102,7 @@ export class AuthService {
     return this.apiService
       .post<{ token: string; player: Player }>('player/join', {
         roomCode,
-        playerName,
+        playerName: playerName.toLowerCase(),
         pin,
         role: 'GM'
       })
