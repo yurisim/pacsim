@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Country, AccessStatus } from '../../generated/enums';
+import { environment } from '../../../environments/environment';
 
 export interface CountryAccessSnapshot {
   countries: Record<string, AccessStatus>;
@@ -65,7 +66,7 @@ export interface BulkAccessUpdateResponse {
  */
 export class CountryAccessHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/games';
+  private readonly baseUrl = `${environment.apiUrl}/games`;
 
   /**
    * Retrieve the full political access snapshot for all countries in a game.

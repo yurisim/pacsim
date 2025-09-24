@@ -3,6 +3,7 @@ import { nameAvailabilityValidator } from './async-name-availability.validator';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { from } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 describe('nameAvailabilityValidator()', () => {
   let httpMock: HttpTestingController;
@@ -28,7 +29,7 @@ describe('nameAvailabilityValidator()', () => {
     // Debounce period
     tick(300);
 
-    const req = httpMock.expectOne('/api/player/check-name-availability');
+    const req = httpMock.expectOne(`${environment.apiUrl}/player/check-name-availability`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ roomCode: 'ABC123', playerName: 'n.guy' });
 
@@ -47,7 +48,7 @@ describe('nameAvailabilityValidator()', () => {
 
     tick(300);
 
-    const req = httpMock.expectOne('/api/player/check-name-availability');
+    const req = httpMock.expectOne(`${environment.apiUrl}/player/check-name-availability`);
     req.flush({ isAvailable: false });
     tick();
 
@@ -63,7 +64,7 @@ describe('nameAvailabilityValidator()', () => {
 
     tick(300);
 
-    const req = httpMock.expectOne('/api/player/check-name-availability');
+    const req = httpMock.expectOne(`${environment.apiUrl}/player/check-name-availability`);
     req.flush({ message: 'fail' }, { status: 500, statusText: 'Server Error' });
     tick();
 

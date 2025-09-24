@@ -5,13 +5,14 @@ import { of } from 'rxjs';
 import { map, mergeMap, catchError } from 'rxjs/operators';
 import * as AtoActions from './ato.actions';
 import { ATOLine } from '../../generated/aTOLine/aTOLine.entity';
+import { environment } from '../../../environments/environment';
 
 /**
  * NgRx Effects for ATO operations
  */
 @Injectable()
 export class AtoEffects {
-  private readonly apiUrl = '/api/ato';
+  private readonly apiUrl = `${environment.apiUrl}/ato`;
 
   private actions$ = inject(Actions);
   private http = inject(HttpClient);

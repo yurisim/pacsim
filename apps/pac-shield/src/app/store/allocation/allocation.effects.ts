@@ -9,13 +9,14 @@ import { AircraftRequest } from '../../generated/aircraftRequest/aircraftRequest
 import { AircraftAllocation } from '../../generated/aircraftAllocation/aircraftAllocation.entity';
 import { AircraftInstance } from '../../generated/aircraftInstance/aircraftInstance.entity';
 import { AllocationWebSocketService } from '../../shared/services/allocation-websocket.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * NgRx Effects for allocation operations
  */
 @Injectable()
 export class AllocationEffects {
-  private readonly apiUrl = '/api/allocation';
+  private readonly apiUrl = `${environment.apiUrl}/allocation`;
 
   private actions$ = inject(Actions);
   private http = inject(HttpClient);
