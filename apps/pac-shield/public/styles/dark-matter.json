@@ -4,6 +4,8 @@
   "zoom": 0.8619833357855968,
   "pitch": 0,
   "center": [17.65431710431244, 32.954120326746775],
+  "projection": { "type": "globe" },
+
   "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
   "layers": [
     {

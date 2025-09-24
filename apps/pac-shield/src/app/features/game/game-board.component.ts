@@ -578,7 +578,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // WHY style.load: Fires when new style is completely loaded and applied
     this.map.once('style.load', () => {
       console.log('✅ style.load fired for', isDarkMode ? 'dark' : 'light');
-      this.map.setProjection({ type: 'mercator' }); // Set to Mercator
+      this.map.setProjection({ type: 'globe' }); // Set to globe projection
 
       // Use HexGridComponent's updateColors method if available
       if (this.hexGrid) {
