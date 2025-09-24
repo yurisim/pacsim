@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { tap, switchMap, map, of, catchError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
@@ -27,6 +28,7 @@ interface JwtPayload {
 export class AuthService {
   private apiService = inject(ApiService);
   private webSocketService = inject(WebSocketService);
+  private router = inject(Router);
   private readonly tokenKey = 'pac-shield-jwt';
   private readonly playerKey = 'pac-shield-player';
 
@@ -162,7 +164,7 @@ export class AuthService {
       return decodedToken.gameId;
     } catch (error) {
       console.error('Failed to decode JWT:', error);
-      this.logout(); // Clear invalid token
+      this.logout(true); // Clear invalid token and redirect to home
       return null;
     }
   }
@@ -178,12 +180,17 @@ export class AuthService {
   /**
    * Clear session and close WebSocket connection.
    * Use when leaving a game or when token becomes invalid/expired.
+   * Optionally redirects to home page when logout is due to invalid JWT.
    */
-  logout(): void {
+  logout(redirectToHome = false): void {
     this.webSocketService.disconnect();
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.playerKey);
     localStorage.removeItem('playerId');
+
+    if (redirectToHome) {
+      this.router.navigate(['/']);
+    }
   }
 
   /**
@@ -208,7 +215,7 @@ export class AuthService {
       return decodedToken.playerId;
     } catch (error) {
       console.error('Failed to decode JWT:', error);
-      this.logout();
+      this.logout(true);
       return null;
     }
   }
@@ -243,7 +250,7 @@ export class AuthService {
       return (decodedToken as any).exp ? (decodedToken as any).exp > currentTime : true;
     } catch (error) {
       console.error('Failed to validate JWT:', error);
-      this.logout();
+      this.logout(true);
       return false;
     }
   }
