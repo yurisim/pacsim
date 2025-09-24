@@ -6,6 +6,7 @@ import { LocalStorageService } from './local-storage.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ForwardOperatingSite } from '../../generated';
 import { catchError, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class FosStateService {
   private jammingStateService = inject(JammingStateService);
   private localStorageService = inject(LocalStorageService);
 
-  private readonly baseUrl = '/api/fos';
+  private readonly baseUrl = `${environment.apiUrl}/fos`;
   private readonly CACHE_KEY = 'fos_list';
   private readonly CACHE_MAX_AGE_MINUTES = 30;
 

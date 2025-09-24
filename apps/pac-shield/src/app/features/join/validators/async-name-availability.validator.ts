@@ -2,6 +2,7 @@ import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/fo
 import { inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, map, catchError, switchMap, of } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 /**
  * Async validator that checks if a player name is available for a given room code.
@@ -22,7 +23,7 @@ export function nameAvailabilityValidator(roomCodeAccessor: () => string): Async
           return of(null);
         }
         return http
-          .post<{ isAvailable: boolean }>('/api/player/check-name-availability', {
+          .post<{ isAvailable: boolean }>(`${environment.apiUrl}/player/check-name-availability`, {
             roomCode,
             playerName: name,
           })
