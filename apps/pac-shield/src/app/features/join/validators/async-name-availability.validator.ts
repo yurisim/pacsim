@@ -16,7 +16,7 @@ export function nameAvailabilityValidator(roomCodeAccessor: () => string): Async
     return of(control.value as string).pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      map((v) => (v || '').trim()),
+      map((v) => (v || '').trim().toLowerCase()),
       switchMap((name) => {
         const roomCode = (roomCodeAccessor() || '').trim();
         if (!roomCode || !name) {

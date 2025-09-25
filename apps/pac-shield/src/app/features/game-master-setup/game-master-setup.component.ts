@@ -75,7 +75,7 @@ export class GameMasterSetupComponent {
     if (this.isFormValid) {
       const formValue = this.form.value;
       this.complete.emit({
-        username: formValue.username.trim(),
+        username: formValue.username.trim().toLowerCase(),
         pin: formValue.pin,
       });
     }

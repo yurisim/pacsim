@@ -123,12 +123,14 @@ export class AccountRoomFormComponent implements OnChanges {
   }
 
   onPlayerNameInput(value: string): void {
-    this.playerNameChanged.emit(value);
+    const lowercaseValue = value.toLowerCase();
+    this.form.controls.playerName.setValue(lowercaseValue, { emitEvent: false });
+    this.playerNameChanged.emit(lowercaseValue);
   }
 
   // Adapter for AccountSelector output
   onAccountChange(account: { name: string } | null): void {
-    const name = (account?.name ?? '').toString();
+    const name = (account?.name ?? '').toString().toLowerCase();
     this.form.controls.playerName.setValue(name);
     this.playerNameChanged.emit(name);
   }
@@ -155,7 +157,7 @@ export class AccountRoomFormComponent implements OnChanges {
       const pin = (val.pin || '').trim();
       this.submitted.emit({
         gameId: val.gameId,
-        playerName: val.playerName,
+        playerName: val.playerName.toLowerCase(),
         pin,
       });
     }
@@ -179,14 +181,14 @@ export class AccountRoomFormComponent implements OnChanges {
   }
 
   canCheckName(): boolean {
-    const name = (this.form.controls.playerName.value || '').toString().trim();
+    const name = (this.form.controls.playerName.value || '').toString().trim().toLowerCase();
     return this.isRoomValid && name.length >= 2 && !this.isBusy;
   }
 
   onCheckNameClick(): void {
     if (!this.canCheckName()) return;
 
-    const name = (this.form.controls.playerName.value || '').toString().trim();
+    const name = (this.form.controls.playerName.value || '').toString().trim().toLowerCase();
     this.nameAvailabilityRequested.emit(name);
   }
 }
