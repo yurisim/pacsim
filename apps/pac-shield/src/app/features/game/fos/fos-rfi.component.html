@@ -2,7 +2,11 @@
   <div class="flex items-center justify-between">
     <div class="md-typescale-label-medium">RFI (10 items)</div>
     <div class="md-typescale-body-small md-sys-color-on-surface-variant">
-      {{ fosId ? 'Active FOS' : 'Pre-activation (read-only)' }}
+      @if (fosId) {
+        <span>{{ assessmentStatusText }}</span>
+      } @else {
+        <span>Pre-activation (read-only)</span>
+      }
     </div>
   </div>
 
@@ -47,12 +51,17 @@
                     <button
                       mat-icon-button
                       (click)="rollDice(key)"
-                      [disabled]="!canAnswer() || isLoading"
-                      [matTooltip]="'Roll dice for ' + key"
+                      [disabled]="!canAnswer() || isLoading || !canRollDice(key)"
+                      [matTooltip]="getDiceTooltip(key)"
                       class="dice-button"
+                      [class.opacity-50]="!canRollDice(key)"
                       aria-label="Roll dice for {{ key }}"
                     >
-                      <mat-icon>casino</mat-icon>
+                      @if (!canRollDice(key)) {
+                        <mat-icon>lock</mat-icon>
+                      } @else {
+                        <mat-icon>casino</mat-icon>
+                      }
                     </button>
                   }
 
@@ -77,7 +86,12 @@
     <mat-divider class="my-2"></mat-divider>
 
     <div class="md-typescale-body-small md-sys-color-on-surface-variant">
-      Tip: 1 = Minimal, 2 = Moderate, 3 = Satisfactory. Only GMs may update answers. Use the dice button to randomly roll 1-3.
+      <p>Tip: 1 = Minimal, 2 = Moderate, 3 = Satisfactory. Only GMs may update answers.</p>
+      @if (!isFullyAssessed && canAnswer()) {
+        <p class="mt-1 text-amber-600 dark:text-amber-400">
+          ⚠️ Initial Assessment: You can roll dice for up to 5 RFIs. Full assessment unlocks all 10.
+        </p>
+      }
     </div>
   }
 </div>
