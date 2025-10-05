@@ -344,7 +344,7 @@ export class PoliticalAccessComponent implements OnInit {
     return 'text-md-tertiary';
   }
 
-  getFosStatusIcon(fos: StaticLocation): string {
+  getFosStatusIcon(_fos: StaticLocation): string {
     // TODO: Should check actual game state for FOS occupation status
     return '○'; // Placeholder - occupation status should come from game state
   }

@@ -155,7 +155,7 @@ export class CountryAccessDiceRollDialogComponent {
   /**
    * Get display styles for access status (ngStyle approach)
    */
-  getStatusStyles(status: AccessStatus): any {
+  getStatusStyles(status: AccessStatus): Record<string, string> {
     switch (status) {
       case 'FULL_ACCESS':
         return {
