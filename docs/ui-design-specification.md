@@ -204,6 +204,15 @@ A collapsible panel that adapts to the player's selection.
 
 ## **Shared UI Components**
 
+### **Allocation Notification System** ✅ IMPLEMENTED
+- **Backend**: Complete notification service with WebSocket broadcasting to team-specific rooms
+- **Frontend Components**: Badge, notification center, and toast components implemented
+- **Real-time Updates**: Live notifications via `AllocationWebSocketService`
+- **Notification Types**: Request submitted/reviewed, aircraft allocated/deallocated, cycle status changes
+- **Priority System**: LOW, NORMAL, HIGH, URGENT with appropriate routing
+- **Acknowledgment**: Support for notifications requiring user acknowledgment
+- **Audit Trail**: All notifications logged for game history
+
 ### **Scoreboard Component**
 - A persistent element, possibly in the Bottom Panel, showing `MP` (Mission Points), `DP` (Demoralization Points), and `RP` (Resource Points).
 
