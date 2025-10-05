@@ -6,74 +6,78 @@
     </div>
   </div>
 
-  <app-error-alert
-    *ngIf="errorMsg"
-    [variant]="'error'"
-    [title]="'RFI Error'"
-    [message]="errorMsg"
-    dataTestId="rfi-error"
-  ></app-error-alert>
+  @if (errorMsg) {
+    <app-error-alert
+      [variant]="'error'"
+      [title]="'RFI Error'"
+      [message]="errorMsg"
+      dataTestId="rfi-error"
+    ></app-error-alert>
+  }
 
-  <div class="flex items-center justify-center py-6" *ngIf="isLoading">
-    <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
-  </div>
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-6">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+    </div>
+  }
 
-  <div *ngIf="!isLoading">
+  @if (!isLoading) {
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-      <div class="p-2 rounded-md md-elevation-1 interactive-surface" *ngFor="let key of rfiKeys">
-        <div class="flex items-center justify-between gap-2">
-          <div class="md-typescale-body-medium">{{ key }}</div>
+      @for (key of rfiKeys; track key) {
+        <div class="p-2 rounded-md md-elevation-1 interactive-surface">
+          <div class="flex items-center justify-between gap-2">
+            <div class="md-typescale-body-medium">{{ key }}</div>
 
-          <!-- Answer control -->
-          <div class="flex items-center gap-1">
-            <!-- Read-only view -->
-            <ng-container *ngIf="!canAnswer(); else editTpl">
-              <mat-chip *ngIf="answeredValue(key) as v; else unanswered" [disableRipple]="true">
-                {{ v }}
-              </mat-chip>
-              <ng-template #unanswered>
-                <mat-chip [disableRipple]="true" class="opacity-70">—</mat-chip>
-              </ng-template>
-            </ng-container>
+            <!-- Answer control -->
+            <div class="flex items-center gap-1">
+              @if (!canAnswer()) {
+                <!-- Read-only view -->
+                @if (answeredValue(key); as v) {
+                  <mat-chip [disableRipple]="true">
+                    {{ v }}
+                  </mat-chip>
+                } @else {
+                  <mat-chip [disableRipple]="true" class="opacity-70">—</mat-chip>
+                }
+              } @else {
+                <!-- Editable -->
+                <div class="flex items-center gap-2">
+                  <!-- Dice roll button (GM only) -->
+                  @if (isGameMaster()) {
+                    <button
+                      mat-icon-button
+                      (click)="rollDice(key)"
+                      [disabled]="!canAnswer() || isLoading"
+                      [matTooltip]="'Roll dice for ' + key"
+                      class="dice-button"
+                      aria-label="Roll dice for {{ key }}"
+                    >
+                      <mat-icon>casino</mat-icon>
+                    </button>
+                  }
 
-            <!-- Editable -->
-            <ng-template #editTpl>
-              <div class="flex items-center gap-2">
-                <!-- Dice roll button (GM only) -->
-                <button
-                  *ngIf="isGameMaster()"
-                  mat-icon-button
-                  matButton="tonal"
-                  (click)="rollDice(key)"
-                  [disabled]="!canAnswer() || isLoading"
-                  [matTooltip]="'Roll dice for ' + key"
-                  class="dice-button"
-                >
-                  <mat-icon>casino</mat-icon>
-                </button>
-
-                <mat-button-toggle-group
-                  [value]="answeredValue(key) || null"
-                  (change)="setAnswer(key, $event.value)"
-                  [disabled]="!canAnswer()"
-                  aria-label="Set {{ key }} value"
-                >
-                  <mat-button-toggle [value]="1" [matTooltip]="'Set to 1'">1</mat-button-toggle>
-                  <mat-button-toggle [value]="2" [matTooltip]="'Set to 2'">2</mat-button-toggle>
-                  <mat-button-toggle [value]="3" [matTooltip]="'Set to 3'">3</mat-button-toggle>
-                </mat-button-toggle-group>
-              </div>
-            </ng-template>
+                  <mat-button-toggle-group
+                    [value]="answeredValue(key) || null"
+                    (change)="setAnswer(key, $event.value)"
+                    [disabled]="!canAnswer()"
+                    aria-label="Set {{ key }} value"
+                  >
+                    <mat-button-toggle [value]="1" [matTooltip]="'Set to 1'">1</mat-button-toggle>
+                    <mat-button-toggle [value]="2" [matTooltip]="'Set to 2'">2</mat-button-toggle>
+                    <mat-button-toggle [value]="3" [matTooltip]="'Set to 3'">3</mat-button-toggle>
+                  </mat-button-toggle-group>
+                </div>
+              }
+            </div>
           </div>
         </div>
-      </div>
+      }
     </div>
 
     <mat-divider class="my-2"></mat-divider>
 
     <div class="md-typescale-body-small md-sys-color-on-surface-variant">
-      Tip: 1 = Minimal, 2 = Moderate, 3 = Satisfactory. Only GMs may update answers.
-      <!-- TODO: Replace older help strings referencing "dashboard" with "Open a hex → FOS → RFI/Tasks" -->
+      Tip: 1 = Minimal, 2 = Moderate, 3 = Satisfactory. Only GMs may update answers. Use the dice button to randomly roll 1-3.
     </div>
-  </div>
+  }
 </div>
