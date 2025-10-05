@@ -10,11 +10,8 @@ import {
   ParseIntPipe,
   UseGuards,
   Request,
-  Optional,
 } from '@nestjs/common';
 import { AtoService } from './ato.service';
-import { CreateATOLineDto } from '../generated/aTOLine/create-aTOLine.dto';
-import { UpdateATOLineDto } from '../generated/aTOLine/update-aTOLine.dto';
 import { CreateATORequestDto } from './dto/create-ato-request.dto';
 import { UpdateATORequestDto } from './dto/update-ato-request.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';

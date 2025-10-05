@@ -20,7 +20,6 @@ import {
   AircraftInstance,
   AircraftPool,
   AllocationCycleStatus,
-  AllocationRequestStatus,
   AircraftType
 } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

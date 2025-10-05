@@ -6,8 +6,7 @@ import {
   AircraftAllocation,
   AllocationCycle,
   AircraftInstance,
-  TeamType,
-  PlayerRole
+  TeamType
 } from '@prisma/client';
 
 export enum AllocationNotificationType {

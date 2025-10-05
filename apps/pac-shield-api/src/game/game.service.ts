@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, Logger, BadRequestException, HttpException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
-import { TeamType, RunwayStatus, MOGLevel, AccessStatus, Country } from '.prisma/client';
+import { AccessStatus, Country } from '.prisma/client';
 import { CreateGameDto, Game } from '../app/generated';
 import { GameGateway } from './game.gateway';
 import { JoinGameDto } from './dto/join-game.dto';
