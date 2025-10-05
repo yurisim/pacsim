@@ -235,10 +235,14 @@ export class FosController {
    *
    * **Authorization**: GM role required
    * **Database Operations**: Upserts the rolled value to answeredRFI table
+   * **Roll Limit**: Maximum 5 new RFI rolls allowed before FOS reaches full assessment status
+   *   - Re-rolling existing RFI values is always allowed
+   *   - Once `isFullyAssessed = true`, all 10 RFIs can be rolled
    *
    * @param fosId - The database UUID of the FOS
    * @param body - Request body containing the RFI key to roll for
    * @returns Promise<AnsweredRFI[]> Complete list of RFI answers for the FOS
+   * @throws BadRequestException if trying to roll more than 5 RFIs before full assessment
    *
    * @example
    * POST /fos/uuid-string/rfi/roll-dice
@@ -280,6 +284,10 @@ export class FosController {
         }
       }
     }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Maximum 5 RFIs can be rolled before full assessment'
   })
   @ApiResponse({
     status: 403,

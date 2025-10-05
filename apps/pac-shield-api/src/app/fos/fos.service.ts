@@ -383,24 +383,44 @@ export class FosService {
   async rollDiceForRfi(fosId: string, rfiKey: string) {
     this.logger.debug(`[DICE DEBUG] Starting dice roll for FOS ${fosId}, RFI key ${rfiKey}`);
 
-    // Validate FOS exists
-    const exists = await this.prisma.forwardOperatingSite.findUnique({
+    // Validate FOS exists and get assessment status
+    const fos = await this.prisma.forwardOperatingSite.findUnique({
       where: { id: fosId },
-      select: { id: true, fosDisplayNumber: true }
+      select: {
+        id: true,
+        fosDisplayNumber: true,
+        isFullyAssessed: true,
+        answeredRFIs: true
+      }
     });
-    if (!exists) {
+    if (!fos) {
       this.logger.error(`[DICE DEBUG] FOS not found: ${fosId}`);
       throw new NotFoundException('FOS not found');
     }
 
-    this.logger.debug(`[DICE DEBUG] FOS found: display number ${exists.fosDisplayNumber}`);
+    this.logger.debug(`[DICE DEBUG] FOS found: display number ${fos.fosDisplayNumber}, isFullyAssessed: ${fos.isFullyAssessed}`);
+
+    // Check if this RFI key already has an answer (re-rolls are allowed)
+    const existingAnswer = fos.answeredRFIs.find(rfi => rfi.rfiKey === rfiKey);
+    const isReroll = !!existingAnswer;
+
+    // Enforce 5-roll limit if not fully assessed and not a re-roll
+    if (!fos.isFullyAssessed && !isReroll) {
+      const answeredCount = fos.answeredRFIs.length;
+      if (answeredCount >= 5) {
+        this.logger.warn(`[DICE DEBUG] Roll limit exceeded for FOS ${fosId}: ${answeredCount}/5 answered, not fully assessed`);
+        throw new BadRequestException(
+          `Maximum 5 RFIs can be rolled before full assessment. Currently ${answeredCount}/5 answered. Full assessment required to roll remaining RFIs.`
+        );
+      }
+    }
 
     // Generate random value between 1-3
     const mathRandom = Math.random();
     const randomValue = Math.floor(mathRandom * 3) + 1;
     const rfiValue = String(randomValue);
 
-    this.logger.log(`[DICE DEBUG] Rolling dice for FOS ${fosId} (display #${exists.fosDisplayNumber}), RFI key ${rfiKey}: Math.random()=${mathRandom}, rolled ${rfiValue}`);
+    this.logger.log(`[DICE DEBUG] Rolling dice for FOS ${fosId} (display #${fos.fosDisplayNumber}), RFI key ${rfiKey}: Math.random()=${mathRandom}, rolled ${rfiValue}`);
 
     try {
       // Upsert the rolled value to database
