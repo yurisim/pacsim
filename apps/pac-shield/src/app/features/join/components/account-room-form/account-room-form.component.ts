@@ -14,8 +14,6 @@ import { AccountSelectorComponent } from '../account-selector/account-selector.c
 import { pinValidator } from '../../validators/pin.validator';
 import { nameFormatValidator } from '../../validators/name-format.validator';
 import { InputOtpComponent } from '../../../../shared/components/input-otp/input-otp.component';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs/operators';
 
 type AccountForm = FormGroup<{
   gameId: FormControl<string>;

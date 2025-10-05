@@ -10,7 +10,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Country, AccessStatus, country, accessStatus } from '../../../generated/enums';
+import { Country, AccessStatus, country } from '../../../generated/enums';
 import { WebSocketService } from '../../../shared/services/websocket.service';
 import { CountryOverlayService } from '../services/country-overlay.service';
 import { CountryAccessHttpService } from '../../../shared/services/country-access-http.service';

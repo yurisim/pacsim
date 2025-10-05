@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,10 +9,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { Country, country, AccessStatus } from '../../../generated/enums';
 import { CountryAccessHttpService, BulkDiceRollRequest } from '../../../shared/services/country-access-http.service';
 import { CountryOverlayService } from '../services/country-overlay.service';
-import { Store } from '@ngrx/store';
-import { AppState } from '../../../core/store/app.state';
-import { selectGame } from '../../../core/store/game/game.selectors';
-import { take, map } from 'rxjs';
 
 interface CountryDiceRollWithStatus {
   country: Country;
@@ -57,7 +53,6 @@ export class CountryAccessDiceRollDialogComponent {
   private dialogRef = inject(MatDialogRef<CountryAccessDiceRollDialogComponent, boolean>);
   private countryAccessHttp = inject(CountryAccessHttpService);
   private countryOverlayService = inject(CountryOverlayService);
-  private store = inject(Store<AppState>);
   private snackBar = inject(MatSnackBar);
   private data = inject<CountryAccessDiceRollDialogData>(MAT_DIALOG_DATA);
 
