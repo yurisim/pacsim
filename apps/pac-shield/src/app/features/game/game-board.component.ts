@@ -851,7 +851,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Initial setup when map first loads
     this.map.on('style.load', () => {
       // Set Mercator projection after style loads
-      this.map.setProjection({ type: 'mercator' });
+      this.map.setProjection({ type: 'globe' });
       // Add delay to ensure style is completely ready
       setTimeout(() => {
         this.initializeHexGrid(); // Initialize hex grid using HexGridComponent
