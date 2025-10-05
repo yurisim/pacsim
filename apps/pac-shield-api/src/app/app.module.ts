@@ -71,6 +71,7 @@ import { APP_GUARD } from '@nestjs/core';
     FosModule,
     AtoModule,
     AllocationModule,
+    CleanupModule,
   ],
   controllers: [AppController],
   providers: [
