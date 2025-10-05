@@ -40,6 +40,7 @@ export class FosRfiComponent implements OnChanges {
   @Input() fosDisplayNumber!: number | null;
   @Input() gameId!: number | null;
   @Input() canEdit = false;
+  @Input() isFullyAssessed = false;
 
   private rfi = inject(FosRfiService);
   private snack = inject(MatSnackBar);
