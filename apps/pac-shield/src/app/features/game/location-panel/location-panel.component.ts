@@ -697,6 +697,7 @@ export class LocationPanelComponent implements OnChanges {
     const selectedFos = this.selectedFosAsset();
     const fosDisplayNumber = this.selectedFosDisplayNumber();
     const fosId = this.selectedFosId();
+    const dbFos = this.selectedDbFos();
 
     if (!selectedFos || !fosDisplayNumber) {
       this.snackBar.open('No FOS selected', 'Close', { duration: 3000 });
@@ -710,7 +711,8 @@ export class LocationPanelComponent implements OnChanges {
         fosDisplayNumber: fosDisplayNumber,
         fosName: selectedFos.name,
         gameId: this.gameId,
-        canEdit: this.canEdit()
+        canEdit: this.canEdit(),
+        isFullyAssessed: dbFos?.isFullyAssessed ?? false
       },
       width: '100vw',
       maxWidth: 'min(95vw, 1200px)',
@@ -775,6 +777,7 @@ export interface FosDialogData {
   fosName: string;
   gameId: number | null;
   canEdit: boolean;
+  isFullyAssessed?: boolean;
 }
 
 /**
@@ -803,6 +806,7 @@ export interface FosDialogData {
         [fosDisplayNumber]="data.fosDisplayNumber"
         [gameId]="data.gameId"
         [canEdit]="data.canEdit"
+        [isFullyAssessed]="data.isFullyAssessed ?? false"
       ></app-fos-rfi>
     </div>
   `,

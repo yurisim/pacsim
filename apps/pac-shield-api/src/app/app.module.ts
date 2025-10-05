@@ -15,6 +15,10 @@ import { TeamModule } from './team/team.module';
 import { FosModule } from './fos/fos.module';
 import { AtoModule } from './ato/ato.module';
 import { AllocationModule } from './allocation/allocation.module';
+import { CleanupModule } from './cleanup/cleanup.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -38,6 +42,26 @@ import { AllocationModule } from './allocation/allocation.module';
           `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
       },
     }),
+    // Schedule module for cron jobs (cleanup)
+    ScheduleModule.forRoot(),
+    // Rate limiting: 200 req/sec (burst), 3000 req/min (sustained), 10k req/hour
+    ThrottlerModule.forRoot([
+      {
+        name: 'burst',
+        ttl: 1000, // 1 second
+        limit: 200, // 200 req/sec - supports 200 simultaneous users
+      },
+      {
+        name: 'sustained',
+        ttl: 60000, // 1 minute
+        limit: 3000, // 3000 req/min
+      },
+      {
+        name: 'hourly',
+        ttl: 3600000, // 1 hour
+        limit: 10000, // 10,000 req/hour
+      },
+    ]),
     PrismaModule,
     GameModule,
     AuthModule,
@@ -47,6 +71,7 @@ import { AllocationModule } from './allocation/allocation.module';
     FosModule,
     AtoModule,
     AllocationModule,
+    CleanupModule,
   ],
   controllers: [AppController],
   providers: [
@@ -55,6 +80,10 @@ import { AllocationModule } from './allocation/allocation.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

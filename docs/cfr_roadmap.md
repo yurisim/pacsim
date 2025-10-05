@@ -1,30 +1,19 @@
 # CFACC Allocation System - Implementation Roadmap
 
-This document provides a step-by-step implementation roadmap for the CFACC aircraft allocation system. The work is broken down into four sprints.
+This document provides a step-by-step implementation roadmap for the CFACC aircraft allocation system. The work is broken down into remaining sprints.
 
 ---
 
-## Sprint 1: Backend Foundation
+## ✅ Sprint 1: Backend Foundation - COMPLETE
 
-**Goal**: Implement the database schema and core backend services.
-
-1.  **Database Migration**:
-    -   Add the new models (`AllocationCycle`, `AircraftRequest`, `AircraftAllocation`) and enums to `schema.prisma`.
-    -   Run `npx prisma migrate dev` to apply the changes to the database.
-
-2.  **Generate DTOs**:
-    -   Run `npx prisma generate` to create the new DTOs and update the Prisma client.
-
-3.  **Create Allocation Module**:
-    -   Create a new `allocation` module in `apps/pac-shield-api/src/app/`.
-    -   Create `allocation.controller.ts`, `allocation.service.ts`, and `allocation.module.ts`.
-
-4.  **Implement API Endpoints**:
-    -   Implement all the endpoints defined in `docs/cfr_api.md`.
-    -   Focus on the business logic in the `AllocationService`, including validation and role-based access control.
-
-5.  **Unit Tests**:
-    -   Write unit tests for the `AllocationService` to ensure the business logic is correct.
+All backend infrastructure has been implemented:
+- ✅ Database models: `AllocationCycle`, `AircraftRequest`, `AircraftAllocation`, `AircraftPool`
+- ✅ Enums: `AllocationCycleStatus`, `AllocationRequestStatus`, `AircraftAllocationStatus`
+- ✅ Allocation module with controller and service
+- ✅ All API endpoints with role-based access control
+- ✅ Notification service with WebSocket integration
+- ✅ Aircraft pool service with statistics and refresh logic
+- ✅ Unit tests for core services
 
 ---
 
@@ -32,16 +21,19 @@ This document provides a step-by-step implementation roadmap for the CFACC aircr
 
 **Goal**: Develop the UI for MOBs to request aircraft.
 
-1.  **Create NgRx State**:
-    -   Create a new `allocation` store feature with the state, actions, reducers, and selectors defined in `docs/cfr_ui_ux.md`.
-    -   Add `allocation.effects.ts` to handle the API calls.
+**Completed:**
+- ✅ NgRx state, actions, reducers, selectors, and effects
+- ✅ WebSocket service for real-time updates
+- ✅ Notification components (badge, center, toast)
 
-2.  **Create `AircraftRequestDialogComponent`**:
+**Remaining:**
+
+1.  **Create `AircraftRequestDialogComponent`**:
     -   Build the Angular component for the request submission form.
     -   Implement the form with validation as designed.
     -   Dispatch a `[Allocation] CreateRequest` action on submit.
 
-3.  **Integrate MOB Dashboard**:
+2.  **Integrate MOB Dashboard**:
     -   Add a new "Requests" tab to the MOB's view.
     -   Display a list of their submitted `AircraftRequest` items and their status.
     -   Add the "Request Aircraft" button to open the dialog.
@@ -81,8 +73,9 @@ This document provides a step-by-step implementation roadmap for the CFACC aircr
     -   Lock the flight planner (`FlightPlannerDialogComponent`) to only use allocated aircraft.
 
 2.  **WebSocket Integration**:
-    -   Add WebSocket events to the `game.gateway.ts` to provide real-time updates for all allocation actions (new requests, allocations, status changes).
-    -   Handle these events on the frontend to update the NgRx store.
+    -   ✅ WebSocket events already implemented in `game.gateway.ts`
+    -   ✅ Frontend already handles real-time updates via `AllocationWebSocketService`
+    -   Verify all events are properly propagated to UI components
 
 3.  **End-to-End Testing**:
     -   Create Playwright E2E tests for the full workflow:

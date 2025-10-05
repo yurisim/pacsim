@@ -39,7 +39,8 @@
       "Bash(PORT=3001 npx nx serve pac-shield-api)",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_install",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

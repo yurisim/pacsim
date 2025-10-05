@@ -40,6 +40,7 @@ export class FosRfiComponent implements OnChanges {
   @Input() fosDisplayNumber!: number | null;
   @Input() gameId!: number | null;
   @Input() canEdit = false;
+  @Input() isFullyAssessed = false;
 
   private rfi = inject(FosRfiService);
   private snack = inject(MatSnackBar);
@@ -125,6 +126,55 @@ export class FosRfiComponent implements OnChanges {
     return typeof v === 'number' ? v : null;
   }
 
+  /**
+   * Count how many RFIs have been answered
+   */
+  get answeredCount(): number {
+    return this.rfiKeys.filter(key => this.answeredValue(key) !== null).length;
+  }
+
+  /**
+   * Determine if a dice roll is allowed for a specific RFI key
+   * Rules:
+   * - If already answered: can re-roll
+   * - If fully assessed: can roll any RFI
+   * - If not fully assessed: can only roll if less than 5 RFIs have been answered
+   */
+  canRollDice(key: string): boolean {
+    // Already answered RFIs can be re-rolled
+    if (this.answeredValue(key) !== null) {
+      return true;
+    }
+
+    // If fully assessed, all RFIs can be rolled
+    if (this.isFullyAssessed) {
+      return true;
+    }
+
+    // If not fully assessed, only allow if less than 5 answered
+    return this.answeredCount < 5;
+  }
+
+  /**
+   * Get tooltip text for dice button explaining why it might be disabled
+   */
+  getDiceTooltip(key: string): string {
+    if (this.canRollDice(key)) {
+      return `Roll dice for ${key}`;
+    }
+    return `Full assessment required to roll remaining RFIs (${this.answeredCount}/5 initial rolls used)`;
+  }
+
+  /**
+   * Get the assessment status text for display
+   */
+  get assessmentStatusText(): string {
+    if (this.isFullyAssessed) {
+      return 'Full Assessment';
+    }
+    return `Initial Assessment (${this.answeredCount}/5 rolls)`;
+  }
+
   canAnswer(): boolean {
     // GM-only editing policy
     return !!this.fosId && this.canEdit && this.isGameMaster();
@@ -160,6 +210,16 @@ export class FosRfiComponent implements OnChanges {
       return;
     }
 
+    // Check if dice roll is allowed based on assessment status
+    if (!this.canRollDice(key)) {
+      this.snack.open(
+        `Cannot roll dice: Full assessment required (${this.answeredCount}/5 initial rolls used)`,
+        'Close',
+        { duration: 4000 }
+      );
+      return;
+    }
+
     const fosId = this.fosId!;
     console.log(`[DICE DEBUG] Starting dice roll for FOS ID: ${fosId}, RFI key: ${key}`);
 
@@ -176,7 +236,9 @@ export class FosRfiComponent implements OnChanges {
       },
       error: (err) => {
         console.error('[DICE DEBUG] Dice roll failed:', err);
-        this.errorMsg = 'Failed to roll dice';
+        const errorMessage = err?.error?.message || 'Failed to roll dice';
+        this.errorMsg = errorMessage;
+        this.snack.open(errorMessage, 'Close', { duration: 4000 });
         this.isLoading = false;
       },
     });
