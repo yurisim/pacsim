@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { GameService } from './game.service';
 import { CreateGameDto } from '../app/generated';
 import { JoinGameDto } from './dto/join-game.dto';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 // import { JwtAuthGuard } from '../app/auth/jwt-auth.guard';
 // import { GameMasterGuard } from '../app/auth/game-master.guard';
 // import { UpdateCountryAccessDto, BulkCountryAccessDto } from './dto/update-country-access.dto';
@@ -17,6 +18,7 @@ export class GameController {
   /**
    * POST /game/create
    * Creates a new game and generates a unique 6-char room code.
+   * Rate limited to 50 games per hour to prevent spam.
    *
    * @param createGameDto Victory conditions and other init params.
    * @returns Persisted Game record with id and roomCode
@@ -26,6 +28,7 @@ export class GameController {
    * // Returns: { id: 1, roomCode: "ABC123", ... }
    */
   @Post('create')
+  @Throttle({ hourly: { ttl: 3600000, limit: 50 } }) // 50 games per hour
   async createGame(@Body() createGameDto: CreateGameDto) {
     return this.gameService.createGame(createGameDto);
   }
@@ -64,6 +67,7 @@ export class GameController {
    * POST /game/join
    * Creates a player in the specified game and returns a session JWT.
    * Name conflict + PIN resume flow is implemented by the PlayerService.
+   * Rate limiting is skipped on this endpoint to support 200 simultaneous logins.
    *
    * @param joinGameDto Payload containing roomCode, playerName, and optional pin for resume
    * @returns Object containing a signed JWT token and player details
@@ -73,6 +77,7 @@ export class GameController {
    * // Returns: { token: "...", player: { id: 5, name: "Ranger", ... } }
    */
   @Post('join')
+  @SkipThrottle() // Skip rate limiting to support 200 simultaneous logins
   async joinGame(@Body() joinGameDto: JoinGameDto) {
     return this.gameService.joinGame(joinGameDto);
   }
