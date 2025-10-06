@@ -51,7 +51,7 @@ export class AllocationController {
   @Post('cycles')
   async createAllocationCycle(
     @Body() body: { gameId: number; turn: number },
-    @Request() req: any
+    @Request() _req: any
   ): Promise<AllocationCycle> {
     return this.allocationService.createAllocationCycle(body.gameId, body.turn);
   }
@@ -117,7 +117,7 @@ export class AllocationController {
   @Post('aircraft-pool/:gameId/refresh')
   async refreshAircraftPool(
     @Param('gameId', ParseIntPipe) gameId: number,
-    @Request() req: any
+    @Request() _req: any
   ): Promise<AircraftPool[]> {
     return this.aircraftPoolService.refreshAircraftPool(gameId);
   }
@@ -129,7 +129,7 @@ export class AllocationController {
   @Post('aircraft-pool/:gameId/initialize')
   async initializeAircraftPool(
     @Param('gameId', ParseIntPipe) gameId: number,
-    @Request() req: any
+    @Request() _req: any
   ): Promise<AircraftPool[]> {
     return this.aircraftPoolService.initializeAircraftPool(gameId);
   }
@@ -150,7 +150,7 @@ export class AllocationController {
       inTransitCount?: number;
       maintenanceCount?: number;
     },
-    @Request() req: any
+    @Request() _req: any
   ): Promise<AircraftPool> {
     return this.aircraftPoolService.manualAdjustPool(
       gameId,

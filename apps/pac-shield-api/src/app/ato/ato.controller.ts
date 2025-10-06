@@ -220,7 +220,7 @@ export class AtoController {
   async updateExecutionResult(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { result: string },
-    @Request() req: any
+    @Request() _req: any
   ): Promise<ATOLine> {
     // TODO: Add role-based authorization (GM only)
     return this.atoService.updateExecutionResult(id, body.result);
@@ -234,7 +234,7 @@ export class AtoController {
   async archiveTurn(
     @Param('gameId', ParseIntPipe) gameId: number,
     @Body() body: { turn: number },
-    @Request() req: any
+    @Request() _req: any
   ): Promise<{ success: boolean }> {
     // TODO: Add role-based authorization (GM only)
     await this.atoService.archiveAtoLinesForTurn(gameId, body.turn);

@@ -59,7 +59,7 @@ export class CountryAccessController {
   async putCountryAccess(
     @Param('gameId') gameIdParam: string,
     @Body() body: UpdateCountryAccessBody,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) _res: Response
   ) {
     const gameId = Number(gameIdParam);
     if (!Number.isFinite(gameId)) {

@@ -269,7 +269,7 @@ export class AtoService {
   /**
    * Delete an ATO line (only if PPR is pending)
    */
-  async deleteAtoLine(id: number, user: any): Promise<void> {
+  async deleteAtoLine(id: number, _user: any): Promise<void> {
     const existingLine = await this.prisma.aTOLine.findUnique({
       where: { id },
     });
