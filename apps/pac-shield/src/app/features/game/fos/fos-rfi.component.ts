@@ -185,8 +185,8 @@ export class FosRfiComponent implements OnChanges {
   }
 
   setAnswer(key: string, value: number): void {
-    if (!this.canAnswer()) return;
-    const fosId = this.fosId!;
+    if (!this.canAnswer() || !this.fosId) return;
+    const fosId = this.fosId;
     this.isLoading = true;
     this.rfi.upsertAnswer(fosId, key, value).subscribe({
       next: (updated) => {
@@ -220,7 +220,8 @@ export class FosRfiComponent implements OnChanges {
       return;
     }
 
-    const fosId = this.fosId!;
+    if (!this.fosId) return;
+    const fosId = this.fosId;
     console.log(`[DICE DEBUG] Starting dice roll for FOS ID: ${fosId}, RFI key: ${key}`);
 
     this.isLoading = true;
