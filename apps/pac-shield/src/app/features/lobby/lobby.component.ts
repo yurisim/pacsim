@@ -367,13 +367,13 @@ export class LobbyComponent implements OnInit {
   }
 
   // Simple handlers for direct Player events from sub-components
-  onPlayerChangeRole(player: Player): void {
+  onPlayerChangeRole(_player: Player): void {
     // This would need to open a role selection dialog or use a default
     // For now, we'll just emit an error since the role isn't specified
     this.notification.error('Role selection not implemented for this action');
   }
 
-  onPlayerMoveToTeam(player: Player): void {
+  onPlayerMoveToTeam(_player: Player): void {
     // This would need to open a team selection dialog or use a default
     // For now, we'll just emit an error since the team isn't specified
     this.notification.error('Team selection not implemented for this action');

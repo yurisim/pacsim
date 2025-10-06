@@ -111,7 +111,7 @@ export class FosDashboardComponent implements OnChanges, OnDestroy {
     combineLatest([role$.pipe(take(1)), teamId$.pipe(take(1))]).subscribe({
       next: ([role, teamId]) => {
         const isCommander = role === 'COMMANDER';
-        const isGM = role === 'GM';
+        const _isGM = role === 'GM';
 
         // MOB Commander -> only own team; GM -> all; others -> all
         const paramsBase = new HttpParams().set('gameId', String(this.currentGameId));

@@ -223,7 +223,7 @@ export const atoReducer = createReducer(
     ),
   })),
 
-  on(AtoActions.atoTurnAdvancedFromSocket, (state, { turn }) => ({
+  on(AtoActions.atoTurnAdvancedFromSocket, (state, { turn: _turn }) => ({
     ...state,
     previousLines: [...state.currentLines],
     currentLines: [],
