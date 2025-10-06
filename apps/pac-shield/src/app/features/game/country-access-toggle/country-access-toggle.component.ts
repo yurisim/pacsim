@@ -54,7 +54,7 @@ export class CountryAccessToggleComponent implements OnInit {
   /**
    * Handle mouse/touch start for long-press detection
    */
-  onPressStart(): void {
+  onPressStart(event?: Event): void {
     // Clear any existing timer
     this.clearLongPressTimer();
 
@@ -67,7 +67,7 @@ export class CountryAccessToggleComponent implements OnInit {
   /**
    * Handle mouse/touch end - clear timer if still active
    */
-  onPressEnd(): void {
+  onPressEnd(event?: Event): void {
     this.clearLongPressTimer();
   }
 
