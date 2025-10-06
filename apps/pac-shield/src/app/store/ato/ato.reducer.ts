@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { AtoState, initialAtoState } from './ato.state';
+import { initialAtoState } from './ato.state';
 import * as AtoActions from './ato.actions';
 
 /**

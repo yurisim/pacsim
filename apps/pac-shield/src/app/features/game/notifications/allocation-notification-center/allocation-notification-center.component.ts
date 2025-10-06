@@ -12,7 +12,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { AllocationNotification } from '../../../../store/allocation/allocation.state';
 import * as AllocationActions from '../../../../store/allocation/allocation.actions';
 import * as AllocationSelectors from '../../../../store/allocation/allocation.selectors';
