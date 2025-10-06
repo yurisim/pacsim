@@ -52,7 +52,8 @@ export class FosRfiService {
   getByFosId(fosId: string, useCache = true): Observable<FosRfiEntry[]> {
     const key = this.makeFosKey(fosId);
     if (useCache && this.cache.has(key)) {
-      return of(this.cache.get(key)!);
+      const cached = this.cache.get(key);
+      if (cached) return of(cached);
     }
     return this.api.get<any[]>(`fos/${fosId}/rfi`).pipe(
       map((data) => this.normalize(data)),
@@ -66,7 +67,8 @@ export class FosRfiService {
   getByDisplayNumber(gameId: number, displayNumber: number, useCache = true): Observable<FosRfiEntry[]> {
     const key = this.makeDisplayKey(gameId, displayNumber);
     if (useCache && this.cache.has(key)) {
-      return of(this.cache.get(key)!);
+      const cached = this.cache.get(key);
+      if (cached) return of(cached);
     }
     const params = new HttpParams().set('displayNumber', String(displayNumber));
     return this.api.get<any[]>(`fos/game/${gameId}/rfi`, params).pipe(

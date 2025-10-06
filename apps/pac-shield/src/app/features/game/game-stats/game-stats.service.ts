@@ -58,7 +58,7 @@ export class GameStatsService {
           const token = this.authService.getToken();
           if (token) {
             try {
-              const decodedToken = this.authService.getPlayerIdFromToken();
+              const _decodedToken = this.authService.getPlayerIdFromToken();
               // For now, we'll need to get gameId differently
               // This is a temporary solution until we have proper game context
               console.log('Authentication detected, would load ATO lines for game');

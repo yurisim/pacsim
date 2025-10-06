@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateATOLineDto } from '../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../generated/aTOLine/update-aTOLine.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';
-import { PPRStatus, AircraftInstance, PlayerRole, TeamType } from '@prisma/client';
+import { PPRStatus, AircraftInstance, PlayerRole } from '@prisma/client';
 import { GameGateway } from '../../game/game.gateway';
 
 /**
@@ -269,7 +269,7 @@ export class AtoService {
   /**
    * Delete an ATO line (only if PPR is pending)
    */
-  async deleteAtoLine(id: number, user: any): Promise<void> {
+  async deleteAtoLine(id: number, _user: any): Promise<void> {
     const existingLine = await this.prisma.aTOLine.findUnique({
       where: { id },
     });

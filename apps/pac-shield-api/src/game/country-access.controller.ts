@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Body, Headers, Res, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, BadRequestException, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { GameService } from './game.service';
 import { UpdateDiceRollDto, BulkDiceRollDto, BulkAccessUpdateDto } from './dto/dice-roll.dto';
@@ -59,7 +59,7 @@ export class CountryAccessController {
   async putCountryAccess(
     @Param('gameId') gameIdParam: string,
     @Body() body: UpdateCountryAccessBody,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) _res: Response
   ) {
     const gameId = Number(gameIdParam);
     if (!Number.isFinite(gameId)) {

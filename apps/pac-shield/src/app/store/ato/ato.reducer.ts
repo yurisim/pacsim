@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { AtoState, initialAtoState } from './ato.state';
+import { initialAtoState } from './ato.state';
 import * as AtoActions from './ato.actions';
 
 /**
@@ -223,7 +223,7 @@ export const atoReducer = createReducer(
     ),
   })),
 
-  on(AtoActions.atoTurnAdvancedFromSocket, (state, { turn }) => ({
+  on(AtoActions.atoTurnAdvancedFromSocket, (state, { turn: _turn }) => ({
     ...state,
     previousLines: [...state.currentLines],
     currentLines: [],

@@ -162,7 +162,7 @@ export class AllocationService {
   /**
    * Get unallocated aircraft pool for a game/turn
    */
-  async getUnallocatedAircraftPool(gameId: number, turn?: number): Promise<AircraftInstance[]> {
+  async getUnallocatedAircraftPool(gameId: number, _turn?: number): Promise<AircraftInstance[]> {
     const whereClause: any = {
       team: { gameId },
       allocationStatus: AircraftAllocationStatus.AVAILABLE,

@@ -72,7 +72,7 @@ export const selectDeniedAtoLines = createSelector(
   (lines) => lines.filter(line => line.pprStatus === 'DENIED')
 );
 
-export const selectAtoLinesByTeam = (teamType: string) => createSelector(
+export const selectAtoLinesByTeam = (_teamType: string) => createSelector(
   selectCurrentAtoLines,
   (lines) => {
     // This would need to be enhanced based on how team ownership is determined

@@ -3,8 +3,6 @@ import { AircraftRequest } from '../../generated/aircraftRequest/aircraftRequest
 import { AircraftAllocation } from '../../generated/aircraftAllocation/aircraftAllocation.entity';
 import { AircraftInstance } from '../../generated/aircraftInstance/aircraftInstance.entity';
 import {
-  AllocationCycleStatus,
-  AllocationRequestStatus,
   AircraftType
 } from '../../generated/enums';
 

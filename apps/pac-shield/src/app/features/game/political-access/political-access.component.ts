@@ -10,7 +10,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Country, AccessStatus, country, accessStatus } from '../../../generated/enums';
+import { Country, AccessStatus, country } from '../../../generated/enums';
 import { WebSocketService } from '../../../shared/services/websocket.service';
 import { CountryOverlayService } from '../services/country-overlay.service';
 import { CountryAccessHttpService } from '../../../shared/services/country-access-http.service';
@@ -344,7 +344,7 @@ export class PoliticalAccessComponent implements OnInit {
     return 'text-md-tertiary';
   }
 
-  getFosStatusIcon(fos: StaticLocation): string {
+  getFosStatusIcon(_fos: StaticLocation): string {
     // TODO: Should check actual game state for FOS occupation status
     return '○'; // Placeholder - occupation status should come from game state
   }

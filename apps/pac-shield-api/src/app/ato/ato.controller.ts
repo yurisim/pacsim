@@ -10,11 +10,8 @@ import {
   ParseIntPipe,
   UseGuards,
   Request,
-  Optional,
 } from '@nestjs/common';
 import { AtoService } from './ato.service';
-import { CreateATOLineDto } from '../generated/aTOLine/create-aTOLine.dto';
-import { UpdateATOLineDto } from '../generated/aTOLine/update-aTOLine.dto';
 import { CreateATORequestDto } from './dto/create-ato-request.dto';
 import { UpdateATORequestDto } from './dto/update-ato-request.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';
@@ -223,7 +220,7 @@ export class AtoController {
   async updateExecutionResult(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { result: string },
-    @Request() req: any
+    @Request() _req: any
   ): Promise<ATOLine> {
     // TODO: Add role-based authorization (GM only)
     return this.atoService.updateExecutionResult(id, body.result);
@@ -237,7 +234,7 @@ export class AtoController {
   async archiveTurn(
     @Param('gameId', ParseIntPipe) gameId: number,
     @Body() body: { turn: number },
-    @Request() req: any
+    @Request() _req: any
   ): Promise<{ success: boolean }> {
     // TODO: Add role-based authorization (GM only)
     await this.atoService.archiveAtoLinesForTurn(gameId, body.turn);

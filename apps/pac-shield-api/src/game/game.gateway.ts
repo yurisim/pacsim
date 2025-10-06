@@ -179,7 +179,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   @SubscribeMessage('requestAtoRefresh')
   handleAtoRefreshRequest(client: Socket, payload: { gameId: number }): void {
-    const room = client.rooms.values().next().value;
+    const _room = client.rooms.values().next().value;
     this.logger.log(`ATO refresh requested by ${client.id} for game ${payload.gameId}`);
 
     // Emit refresh event back to requesting client
@@ -441,7 +441,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   @SubscribeMessage('requestAllocationRefresh')
   handleAllocationRefreshRequest(client: Socket, payload: { gameId: number }): void {
-    const room = client.rooms.values().next().value;
+    const _room = client.rooms.values().next().value;
     this.logger.log(`Allocation refresh requested by ${client.id} for game ${payload.gameId}`);
 
     // Emit refresh event back to requesting client

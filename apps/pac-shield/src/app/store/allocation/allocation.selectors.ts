@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { AllocationState } from './allocation.state';
-import { AllocationRequestStatus, AircraftType } from '../../generated/enums';
+import { AircraftType } from '../../generated/enums';
 
 export const selectAllocationState = createFeatureSelector<AllocationState>('allocation');
 

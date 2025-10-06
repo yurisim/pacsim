@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { AllocationState, initialAllocationState, AllocationNotification } from './allocation.state';
+import { initialAllocationState } from './allocation.state';
 import * as AllocationActions from './allocation.actions';
 
 export const allocationReducer = createReducer(

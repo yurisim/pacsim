@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ResponsiveNavService, NavItem } from '../responsive-nav.service';
+import { ResponsiveNavService } from '../responsive-nav.service';
 
 @Component({
   selector: 'app-responsive-nav',

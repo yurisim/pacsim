@@ -93,7 +93,7 @@ export class LocationMarkersComponent implements OnDestroy, OnChanges {
   constructor() {
     // Setup theme change listener
     effect(() => {
-      const isDarkMode = this.themeService.isDarkMode();
+      const _isDarkMode = this.themeService.isDarkMode();
       if (this.markersInitialized) {
         this.updateMarkerColors();
       }

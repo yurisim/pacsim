@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Map } from 'maplibre-gl';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
 import { AppState } from '../../core/store/app.state';
 import * as GameActions from '../../core/store/game/game.actions';
 import { selectGame, selectGameError, selectGameLoading } from '../../core/store/game/game.selectors';
@@ -126,7 +127,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private hexGridCreated = false;
 
   // Keep references to event handlers so we can reliably remove/rebind on style changes
-  private hexClickHandler?: (e: any) => void;
+  private hexClickHandler?: (e: MapLayerMouseEvent) => void;
   private hexMouseEnterHandler?: () => void;
   private hexMouseLeaveHandler?: () => void;
 
@@ -355,7 +356,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // WHY TRANSFORM STYLE: Without this, hex grid gets destroyed on theme change
     // This is the ONLY way to preserve custom sources/layers in MapLibre
     this.map.setStyle(newStyle, {
-      transformStyle: (previousStyle: any, nextStyle: any) => {
+      transformStyle: (previousStyle, nextStyle) => {
         return this.preserveCustomLayers(previousStyle, nextStyle);
       }
     });
