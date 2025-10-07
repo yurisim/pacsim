@@ -15,6 +15,7 @@ import { TeamModule } from './team/team.module';
 import { FosModule } from './fos/fos.module';
 import { AtoModule } from './ato/ato.module';
 import { AllocationModule } from './allocation/allocation.module';
+import { NotificationModule } from './notification/notification.module';
 import { CleanupModule } from './cleanup/cleanup.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -71,6 +72,7 @@ import { APP_GUARD } from '@nestjs/core';
     FosModule,
     AtoModule,
     AllocationModule,
+    NotificationModule,
     CleanupModule,
   ],
   controllers: [AppController],
