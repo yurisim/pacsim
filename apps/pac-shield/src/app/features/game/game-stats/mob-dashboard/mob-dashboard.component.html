@@ -108,7 +108,7 @@
             @if (requests.length === 0) {
               <!-- Empty State -->
               <div class="text-center py-12 px-4">
-                <mat-icon class="md-sys-color-on-surface-variant text-6xl mb-6">flight_takeoff</mat-icon>
+                <mat-icon class="md-sys-color-on-surface-variant mb-6">flight_takeoff</mat-icon>
                 <div class="md-typescale-headline-small mb-4">No Aircraft Requests</div>
                 <div class="md-typescale-body-medium md-sys-color-on-surface-variant mb-8 max-w-md mx-auto leading-relaxed">
                   Submit your first aircraft allocation request to get started.
@@ -141,7 +141,7 @@
                         <!-- Sticky Aircraft Type Column -->
                         <div class="sticky left-0 z-20 md-sys-bg-surface pr-2">
                           <div class="flex items-center gap-2">
-                            <mat-icon class="text-sm">flight</mat-icon>
+                            <mat-icon>flight</mat-icon>
                             <span class="md-typescale-body-medium font-medium">{{ request.aircraftType }}</span>
                           </div>
                         </div>
@@ -177,7 +177,7 @@
                         <div class="text-center">
                           <div class="md-typescale-label-small md-sys-color-on-surface-variant mb-1">Status</div>
                           <div class="flex items-center justify-center gap-1">
-                            <mat-icon [class]="getStatusColor(request.status)" class="text-sm">
+                            <mat-icon [class]="getStatusColor(request.status)">
                               {{ getStatusIcon(request.status) }}
                             </mat-icon>
                             <span class="md-typescale-body-small capitalize">{{ request.status.toLowerCase() }}</span>

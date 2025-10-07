@@ -65,7 +65,7 @@
               [class.animate-pulse]="roll.isRolling"
               [attr.aria-label]="'Roll dice for ' + getCountryDisplayName(roll.country)"
             >
-              <mat-icon class="md-sys-color-primary text-2xl md:text-3xl">casino</mat-icon>
+              <mat-icon class="md-sys-color-primary">casino</mat-icon>
             </button>
 
             <!-- Dice value display -->
@@ -73,7 +73,7 @@
                  [class.bg-md-sys-secondary]="roll.isRolling"
                  [class.text-md-sys-on-secondary]="roll.isRolling">
               @if (roll.isRolling) {
-                <mat-icon class="text-base md:text-lg animate-spin">autorenew</mat-icon>
+                <mat-icon class="animate-spin">autorenew</mat-icon>
               } @else {
                 {{ roll.diceValue }}
               }

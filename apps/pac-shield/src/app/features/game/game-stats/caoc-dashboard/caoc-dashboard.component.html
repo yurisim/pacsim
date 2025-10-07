@@ -50,7 +50,7 @@
                   [value]="section.id"
                   class="flex-1 min-h-[48px] px-2">
                   <div class="flex flex-col items-center gap-1">
-                    <mat-icon class="text-lg">{{ section.icon }}</mat-icon>
+                    <mat-icon>{{ section.icon }}</mat-icon>
                     <span class="text-xs leading-tight">{{ section.shortLabel }}</span>
                   </div>
                 </mat-button-toggle>
@@ -439,7 +439,7 @@
                   @if (unallocatedPool$ | async; as aircraft) {
                     @if (aircraft.length === 0) {
                       <div class="text-center p-4 md-sys-color-on-surface-variant">
-                        <mat-icon class="text-4xl mb-2">flight_takeoff</mat-icon>
+                        <mat-icon class="mb-2">flight_takeoff</mat-icon>
                         <p class="md-typescale-body-medium">All aircraft allocated</p>
                       </div>
                     } @else {
@@ -448,7 +448,7 @@
                           <div class="border rounded-lg p-3 interactive-surface">
                             <div class="flex items-center justify-between mb-2">
                               <div class="flex items-center gap-2">
-                                <mat-icon class="text-sm">flight</mat-icon>
+                                <mat-icon>flight</mat-icon>
                                 <span class="font-medium">{{ aircraftItem.callSign }}</span>
                               </div>
                               <mat-chip color="primary" class="text-xs">{{ aircraftItem.type }}</mat-chip>
@@ -460,7 +460,7 @@
                               <div class="flex gap-1">
                                 <button matButton="outlined" size="small" class="text-xs"
                                         matTooltip="Allocate to MOB">
-                                  <mat-icon class="text-sm">assignment</mat-icon>
+                                  <mat-icon>assignment</mat-icon>
                                   Allocate
                                 </button>
                               </div>
@@ -560,7 +560,7 @@
                 <div class="space-y-4">
                   <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div class="flex items-center gap-2 mb-2">
-                      <mat-icon class="text-green-600 text-sm">check_circle</mat-icon>
+                      <mat-icon class="text-green-600">check_circle</mat-icon>
                       <span class="font-medium text-green-800 dark:text-green-200">Recommendations</span>
                     </div>
                     <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
@@ -573,7 +573,7 @@
                   @if (analytics$ | async; as analytics) {
                     <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                       <div class="flex items-center gap-2 mb-2">
-                        <mat-icon class="text-blue-600 text-sm">info</mat-icon>
+                        <mat-icon class="text-blue-600">info</mat-icon>
                         <span class="font-medium text-blue-800 dark:text-blue-200">Current Status</span>
                       </div>
                       <div class="text-sm text-blue-700 dark:text-blue-300 space-y-1">

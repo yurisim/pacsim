@@ -24,7 +24,7 @@
         <td mat-cell *matCellDef="let l" class="font-mono font-medium">
           {{ l.aircraftCallSign || '—' }}
           @if (l.riskTokenUsed) {
-            <mat-icon class="ml-1 text-sm md-sys-color-tertiary" matTooltip="Risk Token Used">casino</mat-icon>
+            <mat-icon class="ml-1 md-sys-color-tertiary" matTooltip="Risk Token Used">casino</mat-icon>
           }
         </td>
       </ng-container>
@@ -72,7 +72,7 @@
         <th mat-header-cell *matHeaderCellDef>PPR Status</th>
         <td mat-cell *matCellDef="let l">
           <div class="flex items-center gap-2">
-            <mat-icon [class]="getPprStatusColor(l.pprStatus)" class="text-sm">
+            <mat-icon [class]="getPprStatusColor(l.pprStatus)">
               {{ getPprStatusIcon(l.pprStatus) }}
             </mat-icon>
             <span class="text-sm font-medium">{{ l.pprStatus || 'PENDING' }}</span>

@@ -138,7 +138,7 @@
       @for (notification of notificationService.notifications(); track notification.id) {
         <div class="notification-item p-3 mb-2 rounded hover:bg-[var(--md-sys-color-surface-container)]">
           <div class="flex items-start gap-2">
-            <mat-icon class="text-base" [class.md-sys-color-primary]="!notification.read">
+            <mat-icon [class.md-sys-color-primary]="!notification.read">
               {{ notification.read ? 'notifications' : 'notifications_active' }}
             </mat-icon>
             <div class="flex-1 min-w-0">
