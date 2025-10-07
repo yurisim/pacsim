@@ -5,12 +5,14 @@ import { filter } from 'rxjs/operators';
 import { WebSocketService } from './shared/services/websocket.service';
 import { AuthService } from './shared/services/auth.service';
 import { ThemeService } from './shared/services/theme.service';
+import { NotificationService } from './shared/services/notification.service';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatBadgeModule } from '@angular/material/badge';
 import { ThemeToggleComponent } from './core/theme-toggle/theme-toggle.component';
 
 @Component({
@@ -24,6 +26,7 @@ import { ThemeToggleComponent } from './core/theme-toggle/theme-toggle.component
     MatIconModule,
     MatTooltipModule,
     MatMenuModule,
+    MatBadgeModule,
     ThemeToggleComponent
   ],
   selector: 'app-root',
@@ -38,6 +41,7 @@ export class App implements OnInit {
   protected router = inject(Router);
   protected route = inject(ActivatedRoute);
   protected themeService = inject(ThemeService);
+  protected notificationService = inject(NotificationService);
 
   // Navigation state
   protected currentGameId: string | null = null;
@@ -50,10 +54,12 @@ export class App implements OnInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateNavigation();
+      this.updateNotifications();
     });
 
     // Initial navigation update
     this.updateNavigation();
+    this.updateNotifications();
   }
 
   private updateNavigation(): void {
@@ -65,6 +71,17 @@ export class App implements OnInit {
       this.currentGameId = gameMatch[1];
     } else {
       this.currentGameId = null;
+    }
+  }
+
+  private updateNotifications(): void {
+    const gameId = this.auth.getGameId();
+    if (gameId) {
+      // Connect to notifications when in a game
+      this.notificationService.connectToGame(Number(gameId));
+    } else {
+      // Disconnect when not in a game
+      this.notificationService.disconnectFromGame();
     }
   }
 
@@ -83,6 +100,7 @@ export class App implements OnInit {
   onLogout(): void {
     // Clear JWT + cached player and gracefully reset socket, then reconnect baseline for status
     this.auth.logout();
+    this.notificationService.disconnectFromGame();
     this.ws.connect('lobby');
     this.router.navigate(['/']);
   }

@@ -15,11 +15,19 @@ import { provideEffects } from '@ngrx/effects';
 import { GameEffects } from './core/store/game/game.effects';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { ApiLoggingInterceptor } from './shared/interceptors/api-logging.interceptor';
+import { allocationReducer } from './store/allocation/allocation.reducer';
+import { AllocationEffects } from './store/allocation/allocation.effects';
+import { atoReducer } from './store/ato/ato.reducer';
+import { AtoEffects } from './store/ato/ato.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideStore({ game: gameReducer }),
-    provideEffects(GameEffects),
+    provideStore({
+      game: gameReducer,
+      allocation: allocationReducer,
+      ato: atoReducer
+    }),
+    provideEffects(GameEffects, AllocationEffects, AtoEffects),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),

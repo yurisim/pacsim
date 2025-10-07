@@ -161,49 +161,56 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
   quantityAllocated = 1;
 
   ngOnInit(): void {
-    // Load initial allocation data
-    this.loadAllocationData();
+    console.warn('CAOC Dashboard: Allocation features temporarily disabled. Please restart dev server after app.config.ts changes.');
 
-    // Set up real-time data refresh
-    this.setupDataRefresh();
+    // TEMPORARILY DISABLED: Load initial allocation data
+    // TODO: Uncomment after dev server restart
+    // this.loadAllocationData();
 
-    // Initialize WebSocket connection for real-time notifications
-    if (this.currentGameId) {
-      this.webSocketService.connect({
-        gameId: this.currentGameId,
-        teamId: this.isCaoc ? 1 : undefined, // TODO: Get actual team ID
-        reconnect: true
-      });
-    }
+    // TEMPORARILY DISABLED: Set up real-time data refresh
+    // TODO: Uncomment after dev server restart
+    // this.setupDataRefresh();
 
-    // Listen for new notifications and show toast
-    this.recentNotifications$.pipe(
-      filter(notifications => notifications.length > 0),
-      takeUntil(this.destroy$)
-    ).subscribe(notifications => {
-      const latestNotification = notifications[0];
-      if (latestNotification && !latestNotification.read) {
-        this.showToastNotification(latestNotification);
-      }
-    });
+    // TEMPORARILY DISABLED: Initialize WebSocket connection for real-time notifications
+    // TODO: Uncomment after dev server restart
+    // if (this.currentGameId) {
+    //   this.webSocketService.connect({
+    //     gameId: this.currentGameId,
+    //     teamId: this.isCaoc ? 1 : undefined, // TODO: Get actual team ID
+    //     reconnect: true
+    //   });
+    // }
 
-    // Listen for urgent notifications and show snackbar
-    this.hasUrgentNotifications$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(hasUrgent => {
-      if (hasUrgent) {
-        this.snackBar.open(
-          'Urgent allocation notification received!',
-          'View',
-          {
-            duration: 5000,
-            panelClass: ['urgent-snackbar']
-          }
-        ).onAction().subscribe(() => {
-          this.openNotificationCenter();
-        });
-      }
-    });
+    // TEMPORARILY DISABLED: Listen for new notifications and show toast
+    // TODO: Uncomment after dev server restart
+    // this.recentNotifications$.pipe(
+    //   filter(notifications => notifications.length > 0),
+    //   takeUntil(this.destroy$)
+    // ).subscribe(notifications => {
+    //   const latestNotification = notifications[0];
+    //   if (latestNotification && !latestNotification.read) {
+    //     this.showToastNotification(latestNotification);
+    //   }
+    // });
+
+    // TEMPORARILY DISABLED: Listen for urgent notifications and show snackbar
+    // TODO: Uncomment after dev server restart
+    // this.hasUrgentNotifications$.pipe(
+    //   takeUntil(this.destroy$)
+    // ).subscribe(hasUrgent => {
+    //   if (hasUrgent) {
+    //     this.snackBar.open(
+    //       'Urgent allocation notification received!',
+    //       'View',
+    //       {
+    //         duration: 5000,
+    //         panelClass: ['urgent-snackbar']
+    //       }
+    //     ).onAction().subscribe(() => {
+    //       this.openNotificationCenter();
+    //     });
+    //   }
+    // });
   }
 
   ngOnDestroy(): void {

@@ -50,10 +50,38 @@ npx nx lint pac-shield
 - **Control Flow**: `@if/@for/@switch` only, no `*ngIf/*ngFor/*ngSwitch`
 - **Imports**: Direct paths only, no barrel exports
 
-### 🗃️ Database Schema
+### 🗃️ Database Schema & DTO Generation
 1. Edit `apps/pac-shield-api/src/prisma/schema.prisma`
 2. Run `npx nx prisma-generate pac-shield-api`
-3. Never edit `generated/` directories
+3. **NEVER edit `generated/` directories** - changes will be overwritten
+
+#### Prisma DTO Generator Annotations (brakebein/prisma-generator-nestjs-dto)
+
+**Common Annotations:**
+- `/// @DtoCreateOptional` - Include field in CreateDTO as optional
+- `/// @DtoCreateRequired` - Include field in CreateDTO as required (for @default fields)
+- `/// @DtoReadOnly` - Omit from Create/Update DTOs (auto-managed fields)
+- `/// @DtoRelationIncludeId` - **CRITICAL**: Include relation's scalar ID field in DTOs
+  - **Must place on relation field, scalar ID must come AFTER relation in schema**
+  - Example:
+    ```prisma
+    /// @DtoRelationIncludeId
+    game     Game @relation(fields: [gameId], references: [id])
+    gameId   Int  // Must come AFTER the relation field
+    ```
+
+**When IDs aren't included:**
+- Foreign key fields are excluded by default from generated DTOs
+- Create custom request DTOs that extend generated DTOs (e.g., `CreateNotificationRequestDto`)
+- Use Prisma's `connect` syntax in services:
+  ```typescript
+  this.prisma.model.create({
+    data: {
+      ...dtoData,
+      relation: { connect: { id: relationId } }
+    }
+  });
+  ```
 
 ## Architecture Essentials
 - **Dual Generation**: Backend DTOs + Frontend interfaces from same Prisma schema

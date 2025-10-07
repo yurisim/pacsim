@@ -3,6 +3,7 @@ import { GameService } from './game.service';
 import { CreateGameDto } from '../app/generated';
 import { JoinGameDto } from './dto/join-game.dto';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { GameScoringService } from './scoring.service';
 // import { JwtAuthGuard } from '../app/auth/jwt-auth.guard';
 // import { GameMasterGuard } from '../app/auth/game-master.guard';
 // import { UpdateCountryAccessDto, BulkCountryAccessDto } from './dto/update-country-access.dto';
@@ -13,7 +14,10 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
  */
 @Controller('game')
 export class GameController {
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly gameService: GameService,
+    private readonly scoringService: GameScoringService
+  ) {}
 
   /**
    * POST /game/create
@@ -82,79 +86,17 @@ export class GameController {
     return this.gameService.joinGame(joinGameDto);
   }
 
-  // /**
-  //  * POST /game/:gameId/political-access
-  //  * GM-only endpoint to update a single country's political access state (in-memory).
-  //  * DEPRECATED: Replaced with database-backed endpoints in CountryAccessController
-  //  */
-  // @UseGuards(JwtAuthGuard, GameMasterGuard)
-  // @Post(':gameId/political-access')
-  // @HttpCode(200)
-  // async updatePoliticalAccess(
-  //   @Param('gameId', ParseIntPipe) gameId: number,
-  //   @Body() dto: UpdateCountryAccessDto,
-  //   @Req() req: any
-  // ) {
-  //   const raw = req?.user?.sub ?? req?.user?.playerId;
-  //   const playerId = Number(typeof raw === 'string' ? parseInt(raw, 10) : raw);
+  /**
+   * GET /game/:id/score
+   * Computes and returns the CJTF Mission Points breakdown and total.
+   * Includes: assessments, crisis fighter sorties, destroyed PLA targets,
+   * and demoralization penalty (non-CSpOC).
+   */
+  @Get(':id/score')
+  async getScore(@Param('id') id: string) {
+    return this.scoringService.computeScore(+id);
+  }
 
-  //   const state = this.gameService.setCountryAccess(
-  //     gameId,
-  //     dto.country,
-  //     dto.accessType,
-  //     dto.accessLevel,
-  //     { playerId: Number.isFinite(playerId) ? playerId : -1 }
-  //   );
-
-  //   const roomCode = await this.gameService.resolveRoomCode(gameId);
-  //   const payload = {
-  //     gameId,
-  //     country: dto.country,
-  //     accessType: dto.accessType,
-  //     accessLevel: dto.accessLevel,
-  //     updatedBy: { playerId: Number.isFinite(playerId) ? playerId : -1, role: 'GM' },
-  //     updatedAt: state.updatedAt,
-  //     version: state.version,
-  //   };
-  //   this.gameService.broadcastCountryAccessChanged(roomCode, payload);
-
-  //   return { success: true, state, updatedAt: state.updatedAt, version: state.version };
-  // }
-
-  // /**
-  //  * POST /game/:gameId/political-access/bulk
-  //  * GM-only bulk update (optional stub for future UI panel).
-  //  * DEPRECATED: Replaced with database-backed endpoints in CountryAccessController
-  //  */
-  // @UseGuards(JwtAuthGuard, GameMasterGuard)
-  // @Post(':gameId/political-access/bulk')
-  // @HttpCode(200)
-  // async bulkUpdatePoliticalAccess(
-  //   @Param('gameId', ParseIntPipe) gameId: number,
-  //   @Body() dto: BulkCountryAccessDto,
-  //   @Req() req: any
-  // ) {
-  //   const raw = req?.user?.sub ?? req?.user?.playerId;
-  //   const playerId = Number(typeof raw === 'string' ? parseInt(raw, 10) : raw);
-
-  //   const result = this.gameService.bulkSetCountryAccess(
-  //     gameId,
-  //     dto.accessLevel,
-  //     dto.countries,
-  //     { playerId: Number.isFinite(playerId) ? playerId : -1 }
-  //   );
-
-  //   const roomCode = await this.gameService.resolveRoomCode(gameId);
-  //   const payload = {
-  //     gameId,
-  //     accessLevel: dto.accessLevel,
-  //     countries: result.countries,
-  //     updatedBy: { playerId: Number.isFinite(playerId) ? playerId : -1, role: 'GM' },
-  //     updatedAt: result.updatedAt,
-  //   };
-  //   this.gameService.broadcastBulkCountryAccessChanged(roomCode, payload);
-
-  //   return { success: true, ...result };
-  // }
+  // (Deprecated political access endpoints removed for brevity)
 }
 

@@ -72,6 +72,7 @@ model Game {
   allocationCycles AllocationCycle[]
   aircraftPools    AircraftPool[]
   countryAccess    CountryAccess[]
+  notifications    Notification[]
 }
 
 model GameBoard {
@@ -147,6 +148,10 @@ model Team {
   mfrs                MFR[]
   aircraftRequests    AircraftRequest[]
   aircraftAllocations AircraftAllocation[]   @relation("AllocatedToTeam")
+  notifications       Notification[]
+
+  // Back relation for ThreatToken.destroyedByTeam
+  destroyedThreats    ThreatToken[]         @relation("ThreatDestroyedByTeam")
 }
 
 model Player {
@@ -274,6 +279,10 @@ model ATOLine {
   turn                 Int
   aircraftCallSign     String
   startLocation        String
+  // New: Where did the aircraft depart from? Needed to count FOS-launched fighter sorties.
+  startLocationType    LocationType          @default(MOB)
+  // New: Mark if this ATO line launched into an activated operational area (EXORD/FRAGORD)
+  isOperationalArea    Boolean               @default(false)
   enRouteDestination   String?
   finalDestination     String
   alternateDestination String?
@@ -285,12 +294,17 @@ model ATOLine {
 }
 
 model ThreatToken {
-  id          Int        @id @default(autoincrement())
-  boardId     Int
-  board       GameBoard  @relation(fields: [boardId], references: [id])
-  type        ThreatType
-  strength    Int
-  locationHex String
+  id               Int        @id @default(autoincrement())
+  boardId          Int
+  board            GameBoard  @relation(fields: [boardId], references: [id])
+  type             ThreatType
+  strength         Int
+  locationHex      String
+
+  // New: Destruction tracking for MP scoring (Conflict phase)
+  destroyedAt      DateTime?
+  destroyedByTeamId Int?
+  destroyedByTeam  Team?      @relation("ThreatDestroyedByTeam", fields: [destroyedByTeamId], references: [id])
 }
 
 model MFR {
@@ -721,4 +735,63 @@ enum AircraftAllocationStatus {
   ALLOCATED // Assigned to a MOB for the turn
   IN_TRANSIT // In transit as part of an ATO
   MAINTENANCE // Unavailable for allocation
+}
+
+// =============================================
+//         NOTIFICATION SYSTEM
+// =============================================
+
+model Notification {
+  id        String             @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  priority  NotificationPriority
+  timestamp DateTime           @default(now())
+
+  // Context
+  /// @DtoRelationIncludeId
+  game           Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  /// @DtoCreateRequired
+  gameId         Int
+  /// @DtoRelationIncludeId
+  targetTeam     Team?   @relation(fields: [targetTeamId], references: [id], onDelete: Cascade)
+  /// @DtoCreateOptional
+  targetTeamId   Int?
+
+  // Optional action URL
+  actionUrl      String?
+
+  // Acknowledgment tracking
+  /// @DtoCreateOptional
+  requiresAcknowledgment Boolean  @default(false)
+  acknowledged           Boolean  @default(false)
+  acknowledgedAt         DateTime?
+
+  // Read tracking
+  read    Boolean   @default(false)
+  readAt  DateTime?
+
+  // Flexible data storage for notification-specific info
+  data Json?
+
+  @@index([gameId])
+  @@index([targetTeamId])
+  @@index([read])
+  @@index([acknowledged])
+}
+
+enum NotificationType {
+  ALLOCATION       // Aircraft allocation requests/approvals
+  GAME_EVENT       // Game state changes (turn started, etc.)
+  SYSTEM           // System messages
+  CHAT             // Player chat
+  ALERT            // Important alerts
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }

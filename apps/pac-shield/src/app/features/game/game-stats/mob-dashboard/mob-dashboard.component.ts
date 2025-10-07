@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Input } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -23,8 +23,9 @@ import { AllocationWebSocketService } from '../../../../shared/services/allocati
 import * as AllocationActions from '../../../../store/allocation/allocation.actions';
 import * as AllocationSelectors from '../../../../store/allocation/allocation.selectors';
 import { AircraftRequest } from '../../../../generated/aircraftRequest/aircraftRequest.entity';
-import { AllocationRequestStatus } from '../../../../generated/enums';
+import { AllocationRequestStatus, TeamType } from '../../../../generated/enums';
 import { AllocationNotification } from '../../../../store/allocation/allocation.state';
+import { AircraftRequestDialogData } from '../../dialogs/aircraft-request/aircraft-request-dialog.component';
 
 /**
  * MOB dashboard with aircraft allocation workflow integration
@@ -56,6 +57,12 @@ import { AllocationNotification } from '../../../../store/allocation/allocation.
   templateUrl: './mob-dashboard.component.html',
 })
 export class MobDashboardComponent implements OnInit, OnDestroy {
+  // Input properties
+  @Input() currentGameId: number | null = null;
+  @Input() currentTurn = 1;
+  @Input() currentUserTeam: TeamType | null = null;
+  @Input() teamId: number | null = null;
+
   private readonly dialog = inject(MatDialog);
   private readonly store = inject(Store);
   private readonly snackBar = inject(MatSnackBar);
@@ -63,6 +70,7 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   // Observable streams from NgRx store
+  readonly currentCycle$ = this.store.select(AllocationSelectors.selectCurrentAllocationCycle);
   readonly allRequests$: Observable<AircraftRequest[]> = this.store.select(AllocationSelectors.selectAllRequests);
   readonly pendingRequests$: Observable<AircraftRequest[]> = this.store.select(AllocationSelectors.selectPendingRequests);
   readonly isLoading$: Observable<boolean> = this.store.select(AllocationSelectors.selectIsAnyLoading);
@@ -87,49 +95,64 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
   };
 
   constructor() {
-    // Load requests for current cycle on component initialization
-    // Note: In a real implementation, we'd get the current cycle ID from the store
-    // For now, we'll load all requests
-    this.store.dispatch(AllocationActions.loadRequestsForTeam({ teamId: 1 })); // TODO: Get actual team ID
+    // Component initialization
   }
 
   ngOnInit(): void {
-    // Initialize WebSocket connection for real-time notifications
-    // TODO: Get actual gameId and teamId from current game state
-    this.webSocketService.connect({
-      gameId: 1, // TODO: Get from current game
-      teamId: 1, // TODO: Get from current player
-      reconnect: true
-    });
+    console.warn('MOB Dashboard: Allocation features temporarily disabled. Please restart dev server after app.config.ts changes.');
 
-    // Listen for new notifications and show toast
-    this.recentNotifications$.pipe(
-      filter(notifications => notifications.length > 0),
-      takeUntil(this.destroy$)
-    ).subscribe(notifications => {
-      const latestNotification = notifications[0];
-      if (latestNotification && !latestNotification.read) {
-        this.showToastNotification(latestNotification);
-      }
-    });
+    // TEMPORARILY DISABLED: Load allocation data if game ID is available
+    // TODO: Uncomment after dev server restart
+    // if (this.currentGameId) {
+    //   this.store.dispatch(AllocationActions.loadLatestAllocationCycle({ gameId: this.currentGameId }));
+    // }
 
-    // Listen for urgent notifications and show snackbar
-    this.hasUrgentNotifications$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(hasUrgent => {
-      if (hasUrgent) {
-        this.snackBar.open(
-          'Urgent allocation notification received!',
-          'View',
-          {
-            duration: 5000,
-            panelClass: ['urgent-snackbar']
-          }
-        ).onAction().subscribe(() => {
-          this.openNotificationCenter();
-        });
-      }
-    });
+    // TEMPORARILY DISABLED: Load requests for current team
+    // TODO: Uncomment after dev server restart
+    // if (this.teamId) {
+    //   this.store.dispatch(AllocationActions.loadRequestsForTeam({ teamId: this.teamId }));
+    // }
+
+    // TEMPORARILY DISABLED: Initialize WebSocket connection for real-time notifications
+    // TODO: Uncomment after dev server restart
+    // if (this.currentGameId && this.teamId) {
+    //   this.webSocketService.connect({
+    //     gameId: this.currentGameId,
+    //     teamId: this.teamId,
+    //     reconnect: true
+    //   });
+    // }
+
+    // TEMPORARILY DISABLED: Listen for new notifications and show toast
+    // TODO: Uncomment after dev server restart
+    // this.recentNotifications$.pipe(
+    //   filter(notifications => notifications.length > 0),
+    //   takeUntil(this.destroy$)
+    // ).subscribe(notifications => {
+    //   const latestNotification = notifications[0];
+    //   if (latestNotification && !latestNotification.read) {
+    //     this.showToastNotification(latestNotification);
+    //   }
+    // });
+
+    // TEMPORARILY DISABLED: Listen for urgent notifications and show snackbar
+    // TODO: Uncomment after dev server restart
+    // this.hasUrgentNotifications$.pipe(
+    //   takeUntil(this.destroy$)
+    // ).subscribe(hasUrgent => {
+    //   if (hasUrgent) {
+    //     this.snackBar.open(
+    //       'Urgent allocation notification received!',
+    //       'View',
+    //       {
+    //         duration: 5000,
+    //         panelClass: ['urgent-snackbar']
+    //       }
+    //     ).onAction().subscribe(() => {
+    //       this.openNotificationCenter();
+    //     });
+    //   }
+    // });
   }
 
   ngOnDestroy(): void {
@@ -140,23 +163,61 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
 
   /**
    * Opens the aircraft request dialog for MOB teams to submit allocation requests
+   * TEMPORARILY DISABLED until allocation store is available
    */
   openRequestDialog(): void {
-    const dialogRef = this.dialog.open(AircraftRequestDialogComponent, {
-      width: '600px',
-      maxWidth: '90vw',
-      disableClose: false,
-      autoFocus: true,
-      restoreFocus: true
-    });
+    this.snackBar.open(
+      'Allocation features temporarily disabled. Please restart the dev server.',
+      'Close',
+      { duration: 5000, panelClass: ['error-snackbar'] }
+    );
 
-    // Handle successful request submission
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Request was submitted successfully, refresh the requests list
-        this.store.dispatch(AllocationActions.loadRequestsForTeam({ teamId: 1 })); // TODO: Get actual team ID
-      }
-    });
+    // TEMPORARILY DISABLED: Get current allocation cycle from store
+    // TODO: Uncomment after dev server restart
+    // this.currentCycle$.pipe(
+    //   takeUntil(this.destroy$)
+    // ).subscribe(cycle => {
+    //   if (!cycle) {
+    //     this.snackBar.open(
+    //       'No active allocation cycle. Please wait for the next cycle to open.',
+    //       'Close',
+    //       { duration: 5000, panelClass: ['error-snackbar'] }
+    //     );
+    //     return;
+    //   }
+
+    //   if (!this.teamId) {
+    //     this.snackBar.open(
+    //       'Team ID not available. Cannot submit request.',
+    //       'Close',
+    //       { duration: 5000, panelClass: ['error-snackbar'] }
+    //     );
+    //     return;
+    //   }
+
+    //   const dialogData: AircraftRequestDialogData = {
+    //     allocationCycleId: cycle.id,
+    //     teamId: this.teamId,
+    //     currentTurn: this.currentTurn
+    //   };
+
+    //   const dialogRef = this.dialog.open(AircraftRequestDialogComponent, {
+    //     width: '600px',
+    //     maxWidth: '90vw',
+    //     disableClose: false,
+    //     autoFocus: true,
+    //     restoreFocus: true,
+    //     data: dialogData
+    //   });
+
+    //   // Handle successful request submission
+    //   dialogRef.afterClosed().subscribe(result => {
+    //     if (result && this.teamId) {
+    //       // Request was submitted successfully, refresh the requests list
+    //       this.store.dispatch(AllocationActions.loadRequestsForTeam({ teamId: this.teamId }));
+    //     }
+    //   });
+    // });
   }
 
   /**

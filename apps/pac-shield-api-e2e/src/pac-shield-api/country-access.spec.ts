@@ -10,6 +10,10 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
   let gmToken: string;
   let gmApi: AxiosInstance;
 
+  let nonGmPlayerId: number;
+  let nonGmToken: string;
+  let nonGmApi: AxiosInstance;
+
   let socket: Socket;
 
   // Small utility to await a single socket event with timeout
@@ -45,14 +49,28 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
     gmToken = joinGmRes.data.token;
     gmPlayerId = joinGmRes.data.id ?? joinGmRes.data.player?.id;
 
-    // 3) Authorized axios instance
+    // 3) Join as non-GM player
+    const joinPlayerRes = await axios.post(`/api/player/join`, {
+      roomCode,
+      playerName: 'Regular Player',
+      role: 'PLAYER',
+    });
+    expect(joinPlayerRes.data?.token).toBeDefined();
+    nonGmToken = joinPlayerRes.data.token;
+    nonGmPlayerId = joinPlayerRes.data.id ?? joinPlayerRes.data.player?.id;
+
+    // 4) Authorized axios instances
     const baseURL = (axios.defaults.baseURL ?? 'http://localhost:3000').replace(/\/$/, '');
     gmApi = axios.create({
       baseURL,
       headers: { Authorization: `Bearer ${gmToken}` },
     });
+    nonGmApi = axios.create({
+      baseURL,
+      headers: { Authorization: `Bearer ${nonGmToken}` },
+    });
 
-    // 4) Start a Socket.IO client (default namespace) and join game room by roomCode
+    // 5) Start a Socket.IO client (default namespace) and join game room by roomCode
     socket = io(baseURL, {
       transports: ['websocket'],
       forceNew: true,
@@ -437,6 +455,115 @@ describe('Country Access API Endpoints (Database → Local Storage)', () => {
       expect(getRes2.data.countries.JAPAN).toBe('FULL_ACCESS');
       expect(getRes2.data.countries.SINGAPORE).toBe('FULL_ACCESS');
       expect(getRes2.data.countries.PHILIPPINES).toBe('NO_ACCESS'); // Should remain NO_ACCESS
+    });
+  });
+
+  describe('Authorization: GM-only access control', () => {
+    it('should allow GM to update country access', async () => {
+      const res = await gmApi.put(`/api/games/${gameId}/country-access`, {
+        changes: { JAPAN: true }
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('should deny non-GM from updating country access', async () => {
+      const p = nonGmApi.put(`/api/games/${gameId}/country-access`, {
+        changes: { JAPAN: true }
+      });
+      await expect(p).rejects.toMatchObject({
+        response: {
+          status: 403,
+          data: {
+            message: 'Only GMs can perform this action',
+          },
+        },
+      });
+    });
+
+    it('should allow GM to update dice roll for a country', async () => {
+      const res = await gmApi.put(`/api/games/${gameId}/country-access/JAPAN/dice-roll`, {
+        diceRoll: 10
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('should deny non-GM from updating dice roll for a country', async () => {
+      const p = nonGmApi.put(`/api/games/${gameId}/country-access/JAPAN/dice-roll`, {
+        diceRoll: 10
+      });
+      await expect(p).rejects.toMatchObject({
+        response: {
+          status: 403,
+          data: {
+            message: 'Only GMs can perform this action',
+          },
+        },
+      });
+    });
+
+    it('should allow GM to update bulk dice rolls', async () => {
+      const res = await gmApi.put(`/api/games/${gameId}/country-access/dice-rolls`, {
+        diceRolls: [
+          { country: 'JAPAN' as Country, diceRoll: 10 }
+        ]
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('should deny non-GM from updating bulk dice rolls', async () => {
+      const p = nonGmApi.put(`/api/games/${gameId}/country-access/dice-rolls`, {
+        diceRolls: [
+          { country: 'JAPAN' as Country, diceRoll: 10 }
+        ]
+      });
+      await expect(p).rejects.toMatchObject({
+        response: {
+          status: 403,
+          data: {
+            message: 'Only GMs can perform this action',
+          },
+        },
+      });
+    });
+
+    it('should allow GM to update bulk country access', async () => {
+      const res = await gmApi.put(`/api/games/${gameId}/country-access/bulk`, {
+        accessLevel: 'FULL_ACCESS' as AccessStatus
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('should deny non-GM from updating bulk country access', async () => {
+      const p = nonGmApi.put(`/api/games/${gameId}/country-access/bulk`, {
+        accessLevel: 'FULL_ACCESS' as AccessStatus
+      });
+      await expect(p).rejects.toMatchObject({
+        response: {
+          status: 403,
+          data: {
+            message: 'Only GMs can perform this action',
+          },
+        },
+      });
+    });
+
+    it('should deny unauthenticated requests to update country access', async () => {
+      const p = axios.put(`/api/games/${gameId}/country-access`, {
+        changes: { JAPAN: true }
+      });
+      await expect(p).rejects.toMatchObject({
+        response: {
+          status: 401,
+        },
+      });
+    });
+
+    it('should allow both GM and non-GM to read country access', async () => {
+      const gmRes = await gmApi.get(`/api/games/${gameId}/country-access`);
+      expect(gmRes.status).toBe(200);
+
+      const playerRes = await nonGmApi.get(`/api/games/${gameId}/country-access`);
+      expect(playerRes.status).toBe(200);
     });
   });
 });
