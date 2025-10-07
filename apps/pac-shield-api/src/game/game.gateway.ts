@@ -8,7 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { ATOLine } from '../app/generated/aTOLine/aTOLine.entity';
-import { AircraftRequest, AircraftAllocation, AllocationCycle } from '@prisma/client';
+import { AircraftRequest, AircraftAllocation, AllocationCycle, AircraftInstance } from '@prisma/client';
 
 /**
  * WebSocket gateway for real-time, game-scoped events (namespace: /game).
@@ -310,6 +310,30 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       timestamp: new Date().toISOString(),
     });
     this.logger.log(`Aircraft deallocated broadcast to room ${gameId}: ${aircraftCallSign}`);
+  }
+
+  /**
+   * Broadcast aircraft spawned event to all players in the game room (GM spawning)
+   */
+  broadcastAircraftSpawned(gameId: string, aircraft: AircraftInstance): void {
+    this.server.to(gameId).emit('aircraftSpawned', {
+      type: 'aircraftSpawned',
+      payload: aircraft,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Aircraft spawned broadcast to room ${gameId}: ${aircraft.callSign}`);
+  }
+
+  /**
+   * Broadcast aircraft removed event to all players in the game room (GM deletion)
+   */
+  broadcastAircraftRemoved(gameId: string, aircraftId: number): void {
+    this.server.to(gameId).emit('aircraftRemoved', {
+      type: 'aircraftRemoved',
+      payload: { aircraftId },
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Aircraft removed broadcast to room ${gameId}: ${aircraftId}`);
   }
 
   /**

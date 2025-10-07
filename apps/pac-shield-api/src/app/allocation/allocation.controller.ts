@@ -310,4 +310,73 @@ export class AllocationController {
   ): Promise<AircraftAllocation[]> {
     return this.allocationService.getAllocationsForCycle(cycleId);
   }
+
+  // =============================================
+  //            GM AIRCRAFT SPAWNING ENDPOINTS
+  // =============================================
+
+  /**
+   * Spawn a new aircraft instance (GM only)
+   * POST /allocation/aircraft/spawn
+   */
+  @Post('aircraft/spawn')
+  async spawnAircraft(
+    @Body() dto: SpawnAircraftDto,
+    @Request() req: any
+  ): Promise<AircraftInstance> {
+    return this.allocationService.spawnAircraft(
+      dto.gameId,
+      dto.type,
+      dto.subtype || null,
+      dto.teamId,
+      dto.rangeHexes,
+      dto.locationFosId,
+      dto.locationHex,
+      req.user
+    );
+  }
+
+  /**
+   * Delete an unallocated aircraft (GM only)
+   * DELETE /allocation/aircraft/:id
+   */
+  @Delete('aircraft/:id')
+  async deleteAircraft(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any
+  ): Promise<void> {
+    return this.allocationService.deleteUnallocatedAircraft(id, req.user);
+  }
+
+  /**
+   * Get all aircraft for a game (GM view)
+   * GET /allocation/aircraft/game/:gameId
+   */
+  @Get('aircraft/game/:gameId')
+  async getAllAircraft(
+    @Param('gameId', ParseIntPipe) gameId: number
+  ): Promise<AircraftInstance[]> {
+    return this.allocationService.getAllAircraftForGame(gameId);
+  }
+
+  // =============================================
+  //            DIRECT ALLOCATION ENDPOINT
+  // =============================================
+
+  /**
+   * Directly allocate an aircraft to a team (CFACC/GM only)
+   * POST /allocation/allocate
+   */
+  @Post('allocate')
+  async directAllocate(
+    @Body() dto: DirectAllocationDto,
+    @Request() req: any
+  ): Promise<AircraftAllocation> {
+    return this.allocationService.directAllocateAircraft(
+      dto.aircraftInstanceId,
+      dto.allocatedToTeamId,
+      dto.allocationCycleId,
+      req.user
+    );
+  }
 }
