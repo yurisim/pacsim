@@ -17,12 +17,9 @@
         "-y",
         "@upstash/context7-mcp",
         "--api-key",
-        "ctx7sk-7a021de2-dd21-42b8-88e1-06208aa3c848"
+        "ctx7sk-a254fd01-69cf-430d-b02a-12d2f6037dcb"
       ],
-      "alwaysAllow": [
-        "resolve-library-id",
-        "get-library-docs"
-      ]
+      "alwaysAllow": ["resolve-library-id", "get-library-docs"]
     }
   }
 }
