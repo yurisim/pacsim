@@ -49,6 +49,11 @@ npx nx lint pac-shield
 - **Styling**: Tailwind utilities only, no custom CSS files
 - **Control Flow**: `@if/@for/@switch` only, no `*ngIf/*ngFor/*ngSwitch`
 - **Imports**: Direct paths only, no barrel exports
+- **Icons**: NEVER use Tailwind text size classes on `<mat-icon>` elements
+  - **Why**: Material icons have built-in sizing that works with Material Design typography
+  - **Wrong**: `<mat-icon class="text-4xl">icon</mat-icon>`
+  - **Correct**: `<mat-icon>icon</mat-icon>`
+  - **Check**: `grep -r "mat-icon.*text-[0-9xs]" apps/pac-shield/src/` must return zero
 
 ### 🗃️ Database Schema & DTO Generation
 1. Edit `apps/pac-shield-api/src/prisma/schema.prisma`
