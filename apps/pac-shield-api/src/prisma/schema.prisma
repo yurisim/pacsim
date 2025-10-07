@@ -232,7 +232,8 @@ model AircraftInstance {
   id         Int            @id @default(autoincrement())
   callSign   String         @unique
   type       AircraftType
-  strength   Int
+  /// @DtoCreateOptional
+  subtype    String?        // 'BOBCAT' or 'RHINO' for C5 variants, null for other types
   rangeHexes Int
   status     AircraftStatus @default(FMC)
 

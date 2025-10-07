@@ -10,11 +10,14 @@ import {
   AircraftAllocationStatus,
   PlayerRole,
   TeamType,
-  AircraftType
+  AircraftType,
+  LocationType,
+  AircraftStatus
 } from '@prisma/client';
 import { GameGateway } from '../../game/game.gateway';
 import { AircraftPoolService } from './aircraft-pool.service';
 import { AllocationNotificationService } from './allocation-notification.service';
+import { generateCallSign } from './utils/callsign-generator.util';
 
 /**
  * Service for managing the CFACC aircraft allocation workflow.
