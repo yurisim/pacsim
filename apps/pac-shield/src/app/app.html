@@ -69,6 +69,23 @@
     </div>
     }
 
+    <!-- Notifications Bell -->
+    @if (auth.isAuthenticated() && auth.getGameId()) {
+    <button
+      matIconButton
+      [matMenuTriggerFor]="notificationMenu"
+      [matBadge]="notificationService.unreadCount()"
+      matBadgeColor="warn"
+      [matBadgeHidden]="notificationService.unreadCount() === 0"
+      aria-label="Notifications"
+      matTooltip="Notifications"
+    >
+      <mat-icon [class.text-warn]="notificationService.hasUrgent()">
+        {{ notificationService.unreadCount() > 0 ? 'notifications_active' : 'notifications' }}
+      </mat-icon>
+    </button>
+    }
+
     <!-- Home Button -->
     <button
       matIconButton
@@ -98,6 +115,44 @@
   </div>
 </mat-toolbar>
 
-<main class="app-content">
-  <router-outlet></router-outlet>
-</main>
+<!-- Notification Menu Dropdown -->
+<mat-menu #notificationMenu="matMenu" class="notification-menu">
+  <div class="p-4 min-w-[320px] max-w-[400px] max-h-[500px] overflow-y-auto">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-medium md-sys-color-on-surface">Notifications</h3>
+      @if (notificationService.unreadCount() > 0 && currentGameId) {
+        <button
+          matButton="text"
+          class="text-xs"
+          (click)="notificationService.markAllAsRead(+currentGameId)"
+        >
+          Mark all read
+        </button>
+      }
+    </div>
+    @if (notificationService.notifications().length === 0) {
+      <div class="text-center py-8 text-sm md-sys-color-on-surface-variant">
+        No notifications
+      </div>
+    } @else {
+      @for (notification of notificationService.notifications(); track notification.id) {
+        <div class="notification-item p-3 mb-2 rounded hover:bg-[var(--md-sys-color-surface-container)]">
+          <div class="flex items-start gap-2">
+            <mat-icon class="text-base" [class.md-sys-color-primary]="!notification.read">
+              {{ notification.read ? 'notifications' : 'notifications_active' }}
+            </mat-icon>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm">{{ notification.title }}</div>
+              <div class="text-xs md-sys-color-on-surface-variant">{{ notification.message }}</div>
+              <div class="text-xs md-sys-color-on-surface-variant mt-1">
+                {{ notification.timestamp | date:'short' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</mat-menu>
+
+<router-outlet />
