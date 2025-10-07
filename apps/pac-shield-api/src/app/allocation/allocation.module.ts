@@ -6,12 +6,14 @@ import { AircraftPoolService } from './aircraft-pool.service';
 import { AllocationNotificationService } from './allocation-notification.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { GameModule } from '../../game/game.module';
+import { NotificationModule } from '../notification/notification.module';
 import { AuthModule } from '../../auth/auth.module';
 
 @Module({
   imports: [
     PrismaModule,
     forwardRef(() => GameModule), // For WebSocket integration
+    forwardRef(() => NotificationModule), // For unified notifications
     AuthModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'fallback-secret-key',

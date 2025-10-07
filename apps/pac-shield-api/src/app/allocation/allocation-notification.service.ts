@@ -1,14 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { GameGateway } from '../../game/game.gateway';
+import { NotificationService } from '../notification/notification.service';
 import {
   AircraftRequest,
   AircraftAllocation,
   AllocationCycle,
   AircraftInstance,
-  TeamType
+  TeamType,
+  NotificationType,
+  NotificationPriority
 } from '@prisma/client';
 
+/**
+ * Allocation notification subtypes (stored in notification.data.notificationType)
+ */
 export enum AllocationNotificationType {
   REQUEST_SUBMITTED = 'REQUEST_SUBMITTED',
   REQUEST_REVIEWED = 'REQUEST_REVIEWED',
@@ -16,19 +21,6 @@ export enum AllocationNotificationType {
   AIRCRAFT_DEALLOCATED = 'AIRCRAFT_DEALLOCATED',
   ALLOCATION_CYCLE_STATUS_CHANGED = 'ALLOCATION_CYCLE_STATUS_CHANGED',
   AIRCRAFT_POOL_UPDATED = 'AIRCRAFT_POOL_UPDATED'
-}
-
-export interface AllocationNotificationPayload {
-  type: AllocationNotificationType;
-  title: string;
-  message: string;
-  data: any;
-  targetTeamIds?: number[];
-  targetTeamTypes?: TeamType[];
-  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-  timestamp: string;
-  gameId: number;
-  requiresAcknowledgment?: boolean;
 }
 
 /**
@@ -41,7 +33,7 @@ export class AllocationNotificationService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly gameGateway: GameGateway
+    private readonly notificationService: NotificationService
   ) {}
 
   // =============================================
@@ -52,26 +44,34 @@ export class AllocationNotificationService {
    * Notify when a MOB submits an aircraft request
    */
   async notifyRequestSubmitted(request: AircraftRequest & { team: any; allocationCycle: any }): Promise<void> {
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.REQUEST_SUBMITTED,
-      title: 'New Aircraft Request',
-      message: `${request.team.name} has submitted a request for ${request.quantityRequested} ${request.aircraftType} aircraft`,
-      data: {
-        request,
-        requestId: request.id,
-        teamName: request.team.name,
-        aircraftType: request.aircraftType,
-        quantityRequested: request.quantityRequested,
-        priority: request.priority
-      },
-      targetTeamTypes: [TeamType.CAOC], // Notify CFACC
-      priority: this.mapRequestPriorityToNotificationPriority(request.priority),
-      timestamp: new Date().toISOString(),
-      gameId: request.allocationCycle.gameId,
-      requiresAcknowledgment: false
-    };
+    // Get CAOC team(s)
+    const caocTeams = await this.prisma.team.findMany({
+      where: {
+        gameId: request.allocationCycle.gameId,
+        type: TeamType.CAOC
+      }
+    });
 
-    await this.deliverNotification(notification);
+    // Create notification for each CAOC team
+    for (const caocTeam of caocTeams) {
+      await this.notificationService.notify({
+        gameId: request.allocationCycle.gameId,
+        type: NotificationType.ALLOCATION,
+        title: 'New Aircraft Request',
+        message: `${request.team.name} has submitted a request for ${request.quantityRequested} ${request.aircraftType} aircraft`,
+        priority: this.mapRequestPriorityToNotificationPriority(request.priority),
+        targetTeamId: caocTeam.id,
+        requiresAcknowledgment: false,
+        data: {
+          notificationType: AllocationNotificationType.REQUEST_SUBMITTED,
+          requestId: request.id,
+          teamName: request.team.name,
+          aircraftType: request.aircraftType,
+          quantityRequested: request.quantityRequested,
+          priority: request.priority
+        }
+      });
+    }
   }
 
   /**
@@ -85,25 +85,23 @@ export class AllocationNotificationService {
     };
 
     const statusMessage = statusMessages[request.status] || 'reviewed';
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.REQUEST_REVIEWED,
+
+    await this.notificationService.notify({
+      gameId: request.allocationCycle.gameId,
+      type: NotificationType.ALLOCATION,
       title: `Request ${statusMessage}`,
       message: `Your request for ${request.quantityRequested} ${request.aircraftType} aircraft has been ${statusMessage}${request.quantityAllocated ? ` (${request.quantityAllocated} allocated)` : ''}`,
+      priority: request.status === 'DENIED' ? NotificationPriority.HIGH : NotificationPriority.NORMAL,
+      targetTeamId: request.teamId,
+      requiresAcknowledgment: true,
       data: {
-        request,
+        notificationType: AllocationNotificationType.REQUEST_REVIEWED,
         requestId: request.id,
         status: request.status,
         quantityAllocated: request.quantityAllocated,
         cfaccNotes: request.cfaccNotes
-      },
-      targetTeamIds: [request.teamId], // Notify requesting team
-      priority: request.status === 'DENIED' ? 'HIGH' : 'NORMAL',
-      timestamp: new Date().toISOString(),
-      gameId: request.allocationCycle.gameId,
-      requiresAcknowledgment: true
-    };
-
-    await this.deliverNotification(notification);
+      }
+    });
   }
 
   /**
@@ -115,25 +113,24 @@ export class AllocationNotificationService {
     allocationCycle: any;
     aircraftRequest?: any;
   }): Promise<void> {
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.AIRCRAFT_ALLOCATED,
+    // Notify the team receiving the aircraft
+    await this.notificationService.notify({
+      gameId: allocation.allocationCycle.gameId,
+      type: NotificationType.ALLOCATION,
       title: 'Aircraft Allocated',
       message: `${allocation.aircraftInstance.callSign} (${allocation.aircraftInstance.type}) has been allocated to your team`,
+      priority: NotificationPriority.HIGH,
+      targetTeamId: allocation.allocatedToTeamId,
+      requiresAcknowledgment: true,
       data: {
-        allocation,
+        notificationType: AllocationNotificationType.AIRCRAFT_ALLOCATED,
+        allocationId: allocation.id,
         aircraftCallSign: allocation.aircraftInstance.callSign,
         aircraftType: allocation.aircraftInstance.type,
         teamName: allocation.allocatedToTeam.name,
         requestId: allocation.aircraftRequestId
-      },
-      targetTeamIds: [allocation.allocatedToTeamId], // Notify allocated team
-      priority: 'HIGH',
-      timestamp: new Date().toISOString(),
-      gameId: allocation.allocationCycle.gameId,
-      requiresAcknowledgment: true
-    };
-
-    await this.deliverNotification(notification);
+      }
+    });
 
     // Also notify CFACC about successful allocation
     await this.notifyAllocationDecisionMade(allocation, 'allocated');
@@ -149,23 +146,21 @@ export class AllocationNotificationService {
     teamId: number,
     teamName: string
   ): Promise<void> {
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.AIRCRAFT_DEALLOCATED,
+    await this.notificationService.notify({
+      gameId,
+      type: NotificationType.ALLOCATION,
       title: 'Aircraft Returned to Pool',
       message: `${aircraftCallSign} has been returned to the unallocated pool`,
+      priority: NotificationPriority.NORMAL,
+      targetTeamId: teamId,
+      requiresAcknowledgment: false,
       data: {
+        notificationType: AllocationNotificationType.AIRCRAFT_DEALLOCATED,
         allocationId,
         aircraftCallSign,
         teamName
-      },
-      targetTeamIds: [teamId], // Notify affected team
-      priority: 'NORMAL',
-      timestamp: new Date().toISOString(),
-      gameId,
-      requiresAcknowledgment: false
-    };
-
-    await this.deliverNotification(notification);
+      }
+    });
   }
 
   /**
@@ -181,157 +176,47 @@ export class AllocationNotificationService {
     };
 
     const statusMessage = statusMessages[cycle.status] || `Allocation cycle status changed to ${cycle.status}`;
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.ALLOCATION_CYCLE_STATUS_CHANGED,
+
+    // Notify all teams (broadcast without specific team targeting)
+    await this.notificationService.notify({
+      gameId: cycle.gameId,
+      type: NotificationType.ALLOCATION,
       title: `Allocation Cycle: ${cycle.status}`,
       message: statusMessage,
+      priority: NotificationPriority.NORMAL,
+      requiresAcknowledgment: false,
       data: {
-        cycle,
+        notificationType: AllocationNotificationType.ALLOCATION_CYCLE_STATUS_CHANGED,
+        cycleId: cycle.id,
         status: cycle.status,
         turn: cycle.turn
-      },
-      targetTeamTypes: [TeamType.MOB_KADENA, TeamType.MOB_ANDERSEN, TeamType.MOB_YOKOTA, TeamType.MOB_OSAN, TeamType.MOB_JBPHH, TeamType.CAOC], // Notify all teams
-      priority: 'NORMAL',
-      timestamp: new Date().toISOString(),
-      gameId: cycle.gameId,
-      requiresAcknowledgment: false
-    };
-
-    await this.deliverNotification(notification);
+      }
+    });
   }
 
   /**
    * Notify when aircraft pool is updated
    */
   async notifyAircraftPoolUpdated(gameId: number, poolStats: any): Promise<void> {
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.AIRCRAFT_POOL_UPDATED,
+    await this.notificationService.notify({
+      gameId,
+      type: NotificationType.ALLOCATION,
       title: 'Aircraft Pool Updated',
       message: 'The aircraft pool has been refreshed for the new turn',
+      priority: NotificationPriority.LOW,
+      requiresAcknowledgment: false,
       data: {
+        notificationType: AllocationNotificationType.AIRCRAFT_POOL_UPDATED,
         poolStats,
         updatedAt: new Date().toISOString()
-      },
-      targetTeamTypes: [TeamType.MOB_KADENA, TeamType.MOB_ANDERSEN, TeamType.MOB_YOKOTA, TeamType.MOB_OSAN, TeamType.MOB_JBPHH, TeamType.CAOC], // Notify all teams
-      priority: 'LOW',
-      timestamp: new Date().toISOString(),
-      gameId,
-      requiresAcknowledgment: false
-    };
-
-    await this.deliverNotification(notification);
-  }
-
-  // =============================================
-  //            NOTIFICATION DELIVERY
-  // =============================================
-
-  /**
-   * Deliver notification via WebSocket and persist to database
-   */
-  private async deliverNotification(notification: AllocationNotificationPayload): Promise<void> {
-    try {
-      // Determine target teams
-      const targetTeams = await this.resolveTargetTeams(notification);
-
-      // Broadcast to each target team room
-      for (const team of targetTeams) {
-        const teamRoomId = `${notification.gameId}-team-${team.id}`;
-
-        this.gameGateway.server.to(teamRoomId).emit('allocationNotification', {
-          type: 'allocationNotification',
-          payload: {
-            ...notification,
-            targetTeamId: team.id,
-            targetTeamName: team.name
-          },
-          timestamp: notification.timestamp
-        });
-
-        this.logger.log(
-          `Allocation notification sent to team ${team.name} (${team.id}): ${notification.type}`
-        );
-      }
-
-      // Also broadcast to game room for general updates
-      this.gameGateway.server.to(notification.gameId.toString()).emit('allocationNotification', {
-        type: 'allocationNotification',
-        payload: notification,
-        timestamp: notification.timestamp
-      });
-
-      // Persist notification for audit trail
-      await this.persistNotification(notification, targetTeams);
-
-    } catch (error) {
-      this.logger.error(`Failed to deliver allocation notification: ${error.message}`, error.stack);
-    }
-  }
-
-  /**
-   * Resolve target teams based on notification criteria
-   */
-  private async resolveTargetTeams(notification: AllocationNotificationPayload): Promise<any[]> {
-    const whereClause: any = {
-      gameId: notification.gameId
-    };
-
-    // Add specific team IDs if provided
-    if (notification.targetTeamIds?.length) {
-      whereClause.id = {
-        in: notification.targetTeamIds
-      };
-    }
-
-    // Add team types if provided
-    if (notification.targetTeamTypes?.length) {
-      whereClause.type = {
-        in: notification.targetTeamTypes
-      };
-    }
-
-    return this.prisma.team.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        type: true
       }
     });
   }
 
-  /**
-   * Persist notification to database for audit trail
-   */
-  private async persistNotification(
-    notification: AllocationNotificationPayload,
-    targetTeams: any[]
-  ): Promise<void> {
-    try {
-      // Create notification record (you may need to create this table in Prisma schema)
-      // For now, we'll log to database as a simple audit trail
-      // In a full implementation, you'd have a dedicated notifications table
-
-      const auditData = {
-        type: 'ALLOCATION_NOTIFICATION',
-        action: notification.type,
-        details: {
-          notification,
-          targetTeams: targetTeams.map(t => ({ id: t.id, name: t.name, type: t.type })),
-          deliveredAt: new Date().toISOString()
-        },
-        timestamp: new Date(notification.timestamp)
-      };
-
-      this.logger.log(`Notification audit: ${JSON.stringify(auditData)}`);
-
-      // TODO: Implement proper notification persistence when notification table is available
-      // await this.prisma.notification.create({ data: auditData });
-
-    } catch (error) {
-      this.logger.error(`Failed to persist notification: ${error.message}`);
-    }
-  }
+  // =============================================
+  //            LEGACY METHODS (Removed)
+  // =============================================
+  // Delivery, persistence, and team resolution now handled by NotificationService
 
   // =============================================
   //            HELPER METHODS
@@ -340,11 +225,11 @@ export class AllocationNotificationService {
   /**
    * Map request priority to notification priority
    */
-  private mapRequestPriorityToNotificationPriority(requestPriority: number): 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' {
-    if (requestPriority === 1) return 'URGENT';
-    if (requestPriority === 2) return 'HIGH';
-    if (requestPriority === 3) return 'NORMAL';
-    return 'LOW';
+  private mapRequestPriorityToNotificationPriority(requestPriority: number): NotificationPriority {
+    if (requestPriority === 1) return NotificationPriority.URGENT;
+    if (requestPriority === 2) return NotificationPriority.HIGH;
+    if (requestPriority === 3) return NotificationPriority.NORMAL;
+    return NotificationPriority.LOW;
   }
 
   /**
@@ -354,44 +239,32 @@ export class AllocationNotificationService {
     allocation: AircraftAllocation & { aircraftInstance: AircraftInstance; allocatedToTeam: any; allocationCycle: any },
     action: 'allocated' | 'deallocated'
   ): Promise<void> {
-    const notification: AllocationNotificationPayload = {
-      type: AllocationNotificationType.AIRCRAFT_ALLOCATED,
-      title: `Allocation ${action}`,
-      message: `${allocation.aircraftInstance.callSign} has been ${action} ${action === 'allocated' ? 'to' : 'from'} ${allocation.allocatedToTeam.name}`,
-      data: {
-        allocation,
-        action,
-        aircraftCallSign: allocation.aircraftInstance.callSign,
-        teamName: allocation.allocatedToTeam.name
-      },
-      targetTeamTypes: [TeamType.CAOC], // Notify CFACC
-      priority: 'LOW',
-      timestamp: new Date().toISOString(),
-      gameId: allocation.allocationCycle.gameId,
-      requiresAcknowledgment: false
-    };
+    // Get CAOC team(s)
+    const caocTeams = await this.prisma.team.findMany({
+      where: {
+        gameId: allocation.allocationCycle.gameId,
+        type: TeamType.CAOC
+      }
+    });
 
-    await this.deliverNotification(notification);
-  }
-
-  // =============================================
-  //            TEAM-SPECIFIC ROOM MANAGEMENT
-  // =============================================
-
-  /**
-   * Join client to team-specific room for targeted notifications
-   */
-  async joinTeamRoom(clientId: string, gameId: number, teamId: number): Promise<void> {
-    const roomId = `${gameId}-team-${teamId}`;
-    // This would be called from GameGateway when clients connect
-    this.logger.log(`Client ${clientId} joining team room ${roomId}`);
-  }
-
-  /**
-   * Leave team-specific room
-   */
-  async leaveTeamRoom(clientId: string, gameId: number, teamId: number): Promise<void> {
-    const roomId = `${gameId}-team-${teamId}`;
-    this.logger.log(`Client ${clientId} leaving team room ${roomId}`);
+    // Notify each CAOC team
+    for (const caocTeam of caocTeams) {
+      await this.notificationService.notify({
+        gameId: allocation.allocationCycle.gameId,
+        type: NotificationType.ALLOCATION,
+        title: `Allocation ${action}`,
+        message: `${allocation.aircraftInstance.callSign} has been ${action} ${action === 'allocated' ? 'to' : 'from'} ${allocation.allocatedToTeam.name}`,
+        priority: NotificationPriority.LOW,
+        targetTeamId: caocTeam.id,
+        requiresAcknowledgment: false,
+        data: {
+          notificationType: AllocationNotificationType.AIRCRAFT_ALLOCATED,
+          allocationId: allocation.id,
+          action,
+          aircraftCallSign: allocation.aircraftInstance.callSign,
+          teamName: allocation.allocatedToTeam.name
+        }
+      });
+    }
   }
 }
