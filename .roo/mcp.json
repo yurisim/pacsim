@@ -2,23 +2,13 @@
   "mcpServers": {
     "wallaby": {
       "command": "powershell.exe",
-      "args": [
-        "node",
-        "$Env:USERPROFILE/.wallaby/mcp/"
-      ],
-      "alwaysAllow": [
-        "wallaby_failingTests",
-        "wallaby_failingTestsForFile"
-      ]
+      "args": ["node", "$Env:USERPROFILE/.wallaby/mcp/"],
+      "alwaysAllow": ["wallaby_failingTests", "wallaby_failingTestsForFile"]
     },
     "playwright": {
       "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ],
-      "alwaysAllow": [
-        "browser_install"
-      ],
+      "args": ["@playwright/mcp@latest"],
+      "alwaysAllow": ["browser_install"],
       "disabled": false
     },
     "context7": {
