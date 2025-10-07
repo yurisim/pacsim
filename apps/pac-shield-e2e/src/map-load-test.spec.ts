@@ -21,8 +21,11 @@ test('map should load successfully', async ({ page }) => {
   // Verify no error messages
   await expect(page.locator('text=Error loading game')).toBeHidden();
 
+  await page.getByRole('button', { name: 'Collapse' }).click();
+
+
   await page.locator('div').filter({ hasText: /^homeKadena$/ }).locator('span').click();
-  await page.locator('app-location-panel').getByRole('button').click();
+  // await page.locator('app-location-panel').getByRole('button').click();
   await page.getByRole('tab', { name: 'FOS' }).click();
   await page.getByRole('button', { name: 'Activate' }).click();
   await page.getByRole('combobox', { name: 'Assign to Team' }).locator('span').click();
