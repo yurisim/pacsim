@@ -8,8 +8,12 @@
       }
     </div>
     <div class="flex gap-2">
-      @if (canCreateFlightPlan) {
-        <button matButton="filled" (click)="onCreateFlightPlan()">
+      @if (isMob || currentUserRole === 'GM') {
+        <button
+          matButton="filled"
+          (click)="onCreateFlightPlan()"
+          [disabled]="!canCreateFlightPlan"
+          [matTooltip]="canCreateFlightPlanTooltip">
           <mat-icon>add</mat-icon>
           ATO
         </button>
