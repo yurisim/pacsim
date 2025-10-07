@@ -148,6 +148,10 @@ model Team {
   mfrs                MFR[]
   aircraftRequests    AircraftRequest[]
   aircraftAllocations AircraftAllocation[]   @relation("AllocatedToTeam")
+  notifications       Notification[]
+
+  // Back relation for ThreatToken.destroyedByTeam
+  destroyedThreats    ThreatToken[]         @relation("ThreatDestroyedByTeam")
 }
 
 model Player {
@@ -275,6 +279,10 @@ model ATOLine {
   turn                 Int
   aircraftCallSign     String
   startLocation        String
+  // New: Where did the aircraft depart from? Needed to count FOS-launched fighter sorties.
+  startLocationType    LocationType          @default(MOB)
+  // New: Mark if this ATO line launched into an activated operational area (EXORD/FRAGORD)
+  isOperationalArea    Boolean               @default(false)
   enRouteDestination   String?
   finalDestination     String
   alternateDestination String?
@@ -286,12 +294,17 @@ model ATOLine {
 }
 
 model ThreatToken {
-  id          Int        @id @default(autoincrement())
-  boardId     Int
-  board       GameBoard  @relation(fields: [boardId], references: [id])
-  type        ThreatType
-  strength    Int
-  locationHex String
+  id               Int        @id @default(autoincrement())
+  boardId          Int
+  board            GameBoard  @relation(fields: [boardId], references: [id])
+  type             ThreatType
+  strength         Int
+  locationHex      String
+
+  // New: Destruction tracking for MP scoring (Conflict phase)
+  destroyedAt      DateTime?
+  destroyedByTeamId Int?
+  destroyedByTeam  Team?      @relation("ThreatDestroyedByTeam", fields: [destroyedByTeamId], references: [id])
 }
 
 model MFR {
