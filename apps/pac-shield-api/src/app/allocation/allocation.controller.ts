@@ -27,6 +27,8 @@ import { CreateAircraftRequestDto } from './dto/create-aircraft-request.dto';
 import { UpdateAircraftRequestDto } from './dto/update-aircraft-request.dto';
 import { ReviewAircraftRequestDto } from './dto/review-aircraft-request.dto';
 import { CreateAircraftAllocationDto } from './dto/create-aircraft-allocation.dto';
+import { SpawnAircraftDto } from './dto/spawn-aircraft.dto';
+import { DirectAllocationDto } from './dto/direct-allocation.dto';
 
 /**
  * Controller for CFACC aircraft allocation operations.
