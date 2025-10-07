@@ -19,6 +19,7 @@ import { GameLogComponent } from './game-log/game-log.component';
 import { ResponsiveNavComponent } from './responsive-nav/responsive-nav.component';
 import { PoliticalAccessComponent } from '../political-access/political-access.component';
 import { TeamType, PlayerRole } from '../../../generated/enums';
+import { AllocationSignalService } from '../../../shared/services/allocation-signal.service';
 
 /**
  * Component Intent: Game statistics UI container that renders tabs with game dashboards.
@@ -65,8 +66,22 @@ export class GameStatsComponent implements OnInit, OnChanges {
 
   navService = inject(ResponsiveNavService);
   gameStatsService = inject(GameStatsService);
+  allocationSignalService = inject(AllocationSignalService);
+  private breakpointObserver = inject(BreakpointObserver);
 
   activeTab$ = this.navService.activeTab$;
+
+  /**
+   * Computed signal for allocated aircraft for the current team
+   * Returns array of aircraft instances allocated to the team
+   */
+  allocatedAircraft = computed(() => {
+    const teamId = this.getTeamId();
+    if (!teamId) {
+      return [];
+    }
+    return this.allocationSignalService.getAllocatedAircraftForTeam(teamId);
+  });
 
   // Expose service signals as public properties
   readonly gameStats = this.gameStatsService.gameStats;
@@ -86,6 +101,11 @@ export class GameStatsComponent implements OnInit, OnChanges {
 
     // Update navigation based on user role
     this.updateNavigation();
+
+    // Initialize allocation signal service for this game
+    if (this.currentGameId) {
+      this.allocationSignalService.initializeForGame(this.currentGameId);
+    }
   }
 
   // Computed property to check if user is GM
@@ -97,6 +117,11 @@ export class GameStatsComponent implements OnInit, OnChanges {
     // Update navigation when user role changes
     if (changes['currentUserRole']) {
       this.updateNavigation();
+    }
+
+    // Re-initialize allocation service when game ID changes
+    if (changes['currentGameId'] && this.currentGameId) {
+      this.allocationSignalService.initializeForGame(this.currentGameId);
     }
   }
 
