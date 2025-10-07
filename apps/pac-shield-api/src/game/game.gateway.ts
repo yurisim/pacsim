@@ -453,20 +453,19 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   * Handle client notification acknowledgment
+   * Handle client notification acknowledgment (generic)
    */
-  @SubscribeMessage('allocationNotificationAck')
-  handleAllocationNotificationAck(client: Socket, payload: {
+  @SubscribeMessage('notificationAck')
+  handleNotificationAck(client: Socket, payload: {
     notificationId: string;
     gameId: number;
-    teamId: number;
+    teamId?: number;
   }): void {
-    this.logger.log(`Allocation notification acknowledged by ${client.id}: ${payload.notificationId}`);
+    this.logger.log(`Notification acknowledged by ${client.id}: ${payload.notificationId}`);
 
-    // Broadcast acknowledgment to team room for coordination
-    const teamRoomId = `${payload.gameId}-team-${payload.teamId}`;
-    client.to(teamRoomId).emit('allocationNotificationAcknowledged', {
-      type: 'allocationNotificationAcknowledged',
+    // Broadcast acknowledgment to game room
+    client.to(payload.gameId.toString()).emit('notificationAcknowledged', {
+      type: 'notificationAcknowledged',
       payload: {
         notificationId: payload.notificationId,
         acknowledgedBy: client.id,
@@ -474,5 +473,32 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       },
       timestamp: new Date().toISOString(),
     });
+
+    // Also broadcast to team room if teamId provided
+    if (payload.teamId) {
+      const teamRoomId = `${payload.gameId}-team-${payload.teamId}`;
+      client.to(teamRoomId).emit('notificationAcknowledged', {
+        type: 'notificationAcknowledged',
+        payload: {
+          notificationId: payload.notificationId,
+          acknowledgedBy: client.id,
+          acknowledgedAt: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  /**
+   * Handle client notification acknowledgment (legacy allocation-specific handler for backward compatibility)
+   */
+  @SubscribeMessage('allocationNotificationAck')
+  handleAllocationNotificationAck(client: Socket, payload: {
+    notificationId: string;
+    gameId: number;
+    teamId: number;
+  }): void {
+    // Delegate to generic handler
+    this.handleNotificationAck(client, payload);
   }
 }

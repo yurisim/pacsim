@@ -126,6 +126,26 @@ export class WebSocketService {
   }
 
   /**
+   * Register a listener for a WebSocket event
+   * Used by services that need direct event handling
+   */
+  on<T>(eventName: string, callback: (data: T) => void): void {
+    if (this.socket) {
+      this.socket.on(eventName, callback);
+    }
+  }
+
+  /**
+   * Remove a listener for a WebSocket event
+   * Used for cleanup
+   */
+  off(eventName: string, callback?: (...args: any[]) => void): void {
+    if (this.socket) {
+      this.socket.off(eventName, callback);
+    }
+  }
+
+  /**
    * Wire up core lifecycle events to update connection status and optionally dispatch actions.
    * Hooks:
    * - connect: set status true
