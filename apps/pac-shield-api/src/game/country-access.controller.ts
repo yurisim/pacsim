@@ -1,9 +1,11 @@
-import { Controller, Get, Put, Param, Body, BadRequestException, Res } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, BadRequestException, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { GameService } from './game.service';
 import { UpdateDiceRollDto, BulkDiceRollDto, BulkAccessUpdateDto } from './dto/dice-roll.dto';
 import { Country } from '.prisma/client';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../app/auth/jwt-auth.guard';
+import { GameMasterGuard } from '../app/auth/game-master.guard';
 
 interface UpdateCountryAccessBody {
   changes: Record<string, boolean | null>;
@@ -50,11 +52,13 @@ export class CountryAccessController {
     return snapshot;
   }
 
+  @UseGuards(JwtAuthGuard, GameMasterGuard)
   @Put(':gameId/country-access')
   @ApiOperation({ summary: 'Update country access changes' })
   @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
   @ApiBody({ description: 'Country access changes' })
   @ApiResponse({ status: 200, description: 'Country access updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - GM role required' })
   @ApiResponse({ status: 404, description: 'Game not found' })
   async putCountryAccess(
     @Param('gameId') gameIdParam: string,
@@ -73,6 +77,7 @@ export class CountryAccessController {
     return result;
   }
 
+  @UseGuards(JwtAuthGuard, GameMasterGuard)
   @Put(':gameId/country-access/:country/dice-roll')
   @ApiOperation({ summary: 'Update dice roll for a specific country' })
   @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
@@ -80,6 +85,7 @@ export class CountryAccessController {
   @ApiBody({ type: UpdateDiceRollDto })
   @ApiResponse({ status: 200, description: 'Dice roll updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid dice roll value' })
+  @ApiResponse({ status: 403, description: 'Forbidden - GM role required' })
   @ApiResponse({ status: 404, description: 'Game not found' })
   async updateCountryDiceRoll(
     @Param('gameId') gameIdParam: string,
@@ -100,12 +106,14 @@ export class CountryAccessController {
     return await this.gameService.updateCountryDiceRoll(gameId, country, updateDto);
   }
 
+  @UseGuards(JwtAuthGuard, GameMasterGuard)
   @Put(':gameId/country-access/dice-rolls')
   @ApiOperation({ summary: 'Update dice rolls for multiple countries' })
   @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
   @ApiBody({ type: BulkDiceRollDto })
   @ApiResponse({ status: 200, description: 'Bulk dice rolls updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid dice roll values' })
+  @ApiResponse({ status: 403, description: 'Forbidden - GM role required' })
   @ApiResponse({ status: 404, description: 'Game not found' })
   async updateBulkDiceRolls(
     @Param('gameId') gameIdParam: string,
@@ -126,12 +134,14 @@ export class CountryAccessController {
     return await this.gameService.updateBulkDiceRolls(gameId, bulkDto);
   }
 
+  @UseGuards(JwtAuthGuard, GameMasterGuard)
   @Put(':gameId/country-access/bulk')
   @ApiOperation({ summary: 'Update access level for multiple countries' })
   @ApiParam({ name: 'gameId', description: 'Game ID', type: 'number' })
   @ApiBody({ type: BulkAccessUpdateDto })
   @ApiResponse({ status: 200, description: 'Bulk access levels updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid access level or countries' })
+  @ApiResponse({ status: 403, description: 'Forbidden - GM role required' })
   @ApiResponse({ status: 404, description: 'Game not found' })
   async updateBulkCountryAccess(
     @Param('gameId') gameIdParam: string,
