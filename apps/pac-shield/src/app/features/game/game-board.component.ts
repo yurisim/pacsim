@@ -3,6 +3,7 @@ import { Component, OnInit, inject, AfterViewInit, ElementRef, ViewChild, OnDest
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { map, take } from 'rxjs/operators';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
@@ -109,6 +110,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private dialog = inject(MatDialog);
   private fosService = inject(FosService);
   private snackBar = inject(MatSnackBar);
+  private breakpointObserver = inject(BreakpointObserver);
   /**
    * MapLibre GL map instance once initialized.
    * Exposed for template-bound components that require a direct Map reference.
@@ -723,6 +725,14 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    * - Error handling for missing or invalid game IDs
    */
   ngOnInit(): void {
+    // Set initial collapsed state based on screen size (desktop starts expanded)
+    this.breakpointObserver.observe('(min-width: 768px)').subscribe(result => {
+      // Only set initial state if panel hasn't been manually changed or deep-linked
+      if (this.panelCollapsed === true && !this.route.snapshot.queryParamMap.get('panel')) {
+        this.panelCollapsed = !result.matches; // Desktop (≥768px) = false (expanded), Mobile (<768px) = true (collapsed)
+      }
+    });
+
     // Get the gameId from the route parameter
     const gameId = this.route.snapshot.paramMap.get('gameId');
     if (gameId) {

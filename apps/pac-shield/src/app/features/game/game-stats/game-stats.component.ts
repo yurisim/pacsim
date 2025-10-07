@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, inject, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -94,6 +95,14 @@ export class GameStatsComponent implements OnInit, OnChanges {
   readonly currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   ngOnInit(): void {
+    // Set initial collapsed state based on screen size (desktop starts expanded)
+    this.breakpointObserver.observe('(min-width: 768px)').subscribe(result => {
+      // Only set initial state if collapsed hasn't been manually changed
+      if (this.collapsed === true) {
+        this.collapsed = !result.matches; // Desktop (≥768px) = false (expanded), Mobile (<768px) = true (collapsed)
+      }
+    });
+
     // Load demo data if requested (for development)
     if (this.loadDemoData) {
       this.gameStatsService.loadDemoData();
