@@ -114,6 +114,16 @@ export class GameStatsComponent implements OnInit, OnChanges {
   }
 
   /**
+   * Get team ID for current user
+   * TODO: This should be passed from parent component that has access to game state
+   */
+  getTeamId(): number {
+    // For now, return a default team ID
+    // In production, this should come from the game state/player data
+    return 1;
+  }
+
+  /**
    * Get current game statistics
    */
   getStats() {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Input } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -23,8 +23,9 @@ import { AllocationWebSocketService } from '../../../../shared/services/allocati
 import * as AllocationActions from '../../../../store/allocation/allocation.actions';
 import * as AllocationSelectors from '../../../../store/allocation/allocation.selectors';
 import { AircraftRequest } from '../../../../generated/aircraftRequest/aircraftRequest.entity';
-import { AllocationRequestStatus } from '../../../../generated/enums';
+import { AllocationRequestStatus, TeamType } from '../../../../generated/enums';
 import { AllocationNotification } from '../../../../store/allocation/allocation.state';
+import { AircraftRequestDialogData } from '../../dialogs/aircraft-request/aircraft-request-dialog.component';
 
 /**
  * MOB dashboard with aircraft allocation workflow integration
@@ -56,6 +57,12 @@ import { AllocationNotification } from '../../../../store/allocation/allocation.
   templateUrl: './mob-dashboard.component.html',
 })
 export class MobDashboardComponent implements OnInit, OnDestroy {
+  // Input properties
+  @Input() currentGameId: number | null = null;
+  @Input() currentTurn = 1;
+  @Input() currentUserTeam: TeamType | null = null;
+  @Input() teamId: number | null = null;
+
   private readonly dialog = inject(MatDialog);
   private readonly store = inject(Store);
   private readonly snackBar = inject(MatSnackBar);
@@ -63,6 +70,7 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   // Observable streams from NgRx store
+  readonly currentCycle$ = this.store.select(AllocationSelectors.selectCurrentAllocationCycle);
   readonly allRequests$: Observable<AircraftRequest[]> = this.store.select(AllocationSelectors.selectAllRequests);
   readonly pendingRequests$: Observable<AircraftRequest[]> = this.store.select(AllocationSelectors.selectPendingRequests);
   readonly isLoading$: Observable<boolean> = this.store.select(AllocationSelectors.selectIsAnyLoading);

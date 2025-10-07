@@ -53,18 +53,31 @@
 
         @case ('caoc') {
           <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-caoc">
+            <div class="overflow-x-auto" data-testid="responsive-scroll-caoc">
+              <div data-testid="caoc-dashboard-host">
+                <app-caoc-dashboard
+                  [currentGameId]="currentGameId || 1"
+                  [currentTurn]="gameStats().gameTurn"
+                  [currentUserTeam]="currentUserTeam"
+                  [currentUserRole]="currentUserRole"
+                  [readonly]="false"
+                >
+                </app-caoc-dashboard>
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('mob') {
+          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
             <div class="space-y-3">
-              <div class="overflow-x-auto" data-testid="responsive-scroll-caoc">
-                <div data-testid="caoc-dashboard-host">
-                  <app-caoc-dashboard
-                    [currentGameId]="currentGameId || 1"
-                    [currentTurn]="gameStats().gameTurn"
-                    [currentUserTeam]="currentUserTeam"
-                    [currentUserRole]="currentUserRole"
-                    [readonly]="false"
-                  >
-                  </app-caoc-dashboard>
-                </div>
+              <div data-testid="mob-dashboard-host">
+                <app-mob-dashboard
+                  [currentGameId]="currentGameId"
+                  [currentTurn]="gameStats().gameTurn"
+                  [currentUserTeam]="currentUserTeam"
+                  [teamId]="getTeamId()"
+                ></app-mob-dashboard>
               </div>
               <div class="overflow-x-auto" data-testid="responsive-scroll-ato">
                 <app-ato-table
@@ -77,14 +90,6 @@
                 >
                 </app-ato-table>
               </div>
-            </div>
-          </div>
-        }
-
-        @case ('mob') {
-          <div class="stats-tab-content p-2 sm:p-3 md:p-4" data-testid="tab-panel-mob">
-            <div data-testid="mob-dashboard-host">
-              <app-mob-dashboard></app-mob-dashboard>
             </div>
           </div>
         }
