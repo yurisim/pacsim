@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -7,10 +7,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { HttpClient } from '@angular/common/http';
+import { Store } from '@ngrx/store';
+import { Observable, Subject } from 'rxjs';
+import { filter, map, startWith, take, takeUntil } from 'rxjs/operators';
 import { AircraftType } from '../../../../generated/enums';
 import { Team } from '../../../../generated/team/team.entity';
 import { environment } from '../../../../../environments/environment';
+import { FOS_LOCATIONS, MOB_LOCATIONS } from '../../../../shared/config/static-locations.config';
+import { selectHexGrid } from '../../../../core/store/game/game.selectors';
 
 export interface AircraftSpawnDialogData {
   gameId: number;
@@ -25,6 +31,17 @@ export interface AircraftSpawnResult {
   rangeHexes: number;
   locationFosId?: string;
   locationHex?: string;
+}
+
+interface LocationOption {
+  /** Backend value (e.g., 'Kadena AB', 'FOS 7', '505A') */
+  value: string;
+  /** Frontend display alias (e.g., 'Kadena Air Base', 'FOS 7 - Philippines', 'Hex 505A') */
+  displayName: string;
+  /** Location type for filtering */
+  type: 'MOB' | 'FOS' | 'Hex';
+  /** Country for additional context */
+  country: string;
 }
 
 /**
@@ -42,6 +59,7 @@ export interface AircraftSpawnResult {
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatAutocompleteModule,
   ],
   template: `
     <h2 mat-dialog-title>
@@ -89,22 +107,60 @@ export interface AircraftSpawnResult {
         <div class="text-sm font-medium mb-2">Starting Location</div>
 
         <mat-form-field appearance="outline">
-          <mat-label>FOS/MOB ID</mat-label>
-          <input matInput formControlName="locationFosId" placeholder="e.g., ANDERSEN, KADENA">
-          <mat-hint>Forward Operating Site identifier</mat-hint>
+          <mat-label>FOS/MOB Location</mat-label>
+          <input
+            matInput
+            formControlName="locationFosId"
+            [matAutocomplete]="locationFosAuto"
+            placeholder="Search MOBs and FOSs..."
+          />
+          <mat-autocomplete
+            #locationFosAuto="matAutocomplete"
+            [displayWith]="displayLocationFn"
+          >
+            @for (option of filteredLocationFosOptions$ | async; track option.value) {
+              <mat-option [value]="option.value">
+                <div class="flex items-center justify-between w-full">
+                  <span>{{ option.displayName }}</span>
+                  <span class="ml-2 text-xs text-gray-500">{{ option.type }}</span>
+                </div>
+              </mat-option>
+            }
+          </mat-autocomplete>
+          <mat-icon matSuffix>location_on</mat-icon>
+          <mat-hint>Select a Main Operating Base or Forward Operating Site</mat-hint>
         </mat-form-field>
 
         <div class="text-center text-xs text-gray-500">OR</div>
 
         <mat-form-field appearance="outline">
           <mat-label>Hex Coordinate</mat-label>
-          <input matInput formControlName="locationHex" placeholder="e.g., 0x1234">
-          <mat-hint>Hex grid coordinate</mat-hint>
+          <input
+            matInput
+            formControlName="locationHex"
+            [matAutocomplete]="locationHexAuto"
+            placeholder="Search hex coordinates..."
+          />
+          <mat-autocomplete
+            #locationHexAuto="matAutocomplete"
+            [displayWith]="displayLocationFn"
+          >
+            @for (option of filteredLocationHexOptions$ | async; track option.value) {
+              <mat-option [value]="option.value">
+                <div class="flex items-center justify-between w-full">
+                  <span>{{ option.displayName }}</span>
+                  <span class="ml-2 text-xs text-gray-500">{{ option.type }}</span>
+                </div>
+              </mat-option>
+            }
+          </mat-autocomplete>
+          <mat-icon matSuffix>grid_on</mat-icon>
+          <mat-hint>Select a hex grid coordinate</mat-hint>
         </mat-form-field>
 
         @if (spawnForm.hasError('locationRequired')) {
           <div class="text-red-500 text-xs">
-            Either FOS ID or Hex coordinate is required
+            Either FOS/MOB location or Hex coordinate is required
           </div>
         }
       </form>
@@ -153,17 +209,26 @@ export interface AircraftSpawnResult {
     }
   `]
 })
-export class AircraftSpawnDialogComponent {
+export class AircraftSpawnDialogComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private dialogRef = inject(MatDialogRef<AircraftSpawnDialogComponent>);
+  private store = inject(Store);
   readonly data: AircraftSpawnDialogData = inject(MAT_DIALOG_DATA);
 
   isSpawning = false;
 
   spawnForm: FormGroup;
 
+  // Location autocomplete data
+  allLocationOptions: LocationOption[] = [];
+  filteredLocationFosOptions$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
+  filteredLocationHexOptions$: Observable<LocationOption[]> = new Observable<LocationOption[]>;
+
+  private destroy$ = new Subject<void>();
+
   constructor() {
+    this.initializeLocationOptions();
     this.spawnForm = this.fb.group({
       type: ['C130', Validators.required],
       subtype: [null],
@@ -178,6 +243,14 @@ export class AircraftSpawnDialogComponent {
     if (this.data.teams.length > 0) {
       this.spawnForm.patchValue({ teamId: this.data.teams[0].id });
     }
+
+    this.setupLocationAutocomplete();
+    this.loadHexLocations();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -246,4 +319,109 @@ export class AircraftSpawnDialogComponent {
   onCancel(): void {
     this.dialogRef.close();
   }
+
+  /**
+   * Initialize location options from static configuration
+   */
+  private initializeLocationOptions(): void {
+    this.allLocationOptions = [
+      // MOB locations with backend-compatible names
+      ...Object.entries(MOB_LOCATIONS).map(([id, location]) => ({
+        value: this.getMOBBackendValue(id),
+        displayName: `${location.name} Air Base - ${location.country}`,
+        type: 'MOB' as const,
+        country: location.country,
+      })),
+      // FOS locations
+      ...Object.entries(FOS_LOCATIONS).map(([, location]) => ({
+        value: location.name,
+        displayName: `${location.name} - ${location.country}`,
+        type: 'FOS' as const,
+        country: location.country,
+      })),
+    ];
+  }
+
+  /**
+   * Load hex locations from the game store
+   */
+  private loadHexLocations(): void {
+    this.store.select(selectHexGrid).pipe(
+      filter((hexGrid): hexGrid is Record<string, string> => hexGrid !== null),
+      take(1),
+      takeUntil(this.destroy$)
+    ).subscribe(hexGrid => {
+      const hexLocationOptions: LocationOption[] = Object.entries(hexGrid).map(([, visualCoord]) => ({
+        value: visualCoord,
+        displayName: `Hex ${visualCoord}`,
+        type: 'Hex',
+        country: '',
+      }));
+
+      this.allLocationOptions = [...this.allLocationOptions, ...hexLocationOptions];
+    });
+  }
+
+  /**
+   * Map MOB IDs to backend values that match existing patterns
+   */
+  private getMOBBackendValue(mobId: string): string {
+    const mobBackendMap: Record<string, string> = {
+      kadena: 'Kadena AB',
+      andersen: 'Andersen AFB',
+      yokota: 'Yokota AB',
+      osan: 'Osan AB',
+      jbphh: 'JBPHH',
+    };
+    return mobBackendMap[mobId] || MOB_LOCATIONS[mobId]?.name || mobId;
+  }
+
+  /**
+   * Setup autocomplete filtering for location fields
+   */
+  private setupLocationAutocomplete(): void {
+    const locationFosIdControl = this.spawnForm.get('locationFosId');
+    const locationHexControl = this.spawnForm.get('locationHex');
+
+    if (locationFosIdControl) {
+      this.filteredLocationFosOptions$ = locationFosIdControl.valueChanges.pipe(
+        startWith(''),
+        map(value => this.filterLocations(value, ['MOB', 'FOS']))
+      );
+    }
+
+    if (locationHexControl) {
+      this.filteredLocationHexOptions$ = locationHexControl.valueChanges.pipe(
+        startWith(''),
+        map(value => this.filterLocations(value, ['Hex']))
+      );
+    }
+  }
+
+  /**
+   * Filter locations by search value and allowed types
+   */
+  private filterLocations(value: string | null, allowedTypes: Array<'MOB' | 'FOS' | 'Hex'>): LocationOption[] {
+    const filtered = this.allLocationOptions.filter(opt => allowedTypes.includes(opt.type));
+
+    if (!value || typeof value !== 'string') {
+      return filtered;
+    }
+
+    const filterValue = value.toLowerCase();
+    return filtered.filter(option =>
+      option.value.toLowerCase().includes(filterValue) ||
+      option.displayName.toLowerCase().includes(filterValue) ||
+      option.country.toLowerCase().includes(filterValue)
+    );
+  }
+
+  /**
+   * Display function for autocomplete - shows display name
+   */
+  displayLocationFn = (value: string): string => {
+    if (!value) return '';
+    const option = this.allLocationOptions.find(opt => opt.value === value);
+    return option ? option.displayName : value;
+  };
 }
