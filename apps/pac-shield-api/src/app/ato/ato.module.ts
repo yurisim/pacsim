@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AtoController } from './ato.controller';
 import { AtoService } from './ato.service';
+import { AtoCreationGuard } from '../auth/ato-creation.guard';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { GameModule } from '../../game/game.module';
 import { AuthModule } from '../../auth/auth.module';
@@ -20,7 +21,7 @@ import { AuthModule } from '../../auth/auth.module';
     }),
   ],
   controllers: [AtoController],
-  providers: [AtoService],
+  providers: [AtoService, AtoCreationGuard],
   exports: [AtoService],
 })
 export class AtoModule {}
