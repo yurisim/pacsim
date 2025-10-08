@@ -241,7 +241,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       for (let i = 1; i <= 10; i++) {
         await testGmAuthed.post(`/api/fos/${fosId}/rfi`, {
           rfiKey: `RFI${i}`,
-          rfiValue: `Answer${i}`,
+          rfiValue: String((i % 3) + 1), // '1', '2', or '3'
         });
       }
 
@@ -268,7 +268,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
         for (let i = 1; i <= 10; i++) {
           await testGmAuthed.post(`/api/fos/${fosId}/rfi`, {
             rfiKey: `RFI${i}`,
-            rfiValue: `Answer${i}`,
+            rfiValue: String((i % 3) + 1), // '1', '2', or '3'
           });
         }
       }
@@ -290,6 +290,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
   describe('Fighter Sorties from FOS', () => {
     let sortieGameId: number;
     let sortieAuthed: AxiosInstance;
+    let sortieGmAuthed: AxiosInstance;
     let sortieMobTeamId: number;
     let sortieFosId: string;
 
@@ -320,6 +321,26 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
         headers: { Authorization: `Bearer ${sortieCommanderToken}` },
       });
 
+      // Join GM for aircraft spawning (GM-only operation)
+      const joinGm = await axios.post(`/api/player/join`, {
+        roomCode: sortieRoomCode,
+        playerName: 'Sortie GM',
+      });
+      const sortieGmToken = joinGm.data.token;
+      const sortieGmId = joinGm.data.id ?? joinGm.data.player?.id;
+
+      await axios.patch(`/api/player/${sortieGmId}`, { role: 'GM' });
+
+      const teams2 = gameSnap.data?.teams ?? [];
+      const gmTeam = teams2.find((t: any) => String(t.type) === 'GM');
+      const sortieGmTeamId = gmTeam.id;
+      await axios.post(`/api/player/${sortieGmId}/join-team`, { teamId: sortieGmTeamId });
+
+      sortieGmAuthed = axios.create({
+        baseURL: axios.defaults.baseURL,
+        headers: { Authorization: `Bearer ${sortieGmToken}` },
+      });
+
       // Activate a FOS for sortie tests
       const activate = await sortieAuthed.post(`/api/fos/21/activate`, {
         teamId: sortieMobTeamId,
@@ -330,28 +351,43 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('awards 5 MPs for F-16 sortie from FOS to operational area', async () => {
       // Create F-16 aircraft at FOS
-      const aircraft = await axios.post(`/api/allocation/spawn-aircraft`, {
-        gameId: sortieGameId,
-        teamId: sortieMobTeamId,
-        type: 'F16',
-        locationType: 'FOS',
-        locationFosId: sortieFosId,
-      });
+      let aircraft;
+      try {
+        aircraft = await sortieGmAuthed.post(`/api/allocation/spawn-aircraft`, {
+          gameId: sortieGameId,
+          teamId: sortieMobTeamId,
+          type: 'F16',
+          locationType: 'FOS',
+          locationFosId: sortieFosId,
+        });
+      } catch (error: any) {
+        console.error('=== SPAWN AIRCRAFT ERROR (F-16) ===');
+        console.error('Status:', error.response?.status);
+        console.error('Data:', JSON.stringify(error.response?.data, null, 2));
+        console.error('Request data:', JSON.stringify({
+          gameId: sortieGameId,
+          teamId: sortieMobTeamId,
+          type: 'F16',
+          locationType: 'FOS',
+          locationFosId: sortieFosId,
+        }, null, 2));
+        throw error;
+      }
       const callSign = aircraft.data.callSign;
 
       // Create ATO line: FOS launch to operational area
-      await axios.post(`/api/ato`, {
+      await sortieAuthed.post(`/api/ato`, {
         gameId: sortieGameId,
         turn: 1,
         aircraftCallSign: callSign,
         startLocation: sortieFosId,
-        startLocationType: 'FOS',
         finalDestination: 'OperationalArea1',
         intention: 'LAND',
         configuration: 'CARGO_ONLY',
-        pprStatus: 'APPROVED',
-        isOperationalArea: true,
       });
+
+      // Approve PPR (required for scoring)
+      await sortieGmAuthed.post(`/api/ato/game/${sortieGameId}/bulk-approve-ppr`);
 
       const scoreRes = await axios.get(`/api/game/${sortieGameId}/score`);
       expect(scoreRes.status).toBe(200);
@@ -363,7 +399,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('awards 5 MPs for F-22 sortie from FOS to operational area', async () => {
       // Create F-22 aircraft at FOS
-      const aircraft = await axios.post(`/api/allocation/spawn-aircraft`, {
+      const aircraft = await sortieGmAuthed.post(`/api/allocation/spawn-aircraft`, {
         gameId: sortieGameId,
         teamId: sortieMobTeamId,
         type: 'F22',
@@ -373,18 +409,18 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       const callSign = aircraft.data.callSign;
 
       // Create ATO line
-      await axios.post(`/api/ato`, {
+      await sortieAuthed.post(`/api/ato`, {
         gameId: sortieGameId,
         turn: 1,
         aircraftCallSign: callSign,
         startLocation: sortieFosId,
-        startLocationType: 'FOS',
         finalDestination: 'OperationalArea2',
         intention: 'LAND',
         configuration: 'CARGO_ONLY',
-        pprStatus: 'APPROVED',
-        isOperationalArea: true,
       });
+
+      // Approve PPR (required for scoring)
+      await sortieGmAuthed.post(`/api/ato/game/${sortieGameId}/bulk-approve-ppr`);
 
       const scoreRes = await axios.get(`/api/game/${sortieGameId}/score`);
       expect(scoreRes.status).toBe(200);
@@ -398,7 +434,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
     it('awards correct MPs for multiple fighter sorties', async () => {
       // Create 3 more F-16s and launch them
       for (let i = 0; i < 3; i++) {
-        const aircraft = await axios.post(`/api/allocation/spawn-aircraft`, {
+        const aircraft = await sortieGmAuthed.post(`/api/allocation/spawn-aircraft`, {
           gameId: sortieGameId,
           teamId: sortieMobTeamId,
           type: 'F16',
@@ -407,19 +443,19 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
         });
         const callSign = aircraft.data.callSign;
 
-        await axios.post(`/api/ato`, {
+        await sortieAuthed.post(`/api/ato`, {
           gameId: sortieGameId,
           turn: 1,
           aircraftCallSign: callSign,
           startLocation: sortieFosId,
-          startLocationType: 'FOS',
           finalDestination: `OperationalArea${i + 3}`,
           intention: 'LAND',
           configuration: 'CARGO_ONLY',
-          pprStatus: 'APPROVED',
-          isOperationalArea: true,
         });
       }
+
+      // Approve PPR (required for scoring)
+      await sortieGmAuthed.post(`/api/ato/game/${sortieGameId}/bulk-approve-ppr`);
 
       const scoreRes = await axios.get(`/api/game/${sortieGameId}/score`);
       expect(scoreRes.status).toBe(200);
@@ -432,7 +468,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('does not award MPs for sortie from MOB', async () => {
       // Create F-16 at MOB location
-      const aircraft = await axios.post(`/api/allocation/spawn-aircraft`, {
+      const aircraft = await sortieGmAuthed.post(`/api/allocation/spawn-aircraft`, {
         gameId: sortieGameId,
         teamId: sortieMobTeamId,
         type: 'F16',
@@ -441,18 +477,18 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       const callSign = aircraft.data.callSign;
 
       // Launch from MOB (should NOT count)
-      await axios.post(`/api/ato`, {
+      await sortieAuthed.post(`/api/ato`, {
         gameId: sortieGameId,
         turn: 1,
         aircraftCallSign: callSign,
         startLocation: 'MOB_KADENA',
-        startLocationType: 'MOB',
         finalDestination: 'OperationalArea99',
         intention: 'LAND',
         configuration: 'CARGO_ONLY',
-        pprStatus: 'APPROVED',
-        isOperationalArea: true,
       });
+
+      // Approve PPR (even though this shouldn't count)
+      await sortieGmAuthed.post(`/api/ato/game/${sortieGameId}/bulk-approve-ppr`);
 
       const scoreRes = await axios.get(`/api/game/${sortieGameId}/score`);
       expect(scoreRes.status).toBe(200);
@@ -465,7 +501,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('does not award MPs for sortie to non-operational area', async () => {
       // Create F-22 at FOS
-      const aircraft = await axios.post(`/api/allocation/spawn-aircraft`, {
+      const aircraft = await sortieGmAuthed.post(`/api/allocation/spawn-aircraft`, {
         gameId: sortieGameId,
         teamId: sortieMobTeamId,
         type: 'F22',
@@ -475,18 +511,18 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       const callSign = aircraft.data.callSign;
 
       // Launch to non-operational area (should NOT count)
-      await axios.post(`/api/ato`, {
+      await sortieAuthed.post(`/api/ato`, {
         gameId: sortieGameId,
         turn: 1,
         aircraftCallSign: callSign,
         startLocation: sortieFosId,
-        startLocationType: 'FOS',
         finalDestination: 'NonOperationalArea',
         intention: 'LAND',
         configuration: 'CARGO_ONLY',
-        pprStatus: 'APPROVED',
-        isOperationalArea: false, // NOT operational
       });
+
+      // Approve PPR (even though this shouldn't count)
+      await sortieGmAuthed.post(`/api/ato/game/${sortieGameId}/bulk-approve-ppr`);
 
       const scoreRes = await axios.get(`/api/game/${sortieGameId}/score`);
       expect(scoreRes.status).toBe(200);
@@ -506,6 +542,8 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
     let targetGameId: number;
     let targetGameBoardId: number;
     let targetTeamId: number;
+    let targetAuthed: AxiosInstance;
+    let targetGmAuthed: AxiosInstance;
 
     beforeAll(async () => {
       // Create a fresh game for target destruction tests
@@ -518,6 +556,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
         roomCode: targetRoomCode,
         playerName: 'Target Commander',
       });
+      const targetCommanderToken = join.data.token;
       const targetCommanderId = join.data.id ?? join.data.player?.id;
 
       const gameSnap = await axios.get(`/api/game/${targetGameId}`);
@@ -528,23 +567,62 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       await axios.patch(`/api/player/${targetCommanderId}`, { role: 'COMMANDER' });
       await axios.post(`/api/player/${targetCommanderId}/join-team`, { teamId: targetTeamId });
 
-      // Get game board ID
+      targetAuthed = axios.create({
+        baseURL: axios.defaults.baseURL,
+        headers: { Authorization: `Bearer ${targetCommanderToken}` },
+      });
+
+      // Join GM for threat token management (GM-only operation)
+      const joinGm = await axios.post(`/api/player/join`, {
+        roomCode: targetRoomCode,
+        playerName: 'Target GM',
+      });
+      const targetGmToken = joinGm.data.token;
+      const targetGmId = joinGm.data.id ?? joinGm.data.player?.id;
+
+      await axios.patch(`/api/player/${targetGmId}`, { role: 'GM' });
+
+      const teams2 = gameSnap.data?.teams ?? [];
+      const gmTeam = teams2.find((t: any) => String(t.type) === 'GM');
+      const targetGmTeamId = gmTeam.id;
+      await axios.post(`/api/player/${targetGmId}/join-team`, { teamId: targetGmTeamId });
+
+      targetGmAuthed = axios.create({
+        baseURL: axios.defaults.baseURL,
+        headers: { Authorization: `Bearer ${targetGmToken}` },
+      });
+
+      // Get game board ID - should be auto-created with game
       const gameBoard = await axios.get(`/api/game/${targetGameId}`);
-      targetGameBoardId = gameBoard.data.gameBoard?.id;
+      targetGameBoardId = gameBoard.data.gameBoard.id;
     });
 
     it('awards 10 MPs for destroying a 20-Strength target', async () => {
       // Create and destroy a 20-strength target
-      const token = await axios.post(`/api/threat-tokens`, {
-        boardId: targetGameBoardId,
-        type: 'FIFTH_GEN_FIGHTER_20',
-        strength: 20,
-        locationHex: 'A1',
-      });
+      let token;
+      try {
+        token = await targetGmAuthed.post(`/api/threat-tokens`, {
+          boardId: targetGameBoardId,
+          type: 'FIFTH_GEN_FIGHTER_20',
+          strength: 20,
+          locationHex: 'A1',
+        });
+      } catch (error: any) {
+        console.error('=== THREAT TOKEN ERROR (20-Strength) ===');
+        console.error('Status:', error.response?.status);
+        console.error('Data:', JSON.stringify(error.response?.data, null, 2));
+        console.error('Request data:', JSON.stringify({
+          boardId: targetGameBoardId,
+          type: 'FIFTH_GEN_FIGHTER_20',
+          strength: 20,
+          locationHex: 'A1',
+        }, null, 2));
+        throw error;
+      }
       const tokenId = token.data.id;
 
       // Mark as destroyed
-      await axios.patch(`/api/threat-tokens/${tokenId}`, {
+      await targetGmAuthed.patch(`/api/threat-tokens/${tokenId}`, {
         destroyedAt: new Date().toISOString(),
         destroyedByTeamId: targetTeamId,
       });
@@ -559,7 +637,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('awards 7 MPs for destroying a 12-Strength target', async () => {
       // Create and destroy a 12-strength target
-      const token = await axios.post(`/api/threat-tokens`, {
+      const token = await targetGmAuthed.post(`/api/threat-tokens`, {
         boardId: targetGameBoardId,
         type: 'FOURTH_GEN_FIGHTER_12',
         strength: 12,
@@ -567,7 +645,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       });
       const tokenId = token.data.id;
 
-      await axios.patch(`/api/threat-tokens/${tokenId}`, {
+      await targetGmAuthed.patch(`/api/threat-tokens/${tokenId}`, {
         destroyedAt: new Date().toISOString(),
         destroyedByTeamId: targetTeamId,
       });
@@ -583,7 +661,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('awards 5 MPs for destroying a 10-Strength target', async () => {
       // Create and destroy a 10-strength target
-      const token = await axios.post(`/api/threat-tokens`, {
+      const token = await targetGmAuthed.post(`/api/threat-tokens`, {
         boardId: targetGameBoardId,
         type: 'GROUND_TARGET_10',
         strength: 10,
@@ -591,7 +669,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       });
       const tokenId = token.data.id;
 
-      await axios.patch(`/api/threat-tokens/${tokenId}`, {
+      await targetGmAuthed.patch(`/api/threat-tokens/${tokenId}`, {
         destroyedAt: new Date().toISOString(),
         destroyedByTeamId: targetTeamId,
       });
@@ -607,7 +685,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
 
     it('awards 7 MPs for destroying AA_JAMMING target (12-Strength equivalent)', async () => {
       // Create and destroy AA_JAMMING (special 12-strength case)
-      const token = await axios.post(`/api/threat-tokens`, {
+      const token = await targetGmAuthed.post(`/api/threat-tokens`, {
         boardId: targetGameBoardId,
         type: 'AA_JAMMING',
         strength: 12,
@@ -615,7 +693,7 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       });
       const tokenId = token.data.id;
 
-      await axios.patch(`/api/threat-tokens/${tokenId}`, {
+      await targetGmAuthed.patch(`/api/threat-tokens/${tokenId}`, {
         destroyedAt: new Date().toISOString(),
         destroyedByTeamId: targetTeamId,
       });
@@ -640,13 +718,13 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       ];
 
       for (const target of targets) {
-        const token = await axios.post(`/api/threat-tokens`, {
+        const token = await targetGmAuthed.post(`/api/threat-tokens`, {
           boardId: targetGameBoardId,
           type: target.type,
           strength: target.strength,
           locationHex: target.hex,
         });
-        await axios.patch(`/api/threat-tokens/${token.data.id}`, {
+        await targetGmAuthed.patch(`/api/threat-tokens/${token.data.id}`, {
           destroyedAt: new Date().toISOString(),
           destroyedByTeamId: targetTeamId,
         });
@@ -724,9 +802,9 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
         headers: { Authorization: `Bearer ${comboGmToken}` },
       });
 
-      // Get game board
+      // Get game board ID - should be auto-created with game
       const gameBoard = await axios.get(`/api/game/${comboGameId}`);
-      comboGameBoardId = gameBoard.data.gameBoard?.id;
+      comboGameBoardId = gameBoard.data.gameBoard.id;
 
       // Activate a FOS
       const activate = await comboAuthed.post(`/api/fos/31/activate`, {
@@ -749,14 +827,14 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
         for (let i = 1; i <= 10; i++) {
           await comboGmAuthed.post(`/api/fos/${fosId}/rfi`, {
             rfiKey: `RFI${i}`,
-            rfiValue: `Answer${i}`,
+            rfiValue: String((i % 3) + 1), // '1', '2', or '3'
           });
         }
       }
 
       // 2. Launch 3 fighter sorties from FOS (3 × 5 = 15 MPs)
       for (let i = 0; i < 3; i++) {
-        const aircraft = await axios.post(`/api/allocation/spawn-aircraft`, {
+        const aircraft = await comboGmAuthed.post(`/api/allocation/spawn-aircraft`, {
           gameId: comboGameId,
           teamId: comboMobTeamId,
           type: i % 2 === 0 ? 'F16' : 'F22',
@@ -764,19 +842,19 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
           locationFosId: comboFosId,
         });
 
-        await axios.post(`/api/ato`, {
+        await comboAuthed.post(`/api/ato`, {
           gameId: comboGameId,
           turn: 1,
           aircraftCallSign: aircraft.data.callSign,
           startLocation: comboFosId,
-          startLocationType: 'FOS',
           finalDestination: `OpArea${i}`,
           intention: 'LAND',
           configuration: 'CARGO_ONLY',
-          pprStatus: 'APPROVED',
-          isOperationalArea: true,
         });
       }
+
+      // Approve PPR (required for scoring)
+      await comboGmAuthed.post(`/api/ato/game/${comboGameId}/bulk-approve-ppr`);
 
       // 3. Destroy mixed targets: 1×20, 2×12, 1×10 (1×10 + 2×7 + 1×5 = 10 + 14 + 5 = 29 MPs)
       const targets = [
@@ -787,13 +865,13 @@ describe('Game Scoring E2E (/game/:id/score)', () => {
       ];
 
       for (const target of targets) {
-        const token = await axios.post(`/api/threat-tokens`, {
+        const token = await comboGmAuthed.post(`/api/threat-tokens`, {
           boardId: comboGameBoardId,
           type: target.type,
           strength: target.strength,
           locationHex: target.hex,
         });
-        await axios.patch(`/api/threat-tokens/${token.data.id}`, {
+        await comboGmAuthed.patch(`/api/threat-tokens/${token.data.id}`, {
           destroyedAt: new Date().toISOString(),
           destroyedByTeamId: comboMobTeamId,
         });
