@@ -1,443 +1,263 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E Tests for Aircraft Allocation System
+ * PLACEHOLDER FILE FOR FUTURE PLAYWRIGHT UI E2E TESTS
  *
- * Tests:
- * 1. GM spawning aircraft with auto-generated callsigns
- * 2. Direct allocation of aircraft to teams
- * 3. Real-time WebSocket updates
- * 4. ATO button enable/disable based on allocation
+ * This file previously contained Playwright browser tests that have been converted to API E2E tests.
+ * The API tests are now located in: apps/pac-shield-api-e2e/src/pac-shield-api/aircraft-allocation.spec.ts
+ *
+ * The tests below are placeholders for future Playwright UI tests that should verify the user interface
+ * and user interactions for the aircraft allocation system.
  */
 
-test.describe('Aircraft Allocation System', () => {
-  let gameId: number;
-  let teamId: number;
-  let aircraftId: number;
-  let authToken: string;
+test.describe('Aircraft Allocation System - UI Tests (PLACEHOLDERS)', () => {
 
-  test.beforeAll(async ({ request }) => {
-    // Create a test game and authenticate as GM
-    const gameResponse = await request.post('/api/game', {
-      data: {
-        roomCode: `TEST_${Date.now()}`,
-        victoryConditionMP: 100,
-      },
+  test.describe('GM Aircraft Spawning UI', () => {
+    // TODO: Playwright test should verify:
+    // - GM can see and click the "Spawn Aircraft" button in the aircraft management interface
+    // - Clicking the button opens an aircraft spawn dialog/modal with form fields
+    // - Form includes dropdown/select for aircraft type (C130, C17, C5, F16, F22)
+    // - Form includes dropdown/select for aircraft subtype (BOBCAT, RHINO for C-5 only)
+    // - Form includes input field for location (hex or FOS selection)
+    // - Form includes input fields for range hexes with reasonable defaults
+    // - Form shows validation errors when required fields are missing
+    // - Loading spinner/indicator appears during spawn operation
+    // - Success notification/toast appears after successful spawn
+    // - Newly spawned aircraft appears in the aircraft list/table
+    // - Aircraft card displays correct callsign, type, and status badge
+    // - Aircraft marker appears on the map at the specified location
+    // - Visual styling differentiates between aircraft types (cargo vs fighter)
+    // - C-5 variants (Bobcat/Rhino) have distinct visual indicators
+    test.skip('GM spawns aircraft via UI and sees visual confirmation', async ({ page }) => {
+      // Implementation needed
     });
 
-    expect(gameResponse.ok()).toBeTruthy();
-    const game = await gameResponse.json();
-    gameId = game.id;
-
-    // Get or create CAOC team
-    const teamsResponse = await request.get(`/api/game/${gameId}/teams`);
-    const teams = await teamsResponse.json();
-    teamId = teams.find((t: any) => t.type === 'CAOC')?.id || 1;
-
-    // Authenticate (mock - in real scenario, would use actual auth)
-    authToken = 'mock-gm-token';
-  });
-
-  test.describe('GM Aircraft Spawning', () => {
-    test('should spawn C-130 with auto-generated AW callsign', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C130',
-          subtype: null,
-          teamId,
-          strength: 8,
-          rangeHexes: 12,
-          locationHex: '0x1234',
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(aircraft).toHaveProperty('id');
-      expect(aircraft.callSign).toMatch(/^AW\d{2,}$/);
-      expect(aircraft.type).toBe('C130');
-      expect(aircraft.strength).toBe(8);
-      expect(aircraft.rangeHexes).toBe(12);
-      expect(aircraft.allocationStatus).toBe('AVAILABLE');
-
-      aircraftId = aircraft.id;
+    // TODO: Playwright test should verify:
+    // - Auto-generated callsigns display correctly in the UI
+    // - Callsign format matches expected pattern (AW, ME, BO, RH, VIP, RPT + numbers)
+    // - Sequential spawning shows incrementing callsign numbers (e.g., AW01, AW02, AW03)
+    // - No duplicate callsigns appear in the aircraft list
+    // - Callsign is prominently displayed on aircraft card/tile
+    // - Callsign appears in map markers/tooltips
+    test.skip('Auto-generated callsigns display correctly in UI', async ({ page }) => {
+      // Implementation needed
     });
 
-    test('should spawn C-17 with auto-generated ME callsign', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C17',
-          subtype: null,
-          teamId,
-          strength: 9,
-          rangeHexes: 15,
-          locationHex: '0x5678',
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(aircraft.callSign).toMatch(/^ME\d{2,}$/);
-      expect(aircraft.type).toBe('C17');
-    });
-
-    test('should spawn C-5 Bobcat with BO callsign', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C5',
-          subtype: 'BOBCAT',
-          teamId,
-          strength: 10,
-          rangeHexes: 18,
-          locationHex: '0x9ABC',
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(aircraft.callSign).toMatch(/^BO\d{2,}$/);
-      expect(aircraft.type).toBe('C5');
-      expect(aircraft.subtype).toBe('BOBCAT');
-    });
-
-    test('should spawn C-5 Rhino with RH callsign', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C5',
-          subtype: 'RHINO',
-          teamId,
-          strength: 10,
-          rangeHexes: 18,
-          locationHex: '0xDEF0',
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(aircraft.callSign).toMatch(/^RH\d{2,}$/);
-      expect(aircraft.type).toBe('C5');
-      expect(aircraft.subtype).toBe('RHINO');
-    });
-
-    test('should spawn F-16 with VIP callsign', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'F16',
-          subtype: null,
-          teamId,
-          strength: 7,
-          rangeHexes: 10,
-          locationHex: '0x1111',
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(aircraft.callSign).toMatch(/^VIP\d{2,}$/);
-      expect(aircraft.type).toBe('F16');
-    });
-
-    test('should spawn F-22 with RPT callsign', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'F22',
-          subtype: null,
-          teamId,
-          strength: 9,
-          rangeHexes: 12,
-          locationHex: '0x2222',
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(aircraft.callSign).toMatch(/^RPT\d{2,}$/);
-      expect(aircraft.type).toBe('F22');
-    });
-
-    test('should generate sequential callsigns', async ({ request }) => {
-      // Spawn two more C-130s
-      const response1 = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C130',
-          teamId,
-          strength: 8,
-          rangeHexes: 12,
-          locationHex: '0x3333',
-        },
-      });
-
-      const response2 = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C130',
-          teamId,
-          strength: 8,
-          rangeHexes: 12,
-          locationHex: '0x4444',
-        },
-      });
-
-      const aircraft1 = await response1.json();
-      const aircraft2 = await response2.json();
-
-      // Extract numbers from callsigns
-      const num1 = parseInt(aircraft1.callSign.replace('AW', ''));
-      const num2 = parseInt(aircraft2.callSign.replace('AW', ''));
-
-      expect(num2).toBe(num1 + 1);
-    });
-
-    test('should reject spawn without required location', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C130',
-          teamId,
-          strength: 8,
-          rangeHexes: 12,
-          // Missing locationHex and locationFosId
-        },
-      });
-
-      expect(response.status()).toBe(400);
-    });
-
-    test('should reject spawn for non-GM user', async ({ request }) => {
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': 'Bearer non-gm-token',
-        },
-        data: {
-          gameId,
-          type: 'C130',
-          teamId,
-          strength: 8,
-          rangeHexes: 12,
-          locationHex: '0x5555',
-        },
-      });
-
-      expect(response.status()).toBe(403);
+    // TODO: Playwright test should verify:
+    // - Non-GM users do not see the "Spawn Aircraft" button
+    // - Non-GM users cannot access the spawn dialog via any UI path
+    // - Attempting to navigate to spawn functionality shows permission error
+    // - UI clearly indicates GM-only features with badges/icons
+    test.skip('Non-GM users cannot access spawn UI controls', async ({ page }) => {
+      // Implementation needed
     });
   });
 
-  test.describe('Aircraft Retrieval', () => {
-    test('should get all aircraft for a game', async ({ request }) => {
-      const response = await request.get(`/api/allocation/aircraft/game/${gameId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
+  test.describe('Aircraft List and Display UI', () => {
+    // TODO: Playwright test should verify:
+    // - Aircraft list/grid view displays all spawned aircraft
+    // - Each aircraft card shows: callsign, type, subtype, status, allocation state
+    // - Aircraft cards use color coding for different states (available, allocated, in-transit)
+    // - List supports filtering by aircraft type, status, or allocation state
+    // - List supports sorting by callsign, type, or spawn time
+    // - Search functionality filters aircraft by callsign
+    // - Pagination controls appear for large aircraft lists
+    // - Real-time updates: new aircraft appear without page refresh
+    // - Real-time updates: allocation changes update card status immediately
+    test.skip('Aircraft list displays with correct UI elements and real-time updates', async ({ page }) => {
+      // Implementation needed
+    });
 
-      expect(response.ok()).toBeTruthy();
-      const aircraft = await response.json();
-
-      expect(Array.isArray(aircraft)).toBeTruthy();
-      expect(aircraft.length).toBeGreaterThan(0);
-
-      // Verify we have different types
-      const types = new Set(aircraft.map((a: any) => a.type));
-      expect(types.has('C130')).toBeTruthy();
-      expect(types.has('C17')).toBeTruthy();
-      expect(types.has('C5')).toBeTruthy();
+    // TODO: Playwright test should verify:
+    // - Aircraft markers appear on the map at correct coordinates
+    // - Clicking aircraft marker shows info popup with details
+    // - Map markers have different icons/colors for different aircraft types
+    // - Allocated aircraft markers show team assignment visually
+    // - Hovering over marker highlights corresponding list item
+    // - Clicking list item centers/highlights map marker
+    test.skip('Aircraft map markers display and sync with list view', async ({ page }) => {
+      // Implementation needed
     });
   });
 
-  test.describe('Direct Allocation', () => {
-    let allocationCycleId: number;
-    let mobTeamId: number;
-
-    test.beforeAll(async ({ request }) => {
-      // Create allocation cycle
-      const cycleResponse = await request.post('/api/allocation/cycles', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          turn: 1,
-        },
-      });
-
-      const cycle = await cycleResponse.json();
-      allocationCycleId = cycle.id;
-
-      // Get MOB team
-      const teamsResponse = await request.get(`/api/game/${gameId}/teams`);
-      const teams = await teamsResponse.json();
-      mobTeamId = teams.find((t: any) => t.type.startsWith('MOB_'))?.id || 2;
+  test.describe('Direct Allocation UI', () => {
+    // TODO: Playwright test should verify:
+    // - CFACC/GM can access allocation interface with drag-and-drop capability
+    // - Aircraft cards are draggable from available pool
+    // - Team allocation slots highlight when dragging aircraft over them
+    // - Drop target shows visual feedback (border, background color change)
+    // - Dropping aircraft onto team slot triggers allocation action
+    // - Success animation/feedback plays when allocation succeeds
+    // - Aircraft card moves from available pool to team's allocated section
+    // - Aircraft status badge updates from "AVAILABLE" to "ALLOCATED"
+    // - Team's allocated aircraft count increments in real-time
+    // - Allocation appears in activity log/history
+    test.skip('Drag and drop allocation provides visual feedback', async ({ page }) => {
+      // Implementation needed
     });
 
-    test('should directly allocate aircraft to team', async ({ request }) => {
-      const response = await request.post('/api/allocation/allocate', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          aircraftInstanceId: aircraftId,
-          allocatedToTeamId: mobTeamId,
-          allocationCycleId,
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-      const allocation = await response.json();
-
-      expect(allocation).toHaveProperty('id');
-      expect(allocation.aircraftInstanceId).toBe(aircraftId);
-      expect(allocation.allocatedToTeamId).toBe(mobTeamId);
-      expect(allocation.allocationCycleId).toBe(allocationCycleId);
+    // TODO: Playwright test should verify:
+    // - Allocated aircraft cannot be dragged from team slots
+    // - Attempting to allocate already-allocated aircraft shows error modal
+    // - Error modal explains aircraft is unavailable
+    // - Error modal displays aircraft's current allocation details
+    // - Allocated aircraft cards have visual indicator (lock icon, different border)
+    // - Hover tooltip on allocated aircraft shows "Already allocated to [Team Name]"
+    test.skip('Already allocated aircraft shows appropriate UI feedback', async ({ page }) => {
+      // Implementation needed
     });
 
-    test('should not allocate already allocated aircraft', async ({ request }) => {
-      const response = await request.post('/api/allocation/allocate', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          aircraftInstanceId: aircraftId, // Same aircraft
-          allocatedToTeamId: mobTeamId,
-          allocationCycleId,
-        },
-      });
-
-      expect(response.status()).toBe(400);
-      const error = await response.json();
-      expect(error.message).toContain('already allocated');
-    });
-
-    test('should reject allocation for non-CFACC user', async ({ request }) => {
-      const response = await request.post('/api/allocation/allocate', {
-        headers: {
-          'Authorization': 'Bearer non-cfacc-token',
-        },
-        data: {
-          aircraftInstanceId: aircraftId,
-          allocatedToTeamId: mobTeamId,
-          allocationCycleId,
-        },
-      });
-
-      expect(response.status()).toBe(403);
+    // TODO: Playwright test should verify:
+    // - Non-CFACC users see read-only allocation view
+    // - Drag and drop is disabled for non-CFACC users
+    // - Allocation buttons/controls are hidden or disabled for non-CFACC
+    // - Attempting allocation actions shows permission error dialog
+    // - UI clearly indicates view-only mode with badges/icons
+    // - Non-CFACC can still view current allocations and history
+    test.skip('Non-CFACC users have read-only allocation UI', async ({ page }) => {
+      // Implementation needed
     });
   });
 
-  test.describe('Aircraft Deletion', () => {
-    let deleteableAircraftId: number;
-
-    test.beforeAll(async ({ request }) => {
-      // Spawn aircraft specifically for deletion test
-      const response = await request.post('/api/allocation/aircraft/spawn', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        data: {
-          gameId,
-          type: 'C130',
-          teamId,
-          strength: 8,
-          rangeHexes: 12,
-          locationHex: '0x9999',
-        },
-      });
-
-      const aircraft = await response.json();
-      deleteableAircraftId = aircraft.id;
+  test.describe('Aircraft Deletion UI', () => {
+    // TODO: Playwright test should verify:
+    // - GM can see delete/remove button on unallocated aircraft cards
+    // - Clicking delete button shows confirmation dialog
+    // - Confirmation dialog displays aircraft details (callsign, type)
+    // - Confirmation dialog has "Cancel" and "Delete" buttons with clear styling
+    // - Confirming deletion shows loading indicator
+    // - Aircraft card fades out and removes from list on successful deletion
+    // - Success notification appears confirming deletion
+    // - Deleted aircraft also removes from map markers
+    test.skip('GM can delete unallocated aircraft with confirmation', async ({ page }) => {
+      // Implementation needed
     });
 
-    test('should delete unallocated aircraft', async ({ request }) => {
-      const response = await request.delete(`/api/allocation/aircraft/${deleteableAircraftId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
-
-      expect(response.ok()).toBeTruthy();
-
-      // Verify deleted
-      const getResponse = await request.get(`/api/allocation/aircraft/game/${gameId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
-
-      const aircraft = await getResponse.json();
-      const found = aircraft.find((a: any) => a.id === deleteableAircraftId);
-      expect(found).toBeUndefined();
+    // TODO: Playwright test should verify:
+    // - Delete button is disabled/hidden for allocated aircraft
+    // - Hovering over disabled delete button shows tooltip explaining why
+    // - Attempting to delete allocated aircraft shows error dialog
+    // - Error dialog explains aircraft must be deallocated first
+    // - Error dialog provides link/button to deallocation interface
+    // - Allocated aircraft card styling clearly shows it's protected from deletion
+    test.skip('Allocated aircraft cannot be deleted via UI', async ({ page }) => {
+      // Implementation needed
     });
 
-    test('should not delete allocated aircraft', async ({ request }) => {
-      const response = await request.delete(`/api/allocation/aircraft/${aircraftId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
-
-      expect(response.status()).toBe(400);
-      const error = await response.json();
-      expect(error.message).toContain('allocated');
-    });
-
-    test('should reject deletion for non-GM user', async ({ request }) => {
-      const response = await request.delete(`/api/allocation/aircraft/999`, {
-        headers: {
-          'Authorization': 'Bearer non-gm-token',
-        },
-      });
-
-      expect(response.status()).toBe(403);
+    // TODO: Playwright test should verify:
+    // - Non-GM users do not see delete buttons on aircraft cards
+    // - Delete action is not available in context menus for non-GM
+    // - Non-GM attempting any delete action sees permission error
+    // - UI differentiates between GM and non-GM views clearly
+    test.skip('Non-GM users cannot access delete UI controls', async ({ page }) => {
+      // Implementation needed
     });
   });
 
-  test.afterAll(async ({ request }) => {
-    // Cleanup: Delete test game
-    if (gameId) {
-      await request.delete(`/api/game/${gameId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
-    }
+  test.describe('Real-time Updates and WebSocket UI', () => {
+    // TODO: Playwright test should verify:
+    // - When GM spawns aircraft in one browser, it appears in other users' views
+    // - Real-time update shows visual animation (fade in, highlight)
+    // - New aircraft notification/toast appears for other users
+    // - Aircraft count badges update in real-time across all clients
+    // - Map markers update in real-time when new aircraft are spawned
+    test.skip('Aircraft spawning updates all connected clients in real-time', async ({ page }) => {
+      // Implementation needed
+    });
+
+    // TODO: Playwright test should verify:
+    // - When aircraft is allocated, all clients see the status change
+    // - Allocated aircraft moves visually from available to allocated section
+    // - Team allocation counts update in real-time for all users
+    // - Notification shows which team received the allocation
+    // - Activity feed/log updates for all connected users
+    test.skip('Aircraft allocation updates all clients in real-time', async ({ page }) => {
+      // Implementation needed
+    });
+
+    // TODO: Playwright test should verify:
+    // - When aircraft is deleted, it disappears from all users' views
+    // - Deletion animation (fade out) plays for all connected clients
+    // - Aircraft count decrements in real-time across all clients
+    // - Map marker removes in real-time for all users
+    // - Notification informs users of aircraft removal
+    test.skip('Aircraft deletion updates all clients in real-time', async ({ page }) => {
+      // Implementation needed
+    });
+
+    // TODO: Playwright test should verify:
+    // - Connection status indicator shows when WebSocket is connected/disconnected
+    // - Reconnection attempts show loading/retry indicator
+    // - Lost connection shows warning banner to users
+    // - Successful reconnection syncs latest state and shows confirmation
+    // - During connection loss, UI indicates read-only/offline mode
+    test.skip('WebSocket connection status provides clear visual feedback', async ({ page }) => {
+      // Implementation needed
+    });
+  });
+
+  test.describe('ATO Button State Based on Allocation', () => {
+    // TODO: Playwright test should verify:
+    // - ATO (Air Tasking Order) button is disabled when no aircraft are allocated
+    // - Disabled button shows tooltip explaining why it's disabled
+    // - ATO button becomes enabled when at least one aircraft is allocated
+    // - Enabled button visual styling changes (color, cursor)
+    // - ATO button state updates in real-time as allocations change
+    // - Clicking enabled ATO button opens ATO planning interface
+    // - ATO interface shows list of allocated aircraft available for planning
+    test.skip('ATO button enable/disable based on allocation status', async ({ page }) => {
+      // Implementation needed
+    });
+  });
+
+  test.describe('Form Validation and Error Handling UI', () => {
+    // TODO: Playwright test should verify:
+    // - Required field indicators (asterisks) show on form fields
+    // - Submitting form with missing fields shows inline validation errors
+    // - Error messages appear below each invalid field
+    // - Invalid fields have red border or error styling
+    // - Form cannot be submitted while validation errors exist
+    // - Submit button is disabled until all required fields are valid
+    // - Validation errors clear when user corrects the input
+    // - Success message clears previous error messages
+    test.skip('Form validation provides clear visual feedback', async ({ page }) => {
+      // Implementation needed
+    });
+
+    // TODO: Playwright test should verify:
+    // - Network errors show user-friendly error dialog
+    // - Error dialog explains what went wrong in plain language
+    // - Error dialog provides retry button for transient errors
+    // - Error dialog provides contact/support information for persistent errors
+    // - Loading states prevent duplicate submissions
+    // - Timeout errors show specific timeout message
+    test.skip('API errors display user-friendly error dialogs', async ({ page }) => {
+      // Implementation needed
+    });
+  });
+
+  test.describe('Accessibility and Responsive Design', () => {
+    // TODO: Playwright test should verify:
+    // - All interactive elements are keyboard accessible
+    // - Tab order follows logical reading flow
+    // - Focus indicators are clearly visible
+    // - Screen reader announces important state changes
+    // - ARIA labels are present on all interactive controls
+    // - Color contrast meets WCAG AA standards
+    // - Error messages are associated with form fields for screen readers
+    test.skip('UI meets accessibility requirements', async ({ page }) => {
+      // Implementation needed
+    });
+
+    // TODO: Playwright test should verify:
+    // - Aircraft list displays correctly on mobile devices
+    // - Drag and drop works on touch devices
+    // - Dialogs/modals are properly sized for small screens
+    // - Map controls are touch-friendly
+    // - Navigation menus collapse appropriately on small screens
+    // - Text remains readable at all viewport sizes
+    test.skip('UI is responsive across device sizes', async ({ page }) => {
+      // Implementation needed
+    });
   });
 });
