@@ -1,3 +1,8 @@
+/**
+ * @deprecated This dialog is no longer used in the MOB workflow.
+ * CAOC now distributes aircraft directly without MOB requests.
+ * Kept for potential future use or reference.
+ */
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';

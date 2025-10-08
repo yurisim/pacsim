@@ -16,6 +16,7 @@ import { CreateATORequestDto } from './dto/create-ato-request.dto';
 import { UpdateATORequestDto } from './dto/update-ato-request.dto';
 import { ATOLine } from '../generated/aTOLine/aTOLine.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AtoCreationGuard } from '../auth/ato-creation.guard';
 import { AircraftInstance } from '@prisma/client';
 import { GetAtoQueryDto } from './dto/get-ato-query.dto';
 
@@ -73,6 +74,7 @@ export class AtoController {
    * @example POST /ato
    */
   @Post()
+  @UseGuards(AtoCreationGuard)
   async createFlightPlan(
     @Body() createAtoRequestDto: CreateATORequestDto,
     @Request() req: any
