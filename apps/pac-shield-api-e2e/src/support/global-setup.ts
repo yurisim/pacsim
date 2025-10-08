@@ -58,7 +58,7 @@ module.exports = async function () {
   // If port is already in use, assume API is running and skip any startup.
   const inUse = await isPortInUse(port, host, 1000);
   if (inUse) {
-    console.log(`[api-e2e] Port ${port} is in use; skipping server startup.`);
+    console.log(`[api-e2e] skipping ${port} server startup, alrready up.`);
     // Teardown remains safe: we did not start anything, so nothing to kill.
     globalThis.__TEARDOWN_MESSAGE__ = '\nTearing down...\n';
     return;

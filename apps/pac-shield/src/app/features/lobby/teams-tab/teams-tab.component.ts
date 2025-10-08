@@ -46,6 +46,7 @@ import { Team, Player } from '../../../generated';
             [showGMTools]="showGMTools"
             [dense]="filters.dense"
             [unassignedCount]="unassignedCount"
+            [playerRoles]="playerRoles"
             [gridClass]="'grid grid-cols-1 lg:grid-cols-2 gap-4'"
             [getTeamTypeInfo]="getTeamTypeInfo"
             [groupPlayersByRole]="groupPlayersByRole"
@@ -77,6 +78,7 @@ import { Team, Player } from '../../../generated';
             [showGMTools]="showGMTools"
             [dense]="filters.dense"
             [unassignedCount]="unassignedCount"
+            [playerRoles]="playerRoles"
             [gridClass]="'grid grid-cols-1 md:grid-cols-2 gap-4'"
             [getTeamTypeInfo]="getTeamTypeInfo"
             [groupPlayersByRole]="groupPlayersByRole"
@@ -108,6 +110,7 @@ import { Team, Player } from '../../../generated';
             [showGMTools]="showGMTools"
             [dense]="filters.dense"
             [unassignedCount]="unassignedCount"
+            [playerRoles]="playerRoles"
             [gridClass]="'grid grid-cols-1 md:grid-cols-2 gap-4'"
             [getTeamTypeInfo]="getTeamTypeInfo"
             [groupPlayersByRole]="groupPlayersByRole"
@@ -130,6 +133,7 @@ export class TeamsTabComponent {
   @Input() currentPlayer?: Player;
   @Input() showGMTools = false;
   @Input() unassignedCount = 0;
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
   @Input() filters: FilterOptions = {
     searchTerm: '',
     filterTeamType: 'ALL',
@@ -145,8 +149,8 @@ export class TeamsTabComponent {
   @Output() joinTeam = new EventEmitter<Team>();
   @Output() assignOneUnassigned = new EventEmitter<number>();
   @Output() toggleTeamLock = new EventEmitter<Team>();
-  @Output() changeRole = new EventEmitter<Player>();
-  @Output() moveToTeam = new EventEmitter<Player>();
+  @Output() changeRole = new EventEmitter<{player: Player, role: string}>();
+  @Output() moveToTeam = new EventEmitter<{player: Player, team: Team}>();
   @Output() removeFromTeam = new EventEmitter<Player>();
   @Output() removeFromGame = new EventEmitter<Player>();
 

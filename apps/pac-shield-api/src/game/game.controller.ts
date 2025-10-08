@@ -17,12 +17,13 @@ export class GameController {
   constructor(
     private readonly gameService: GameService,
     private readonly scoringService: GameScoringService
-  ) {}
+  ) { }
 
   /**
    * POST /game/create
    * Creates a new game and generates a unique 6-char room code.
-   * Rate limited to 50 games per hour to prevent spam.
+   * Rate limited to 50 games per hour in production to prevent spam.
+   * Throttling is disabled in development and test environments.
    *
    * @param createGameDto Victory conditions and other init params.
    * @returns Persisted Game record with id and roomCode
@@ -32,7 +33,7 @@ export class GameController {
    * // Returns: { id: 1, roomCode: "ABC123", ... }
    */
   @Post('create')
-  @Throttle({ hourly: { ttl: 3600000, limit: 50 } }) // 50 games per hour
+  @Throttle({ hourly: { ttl: 3600000, limit: 50 } }) // 50 games per hour (only in production)
   async createGame(@Body() createGameDto: CreateGameDto) {
     return this.gameService.createGame(createGameDto);
   }
@@ -71,7 +72,7 @@ export class GameController {
    * POST /game/join
    * Creates a player in the specified game and returns a session JWT.
    * Name conflict + PIN resume flow is implemented by the PlayerService.
-   * Rate limiting is skipped on this endpoint to support 200 simultaneous logins.
+   * Throttling explicitly skipped to support 200 simultaneous logins.
    *
    * @param joinGameDto Payload containing roomCode, playerName, and optional pin for resume
    * @returns Object containing a signed JWT token and player details
@@ -81,7 +82,7 @@ export class GameController {
    * // Returns: { token: "...", player: { id: 5, name: "Ranger", ... } }
    */
   @Post('join')
-  @SkipThrottle() // Skip rate limiting to support 200 simultaneous logins
+  @SkipThrottle() // Explicitly skip throttling for simultaneous logins
   async joinGame(@Body() joinGameDto: JoinGameDto) {
     return this.gameService.joinGame(joinGameDto);
   }

@@ -208,11 +208,25 @@ export class FlightPlannerDialogComponent implements OnInit, OnDestroy {
   onAircraftSelected(event: { value: AircraftInstance }): void {
     const selectedAircraft = event.value as AircraftInstance;
     if (selectedAircraft) {
-      // Auto-populate the call sign when aircraft is selected
+      // Auto-populate the call sign and start location when aircraft is selected
       this.flightPlanForm.patchValue({
-        aircraftCallSign: selectedAircraft.callSign
+        aircraftCallSign: selectedAircraft.callSign,
+        startLocation: this.getAircraftLocation(selectedAircraft)
       });
     }
+  }
+
+  /**
+   * Get the current location of an aircraft in the format expected by the location field
+   */
+  private getAircraftLocation(aircraft: AircraftInstance): string {
+    if (aircraft.locationType === 'FOS' && aircraft.locationFosId) {
+      return aircraft.locationFosId;
+    } else if (aircraft.locationHex) {
+      return aircraft.locationHex;
+    }
+    // Default fallback - should not normally happen
+    return '';
   }
 
   /**

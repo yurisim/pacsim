@@ -3,7 +3,7 @@
   <!-- Header -->
   <div class="panel-header flex items-center justify-between p-3 pb-2 shrink-0">
     <div class="flex items-center gap-2">
-      <mat-icon class="md-sys-color-primary text-2xl">leaderboard</mat-icon>
+      <mat-icon class="md-sys-color-primary">leaderboard</mat-icon>
       <div>
         <div class="md-typescale-title-small font-medium">Game Stats</div>
         <div class="md-typescale-body-small md-sys-color-on-surface-variant text-sm">
@@ -87,6 +87,7 @@
                   [currentUserTeam]="currentUserTeam"
                   [currentUserRole]="currentUserRole"
                   [readonly]="false"
+                  [allocatedAircraft]="allocatedAircraft()"
                 >
                 </app-ato-table>
               </div>

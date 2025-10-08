@@ -13,6 +13,7 @@ import { ATOLine } from '../../../../generated/aTOLine/aTOLine.entity';
 import { CreateATOLineDto } from '../../../../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../../../../generated/aTOLine/update-aTOLine.dto';
 import { TeamType, PlayerRole, PPRStatus } from '../../../../generated/enums';
+import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraftInstance.entity';
 import { FlightPlannerDialogComponent, FlightPlannerDialogData } from '../../dialogs/flight-planner/flight-planner-dialog.component';
 import * as AtoActions from '../../../../store/ato/ato.actions';
 
@@ -42,6 +43,7 @@ export class AtoTableComponent {
   @Input() currentGameId: number | null = null;
   @Input() currentTurn = 1;
   @Input() readonly = false;
+  @Input() allocatedAircraft: AircraftInstance[] = [];
 
   private dialog = inject(MatDialog);
   private store = inject(Store);
@@ -57,7 +59,28 @@ export class AtoTableComponent {
   }
 
   get canCreateFlightPlan(): boolean {
-    return (this.isMob || this.currentUserRole === 'GM') && !this.readonly;
+    // GMs can always create flight plans
+    if (this.currentUserRole === 'GM') {
+      return !this.readonly;
+    }
+    // MOB teams need allocated aircraft to create flight plans
+    return this.isMob && !this.readonly && this.allocatedAircraft.length > 0;
+  }
+
+  get canCreateFlightPlanTooltip(): string {
+    if (this.readonly) {
+      return 'Read-only mode';
+    }
+    if (this.currentUserRole === 'GM') {
+      return 'Create new flight plan';
+    }
+    if (!this.isMob) {
+      return 'Only MOB teams can create flight plans';
+    }
+    if (this.allocatedAircraft.length === 0) {
+      return 'No aircraft allocated to your team';
+    }
+    return 'Create new flight plan';
   }
 
   get canApprovePpr(): boolean {
@@ -77,7 +100,7 @@ export class AtoTableComponent {
     const dialogData: FlightPlannerDialogData = {
       currentTurn: this.currentTurn,
       gameId: this.currentGameId,
-      availableAircraft: [], // TODO: Get from game state
+      availableAircraft: this.allocatedAircraft,
     };
 
     const dialogRef = this.dialog.open(FlightPlannerDialogComponent, {
@@ -108,7 +131,7 @@ export class AtoTableComponent {
       existingFlightPlan: line,
       currentTurn: this.currentTurn,
       gameId: this.currentGameId,
-      availableAircraft: [], // TODO: Get from game state
+      availableAircraft: this.allocatedAircraft,
     };
 
     const dialogRef = this.dialog.open(FlightPlannerDialogComponent, {

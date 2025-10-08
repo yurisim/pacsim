@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Input, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -18,12 +18,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { Observable, Subject, filter, takeUntil, BehaviorSubject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 
-import { AllocationNotificationBadgeComponent } from '../../notifications/allocation-notification-badge/allocation-notification-badge.component';
-import { AllocationNotificationCenterComponent } from '../../notifications/allocation-notification-center/allocation-notification-center.component';
-import { AllocationNotificationToastComponent } from '../../notifications/allocation-notification-toast/allocation-notification-toast.component';
 import { AllocationWebSocketService } from '../../../../shared/services/allocation-websocket.service';
+import { AllocationSignalService } from '../../../../shared/services/allocation-signal.service';
+import { AircraftSpawnDialogComponent, AircraftSpawnDialogData } from '../../dialogs/aircraft-spawn-dialog/aircraft-spawn-dialog.component';
 import { ResponsiveNavService } from '../responsive-nav.service';
 import * as AllocationActions from '../../../../store/allocation/allocation.actions';
 import * as AllocationSelectors from '../../../../store/allocation/allocation.selectors';
@@ -32,7 +31,6 @@ import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraf
 import { AircraftAllocation } from '../../../../generated/aircraftAllocation/aircraftAllocation.entity';
 import { AllocationCycle } from '../../../../generated/allocationCycle/allocationCycle.entity';
 import { AllocationRequestStatus, AircraftType, TeamType, PlayerRole } from '../../../../generated/enums';
-import { AllocationNotification } from '../../../../store/allocation/allocation.state';
 
 interface CaocSection {
   id: string;
@@ -72,9 +70,7 @@ interface CaocSection {
     MatFormFieldModule,
     MatInputModule,
     MatBadgeModule,
-    MatTooltipModule,
-    AllocationNotificationBadgeComponent,
-    AllocationNotificationToastComponent
+    MatTooltipModule
   ],
   templateUrl: './caoc-dashboard.component.html',
 })
@@ -89,8 +85,45 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly webSocketService = inject(AllocationWebSocketService);
+  private readonly allocationSignalService = inject(AllocationSignalService);
   private readonly responsiveNavService = inject(ResponsiveNavService);
   private readonly destroy$ = new Subject<void>();
+
+  // Computed signals from AllocationSignalService
+  readonly aircraftCounts = this.allocationSignalService.aircraftCounts;
+  readonly loading = this.allocationSignalService.loading;
+
+  // Computed property for GM check
+  readonly isGM = computed(() => this.currentUserRole === 'GM');
+
+  // MOB teams for direct allocation
+  readonly mobTeams = computed(() => {
+    // Filter for MOB teams only
+    const teams = [
+      { id: 2, type: 'MOB_KADENA', name: 'Kadena AFB' },
+      { id: 3, type: 'MOB_ANDERSEN', name: 'Andersen AFB' },
+      { id: 4, type: 'MOB_YOKOTA', name: 'Yokota AB' },
+      { id: 5, type: 'MOB_OSAN', name: 'Osan AB' },
+      { id: 6, type: 'MOB_JBPHH', name: 'Joint Base Pearl Harbor' },
+    ];
+    return teams;
+  });
+
+  // Allocations grouped by team
+  readonly allocationsByTeam = computed(() => {
+    const allocations = this.allocationSignalService.allocations();
+    const grouped = new Map<number, AircraftAllocation[]>();
+
+    allocations.forEach(allocation => {
+      const teamId = allocation.allocatedToTeamId;
+      if (!grouped.has(teamId)) {
+        grouped.set(teamId, []);
+      }
+      grouped.get(teamId)!.push(allocation);
+    });
+
+    return grouped;
+  });
 
   // Observable streams from NgRx store
   readonly currentCycle$: Observable<AllocationCycle | null> = this.store.select(AllocationSelectors.selectCurrentAllocationCycle);
@@ -101,14 +134,6 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
   readonly isLoading$: Observable<boolean> = this.store.select(AllocationSelectors.selectIsAnyLoading);
   readonly analytics$ = this.store.select(AllocationSelectors.selectAllocationAnalytics);
 
-  // Notification observables
-  readonly unreadNotificationCount$ = this.store.select(AllocationSelectors.selectUnreadNotificationCount);
-  readonly hasUrgentNotifications$ = this.store.select(AllocationSelectors.selectHasUnreadUrgentNotifications);
-  readonly recentNotifications$ = this.store.select(AllocationSelectors.selectRecentNotifications);
-  readonly unacknowledgedNotifications$ = this.store.select(AllocationSelectors.selectUnacknowledgedNotifications);
-
-  // Current displayed toast notification
-  currentToastNotification: AllocationNotification | null = null;
 
   // Responsive section management
   readonly caocSections: CaocSection[] = [
@@ -171,52 +196,65 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
     // TODO: Uncomment after dev server restart
     // this.setupDataRefresh();
 
-    // TEMPORARILY DISABLED: Initialize WebSocket connection for real-time notifications
-    // TODO: Uncomment after dev server restart
-    // if (this.currentGameId) {
-    //   this.webSocketService.connect({
-    //     gameId: this.currentGameId,
-    //     teamId: this.isCaoc ? 1 : undefined, // TODO: Get actual team ID
-    //     reconnect: true
-    //   });
-    // }
-
-    // TEMPORARILY DISABLED: Listen for new notifications and show toast
-    // TODO: Uncomment after dev server restart
-    // this.recentNotifications$.pipe(
-    //   filter(notifications => notifications.length > 0),
-    //   takeUntil(this.destroy$)
-    // ).subscribe(notifications => {
-    //   const latestNotification = notifications[0];
-    //   if (latestNotification && !latestNotification.read) {
-    //     this.showToastNotification(latestNotification);
-    //   }
-    // });
-
-    // TEMPORARILY DISABLED: Listen for urgent notifications and show snackbar
-    // TODO: Uncomment after dev server restart
-    // this.hasUrgentNotifications$.pipe(
-    //   takeUntil(this.destroy$)
-    // ).subscribe(hasUrgent => {
-    //   if (hasUrgent) {
-    //     this.snackBar.open(
-    //       'Urgent allocation notification received!',
-    //       'View',
-    //       {
-    //         duration: 5000,
-    //         panelClass: ['urgent-snackbar']
-    //       }
-    //     ).onAction().subscribe(() => {
-    //       this.openNotificationCenter();
-    //     });
-    //   }
-    // });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     this.webSocketService.disconnect();
+  }
+
+  // =============================================
+  //      GM AIRCRAFT MANAGEMENT (NEW)
+  // =============================================
+
+  /**
+   * Open aircraft spawn dialog for GMs
+   */
+  async onSpawnAircraft(): Promise<void> {
+    if (!this.isGM() || !this.currentGameId) {
+      return;
+    }
+
+    // Get all teams for dropdown
+    const teams = await this.getAllTeams();
+
+    const dialogRef = this.dialog.open<AircraftSpawnDialogComponent, AircraftSpawnDialogData>(
+      AircraftSpawnDialogComponent,
+      {
+        width: '500px',
+        data: {
+          gameId: this.currentGameId,
+          teams,
+        }
+      }
+    );
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open(
+          `Aircraft ${result.callSign} spawned successfully!`,
+          'Close',
+          { duration: 3000 }
+        );
+        // Signal service will auto-update via WebSocket
+      }
+    });
+  }
+
+  /**
+   * Get all teams (mock for now - would fetch from API)
+   */
+  private async getAllTeams(): Promise<any[]> {
+    // Mock teams - in real implementation, fetch from API
+    return [
+      { id: 1, type: 'CAOC', name: 'CAOC Team' },
+      { id: 2, type: 'MOB_KADENA', name: 'Kadena AFB' },
+      { id: 3, type: 'MOB_ANDERSEN', name: 'Andersen AFB' },
+      { id: 4, type: 'MOB_YOKOTA', name: 'Yokota AB' },
+      { id: 5, type: 'MOB_OSAN', name: 'Osan AB' },
+      { id: 6, type: 'MOB_JBPHH', name: 'Joint Base Pearl Harbor' },
+    ];
   }
 
   /**
@@ -435,72 +473,6 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
-  /**
-   * Show toast notification for new allocation updates
-   */
-  showToastNotification(notification: AllocationNotification): void {
-    this.currentToastNotification = notification;
-
-    // Auto-dismiss toast after 8 seconds for non-urgent notifications
-    if (notification.priority !== 'URGENT') {
-      setTimeout(() => {
-        this.currentToastNotification = null;
-      }, 8000);
-    }
-  }
-
-  /**
-   * Handle toast notification dismissal
-   */
-  onToastDismissed(notificationId: string): void {
-    this.currentToastNotification = null;
-    this.store.dispatch(AllocationActions.dismissNotification({ notificationId }));
-  }
-
-  /**
-   * Handle toast notification acknowledgment
-   */
-  onToastAcknowledged(notificationId: string): void {
-    const notification = this.currentToastNotification;
-    if (notification) {
-      this.store.dispatch(AllocationActions.acknowledgeNotification({
-        notificationId,
-        gameId: notification.gameId,
-        teamId: notification.targetTeamId || 0
-      }));
-    }
-    this.currentToastNotification = null;
-  }
-
-  /**
-   * Mark toast notification as read
-   */
-  onToastRead(notificationId: string): void {
-    this.store.dispatch(AllocationActions.markNotificationAsRead({ notificationId }));
-  }
-
-  /**
-   * Open notification center dialog
-   */
-  openNotificationCenter(): void {
-    this.dialog.open(AllocationNotificationCenterComponent, {
-      width: '800px',
-      maxWidth: '90vw',
-      height: '600px',
-      maxHeight: '90vh',
-      disableClose: false,
-      autoFocus: false,
-      restoreFocus: true,
-      panelClass: 'notification-center-dialog'
-    });
-  }
-
-  /**
-   * Handle notification badge click
-   */
-  onNotificationBadgeClick(): void {
-    this.openNotificationCenter();
-  }
 
   /**
    * Set the current active section
@@ -539,5 +511,34 @@ export class CaocDashboardComponent implements OnInit, OnDestroy {
     if (section) {
       this.setCurrentSection(section.id);
     }
+  }
+
+  /**
+   * Open dialog to allocate aircraft to a MOB team
+   */
+  async onAllocateToMOB(): Promise<void> {
+    if (!this.canAllocateAircraft) {
+      this.snackBar.open('You do not have permission to allocate aircraft', 'Close', { duration: 3000 });
+      return;
+    }
+
+    const availableAircraft = this.allocationSignalService.aircraftPool();
+    const teams = this.mobTeams();
+
+    if (availableAircraft.length === 0) {
+      this.snackBar.open('No aircraft available in pool', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // For now, use a simple prompt - can be replaced with proper dialog later
+    this.snackBar.open('Direct allocation UI: Select aircraft and MOB team', 'Close', { duration: 3000 });
+  }
+
+
+  /**
+   * Get aircraft allocated to a specific team
+   */
+  getTeamAllocations(teamId: number): AircraftAllocation[] {
+    return this.allocationsByTeam().get(teamId) || [];
   }
 }

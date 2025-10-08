@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonModule } from '@angular/material/button';
-import { Player } from '../../../../../generated';
+import { Player, Team } from '../../../../../generated';
 
 export interface RoleGroup {
   role: string;
@@ -49,7 +49,7 @@ export interface RoleGroup {
                   <button
                     mat-icon-button
                     size="small"
-                    [matMenuTriggerFor]="playerMenu"
+                    [matMenuTriggerFor]="memberPlayerMenu"
                     [matMenuTriggerData]="{player: player}"
                     aria-label="Open player actions"
                   >
@@ -64,17 +64,17 @@ export interface RoleGroup {
     }
 
     <!-- Player Context Menu Template isolated within list -->
-    <mat-menu #playerMenu="matMenu">
+    <mat-menu #memberPlayerMenu="matMenu">
       <ng-template matMenuContent let-player="player">
         <h6 class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</h6>
         <mat-divider></mat-divider>
 
-        <button mat-menu-item (click)="changeRole.emit(player)">
+        <button mat-menu-item [matMenuTriggerFor]="roleSubmenu" [matMenuTriggerData]="{player: player}">
           <mat-icon>person</mat-icon>
           <span>Change Role</span>
         </button>
 
-        <button mat-menu-item (click)="moveToTeam.emit(player)">
+        <button mat-menu-item [matMenuTriggerFor]="teamSubmenu" [matMenuTriggerData]="{player: player, teams: allTeams}">
           <mat-icon>group</mat-icon>
           <span>Move to Team</span>
         </button>
@@ -93,6 +93,32 @@ export interface RoleGroup {
         </button>
       </ng-template>
     </mat-menu>
+
+    <!-- Role Selection Submenu -->
+    <mat-menu #roleSubmenu="matMenu">
+      <ng-template matMenuContent let-player="player">
+        @for (role of playerRoles; track role) {
+        <button mat-menu-item (click)="changeRole.emit({player: player, role: role})">
+          {{ role }}
+        </button>
+        }
+      </ng-template>
+    </mat-menu>
+
+    <!-- Team Selection Submenu -->
+    <mat-menu #teamSubmenu="matMenu">
+      <ng-template matMenuContent let-player="player" let-teams="teams">
+        @for (team of teams; track team.id) {
+        <button mat-menu-item (click)="moveToTeam.emit({player: player, team: team})" [disabled]="team.locked">
+          <mat-icon>{{getTeamTypeInfo(team).icon}}</mat-icon>
+          {{ team.name }}
+          @if (team.locked) {
+          <mat-icon>lock</mat-icon>
+          }
+        </button>
+        }
+      </ng-template>
+    </mat-menu>
   `
 })
 export class MembersListComponent {
@@ -100,9 +126,12 @@ export class MembersListComponent {
   @Input() color = 'var(--mat-sys-primary)'; // derived from teamTypeInfo.color by parent
   @Input() showGMTools = false;
   @Input() dense = false;
+  @Input() allTeams: Team[] = [];
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
+  @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
 
-  @Output() changeRole = new EventEmitter<Player>();
-  @Output() moveToTeam = new EventEmitter<Player>();
+  @Output() changeRole = new EventEmitter<{player: Player, role: string}>();
+  @Output() moveToTeam = new EventEmitter<{player: Player, team: Team}>();
   @Output() removeFromTeam = new EventEmitter<Player>();
   @Output() removeFromGame = new EventEmitter<Player>();
 }

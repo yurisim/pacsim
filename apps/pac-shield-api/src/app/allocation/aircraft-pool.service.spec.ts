@@ -13,6 +13,7 @@ const mockPrismaService = {
   },
   aircraftPool: {
     create: jest.fn(),
+    upsert: jest.fn(),
     findMany: jest.fn(),
     findUnique: jest.fn(),
     update: jest.fn(),
@@ -227,7 +228,7 @@ describe('AircraftPoolService', () => {
       // Mock getAircraftPool to return previous turn's pools
       jest.spyOn(service, 'getAircraftPool').mockResolvedValue(previousPools as any);
 
-      prismaService.aircraftPool.create
+      prismaService.aircraftPool.upsert
         .mockResolvedValueOnce(newPools[0])
         .mockResolvedValueOnce(newPools[1])
         .mockResolvedValueOnce(newPools[2]);
@@ -235,7 +236,7 @@ describe('AircraftPoolService', () => {
       const result = await service.processApportionment(gameId, turn, executionBlock);
 
       expect(result).toHaveLength(3);
-      expect(prismaService.aircraftPool.create).toHaveBeenCalledTimes(3);
+      expect(prismaService.aircraftPool.upsert).toHaveBeenCalledTimes(3);
     });
 
     it('should handle USTRANSCOM C-5 delivery schedule correctly', async () => {
@@ -269,7 +270,7 @@ describe('AircraftPoolService', () => {
         maintenanceCount: 0,
       };
 
-      prismaService.aircraftPool.create.mockResolvedValue(expectedC5Pool);
+      prismaService.aircraftPool.upsert.mockResolvedValue(expectedC5Pool);
 
       const result = await service.processApportionment(gameId, turn, executionBlock);
 

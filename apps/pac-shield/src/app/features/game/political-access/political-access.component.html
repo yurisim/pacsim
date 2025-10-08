@@ -88,7 +88,7 @@
             @for (option of accessOptions; track option.value) {
             <mat-option [value]="option.value" [class]="option.colorClass">
               <div class="flex items-center">
-                <mat-icon class="mr-2 text-sm">{{ option.icon }}</mat-icon>
+                <mat-icon class="mr-2">{{ option.icon }}</mat-icon>
                 <span>{{ option.label }}</span>
               </div>
             </mat-option>
@@ -107,7 +107,7 @@
             @for (option of accessOptions; track option.value) {
             <mat-option [value]="option.value" [class]="option.colorClass">
               <div class="flex items-center">
-                <mat-icon class="mr-2 text-sm">{{ option.icon }}</mat-icon>
+                <mat-icon class="mr-2">{{ option.icon }}</mat-icon>
                 <span>{{ option.label }}</span>
               </div>
             </mat-option>
@@ -129,7 +129,7 @@
             matTooltip="Re-roll dice"
             (click)="rerollDice(countryData.country)"
             class="text-md-primary">
-            <mat-icon class="text-sm">casino</mat-icon>
+            <mat-icon>casino</mat-icon>
           </button>
           }
         </div>
@@ -173,14 +173,14 @@
         <div class="access-status flex items-center">
           @let accessOption = getAccessOption(countryData.access);
           <mat-icon
-            [class]="accessOption.colorClass + ' mr-1 text-sm'"
+            [class]="accessOption.colorClass + ' mr-1'"
             [matTooltip]="'Access: ' + accessOption.label">
             {{ accessOption.icon }}
           </mat-icon>
 
           @let overflightOption = getAccessOption(countryData.overflight);
           <mat-icon
-            [class]="overflightOption.colorClass + ' text-sm'"
+            [class]="overflightOption.colorClass"
             [matTooltip]="'Overflight: ' + overflightOption.label">
             {{ overflightOption.icon }}
           </mat-icon>
@@ -197,7 +197,7 @@
   <!-- Empty State -->
   @if (countryAccess().length === 0) {
   <div class="empty-state text-center py-12">
-    <mat-icon class="text-6xl text-md-on-surface-variant mb-4">public_off</mat-icon>
+    <mat-icon class="text-md-on-surface-variant mb-4">public_off</mat-icon>
     <h3 class="text-md-on-surface text-lg mb-2">No Political Access Data</h3>
     <p class="text-md-on-surface-variant">
       Country access data will appear here when available.

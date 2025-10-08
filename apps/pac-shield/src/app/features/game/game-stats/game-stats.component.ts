@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, inject, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,6 +20,7 @@ import { GameLogComponent } from './game-log/game-log.component';
 import { ResponsiveNavComponent } from './responsive-nav/responsive-nav.component';
 import { PoliticalAccessComponent } from '../political-access/political-access.component';
 import { TeamType, PlayerRole } from '../../../generated/enums';
+import { AllocationSignalService } from '../../../shared/services/allocation-signal.service';
 
 /**
  * Component Intent: Game statistics UI container that renders tabs with game dashboards.
@@ -65,8 +67,22 @@ export class GameStatsComponent implements OnInit, OnChanges {
 
   navService = inject(ResponsiveNavService);
   gameStatsService = inject(GameStatsService);
+  allocationSignalService = inject(AllocationSignalService);
+  private breakpointObserver = inject(BreakpointObserver);
 
   activeTab$ = this.navService.activeTab$;
+
+  /**
+   * Computed signal for allocated aircraft for the current team
+   * Returns array of aircraft instances allocated to the team
+   */
+  allocatedAircraft = computed(() => {
+    const teamId = this.getTeamId();
+    if (!teamId) {
+      return [];
+    }
+    return this.allocationSignalService.getAllocatedAircraftForTeam(teamId);
+  });
 
   // Expose service signals as public properties
   readonly gameStats = this.gameStatsService.gameStats;
@@ -79,6 +95,14 @@ export class GameStatsComponent implements OnInit, OnChanges {
   readonly currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   ngOnInit(): void {
+    // Set initial collapsed state based on screen size (desktop starts expanded)
+    this.breakpointObserver.observe('(min-width: 768px)').subscribe(result => {
+      // Only set initial state if collapsed hasn't been manually changed
+      if (this.collapsed === true) {
+        this.collapsed = !result.matches; // Desktop (≥768px) = false (expanded), Mobile (<768px) = true (collapsed)
+      }
+    });
+
     // Load demo data if requested (for development)
     if (this.loadDemoData) {
       this.gameStatsService.loadDemoData();
@@ -86,6 +110,11 @@ export class GameStatsComponent implements OnInit, OnChanges {
 
     // Update navigation based on user role
     this.updateNavigation();
+
+    // Initialize allocation signal service for this game
+    if (this.currentGameId) {
+      this.allocationSignalService.initializeForGame(this.currentGameId);
+    }
   }
 
   // Computed property to check if user is GM
@@ -97,6 +126,11 @@ export class GameStatsComponent implements OnInit, OnChanges {
     // Update navigation when user role changes
     if (changes['currentUserRole']) {
       this.updateNavigation();
+    }
+
+    // Re-initialize allocation service when game ID changes
+    if (changes['currentGameId'] && this.currentGameId) {
+      this.allocationSignalService.initializeForGame(this.currentGameId);
     }
   }
 

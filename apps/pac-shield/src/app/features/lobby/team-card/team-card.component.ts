@@ -84,6 +84,9 @@ export interface RoleGroup {
           [color]="teamTypeInfo.color"
           [showGMTools]="showGMTools"
           [dense]="dense"
+          [allTeams]="allTeams"
+          [playerRoles]="playerRoles"
+          [getTeamTypeInfo]="getTeamTypeInfo"
           (changeRole)="changeRole.emit($event)"
           (moveToTeam)="moveToTeam.emit($event)"
           (removeFromTeam)="removeFromTeam.emit($event)"
@@ -122,12 +125,14 @@ export class TeamCardComponent {
   @Input() showGMTools = false;
   @Input() dense = false;
   @Input() unassignedCount = 0;
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
+  @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
 
   @Output() joinTeam = new EventEmitter<void>();
   @Output() assignOneUnassigned = new EventEmitter<void>();
   @Output() toggleLock = new EventEmitter<void>();
-  @Output() changeRole = new EventEmitter<Player>();
-  @Output() moveToTeam = new EventEmitter<Player>();
+  @Output() changeRole = new EventEmitter<{player: Player, role: string}>();
+  @Output() moveToTeam = new EventEmitter<{player: Player, team: Team}>();
   @Output() removeFromTeam = new EventEmitter<Player>();
   @Output() removeFromGame = new EventEmitter<Player>();
 

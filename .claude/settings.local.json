@@ -40,7 +40,12 @@
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_install",
       "Bash(npx playwright:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(BASE_URL=http://localhost:3001 npx jest aircraft-allocation.spec.ts --runInBand --verbose)",
+      "Bash(PORT=3001 npx jest aircraft-allocation.spec.ts --runInBand)",
+      "Bash(set PORT=3001)",
+      "Bash(PORT=3001 npx jest aircraft-allocation.spec.ts --testNamePattern=\"should spawn C-130\" --runInBand --verbose)",
+      "Bash(npx ng build:*)"
     ],
     "deny": [],
     "ask": []

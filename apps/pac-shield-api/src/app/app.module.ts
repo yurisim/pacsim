@@ -45,25 +45,27 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     // Schedule module for cron jobs (cleanup)
     ScheduleModule.forRoot(),
-    // Rate limiting: More liberal limits for development/testing
-    // Production: 500 req/sec (burst), 10000 req/min (sustained), 50k req/hour
-    ThrottlerModule.forRoot([
-      {
-        name: 'burst',
-        ttl: 1000, // 1 second
-        limit: 500, // 500 req/sec - supports rapid test execution
-      },
-      {
-        name: 'sustained',
-        ttl: 60000, // 1 minute
-        limit: 10000, // 10,000 req/min - supports extensive e2e tests
-      },
-      {
-        name: 'hourly',
-        ttl: 3600000, // 1 hour
-        limit: 50000, // 50,000 req/hour
-      },
-    ]),
+    // Rate limiting: Only enabled in production
+    // Disabled in development and test environments to prevent 429 errors
+    ...(process.env.NODE_ENV === 'production' ? [
+      ThrottlerModule.forRoot([
+        {
+          name: 'burst',
+          ttl: 1000, // 1 second
+          limit: 100, // Reasonable burst limit
+        },
+        {
+          name: 'sustained',
+          ttl: 60000, // 1 minute
+          limit: 1000, // Reasonable sustained rate
+        },
+        {
+          name: 'hourly',
+          ttl: 3600000, // 1 hour
+          limit: 10000, // Reasonable hourly limit
+        },
+      ]),
+    ] : []),
     PrismaModule,
     GameModule,
     AuthModule,
@@ -84,10 +86,13 @@ import { APP_GUARD } from '@nestjs/core';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // Throttler guard only active in production environment
+    ...(process.env.NODE_ENV === 'production' ? [
+      {
+        provide: APP_GUARD,
+        useClass: ThrottlerGuard,
+      },
+    ] : []),
   ],
 })
 export class AppModule { }

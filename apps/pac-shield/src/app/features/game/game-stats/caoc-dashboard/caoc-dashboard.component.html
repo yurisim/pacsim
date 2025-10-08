@@ -7,17 +7,6 @@
         <mat-chip class="ml-2" color="primary">CFACC</mat-chip>
       }
     </div>
-    <!-- Notification Badge for CFACC -->
-    @if (isCfacc) {
-      <app-allocation-notification-badge
-        [unreadCount]="(unreadNotificationCount$ | async) || 0"
-        [hasUrgentNotifications]="(hasUrgentNotifications$ | async) || false"
-        [hasUnacknowledgedNotifications]="((unacknowledgedNotifications$ | async)?.length ?? 0) > 0"
-        (click)="onNotificationBadgeClick()"
-        size="medium"
-        tooltipPosition="below"
-      ></app-allocation-notification-badge>
-    }
   </div>
   <mat-divider></mat-divider>
 
@@ -50,7 +39,7 @@
                   [value]="section.id"
                   class="flex-1 min-h-[48px] px-2">
                   <div class="flex flex-col items-center gap-1">
-                    <mat-icon class="text-lg">{{ section.icon }}</mat-icon>
+                    <mat-icon>{{ section.icon }}</mat-icon>
                     <span class="text-xs leading-tight">{{ section.shortLabel }}</span>
                   </div>
                 </mat-button-toggle>
@@ -144,30 +133,56 @@
               }
             </mat-card>
 
-            <!-- Aircraft Pool Summary -->
+            <!-- Aircraft Pool Summary (Updated with Signals) -->
             <mat-card class="p-4 md-elevation-1">
-              <div class="flex items-center gap-2 mb-2">
-                <mat-icon class="md-sys-color-tertiary">flight</mat-icon>
-                <h3 class="md-typescale-title-small">Aircraft Pool</h3>
-              </div>
-              @if (analytics$ | async; as analytics) {
-                <div class="space-y-2">
-                  <div class="flex justify-between">
-                    <span class="md-typescale-body-small">C-17:</span>
-                    <span class="md-typescale-body-small font-medium">{{ analytics.available.C17 }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="md-typescale-body-small">C-130:</span>
-                    <span class="md-typescale-body-small font-medium">{{ analytics.available.C130 }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="md-typescale-body-small">C-5:</span>
-                    <span class="md-typescale-body-small font-medium">{{ analytics.available.C5 }}</span>
-                  </div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="md-sys-color-tertiary">flight</mat-icon>
+                  <h3 class="md-typescale-title-small">Aircraft Pool</h3>
                 </div>
-              } @else {
-                <div class="md-typescale-body-small md-sys-color-on-surface-variant">
-                  Loading aircraft pool...
+                @if (isGM()) {
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    (click)="onSpawnAircraft()"
+                    matTooltip="Spawn New Aircraft (GM)">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                }
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="md-typescale-body-small">C-130 (AW):</span>
+                  <span class="md-typescale-body-small font-medium">{{ aircraftCounts().C130 }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="md-typescale-body-small">C-17 (ME):</span>
+                  <span class="md-typescale-body-small font-medium">{{ aircraftCounts().C17 }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="md-typescale-body-small">C-5 Bobcat (BO):</span>
+                  <span class="md-typescale-body-small font-medium">{{ aircraftCounts().C5_BOBCAT }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="md-typescale-body-small">C-5 Rhino (RH):</span>
+                  <span class="md-typescale-body-small font-medium">{{ aircraftCounts().C5_RHINO }}</span>
+                </div>
+                @if (isGM()) {
+                  <mat-divider class="my-2"></mat-divider>
+                  <div class="flex justify-between">
+                    <span class="md-typescale-body-small">F-16 (VIP):</span>
+                    <span class="md-typescale-body-small font-medium">{{ aircraftCounts().F16 }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="md-typescale-body-small">F-22 (RPT):</span>
+                    <span class="md-typescale-body-small font-medium">{{ aircraftCounts().F22 }}</span>
+                  </div>
+                }
+              </div>
+              @if (loading().pool) {
+                <div class="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                  <mat-spinner [diameter]="16"></mat-spinner>
+                  Loading...
                 </div>
               }
             </mat-card>
@@ -192,238 +207,84 @@
         <div class="p-4">
           <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
 
-            <!-- Request Review Panel -->
+            <!-- Aircraft Distribution Panel -->
             <div class="xl:col-span-2">
               <mat-card class="md-elevation-1">
                 <mat-card-header>
-                  <mat-card-title class="flex items-center gap-2">
-                    <mat-icon>assignment</mat-icon>
-                    MOB Aircraft Requests
-                    @if (pendingRequests$ | async; as pending) {
-                      @if (pending.length > 0) {
-                        <mat-chip color="warn" class="ml-2">{{ pending.length }} Pending</mat-chip>
-                      }
+                  <mat-card-title class="flex items-center justify-between w-full">
+                    <div class="flex items-center gap-2">
+                      <mat-icon>flight_takeoff</mat-icon>
+                      Aircraft Distribution to MOBs
+                    </div>
+                    @if (canAllocateAircraft) {
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="onAllocateToMOB()">
+                        <mat-icon>add</mat-icon>
+                        Allocate Aircraft
+                      </button>
                     }
                   </mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                  @if (isLoading$ | async) {
+                  @if (loading().allocations) {
                     <div class="flex justify-center p-8">
                       <mat-spinner diameter="40"></mat-spinner>
                     </div>
                   } @else {
-                    @if (allRequests$ | async; as requests) {
-                      @if (requests.length === 0) {
-                        <div class="text-center p-8 md-sys-color-on-surface-variant">
-                          <mat-icon class="text-4xl mb-2">inbox</mat-icon>
-                          <p class="md-typescale-body-large">No aircraft requests submitted yet</p>
-                          <p class="md-typescale-body-small">MOB teams can submit requests using their dashboards</p>
-                        </div>
-                      } @else {
-                        <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                          <div class="min-w-full">
-                          <table mat-table [dataSource]="requests" class="w-full min-w-[800px]">
-
-                            <!-- Team Column - Sticky on mobile -->
-                            <ng-container matColumnDef="team">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium sticky left-0 z-20 md-sys-bg-surface-container border-r border-gray-200 dark:border-gray-700">MOB Team</th>
-                              <td mat-cell *matCellDef="let request" class="sticky left-0 z-10 md-sys-bg-surface border-r border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center gap-2 min-w-[120px]">
-                                  <mat-icon class="text-sm">group</mat-icon>
-                                  <span class="font-medium truncate">{{ request.team?.name || 'Unknown' }}</span>
-                                </div>
-                              </td>
-                            </ng-container>
-
-                            <!-- Aircraft Type Column -->
-                            <ng-container matColumnDef="aircraftType">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium">Aircraft</th>
-                              <td mat-cell *matCellDef="let request">
-                                <div class="flex items-center gap-2">
-                                  <mat-icon class="text-sm">flight</mat-icon>
-                                  <span class="font-medium">{{ request.aircraftType }}</span>
-                                </div>
-                              </td>
-                            </ng-container>
-
-                            <!-- Quantity Column -->
-                            <ng-container matColumnDef="quantity">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium">Qty</th>
-                              <td mat-cell *matCellDef="let request">
-                                <div class="text-center">
-                                  <span class="inline-block md-sys-bg-surface-variant rounded px-2 py-1 text-sm font-medium">
-                                    {{ request.quantityRequested }}
-                                  </span>
-                                  @if (request.quantityAllocated && request.quantityAllocated !== request.quantityRequested) {
-                                    <div class="text-xs mt-1 md-sys-color-primary">
-                                      Allocated: {{ request.quantityAllocated }}
-                                    </div>
-                                  }
-                                </div>
-                              </td>
-                            </ng-container>
-
-                            <!-- Priority Column -->
-                            <ng-container matColumnDef="priority">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium">Priority</th>
-                              <td mat-cell *matCellDef="let request">
-                                <mat-chip [color]="getPriorityColor(request.priority)" class="text-xs">
-                                  {{ getPriorityLabel(request.priority) }}
-                                </mat-chip>
-                              </td>
-                            </ng-container>
-
-                            <!-- Mission Justification Column -->
-                            <ng-container matColumnDef="justification">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium">Mission</th>
-                              <td mat-cell *matCellDef="let request">
-                                <div class="max-w-xs">
-                                  <div class="font-medium text-sm">{{ request.missionJustification }}</div>
-                                  @if (request.rationale) {
-                                    <div class="text-xs md-sys-color-on-surface-variant mt-1 truncate"
-                                         [matTooltip]="request.rationale">
-                                      {{ request.rationale }}
-                                    </div>
-                                  }
-                                </div>
-                              </td>
-                            </ng-container>
-
-                            <!-- Status Column -->
-                            <ng-container matColumnDef="status">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium">Status</th>
-                              <td mat-cell *matCellDef="let request">
-                                <div class="flex items-center gap-2">
-                                  <mat-icon class="text-sm" [style.color]="'var(--mat-sys-' + getStatusColor(request.status) + ')'">
-                                    {{ getStatusIcon(request.status) }}
-                                  </mat-icon>
-                                  <span class="text-sm">{{ request.status }}</span>
-                                </div>
-                                @if (request.cfaccNotes) {
-                                  <div class="text-xs md-sys-color-on-surface-variant mt-1 max-w-xs truncate"
-                                       [matTooltip]="request.cfaccNotes">
-                                    {{ request.cfaccNotes }}
-                                  </div>
-                                }
-                              </td>
-                            </ng-container>
-
-                            <!-- Submitted Date Column -->
-                            <ng-container matColumnDef="submittedAt">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium">Submitted</th>
-                              <td mat-cell *matCellDef="let request">
-                                <span class="text-sm">{{ formatDate(request.submittedAt) }}</span>
-                              </td>
-                            </ng-container>
-
-                            <!-- Actions Column - Sticky on mobile -->
-                            <ng-container matColumnDef="actions">
-                              <th mat-header-cell *matHeaderCellDef class="font-medium sticky right-0 z-20 md-sys-bg-surface-container border-l border-gray-200 dark:border-gray-700">Actions</th>
-                              <td mat-cell *matCellDef="let request" class="sticky right-0 z-10 md-sys-bg-surface border-l border-gray-200 dark:border-gray-700">
-                                @if (request.status === StatusValues.PENDING && canReviewRequests) {
-                                  <div class="flex gap-1">
-                                    <button mat-icon-button
-                                            color="primary"
-                                            matTooltip="Approve Request"
-                                            (click)="approveRequest(request)">
-                                      <mat-icon>check_circle</mat-icon>
-                                    </button>
-                                    <button mat-icon-button
-                                            color="warn"
-                                            matTooltip="Deny Request"
-                                            (click)="denyRequest(request, 'Request denied by CFACC')">
-                                      <mat-icon>cancel</mat-icon>
-                                    </button>
-                                    <button mat-icon-button
-                                            color="accent"
-                                            matTooltip="Modify Request"
-                                            (click)="selectedRequest = request">
-                                      <mat-icon>edit</mat-icon>
-                                    </button>
-                                  </div>
-                                } @else {
-                                  <span class="text-sm md-sys-color-on-surface-variant">
-                                    {{ request.status === StatusValues.PENDING ? 'Pending Review' : 'Completed' }}
-                                  </span>
-                                }
-                              </td>
-                            </ng-container>
-
-                            <tr mat-header-row *matHeaderRowDef="requestsDisplayedColumns" class="sticky top-0 z-10 md-sys-bg-surface-container"></tr>
-                            <tr mat-row *matRowDef="let row; columns: requestsDisplayedColumns;"
-                                [class]="row.priority >= 4 ? 'bg-red-50 dark:bg-red-900/20' : row.priority === 3 ? 'bg-orange-50 dark:bg-orange-900/20' : ''"
-                                class="hover:md-sys-bg-surface-variant transition-colors"></tr>
-                          </table>
-                          </div>
-                        </div>
-                      }
+                    @if (allocationsByTeam().size === 0) {
+                      <div class="text-center p-8 md-sys-color-on-surface-variant">
+                        <mat-icon class="mb-2">flight_land</mat-icon>
+                        <p class="md-typescale-body-large">No aircraft allocated yet</p>
+                        <p class="md-typescale-body-small">Use the "Allocate Aircraft" button to distribute aircraft to MOBs</p>
+                      </div>
                     } @else {
-                      <div class="text-center p-8">
-                        <mat-spinner diameter="40"></mat-spinner>
-                        <p class="mt-2 md-typescale-body-small">Loading requests...</p>
+                      <!-- MOB Team Allocation List -->
+                      <div class="space-y-4">
+                        @for (team of mobTeams(); track team.id) {
+                          <mat-card class="md-elevation-0 md-sys-bg-surface-container-low">
+                            <mat-card-content class="p-4">
+                              <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2">
+                                  <mat-icon>location_city</mat-icon>
+                                  <h4 class="md-typescale-title-medium">{{ team.name }}</h4>
+                                </div>
+                                <mat-chip class="text-xs">
+                                  {{ getTeamAllocations(team.id).length }} Aircraft
+                                </mat-chip>
+                              </div>
+
+                              @if (getTeamAllocations(team.id).length === 0) {
+                                <p class="md-typescale-body-small md-sys-color-on-surface-variant">No aircraft allocated</p>
+                              } @else {
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                  @for (allocation of getTeamAllocations(team.id); track allocation.id) {
+                                    <div class="flex items-center justify-between p-2 rounded md-sys-bg-surface">
+                                      <div class="flex items-center gap-2">
+                                        <mat-icon>flight</mat-icon>
+                                        <span class="font-medium">{{ allocation.aircraftInstance?.callSign }}</span>
+                                      </div>
+                                      @if (canAllocateAircraft) {
+                                        <button
+                                          mat-icon-button
+                                          matTooltip="Deallocate"
+                                          (click)="deallocateAircraft(allocation)">
+                                          <mat-icon>close</mat-icon>
+                                        </button>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </mat-card-content>
+                          </mat-card>
+                        }
                       </div>
                     }
                   }
                 </mat-card-content>
               </mat-card>
-
-              <!-- Decision Form for Selected Request -->
-              @if (selectedRequest) {
-                <mat-card class="md-elevation-1 mt-4">
-                  <mat-card-header>
-                    <mat-card-title class="flex items-center gap-2">
-                      <mat-icon>rate_review</mat-icon>
-                      Review Request: {{ selectedRequest.team?.name }} - {{ selectedRequest.aircraftType }}
-                    </mat-card-title>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 class="md-typescale-title-small mb-2">Request Details</h4>
-                        <div class="space-y-2 text-sm">
-                          <div><strong>Quantity:</strong> {{ selectedRequest.quantityRequested }}</div>
-                          <div><strong>Priority:</strong> {{ getPriorityLabel(selectedRequest.priority) }}</div>
-                          <div><strong>Mission:</strong> {{ selectedRequest.missionJustification }}</div>
-                          <div><strong>Rationale:</strong> {{ selectedRequest.rationale }}</div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 class="md-typescale-title-small mb-2">CFACC Decision</h4>
-                        <div class="space-y-3">
-                          <mat-form-field class="w-full">
-                            <mat-label>Quantity to Allocate</mat-label>
-                            <input matInput type="number"
-                                   [(ngModel)]="quantityAllocated"
-                                   [max]="selectedRequest.quantityRequested"
-                                   min="0">
-                          </mat-form-field>
-                          <mat-form-field class="w-full">
-                            <mat-label>CFACC Notes</mat-label>
-                            <textarea matInput
-                                      [(ngModel)]="cfaccNotes"
-                                      rows="3"></textarea>
-                          </mat-form-field>
-                          <div class="flex gap-2">
-                            <button matButton="filled" color="primary"
-                                    (click)="reviewRequest(selectedRequest, StatusValues.APPROVED, quantityAllocated, cfaccNotes); selectedRequest = null">
-                              Approve
-                            </button>
-                            <button matButton="filled" color="accent"
-                                    (click)="reviewRequest(selectedRequest, StatusValues.MODIFIED, quantityAllocated, cfaccNotes); selectedRequest = null">
-                              Modify
-                            </button>
-                            <button matButton="filled" color="warn"
-                                    (click)="reviewRequest(selectedRequest, StatusValues.DENIED, 0, cfaccNotes); selectedRequest = null">
-                              Deny
-                            </button>
-                            <button matButton (click)="selectedRequest = null">Cancel</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              }
             </div>
 
             <!-- Aircraft Pool Panel -->
@@ -439,7 +300,7 @@
                   @if (unallocatedPool$ | async; as aircraft) {
                     @if (aircraft.length === 0) {
                       <div class="text-center p-4 md-sys-color-on-surface-variant">
-                        <mat-icon class="text-4xl mb-2">flight_takeoff</mat-icon>
+                        <mat-icon class="mb-2">flight_takeoff</mat-icon>
                         <p class="md-typescale-body-medium">All aircraft allocated</p>
                       </div>
                     } @else {
@@ -448,7 +309,7 @@
                           <div class="border rounded-lg p-3 interactive-surface">
                             <div class="flex items-center justify-between mb-2">
                               <div class="flex items-center gap-2">
-                                <mat-icon class="text-sm">flight</mat-icon>
+                                <mat-icon>flight</mat-icon>
                                 <span class="font-medium">{{ aircraftItem.callSign }}</span>
                               </div>
                               <mat-chip color="primary" class="text-xs">{{ aircraftItem.type }}</mat-chip>
@@ -460,7 +321,7 @@
                               <div class="flex gap-1">
                                 <button matButton="outlined" size="small" class="text-xs"
                                         matTooltip="Allocate to MOB">
-                                  <mat-icon class="text-sm">assignment</mat-icon>
+                                  <mat-icon>assignment</mat-icon>
                                   Allocate
                                 </button>
                               </div>
@@ -560,7 +421,7 @@
                 <div class="space-y-4">
                   <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div class="flex items-center gap-2 mb-2">
-                      <mat-icon class="text-green-600 text-sm">check_circle</mat-icon>
+                      <mat-icon class="text-green-600">check_circle</mat-icon>
                       <span class="font-medium text-green-800 dark:text-green-200">Recommendations</span>
                     </div>
                     <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
@@ -573,7 +434,7 @@
                   @if (analytics$ | async; as analytics) {
                     <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                       <div class="flex items-center gap-2 mb-2">
-                        <mat-icon class="text-blue-600 text-sm">info</mat-icon>
+                        <mat-icon class="text-blue-600">info</mat-icon>
                         <span class="font-medium text-blue-800 dark:text-blue-200">Current Status</span>
                       </div>
                       <div class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
@@ -626,16 +487,3 @@
     </div>
   }
 </mat-card>
-
-<!-- Toast Notification Container -->
-@if (currentToastNotification) {
-  <div class="fixed top-4 right-4 z-50 max-w-sm">
-    <app-allocation-notification-toast
-      [notification]="currentToastNotification"
-      [acknowledging]="false"
-      (dismiss)="onToastDismissed($event)"
-      (acknowledge)="onToastAcknowledged($event)"
-      (markRead)="onToastRead($event)"
-    ></app-allocation-notification-toast>
-  </div>
-}
