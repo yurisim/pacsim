@@ -1,5 +1,5 @@
 import { IsInt, IsEnum, IsOptional, IsString, Min } from 'class-validator';
-import { AircraftType } from '@prisma/client';
+import { AircraftType, LocationType } from '@prisma/client';
 
 /**
  * DTO for spawning a new aircraft instance (GM only)
@@ -38,6 +38,13 @@ export class SpawnAircraftDto {
   @IsInt()
   @Min(1)
   rangeHexes?: number;
+
+  /**
+   * Location type (MOB, FOS, IN_TRANSIT)
+   */
+  @IsOptional()
+  @IsEnum(['MOB', 'FOS', 'IN_TRANSIT'])
+  locationType?: LocationType;
 
   /**
    * Optional FOS location ID where aircraft starts

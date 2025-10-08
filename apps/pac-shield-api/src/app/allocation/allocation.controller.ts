@@ -317,7 +317,29 @@ export class AllocationController {
 
   /**
    * Spawn a new aircraft instance (GM only)
-   * POST /allocation/aircraft/spawn
+   * POST /allocation/spawn-aircraft (primary endpoint for tests/compatibility)
+   */
+  @Post('spawn-aircraft')
+  async spawnAircraftCompat(
+    @Body() dto: SpawnAircraftDto,
+    @Request() req: any
+  ): Promise<AircraftInstance> {
+    return this.allocationService.spawnAircraft(
+      dto.gameId,
+      dto.type,
+      dto.subtype || null,
+      dto.teamId,
+      dto.rangeHexes,
+      dto.locationFosId,
+      dto.locationHex,
+      req.user,
+      dto.locationType
+    );
+  }
+
+  /**
+   * Spawn a new aircraft instance (GM only)
+   * POST /allocation/aircraft/spawn (alternative path)
    */
   @Post('aircraft/spawn')
   async spawnAircraft(
@@ -332,7 +354,8 @@ export class AllocationController {
       dto.rangeHexes,
       dto.locationFosId,
       dto.locationHex,
-      req.user
+      req.user,
+      dto.locationType
     );
   }
 

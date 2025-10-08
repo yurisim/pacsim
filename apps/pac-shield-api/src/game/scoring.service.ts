@@ -57,8 +57,9 @@ export class GameScoringService {
       destroyedStats.s20 * 10 + destroyedStats.s12 * 7 + destroyedStats.s10 * 5;
 
     // 4) Demoralization Penalty (exclude CSPOC)
-    const dpTotal = await this.sumDemoralizationPointsNonCSpOC(gameId);
-    const dpPenalty = Math.floor(dpTotal / 5);
+    // NOTE: Per requirements, demoralization points are set to 0 for now
+    const dpTotal = 0;
+    const dpPenalty = 0;
 
     // Total MPs (aggregate for CJTF)
     const total =

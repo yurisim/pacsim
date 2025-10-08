@@ -672,7 +672,8 @@ export class AllocationService {
     rangeHexes: number | undefined,
     locationFosId?: string,
     locationHex?: string,
-    user?: any
+    user?: any,
+    locationType?: LocationType
   ): Promise<AircraftInstance> {
     // Verify GM permissions
     if (user) {
@@ -720,14 +721,16 @@ export class AllocationService {
     // Determine range based on aircraft type if not provided
     const finalRange = rangeHexes ?? (type === AircraftType.C130 ? 3 : 4); // C130=3, C17/C5=4
 
-    // Determine location type
-    let locationType: LocationType;
-    if (locationFosId) {
-      locationType = LocationType.FOS;
+    // Determine location type - use provided or infer from location data
+    let finalLocationType: LocationType;
+    if (locationType) {
+      finalLocationType = locationType;
+    } else if (locationFosId) {
+      finalLocationType = LocationType.FOS;
     } else if (locationHex) {
-      locationType = LocationType.MOB; // Using MOB for hex locations
+      finalLocationType = LocationType.MOB; // Using MOB for hex locations
     } else {
-      throw new BadRequestException('Either locationFosId or locationHex must be provided');
+      finalLocationType = LocationType.MOB; // Default to MOB
     }
 
     // Create aircraft instance
@@ -738,7 +741,7 @@ export class AllocationService {
         subtype,
         rangeHexes: finalRange,
         status: AircraftStatus.FMC,
-        locationType,
+        locationType: finalLocationType,
         locationFosId,
         locationHex,
         teamId,
