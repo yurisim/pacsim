@@ -35,9 +35,9 @@ export class GameStatsService {
 
   // Core game statistics
   private readonly _gameStats = signal<GameStats>({
-    missionPoints: 12,
-    demoralizationPoints: 3,
-    resourcePoints: 2,
+    missionPoints: 0,
+    demoralizationPoints: 0,
+    resourcePoints: 0,
     victoryTarget: 100,
     gameTurn: 1,
     gameDay: 1,
@@ -48,6 +48,10 @@ export class GameStatsService {
   private readonly _atoLines = signal<ATOLine[]>([]);
   private readonly _isLoadingAtoLines = signal<boolean>(false);
   private readonly _atoLinesError = signal<string | null>(null);
+
+  // Game score loading state
+  private readonly _isLoadingScore = signal<boolean>(false);
+  private readonly _scoreError = signal<string | null>(null);
 
   constructor() {
     // Auto-load ATO lines when authentication state changes
@@ -105,6 +109,8 @@ export class GameStatsService {
   readonly gameLog = this._gameLog.asReadonly();
   readonly isLoadingAtoLines = this._isLoadingAtoLines.asReadonly();
   readonly atoLinesError = this._atoLinesError.asReadonly();
+  readonly isLoadingScore = this._isLoadingScore.asReadonly();
+  readonly scoreError = this._scoreError.asReadonly();
 
   // Computed values
   readonly totalScore = computed(() => {
@@ -221,6 +227,41 @@ export class GameStatsService {
   }
 
   /**
+   * Load game score from the backend for a specific game
+   */
+  loadGameScore(gameId: number): void {
+    this._isLoadingScore.set(true);
+    this._scoreError.set(null);
+
+    this.apiService.getGameScore(gameId).pipe(
+      tap(scoreData => {
+        // Extract mission points and demoralization penalty from the correct properties
+        const missionPoints = scoreData.total;
+        const demoralizationPenalty = scoreData.breakdown.demoralizationPenalty.penalty;
+
+        // Update game stats with the fetched score data
+        this._gameStats.update(stats => ({
+          ...stats,
+          missionPoints: missionPoints,
+          demoralizationPoints: demoralizationPenalty
+        }));
+        this._isLoadingScore.set(false);
+        this.addLogEntry(
+          `Loaded game score: ${missionPoints} mission points, ${demoralizationPenalty} demoralization penalty`,
+          'info'
+        );
+      }),
+      catchError(error => {
+        console.error('Failed to load game score:', error);
+        this._scoreError.set('Failed to load game score from server');
+        this._isLoadingScore.set(false);
+        this.addLogEntry('Failed to load game score from server', 'error');
+        return EMPTY;
+      })
+    ).subscribe();
+  }
+
+  /**
    * Refresh ATO lines from backend
    */
   refreshAtoLines(gameId?: number): void {
@@ -229,6 +270,17 @@ export class GameStatsService {
     } else {
       // For now, caller needs to provide gameId
       console.warn('RefreshAtoLines called without gameId - cannot refresh');
+    }
+  }
+
+  /**
+   * Refresh game score from backend
+   */
+  refreshGameScore(gameId?: number): void {
+    if (gameId) {
+      this.loadGameScore(gameId);
+    } else {
+      console.warn('RefreshGameScore called without gameId - cannot refresh');
     }
   }
 
@@ -355,19 +407,20 @@ export class GameStatsService {
 
   /**
    * Load demo data (for development)
+   * Note: Mission points should be loaded from backend via loadGameScore()
    */
   loadDemoData(): void {
     this._gameStats.set({
-      missionPoints: 12,
-      demoralizationPoints: 3,
-      resourcePoints: 2,
+      missionPoints: 0,
+      demoralizationPoints: 0,
+      resourcePoints: 0,
       victoryTarget: 100,
       gameTurn: 1,
       gameDay: 1,
       gamePhase: 'CRISIS'
     });
 
-    this.addLogEntry('Demo data loaded', 'info');
+    this.addLogEntry('Demo data loaded - use loadGameScore() to fetch real mission points', 'info');
   }
 
   /**

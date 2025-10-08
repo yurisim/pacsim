@@ -191,7 +191,7 @@ describe('GameService', () => {
 
       expect(prisma.game.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { teams: { include: { players: true } }, players: { include: { team: true } } },
+        include: { teams: { include: { players: true } }, players: { include: { team: true } }, gameBoard: true },
       });
       expect(result).toEqual(mockGame);
     });

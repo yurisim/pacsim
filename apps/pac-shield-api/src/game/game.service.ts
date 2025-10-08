@@ -51,6 +51,9 @@ export class GameService {
       data: {
         roomCode,
         victoryConditionMP,
+        gameBoard: {
+          create: {},
+        },
       },
     });
 
@@ -99,6 +102,7 @@ export class GameService {
             team: true,
           },
         },
+        gameBoard: true,
       },
     });
 

@@ -114,6 +114,8 @@ export class GameStatsComponent implements OnInit, OnChanges {
     // Initialize allocation signal service for this game
     if (this.currentGameId) {
       this.allocationSignalService.initializeForGame(this.currentGameId);
+      // Load game score from backend
+      this.gameStatsService.loadGameScore(this.currentGameId);
     }
   }
 
@@ -128,9 +130,10 @@ export class GameStatsComponent implements OnInit, OnChanges {
       this.updateNavigation();
     }
 
-    // Re-initialize allocation service when game ID changes
+    // Re-initialize allocation service and reload game score when game ID changes
     if (changes['currentGameId'] && this.currentGameId) {
       this.allocationSignalService.initializeForGame(this.currentGameId);
+      this.gameStatsService.loadGameScore(this.currentGameId);
     }
   }
 

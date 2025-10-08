@@ -177,4 +177,38 @@ export class ApiService {
       body
     );
   }
+
+  /**
+   * Get game score breakdown including mission points.
+   * GET /game/:id/score
+   */
+  getGameScore(gameId: number): Observable<{
+    gameId: number;
+    phase: string;
+    breakdown: {
+      assessments: { count: number; points: number };
+      crisisSorties: { count: number; points: number };
+      destroyedTargets: {
+        byStrength: { s10: number; s12: number; s20: number; airborneJammer: number };
+        points: number;
+      };
+      demoralizationPenalty: { dpTotal: number; penalty: number };
+    };
+    total: number;
+  }> {
+    return this.get<{
+      gameId: number;
+      phase: string;
+      breakdown: {
+        assessments: { count: number; points: number };
+        crisisSorties: { count: number; points: number };
+        destroyedTargets: {
+          byStrength: { s10: number; s12: number; s20: number; airborneJammer: number };
+          points: number;
+        };
+        demoralizationPenalty: { dpTotal: number; penalty: number };
+      };
+      total: number;
+    }>(`game/${gameId}/score`);
+  }
 }

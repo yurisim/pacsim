@@ -17,6 +17,7 @@ import { AtoModule } from './ato/ato.module';
 import { AllocationModule } from './allocation/allocation.module';
 import { NotificationModule } from './notification/notification.module';
 import { CleanupModule } from './cleanup/cleanup.module';
+import { ThreatTokensModule } from './threat-tokens/threat-tokens.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -77,6 +78,7 @@ import { APP_GUARD } from '@nestjs/core';
     AllocationModule,
     NotificationModule,
     CleanupModule,
+    ThreatTokensModule,
   ],
   controllers: [AppController],
   providers: [

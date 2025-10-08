@@ -155,6 +155,14 @@ export class AtoService {
       await this.validateFlightPlan(createAtoLineDto, user);
       console.log('ATO Service: Flight plan validation passed');
 
+      // Determine startLocationType: FOS if UUID format, otherwise MOB
+      const isFosStart = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(createAtoLineDto.startLocation);
+      const startLocationType = isFosStart ? 'FOS' : 'MOB';
+
+      // Determine if finalDestination is an operational area
+      // Operational areas typically start with "Op" or "Operational"
+      const isOperationalArea = /^(Op|Operational)/i.test(createAtoLineDto.finalDestination);
+
       console.log('ATO Service: Creating ATO line in database...');
       const atoLine = await this.prisma.aTOLine.create({
         data: {
@@ -162,6 +170,7 @@ export class AtoService {
           turn: createAtoLineDto.turn,
           aircraftCallSign: createAtoLineDto.aircraftCallSign,
           startLocation: createAtoLineDto.startLocation,
+          startLocationType,
           enRouteDestination: createAtoLineDto.enRouteDestination || null,
           finalDestination: createAtoLineDto.finalDestination,
           alternateDestination: createAtoLineDto.alternateDestination || null,
@@ -169,6 +178,7 @@ export class AtoService {
           riskTokenUsed: createAtoLineDto.riskTokenUsed || false,
           configuration: createAtoLineDto.configuration,
           pprStatus: 'PENDING',
+          isOperationalArea,
           executionResult: null,
         },
         include: {
