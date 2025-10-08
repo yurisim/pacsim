@@ -16,9 +16,9 @@ import { Player, Team } from '../../../generated';
   ],
   template: `
     <!-- Main Player Context Menu -->
-    <mat-menu #playerMenu="matMenu">
+    <mat-menu #gmPlayerMenu="matMenu">
       <ng-template matMenuContent let-player="player" let-teams="teams">
-        <h6 class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</h6>
+        <div class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</div>
         <mat-divider></mat-divider>
 
         <button mat-menu-item [matMenuTriggerFor]="roleSubmenu" [matMenuTriggerData]="{player: player}">

@@ -20,6 +20,8 @@ import { Player, Team } from '../../../../../generated';
           [showGMTools]="showGMTools"
           [dense]="dense"
           [unassignedCount]="unassignedCount"
+          [playerRoles]="playerRoles"
+          [getTeamTypeInfo]="getTeamTypeInfo"
           (joinTeam)="onJoinTeam(team)"
           (assignOneUnassigned)="onAssignOne(team)"
           (toggleLock)="toggleLock.emit(team)"
@@ -39,6 +41,7 @@ export class TeamListComponent {
   @Input() showGMTools = false;
   @Input() dense = false;
   @Input() unassignedCount = 0;
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
 
   // Allow TeamsTab container to control layout differences per category
   @Input() gridClass = 'grid grid-cols-1 md:grid-cols-2 gap-4';
@@ -52,8 +55,8 @@ export class TeamListComponent {
   @Output() assignOneUnassigned = new EventEmitter<Team>();
   @Output() toggleLock = new EventEmitter<Team>();
 
-  @Output() changeRole = new EventEmitter<Player>();
-  @Output() moveToTeam = new EventEmitter<Player>();
+  @Output() changeRole = new EventEmitter<{player: Player, role: string}>();
+  @Output() moveToTeam = new EventEmitter<{player: Player, team: Team}>();
   @Output() removeFromTeam = new EventEmitter<Player>();
   @Output() removeFromGame = new EventEmitter<Player>();
 

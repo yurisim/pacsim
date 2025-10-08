@@ -40,6 +40,8 @@ import { Player, Team } from '../../../generated';
           variant="list"
           [showGMMenu]="showGMTools"
           [allTeams]="allTeams"
+          [playerRoles]="playerRoles"
+          [getTeamTypeInfo]="getTeamTypeInfo"
           (changeRole)="changeRole.emit($event)"
           (moveToTeam)="moveToTeam.emit($event)"
           (removeFromTeam)="removeFromTeam.emit($event)"
@@ -65,6 +67,8 @@ export class AllPlayersTabComponent {
   @Input() filteredPlayers: Player[] = [];
   @Input() allTeams: Team[] = [];
   @Input() showGMTools = false;
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
+  @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
   @Input() filters: FilterOptions = {
     searchTerm: '',
     filterTeamType: 'ALL',
@@ -75,8 +79,8 @@ export class AllPlayersTabComponent {
   };
 
   @Output() filtersChange = new EventEmitter<FilterOptions>();
-  @Output() changeRole = new EventEmitter<Player>();
-  @Output() moveToTeam = new EventEmitter<Player>();
+  @Output() changeRole = new EventEmitter<{player: Player, role: string}>();
+  @Output() moveToTeam = new EventEmitter<{player: Player, team: Team}>();
   @Output() removeFromTeam = new EventEmitter<Player>();
   @Output() removeFromGame = new EventEmitter<Player>();
 

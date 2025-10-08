@@ -96,15 +96,15 @@ import { Player, Team } from '../../../generated';
     <!-- Player Context Menu Template -->
     <mat-menu #playerMenu="matMenu">
       <ng-template matMenuContent let-player="player" let-teams="teams">
-        <h6 class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</h6>
+        <div class="px-4 py-2 font-medium md-sys-color-primary m-0">{{ player.name }}</div>
         <mat-divider></mat-divider>
 
-        <button mat-menu-item (click)="changeRole.emit(player)">
+        <button mat-menu-item [matMenuTriggerFor]="roleSubmenu" [matMenuTriggerData]="{player: player}">
           <mat-icon>person</mat-icon>
           <span>Change Role</span>
         </button>
 
-        <button mat-menu-item (click)="moveToTeam.emit(player)">
+        <button mat-menu-item [matMenuTriggerFor]="teamSubmenu" [matMenuTriggerData]="{player: player, teams: teams}">
           <mat-icon>group</mat-icon>
           <span>Move to Team</span>
         </button>
@@ -123,6 +123,32 @@ import { Player, Team } from '../../../generated';
         </button>
       </ng-template>
     </mat-menu>
+
+    <!-- Role Selection Submenu -->
+    <mat-menu #roleSubmenu="matMenu">
+      <ng-template matMenuContent let-player="player">
+        @for (role of playerRoles; track role) {
+        <button mat-menu-item (click)="changeRole.emit({player: player, role: role})">
+          {{ role }}
+        </button>
+        }
+      </ng-template>
+    </mat-menu>
+
+    <!-- Team Selection Submenu -->
+    <mat-menu #teamSubmenu="matMenu">
+      <ng-template matMenuContent let-player="player" let-teams="teams">
+        @for (team of teams; track team.id) {
+        <button mat-menu-item (click)="moveToTeam.emit({player: player, team: team})" [disabled]="team.locked">
+          <mat-icon>{{getTeamTypeInfo(team).icon}}</mat-icon>
+          {{ team.name }}
+          @if (team.locked) {
+          <mat-icon>lock</mat-icon>
+          }
+        </button>
+        }
+      </ng-template>
+    </mat-menu>
   `
 })
 export class PlayerCardComponent {
@@ -130,9 +156,11 @@ export class PlayerCardComponent {
   @Input() variant: 'simple' | 'list' = 'simple';
   @Input() showGMMenu = false;
   @Input() allTeams: Team[] = [];
+  @Input() playerRoles: string[] = ['GM', 'COMMANDER', 'DEPUTY', 'LNO', 'PLAYER'];
+  @Input() getTeamTypeInfo!: (team: Team) => { icon: string; color: string };
 
-  @Output() changeRole = new EventEmitter<Player>();
-  @Output() moveToTeam = new EventEmitter<Player>();
+  @Output() changeRole = new EventEmitter<{player: Player, role: string}>();
+  @Output() moveToTeam = new EventEmitter<{player: Player, team: Team}>();
   @Output() removeFromTeam = new EventEmitter<Player>();
   @Output() removeFromGame = new EventEmitter<Player>();
 
