@@ -107,9 +107,23 @@ export class AircraftPoolService {
       // Process random events (maintenance, etc.)
       newCounts = this.processRandomEvents(newCounts, aircraftType);
 
-      // Create new pool entry for this turn
-      const pool = await this.prisma.aircraftPool.create({
-        data: {
+      // Upsert pool entry for this turn (update if exists, create if not)
+      const pool = await this.prisma.aircraftPool.upsert({
+        where: {
+          gameId_turn_executionBlock_aircraftType: {
+            gameId,
+            turn,
+            executionBlock,
+            aircraftType,
+          },
+        },
+        update: {
+          availableCount: newCounts.available,
+          allocatedCount: newCounts.allocated,
+          inTransitCount: newCounts.inTransit,
+          maintenanceCount: newCounts.maintenance,
+        },
+        create: {
           gameId,
           turn,
           executionBlock,
