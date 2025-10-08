@@ -13,11 +13,21 @@ export class ThreatTokensService {
 
   /**
    * Create a new threat token
+   * Ensures the game board exists before creating the token
    */
   async createThreatToken(dto: CreateThreatTokenDto): Promise<ThreatToken> {
     console.log('Creating threat token with DTO:', JSON.stringify(dto, null, 2));
 
     try {
+      // Ensure game board exists
+      const board = await this.prisma.gameBoard.findUnique({
+        where: { id: dto.boardId },
+      });
+
+      if (!board) {
+        throw new NotFoundException(`Game board with ID ${dto.boardId} not found`);
+      }
+
       const result = await this.prisma.threatToken.create({
         data: {
           boardId: dto.boardId,
