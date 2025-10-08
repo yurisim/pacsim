@@ -119,7 +119,7 @@ export class AllocationService {
   ): Promise<AllocationCycle> {
     // Verify user has authority (CFACC or GM)
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -261,7 +261,7 @@ export class AllocationService {
   async getRequestsForCycle(cycleId: number, user: any): Promise<AircraftRequest[]> {
     // Verify user has authority (CFACC or GM)
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -410,7 +410,7 @@ export class AllocationService {
   ): Promise<AircraftRequest> {
     // Verify user has authority (CFACC or GM)
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -464,7 +464,7 @@ export class AllocationService {
   ): Promise<AircraftAllocation> {
     // Verify user has authority (CFACC or GM)
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -548,7 +548,7 @@ export class AllocationService {
   async deleteAircraftAllocation(allocationId: number, user: any): Promise<void> {
     // Verify user has authority (CFACC or GM)
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -638,7 +638,7 @@ export class AllocationService {
    */
   private async validateTeamAccess(teamId: number, user: any): Promise<void> {
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
@@ -677,7 +677,7 @@ export class AllocationService {
     // Verify GM permissions
     if (user) {
       const player = await this.prisma.player.findUnique({
-        where: { sessionId: user.sub },
+        where: { sessionId: user.sessionId },
       });
 
       if (!player || player.role !== PlayerRole.GM) {
@@ -768,7 +768,7 @@ export class AllocationService {
   ): Promise<void> {
     // Verify GM permissions
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
     });
 
     if (!player || player.role !== PlayerRole.GM) {
@@ -840,7 +840,7 @@ export class AllocationService {
   ): Promise<AircraftAllocation> {
     // Verify CFACC/GM permissions
     const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sub },
+      where: { sessionId: user.sessionId },
       include: { team: true },
     });
 
