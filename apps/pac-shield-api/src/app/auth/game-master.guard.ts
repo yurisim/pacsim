@@ -9,10 +9,11 @@ type AuthenticatedRequest = Request & {
 };
 
 /**
- * Guard that allows only Game Masters (GM role).
+ * Guard that allows only Game Masters (GM role) from the same game as the resource.
  * - Reads authenticated request user set by JwtAuthGuard
  * - Resolves the Player by numeric id (sub/playerId) or sessionId
- * - Allows when player.role === 'GM'; otherwise throws ForbiddenException
+ * - Verifies player.role === 'GM'
+ * - For FOS operations, verifies the GM belongs to the same game as the FOS
  */
 @Injectable()
 export class GameMasterGuard implements CanActivate {
@@ -42,6 +43,24 @@ export class GameMasterGuard implements CanActivate {
 
     if (!resolvedPlayer || resolvedPlayer.role !== 'GM') {
       throw new ForbiddenException('Only GMs can perform this action');
+    }
+
+    // For FOS RFI operations, verify GM is in the same game as the FOS
+    const method = (req.method || '').toUpperCase();
+    const url = (req.originalUrl || req.url || '').toLowerCase();
+
+    if ((method === 'POST' || method === 'PATCH') && url.includes('/fos/') && (url.includes('/rfi') || url.includes('/roll-dice'))) {
+      const fosId = req.params?.id as string | undefined;
+      if (fosId) {
+        const fos = await this.prisma.forwardOperatingSite.findUnique({
+          where: { id: fosId },
+          select: { gameId: true },
+        });
+
+        if (fos && fos.gameId !== resolvedPlayer.gameId) {
+          throw new ForbiddenException('Access denied to this FOS');
+        }
+      }
     }
 
     return true;
