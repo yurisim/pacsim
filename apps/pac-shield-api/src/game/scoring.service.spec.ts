@@ -137,10 +137,10 @@ describe('GameScoringService', () => {
     ]);
 
     const result = await service.computeScore(gameId);
-    // Per requirements: demoralization is set to 0 for now
-    expect(result.breakdown.demoralizationPenalty.dpTotal).toBe(0);
-    expect(result.breakdown.demoralizationPenalty.penalty).toBe(0);
-    expect(result.total).toBe(0);
+    // 4 + 7 = 11 (excluding CSPOC's 9), floor(11/5) = 2
+    expect(result.breakdown.demoralizationPenalty.dpTotal).toBe(11);
+    expect(result.breakdown.demoralizationPenalty.penalty).toBe(2);
+    expect(result.total).toBe(-2); // 0 MPs from scoring - 2 DP penalty
   });
 
   it('aggregates all components and subtracts DP penalty', async () => {
@@ -177,9 +177,10 @@ describe('GameScoringService', () => {
     expect(result.breakdown.crisisSorties.points).toBe(5);
     // Includes AA_JAMMING in the 12-based bucket per rules (20→10, 12→7, 10→5, jammer→+7)
     expect(result.breakdown.destroyedTargets.points).toBe(29);
-    // Per requirements: demoralization is set to 0 for now
-    expect(result.breakdown.demoralizationPenalty.penalty).toBe(0);
+    // 9 DP (excluding CSPOC's 3), floor(9/5) = 1
+    expect(result.breakdown.demoralizationPenalty.dpTotal).toBe(9);
+    expect(result.breakdown.demoralizationPenalty.penalty).toBe(1);
 
-    expect(result.total).toBe(5 + 5 + 29);
+    expect(result.total).toBe(5 + 5 + 29 - 1); // 38
   });
 });
