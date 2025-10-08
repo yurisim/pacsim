@@ -30,6 +30,16 @@ npx nx prisma-db-push pac-shield-api
 # Testing & Quality
 npx nx test pac-shield
 npx nx lint pac-shield
+
+# E2E Testing
+npx nx e2e pac-shield-e2e              # Playwright E2E tests
+cd apps/pac-shield-api-e2e && npx jest # API E2E tests (requires pac-shield-api on port 3000)
+```
+
+### 🧪 E2E Testing Notes
+- **API E2E tests** (`apps/pac-shield-api-e2e`) assume `pac-shield-api` is running on **port 3000**
+- **NEVER kill port 3000** during API E2E test runs - tests expect the server to be running
+- Run `npx nx serve pac-shield-api` in a separate terminal before running API E2E tests
 ```
 
 ## 🚨 CRITICAL RULES
