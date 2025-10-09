@@ -5,19 +5,6 @@
       <mat-icon class="md-sys-color-primary">domain</mat-icon>
       <div class="md-typescale-title-medium">MOB Dashboard</div>
     </div>
-    <div class="flex items-center gap-3">
-      <!-- Notification Badge with better touch targets -->
-      <div class="p-2 -m-2">
-        <app-allocation-notification-badge
-          [unreadCount]="(unreadNotificationCount$ | async) || 0"
-          [hasUrgentNotifications]="(hasUrgentNotifications$ | async) || false"
-          [hasUnacknowledgedNotifications]="((unacknowledgedNotifications$ | async)?.length ?? 0) > 0"
-          (click)="onNotificationBadgeClick()"
-          size="medium"
-          tooltipPosition="below"
-        ></app-allocation-notification-badge>
-      </div>
-    </div>
   </div>
 
   <!-- Inventory Content -->
@@ -65,17 +52,4 @@
     </div>
   </div>
 </mat-card>
-
-<!-- Toast Notification Container -->
-@if (currentToastNotification) {
-  <div class="fixed top-4 right-4 z-50 max-w-sm">
-    <app-allocation-notification-toast
-      [notification]="currentToastNotification"
-      [acknowledging]="false"
-      (dismiss)="onToastDismissed($event)"
-      (acknowledge)="onToastAcknowledged($event)"
-      (markRead)="onToastRead($event)"
-    ></app-allocation-notification-toast>
-  </div>
-}
 
