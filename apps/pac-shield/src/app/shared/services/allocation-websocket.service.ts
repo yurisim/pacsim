@@ -93,19 +93,6 @@ export class AllocationWebSocketService implements OnDestroy {
   }
 
   /**
-   * Send acknowledgment for a notification
-   */
-  acknowledgeNotification(notificationId: string, gameId: number, teamId: number): void {
-    if (this.socket?.connected) {
-      this.socket.emit('allocationNotificationAck', {
-        notificationId,
-        gameId,
-        teamId
-      });
-    }
-  }
-
-  /**
    * Request refresh of allocation data
    */
   requestAllocationRefresh(gameId: number): void {
@@ -156,13 +143,6 @@ export class AllocationWebSocketService implements OnDestroy {
     });
 
     // Allocation-specific events
-    this.socket.on('allocationNotification', (data) => {
-      console.log('Allocation notification received:', data);
-      this.store.dispatch(AllocationActions.allocationNotificationReceived({
-        notification: data.payload
-      }));
-    });
-
     this.socket.on('allocationCycleCreated', (data) => {
       console.log('Allocation cycle created:', data);
       this.store.dispatch(AllocationActions.allocationCycleCreated({
@@ -228,14 +208,6 @@ export class AllocationWebSocketService implements OnDestroy {
           gameId: this.currentConfig.gameId
         }));
       }
-    });
-
-    // Acknowledgment events
-    this.socket.on('allocationNotificationAcknowledged', (data) => {
-      console.log('Notification acknowledged:', data);
-      this.store.dispatch(AllocationActions.acknowledgeNotificationSuccess({
-        notificationId: data.payload.notificationId
-      }));
     });
 
     // Refresh events
