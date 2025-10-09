@@ -268,49 +268,6 @@ export class AllocationEffects {
     )
   );
 
-  // =============================================
-  //            NOTIFICATION EFFECTS
-  // =============================================
-
-  acknowledgeNotification$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AllocationActions.acknowledgeNotification),
-      tap(({ notificationId, gameId, teamId }) => {
-        // Send acknowledgment via WebSocket
-        this.webSocketService.acknowledgeNotification(notificationId, gameId, teamId);
-      }),
-      map(({ notificationId }) => AllocationActions.acknowledgeNotificationSuccess({ notificationId })),
-      catchError(({ notificationId, error }) =>
-        of(AllocationActions.acknowledgeNotificationFailure({
-          notificationId,
-          error: error?.message || 'Failed to acknowledge notification'
-        }))
-      )
-    )
-  );
-
-  loadNotificationHistory$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AllocationActions.loadNotificationHistory),
-      mergeMap(({ gameId, teamId }) => {
-        const params = new URLSearchParams({ gameId: gameId.toString() });
-        if (teamId) {
-          params.append('teamId', teamId.toString());
-        }
-        // TODO: Implement notification history endpoint when backend supports it
-        // For now, return empty array
-        return of([]).pipe(
-          map(notifications => AllocationActions.loadNotificationHistorySuccess({ notifications })),
-          catchError(error =>
-            of(AllocationActions.loadNotificationHistoryFailure({
-              error: this.getErrorMessage(error)
-            }))
-          )
-        );
-      })
-    )
-  );
-
   initializeWebSocket$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AllocationActions.initializeAllocationWebSocket),
@@ -323,14 +280,6 @@ export class AllocationEffects {
       })
     ),
     { dispatch: false }
-  );
-
-  // Auto-mark notifications as read when notification center is opened
-  markNotificationAsRead$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AllocationActions.markNotificationAsRead),
-      map(({ notificationId }) => AllocationActions.markNotificationAsReadSuccess({ notificationId }))
-    )
   );
 
   // =============================================

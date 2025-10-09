@@ -6,24 +6,6 @@ import {
   AircraftType
 } from '../../generated/enums';
 
-export interface AllocationNotification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  data?: any;
-  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-  timestamp: string;
-  gameId: number;
-  targetTeamId?: number;
-  targetTeamName?: string;
-  requiresAcknowledgment: boolean;
-  acknowledged: boolean;
-  acknowledgedAt?: string;
-  read: boolean;
-  readAt?: string;
-}
-
 export interface AllocationState {
   // Current allocation cycle
   currentCycle: AllocationCycle | null;
@@ -36,11 +18,6 @@ export interface AllocationState {
 
   // Unallocated aircraft pool
   unallocatedPool: AircraftInstance[];
-
-  // Notifications
-  notifications: AllocationNotification[];
-  unreadNotificationCount: number;
-  lastNotificationTimestamp: string | null;
 
   // UI state
   ui: {
@@ -60,11 +37,6 @@ export interface AllocationState {
     allocationsError: string | null;
     poolError: string | null;
     formError: string | null;
-
-    // Notification UI state
-    notificationsPanelOpen: boolean;
-    processingNotification: boolean;
-    notificationError: string | null;
   };
 
   // Request submission form data
@@ -85,10 +57,6 @@ export const initialAllocationState: AllocationState = {
   allocations: [],
   unallocatedPool: [],
 
-  notifications: [],
-  unreadNotificationCount: 0,
-  lastNotificationTimestamp: null,
-
   ui: {
     cycleLoading: false,
     requestsLoading: false,
@@ -104,10 +72,6 @@ export const initialAllocationState: AllocationState = {
     allocationsError: null,
     poolError: null,
     formError: null,
-
-    notificationsPanelOpen: false,
-    processingNotification: false,
-    notificationError: null,
   },
 
   requestForm: {
