@@ -14,25 +14,16 @@ import {
 import { AllocationService } from './allocation.service';
 import { AircraftPoolService } from './aircraft-pool.service';
 import {
-  AllocationCycle,
-  AircraftRequest,
-  AircraftAllocation,
   AircraftInstance,
   AircraftPool,
-  AllocationCycleStatus,
   AircraftType
 } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateAircraftRequestDto } from './dto/create-aircraft-request.dto';
-import { UpdateAircraftRequestDto } from './dto/update-aircraft-request.dto';
-import { ReviewAircraftRequestDto } from './dto/review-aircraft-request.dto';
-import { CreateAircraftAllocationDto } from './dto/create-aircraft-allocation.dto';
 import { SpawnAircraftDto } from './dto/spawn-aircraft.dto';
-import { DirectAllocationDto } from './dto/direct-allocation.dto';
 
 /**
- * Controller for CFACC aircraft allocation operations.
- * Handles allocation cycles, requests, and allocations.
+ * Controller for aircraft allocation operations (simplified workflow).
+ * Handles aircraft pool management, direct allocation, and GM spawning.
  */
 @Controller('allocation')
 @UseGuards(JwtAuthGuard)
@@ -41,46 +32,6 @@ export class AllocationController {
     private readonly allocationService: AllocationService,
     private readonly aircraftPoolService: AircraftPoolService
   ) {}
-
-  // =============================================
-  //            ALLOCATION CYCLE ENDPOINTS
-  // =============================================
-
-  /**
-   * Create a new allocation cycle for the current game turn
-   * POST /allocation/cycles
-   */
-  @Post('cycles')
-  async createAllocationCycle(
-    @Body() body: { gameId: number; turn: number },
-    @Request() _req: any
-  ): Promise<AllocationCycle> {
-    return this.allocationService.createAllocationCycle(body.gameId, body.turn);
-  }
-
-  /**
-   * Get the latest allocation cycle for a game
-   * GET /allocation/cycles/game/:gameId/latest
-   */
-  @Get('cycles/game/:gameId/latest')
-  async getLatestAllocationCycle(
-    @Param('gameId', ParseIntPipe) gameId: number
-  ): Promise<AllocationCycle | null> {
-    return this.allocationService.getLatestAllocationCycle(gameId);
-  }
-
-  /**
-   * Update allocation cycle status
-   * PUT /allocation/cycles/:cycleId
-   */
-  @Put('cycles/:cycleId')
-  async updateAllocationCycleStatus(
-    @Param('cycleId', ParseIntPipe) cycleId: number,
-    @Body() body: { status: AllocationCycleStatus },
-    @Request() req: any
-  ): Promise<AllocationCycle> {
-    return this.allocationService.updateAllocationCycleStatus(cycleId, body.status, req.user);
-  }
 
   // =============================================
   //            AIRCRAFT POOL ENDPOINTS
@@ -168,149 +119,6 @@ export class AllocationController {
     );
   }
 
-  /**
-   * Get unallocated aircraft instances (legacy endpoint for compatibility)
-   * GET /allocation/pool
-   */
-  @Get('pool')
-  async getUnallocatedAircraftPool(
-    @Query('gameId', ParseIntPipe) gameId: number,
-    @Query('turn') turn?: string
-  ): Promise<AircraftInstance[]> {
-    const turnNumber = turn ? parseInt(turn, 10) : undefined;
-    return this.allocationService.getUnallocatedAircraftPool(gameId, turnNumber);
-  }
-
-  // =============================================
-  //            AIRCRAFT REQUEST ENDPOINTS
-  // =============================================
-
-  /**
-   * Submit a new aircraft request from a MOB
-   * POST /allocation/requests
-   */
-  @Post('requests')
-  async createAircraftRequest(
-    @Body() createAircraftRequestDto: CreateAircraftRequestDto,
-    @Request() req: any
-  ): Promise<AircraftRequest> {
-    return this.allocationService.createAircraftRequest(
-      createAircraftRequestDto.allocationCycleId,
-      {
-        teamId: createAircraftRequestDto.teamId,
-        aircraftType: createAircraftRequestDto.aircraftType,
-        quantityRequested: createAircraftRequestDto.quantityRequested,
-        missionJustification: createAircraftRequestDto.missionJustification,
-        priority: createAircraftRequestDto.priority,
-        rationale: createAircraftRequestDto.rationale,
-      },
-      req.user
-    );
-  }
-
-  /**
-   * Get all aircraft requests for a specific allocation cycle
-   * GET /allocation/requests/cycle/:cycleId
-   */
-  @Get('requests/cycle/:cycleId')
-  async getRequestsForCycle(
-    @Param('cycleId', ParseIntPipe) cycleId: number,
-    @Request() req: any
-  ): Promise<AircraftRequest[]> {
-    return this.allocationService.getRequestsForCycle(cycleId, req.user);
-  }
-
-  /**
-   * Get aircraft requests for a specific team
-   * GET /allocation/requests/team/:teamId
-   */
-  @Get('requests/team/:teamId')
-  async getRequestsForTeam(
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @Request() req: any
-  ): Promise<AircraftRequest[]> {
-    return this.allocationService.getRequestsForTeam(teamId, req.user);
-  }
-
-  /**
-   * Update an aircraft request
-   * PUT /allocation/requests/:requestId
-   */
-  @Put('requests/:requestId')
-  async updateAircraftRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-    @Body() updateAircraftRequestDto: UpdateAircraftRequestDto,
-    @Request() req: any
-  ): Promise<AircraftRequest> {
-    return this.allocationService.updateAircraftRequest(requestId, updateAircraftRequestDto, req.user);
-  }
-
-  /**
-   * Delete an aircraft request (withdraw)
-   * DELETE /allocation/requests/:requestId
-   */
-  @Delete('requests/:requestId')
-  async deleteAircraftRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-    @Request() req: any
-  ): Promise<{ success: boolean }> {
-    await this.allocationService.deleteAircraftRequest(requestId, req.user);
-    return { success: true };
-  }
-
-  // =============================================
-  //            CFACC ALLOCATION ENDPOINTS
-  // =============================================
-
-  /**
-   * CFACC reviews and updates a request status
-   * PUT /allocation/requests/:requestId/review
-   */
-  @Put('requests/:requestId/review')
-  async reviewAircraftRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-    @Body() reviewAircraftRequestDto: ReviewAircraftRequestDto,
-    @Request() req: any
-  ): Promise<AircraftRequest> {
-    return this.allocationService.reviewAircraftRequest(requestId, reviewAircraftRequestDto, req.user);
-  }
-
-  /**
-   * Create an aircraft allocation
-   * POST /allocation/allocations
-   */
-  @Post('allocations')
-  async createAircraftAllocation(
-    @Body() createAircraftAllocationDto: CreateAircraftAllocationDto,
-    @Request() req: any
-  ): Promise<AircraftAllocation> {
-    return this.allocationService.createAircraftAllocation(createAircraftAllocationDto, req.user);
-  }
-
-  /**
-   * Delete an aircraft allocation
-   * DELETE /allocation/allocations/:allocationId
-   */
-  @Delete('allocations/:allocationId')
-  async deleteAircraftAllocation(
-    @Param('allocationId', ParseIntPipe) allocationId: number,
-    @Request() req: any
-  ): Promise<{ success: boolean }> {
-    await this.allocationService.deleteAircraftAllocation(allocationId, req.user);
-    return { success: true };
-  }
-
-  /**
-   * Get all allocations for a cycle
-   * GET /allocation/allocations/cycle/:cycleId
-   */
-  @Get('allocations/cycle/:cycleId')
-  async getAllocationsForCycle(
-    @Param('cycleId', ParseIntPipe) cycleId: number
-  ): Promise<AircraftAllocation[]> {
-    return this.allocationService.getAllocationsForCycle(cycleId);
-  }
-
   // =============================================
   //            GM AIRCRAFT SPAWNING ENDPOINTS
   // =============================================
@@ -383,23 +191,46 @@ export class AllocationController {
   }
 
   // =============================================
-  //            DIRECT ALLOCATION ENDPOINT
+  //       SIMPLIFIED ALLOCATION ENDPOINTS
   // =============================================
 
   /**
-   * Directly allocate an aircraft to a team (CFACC/GM only)
-   * POST /allocation/allocate
+   * Get allocation table data for CAOC dashboard
+   * GET /allocation/table/:gameId
    */
-  @Post('allocate')
-  async directAllocate(
-    @Body() dto: DirectAllocationDto,
+  @Get('table/:gameId')
+  async getAllocationTable(
+    @Param('gameId', ParseIntPipe) gameId: number
+  ): Promise<{
+    c130Arrow: any[];
+    c17Moose: any[];
+    c5Bosco: any[];
+  }> {
+    return this.allocationService.getAllocationTable(gameId);
+  }
+
+  /**
+   * Allocate an aircraft to a team (CAOC/GM only)
+   * PUT /allocation/aircraft/:id/allocate
+   */
+  @Put('aircraft/:id/allocate')
+  async allocateAircraft(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { teamId: number },
     @Request() req: any
-  ): Promise<AircraftAllocation> {
-    return this.allocationService.directAllocateAircraft(
-      dto.aircraftInstanceId,
-      dto.allocatedToTeamId,
-      dto.allocationCycleId,
-      req.user
-    );
+  ): Promise<AircraftInstance> {
+    return this.allocationService.allocateAircraft(id, body.teamId, req.user);
+  }
+
+  /**
+   * Deallocate an aircraft (CAOC/GM only)
+   * PUT /allocation/aircraft/:id/deallocate
+   */
+  @Put('aircraft/:id/deallocate')
+  async deallocateAircraft(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any
+  ): Promise<AircraftInstance> {
+    return this.allocationService.deallocateAircraft(id, req.user);
   }
 }
