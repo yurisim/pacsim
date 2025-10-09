@@ -1,9 +1,7 @@
-import { Injectable, inject } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AppState } from '../../core/store/app.state';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +15,6 @@ import { AppState } from '../../core/store/app.state';
  */
 export class WebSocketService {
   private socket: Socket;
-  private store = inject(Store<AppState>);
   private connectionStatus = new BehaviorSubject<boolean>(false);
   private gameId: string | null = null;
   /** Emits true when connected; subscribe to reflect socket availability in UI/store. */
@@ -115,8 +112,6 @@ export class WebSocketService {
   listen<T>(eventName: string): Observable<T> {
     return new Observable((subscriber) => {
       this.socket.on(eventName, (data: T) => {
-        // TODO: Dispatch an NgRx action with the received data
-        // Example: this.store.dispatch(someAction({ payload: data }));
         subscriber.next(data);
       });
 
@@ -156,22 +151,16 @@ export class WebSocketService {
     this.socket.on('connect', () => {
       console.log('Successfully connected to WebSocket server.');
       this.connectionStatus.next(true);
-      // TODO: Dispatch a connection success action
-      // this.store.dispatch(WebSocketActions.connectSuccess());
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log(`Disconnected from WebSocket: ${reason}`);
       this.connectionStatus.next(false);
-      // TODO: Dispatch a disconnect action
-      // this.store.dispatch(WebSocketActions.disconnected({ reason }));
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('WebSocket connection error:', error);
       this.connectionStatus.next(false);
-      // TODO: Dispatch a connection failure action
-      // this.store.dispatch(WebSocketActions.connectFailure({ error }));
     });
   }
 }
