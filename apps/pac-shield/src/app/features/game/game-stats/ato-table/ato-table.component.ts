@@ -8,14 +8,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Store } from '@ngrx/store';
 import { ATOLine } from '../../../../generated/aTOLine/aTOLine.entity';
 import { CreateATOLineDto } from '../../../../generated/aTOLine/create-aTOLine.dto';
 import { UpdateATOLineDto } from '../../../../generated/aTOLine/update-aTOLine.dto';
 import { TeamType, PlayerRole, PPRStatus } from '../../../../generated/enums';
 import { AircraftInstance } from '../../../../generated/aircraftInstance/aircraftInstance.entity';
 import { FlightPlannerDialogComponent, FlightPlannerDialogData } from '../../dialogs/flight-planner/flight-planner-dialog.component';
-import * as AtoActions from '../../../../store/ato/ato.actions';
+import { AtoStateService } from '../../../../shared/services/ato-state.service';
 
 /**
  * Interactive ATO table for flight planning and PPR approval.
@@ -46,7 +45,7 @@ export class AtoTableComponent {
   @Input() allocatedAircraft: AircraftInstance[] = [];
 
   private dialog = inject(MatDialog);
-  private store = inject(Store);
+  private atoState = inject(AtoStateService);
 
   displayedColumns = ['callSign', 'aircraft', 'route', 'intent', 'configuration', 'ppr', 'actions'];
 
@@ -113,10 +112,9 @@ export class AtoTableComponent {
 
     dialogRef.afterClosed().subscribe((result: (CreateATOLineDto & { gameId: number; riskTokenUsed?: boolean }) | undefined) => {
       if (result) {
-        // Dispatch create action to NgRx store
-        this.store.dispatch(AtoActions.createAtoLine({
-          flightPlan: result
-        }));
+        this.atoState.createAtoLine(result).subscribe({
+          error: (err) => console.error('Failed to create ATO line:', err)
+        });
       }
     });
   }
@@ -144,31 +142,35 @@ export class AtoTableComponent {
 
     dialogRef.afterClosed().subscribe((result: (UpdateATOLineDto & { riskTokenUsed?: boolean }) | undefined) => {
       if (result && line.id) {
-        // Dispatch update action to NgRx store
-        this.store.dispatch(AtoActions.updateAtoLine({
-          id: line.id,
-          updates: result
-        }));
+        this.atoState.updateAtoLine(line.id, result).subscribe({
+          error: (err) => console.error('Failed to update ATO line:', err)
+        });
       }
     });
   }
 
   onApprovePpr(line: ATOLine): void {
     if (line.id) {
-      this.store.dispatch(AtoActions.approvePpr({ id: line.id }));
+      this.atoState.approvePpr(line.id).subscribe({
+        error: (err) => console.error('Failed to approve PPR:', err)
+      });
     }
   }
 
   onDenyPpr(line: ATOLine): void {
     if (line.id) {
-      this.store.dispatch(AtoActions.denyPpr({ id: line.id }));
+      this.atoState.denyPpr(line.id).subscribe({
+        error: (err) => console.error('Failed to deny PPR:', err)
+      });
     }
   }
 
 
   onDeleteFlightPlan(line: ATOLine): void {
     if (line.id) {
-      this.store.dispatch(AtoActions.deleteAtoLine({ id: line.id }));
+      this.atoState.deleteAtoLine(line.id).subscribe({
+        error: (err) => console.error('Failed to delete ATO line:', err)
+      });
     }
   }
 
