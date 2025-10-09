@@ -3,10 +3,10 @@ import { Component, inject, OnInit, OnDestroy, Input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { Store } from '@ngrx/store';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
-import { AllocationWebSocketService } from '../../../../shared/services/allocation-websocket.service';
+import { AllocationTableComponent } from '../../allocation-table/allocation-table.component';
+import { AllocationStateService } from '../../../../shared/services/allocation-state.service';
 import { TeamType } from '../../../../generated/enums';
 
 /**
@@ -15,7 +15,7 @@ import { TeamType } from '../../../../generated/enums';
  * Features:
  * - Aircraft inventory and commodities display
  * - Real-time allocation updates from CAOC
- * - Integration with NgRx allocation state management
+ * - Integration with allocation state management
  *
  * Note: MOBs no longer request aircraft - CAOC distributes directly
  */
@@ -26,7 +26,8 @@ import { TeamType } from '../../../../generated/enums';
     CommonModule,
     MatCardModule,
     MatIconModule,
-    MatChipsModule
+    MatChipsModule,
+    AllocationTableComponent
   ],
   templateUrl: './mob-dashboard.component.html',
 })
@@ -37,8 +38,7 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
   @Input() currentUserTeam: TeamType | null = null;
   @Input() teamId: number | null = null;
 
-  private readonly store = inject(Store);
-  private readonly webSocketService = inject(AllocationWebSocketService);
+  private readonly allocationState = inject(AllocationStateService);
   private readonly destroy$ = new Subject<void>();
 
   constructor() {
@@ -46,19 +46,14 @@ export class MobDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Initialize WebSocket connection for real-time allocation updates
-    if (this.currentGameId && this.teamId) {
-      this.webSocketService.connect({
-        gameId: this.currentGameId,
-        teamId: this.teamId,
-        reconnect: true
-      });
+    // Load allocation table data
+    if (this.currentGameId) {
+      this.allocationState.loadAllocationTable(this.currentGameId);
     }
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.webSocketService.disconnect();
   }
 }
