@@ -44,7 +44,7 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
       id: 1,
       callSign: 'TEST-01',
       type: 'F16',
-      strength: 100,
+      subtype: null,
       rangeHexes: 20,
       status: 'FMC',
       locationType: 'MOB',
@@ -53,13 +53,14 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
       teamId: 1,
       payloadPersonnelCount: 0,
       currentATOId: null,
-      allocationStatus: 'AVAILABLE'
+      allocatedToTeamId: null,
+      allocatedAt: null
     },
     {
       id: 2,
       callSign: 'TEST-02',
       type: 'C17',
-      strength: 100,
+      subtype: null,
       rangeHexes: 25,
       status: 'FMC',
       locationType: 'MOB',
@@ -68,7 +69,8 @@ describe('FlightPlannerDialogComponent - Location Autocomplete', () => {
       teamId: 1,
       payloadPersonnelCount: 50,
       currentATOId: null,
-      allocationStatus: 'AVAILABLE'
+      allocatedToTeamId: null,
+      allocatedAt: null
     }
   ];
 
