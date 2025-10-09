@@ -16,7 +16,6 @@ import {
 } from '@prisma/client';
 import { GameGateway } from '../../game/game.gateway';
 import { AircraftPoolService } from './aircraft-pool.service';
-import { AllocationNotificationService } from './allocation-notification.service';
 import { generateCallSign } from './utils/callsign-generator.util';
 
 /**
@@ -29,8 +28,7 @@ export class AllocationService {
     private prisma: PrismaService,
     @Inject(forwardRef(() => GameGateway))
     private gameGateway: GameGateway,
-    private aircraftPoolService: AircraftPoolService,
-    private allocationNotificationService: AllocationNotificationService
+    private aircraftPoolService: AircraftPoolService
   ) {}
 
   // =============================================
@@ -152,9 +150,6 @@ export class AllocationService {
     // Broadcast status change
     this.gameGateway.broadcastAllocationCycleStatusChanged(cycle.gameId.toString(), cycle);
 
-    // Send targeted notifications about status change
-    await this.allocationNotificationService.notifyAllocationCycleStatusChanged(cycle);
-
     return cycle;
   }
 
@@ -248,9 +243,6 @@ export class AllocationService {
 
     // Broadcast request created
     this.gameGateway.broadcastAircraftRequestCreated(cycle.gameId.toString(), request);
-
-    // Send notification to CFACC about new request
-    await this.allocationNotificationService.notifyRequestSubmitted(request);
 
     return request;
   }
@@ -444,9 +436,6 @@ export class AllocationService {
       request
     );
 
-    // Send targeted notification to requesting team about review decision
-    await this.allocationNotificationService.notifyRequestReviewed(request);
-
     return request;
   }
 
@@ -536,9 +525,6 @@ export class AllocationService {
       allocation
     );
 
-    // Send targeted notification to allocated team
-    await this.allocationNotificationService.notifyAircraftAllocated(allocation);
-
     return allocation;
   }
 
@@ -601,15 +587,6 @@ export class AllocationService {
       allocation.allocationCycle.gameId.toString(),
       allocationId,
       allocation.aircraftInstance.callSign
-    );
-
-    // Send targeted notification to affected team
-    await this.allocationNotificationService.notifyAircraftDeallocated(
-      allocation.allocationCycle.gameId,
-      allocationId,
-      allocation.aircraftInstance.callSign,
-      allocation.allocatedToTeamId,
-      allocation.allocatedToTeam?.name || 'Unknown Team'
     );
   }
 
@@ -926,9 +903,6 @@ export class AllocationService {
 
     // Broadcast allocation event
     this.gameGateway.broadcastAircraftAllocated(cycle.gameId.toString(), allocation);
-
-    // Send notification to allocated team
-    await this.allocationNotificationService.notifyAircraftAllocated(allocation);
 
     // Update aircraft pool counts
     await this.aircraftPoolService.refreshAircraftPool(cycle.gameId);

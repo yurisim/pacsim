@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AllocationService } from './allocation.service';
 import { AircraftPoolService } from './aircraft-pool.service';
-import { AllocationNotificationService } from './allocation-notification.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GameGateway } from '../../game/game.gateway';
 
@@ -63,21 +62,11 @@ const mockAircraftPoolService = {
   refreshAircraftPool: jest.fn(),
 };
 
-const mockAllocationNotificationService = {
-  notifyAllocationCycleCreated: jest.fn(),
-  notifyAllocationCycleStatusChanged: jest.fn(),
-  notifyAircraftRequestCreated: jest.fn(),
-  notifyAircraftRequestUpdated: jest.fn(),
-  notifyAircraftAllocated: jest.fn(),
-  notifyAircraftPoolUpdated: jest.fn(),
-};
-
 describe('AllocationService', () => {
   let service: AllocationService;
   let prismaService: any;
   let gameGateway: any;
   let aircraftPoolService: any;
-  let allocationNotificationService: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -95,10 +84,6 @@ describe('AllocationService', () => {
           provide: AircraftPoolService,
           useValue: mockAircraftPoolService,
         },
-        {
-          provide: AllocationNotificationService,
-          useValue: mockAllocationNotificationService,
-        },
       ],
     }).compile();
 
@@ -106,7 +91,6 @@ describe('AllocationService', () => {
     prismaService = module.get(PrismaService);
     gameGateway = module.get(GameGateway);
     aircraftPoolService = module.get(AircraftPoolService);
-    allocationNotificationService = module.get(AllocationNotificationService);
   });
 
   afterEach(() => {
