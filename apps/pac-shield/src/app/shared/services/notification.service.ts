@@ -93,17 +93,10 @@ export class NotificationService {
   connectToGame(gameId: number, teamId?: number): void {
     // Remove any existing listeners to prevent duplicates
     this.ws.off('notification');
-    this.ws.off('allocationNotification');
     this.ws.off('notificationAcknowledged');
 
     // Listen for generic notification events from the server
     this.ws.on<{ payload: GameNotification }>('notification', (data) => {
-      this.addNotification(data.payload);
-      this.showToastForNotification(data.payload);
-    });
-
-    // Listen for allocation-specific events (backward compatibility)
-    this.ws.on<{ payload: GameNotification }>('allocationNotification', (data) => {
       this.addNotification(data.payload);
       this.showToastForNotification(data.payload);
     });
@@ -128,7 +121,6 @@ export class NotificationService {
    */
   disconnectFromGame(): void {
     this.ws.off('notification');
-    this.ws.off('allocationNotification');
     this.notificationsSignal.set([]);
   }
 

@@ -4,7 +4,6 @@ import {
   AircraftPool,
   AircraftType
 } from '@prisma/client';
-import { AllocationNotificationService } from './allocation-notification.service';
 import { GameGateway } from '../../game/game.gateway';
 
 /**
@@ -16,8 +15,6 @@ import { GameGateway } from '../../game/game.gateway';
 export class AircraftPoolService {
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => AllocationNotificationService))
-    private allocationNotificationService: AllocationNotificationService,
     @Inject(forwardRef(() => GameGateway))
     private gameGateway: GameGateway
   ) {}
@@ -136,9 +133,6 @@ export class AircraftPoolService {
       });
       newPools.push(pool);
     }
-
-    // Notify about pool updates
-    await this.notifyPoolUpdated(gameId, newPools);
 
     return newPools;
   }
@@ -397,32 +391,5 @@ export class AircraftPoolService {
     });
 
     return updatedPools;
-  }
-
-  // =============================================
-  //           NOTIFICATION HELPERS
-  // =============================================
-
-  /**
-   * Notify about aircraft pool updates
-   */
-  private async notifyPoolUpdated(gameId: number, pools: AircraftPool[]): Promise<void> {
-    try {
-      const poolStats = pools.reduce((acc, pool) => {
-        acc[pool.aircraftType] = {
-          available: pool.availableCount,
-          allocated: pool.allocatedCount,
-          inTransit: pool.inTransitCount,
-          maintenance: pool.maintenanceCount,
-          total: pool.availableCount + pool.allocatedCount + pool.inTransitCount + pool.maintenanceCount
-        };
-        return acc;
-      }, {} as any);
-
-      await this.allocationNotificationService.notifyAircraftPoolUpdated(gameId, poolStats);
-    } catch (error) {
-      // Log error but don't fail the pool update
-      console.error('Failed to send pool update notification:', error);
-    }
   }
 }

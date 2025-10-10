@@ -8,7 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { ATOLine } from '../app/generated/aTOLine/aTOLine.entity';
-import { AircraftRequest, AircraftAllocation, AllocationCycle, AircraftInstance } from '@prisma/client';
+import { AircraftInstance } from '@prisma/client';
 
 /**
  * WebSocket gateway for real-time, game-scoped events (namespace: /game).
@@ -213,104 +213,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // =============================================================================
-  // Allocation Events
+  // Allocation Events (Simplified Workflow)
   // =============================================================================
-
-  /**
-   * Broadcast allocation cycle created event to all players in the game room
-   */
-  broadcastAllocationCycleCreated(gameId: string, cycle: AllocationCycle): void {
-    this.server.to(gameId).emit('allocationCycleCreated', {
-      type: 'allocationCycleCreated',
-      payload: cycle,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Allocation cycle created broadcast to room ${gameId}: Turn ${cycle.turn}`);
-  }
-
-  /**
-   * Broadcast allocation cycle status change event to all players in the game room
-   */
-  broadcastAllocationCycleStatusChanged(gameId: string, cycle: AllocationCycle): void {
-    this.server.to(gameId).emit('allocationCycleStatusChanged', {
-      type: 'allocationCycleStatusChanged',
-      payload: cycle,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Allocation cycle status changed broadcast to room ${gameId}: ${cycle.status}`);
-  }
-
-  /**
-   * Broadcast aircraft request created event to all players in the game room
-   */
-  broadcastAircraftRequestCreated(gameId: string, request: AircraftRequest): void {
-    this.server.to(gameId).emit('aircraftRequestCreated', {
-      type: 'aircraftRequestCreated',
-      payload: request,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Aircraft request created broadcast to room ${gameId}: Request ${request.id}`);
-  }
-
-  /**
-   * Broadcast aircraft request updated event to all players in the game room
-   */
-  broadcastAircraftRequestUpdated(gameId: string, request: AircraftRequest): void {
-    this.server.to(gameId).emit('aircraftRequestUpdated', {
-      type: 'aircraftRequestUpdated',
-      payload: request,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Aircraft request updated broadcast to room ${gameId}: Request ${request.id}`);
-  }
-
-  /**
-   * Broadcast aircraft request deleted event to all players in the game room
-   */
-  broadcastAircraftRequestDeleted(gameId: string, requestId: number): void {
-    this.server.to(gameId).emit('aircraftRequestDeleted', {
-      type: 'aircraftRequestDeleted',
-      payload: { requestId },
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Aircraft request deleted broadcast to room ${gameId}: Request ${requestId}`);
-  }
-
-  /**
-   * Broadcast aircraft request reviewed event to all players in the game room
-   */
-  broadcastAircraftRequestReviewed(gameId: string, request: AircraftRequest): void {
-    this.server.to(gameId).emit('aircraftRequestReviewed', {
-      type: 'aircraftRequestReviewed',
-      payload: request,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Aircraft request reviewed broadcast to room ${gameId}: Request ${request.id} - ${request.status}`);
-  }
-
-  /**
-   * Broadcast aircraft allocated event to all players in the game room
-   */
-  broadcastAircraftAllocated(gameId: string, allocation: AircraftAllocation): void {
-    this.server.to(gameId).emit('aircraftAllocated', {
-      type: 'aircraftAllocated',
-      payload: allocation,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Aircraft allocated broadcast to room ${gameId}: Allocation ${allocation.id}`);
-  }
-
-  /**
-   * Broadcast aircraft deallocated event to all players in the game room
-   */
-  broadcastAircraftDeallocated(gameId: string, allocationId: number, aircraftCallSign: string): void {
-    this.server.to(gameId).emit('aircraftDeallocated', {
-      type: 'aircraftDeallocated',
-      payload: { allocationId, aircraftCallSign },
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Aircraft deallocated broadcast to room ${gameId}: ${aircraftCallSign}`);
-  }
 
   /**
    * Broadcast aircraft spawned event to all players in the game room (GM spawning)
@@ -346,6 +250,19 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       timestamp: new Date().toISOString(),
     });
     this.logger.log(`Aircraft pool updated broadcast to room ${gameId}`);
+  }
+
+  /**
+   * Broadcast allocation table updated event to all players in the game room
+   * Used for simplified allocation workflow
+   */
+  broadcastAllocationTableUpdated(gameId: string, table: any): void {
+    this.server.to(gameId).emit('allocationTableUpdated', {
+      type: 'allocationTableUpdated',
+      payload: table,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Allocation table updated broadcast to room ${gameId}`);
   }
 
   // =============================================================================
@@ -417,112 +334,5 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(room).emit('bulkDiceRollUpdated', eventData);
 
     this.logger.log(`✅ Bulk dice roll updated broadcast sent to room ${room}: ${payload.countries.length} countries`);
-  }
-
-  // =============================================================================
-  // Team-Specific Room Management for Allocation Notifications
-  // =============================================================================
-
-  /**
-   * Join client to team-specific room for targeted allocation notifications
-   */
-  joinTeamRoom(clientId: string, gameId: number, teamId: number): void {
-    const client = this.server.sockets.sockets.get(clientId);
-    if (client) {
-      const teamRoomId = `${gameId}-team-${teamId}`;
-      client.join(teamRoomId);
-      this.logger.log(`Client ${clientId} joined team room ${teamRoomId}`);
-    }
-  }
-
-  /**
-   * Leave team-specific room
-   */
-  leaveTeamRoom(clientId: string, gameId: number, teamId: number): void {
-    const client = this.server.sockets.sockets.get(clientId);
-    if (client) {
-      const teamRoomId = `${gameId}-team-${teamId}`;
-      client.leave(teamRoomId);
-      this.logger.log(`Client ${clientId} left team room ${teamRoomId}`);
-    }
-  }
-
-  /**
-   * Enhanced connection handler that joins team-specific rooms based on player data
-   */
-  async handleTeamConnection(client: Socket, gameId: number, teamId?: number): Promise<void> {
-    if (gameId && teamId) {
-      this.joinTeamRoom(client.id, gameId, teamId);
-    }
-  }
-
-  // =============================================================================
-  // Event Handlers for Client-Initiated Allocation Actions
-  // =============================================================================
-
-  /**
-   * Handle client request to refresh allocation data
-   */
-  @SubscribeMessage('requestAllocationRefresh')
-  handleAllocationRefreshRequest(client: Socket, payload: { gameId: number }): void {
-    const _room = client.rooms.values().next().value;
-    this.logger.log(`Allocation refresh requested by ${client.id} for game ${payload.gameId}`);
-
-    // Emit refresh event back to requesting client
-    client.emit('allocationRefreshRequested', {
-      type: 'allocationRefreshRequested',
-      payload: { gameId: payload.gameId },
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  /**
-   * Handle client notification acknowledgment (generic)
-   */
-  @SubscribeMessage('notificationAck')
-  handleNotificationAck(client: Socket, payload: {
-    notificationId: string;
-    gameId: number;
-    teamId?: number;
-  }): void {
-    this.logger.log(`Notification acknowledged by ${client.id}: ${payload.notificationId}`);
-
-    // Broadcast acknowledgment to game room
-    client.to(payload.gameId.toString()).emit('notificationAcknowledged', {
-      type: 'notificationAcknowledged',
-      payload: {
-        notificationId: payload.notificationId,
-        acknowledgedBy: client.id,
-        acknowledgedAt: new Date().toISOString()
-      },
-      timestamp: new Date().toISOString(),
-    });
-
-    // Also broadcast to team room if teamId provided
-    if (payload.teamId) {
-      const teamRoomId = `${payload.gameId}-team-${payload.teamId}`;
-      client.to(teamRoomId).emit('notificationAcknowledged', {
-        type: 'notificationAcknowledged',
-        payload: {
-          notificationId: payload.notificationId,
-          acknowledgedBy: client.id,
-          acknowledgedAt: new Date().toISOString()
-        },
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }
-
-  /**
-   * Handle client notification acknowledgment (legacy allocation-specific handler for backward compatibility)
-   */
-  @SubscribeMessage('allocationNotificationAck')
-  handleAllocationNotificationAck(client: Socket, payload: {
-    notificationId: string;
-    gameId: number;
-    teamId: number;
-  }): void {
-    // Delegate to generic handler
-    this.handleNotificationAck(client, payload);
   }
 }

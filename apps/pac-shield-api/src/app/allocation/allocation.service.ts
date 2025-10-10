@@ -1,13 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  AllocationCycle,
-  AircraftRequest,
-  AircraftAllocation,
   AircraftInstance,
-  AllocationCycleStatus,
-  AllocationRequestStatus,
-  AircraftAllocationStatus,
   PlayerRole,
   TeamType,
   AircraftType,
@@ -16,453 +10,81 @@ import {
 } from '@prisma/client';
 import { GameGateway } from '../../game/game.gateway';
 import { AircraftPoolService } from './aircraft-pool.service';
-import { AllocationNotificationService } from './allocation-notification.service';
 import { generateCallSign } from './utils/callsign-generator.util';
 
 /**
- * Service for managing the CFACC aircraft allocation workflow.
- * Handles allocation cycles, requests, and allocations.
+ * Service for managing aircraft allocation (simplified workflow).
+ * Handles direct allocation to teams and GM spawning.
  */
 @Injectable()
 export class AllocationService {
+  private readonly logger = new Logger(AllocationService.name);
+
   constructor(
     private prisma: PrismaService,
     @Inject(forwardRef(() => GameGateway))
     private gameGateway: GameGateway,
-    private aircraftPoolService: AircraftPoolService,
-    private allocationNotificationService: AllocationNotificationService
+    private aircraftPoolService: AircraftPoolService
   ) {}
 
   // =============================================
-  //            ALLOCATION CYCLE MANAGEMENT
+  //       SIMPLIFIED ALLOCATION WORKFLOW
   // =============================================
 
   /**
-   * Create a new allocation cycle for a game turn
+   * Get allocation table data for CAOC dashboard
+   * Returns aircraft grouped by type with allocation status
    */
-  async createAllocationCycle(gameId: number, turn: number): Promise<AllocationCycle> {
-    // Verify game exists
-    const game = await this.prisma.game.findUnique({
-      where: { id: gameId },
-    });
-
-    if (!game) {
-      throw new NotFoundException('Game not found');
-    }
-
-    // Check if cycle already exists for this game/turn
-    const existingCycle = await this.prisma.allocationCycle.findUnique({
-      where: { gameId_turn: { gameId, turn } },
-    });
-
-    if (existingCycle) {
-      throw new BadRequestException(`Allocation cycle already exists for game ${gameId}, turn ${turn}`);
-    }
-
-    const cycle = await this.prisma.allocationCycle.create({
-      data: {
-        gameId,
-        turn,
-        status: AllocationCycleStatus.REQUESTS_OPEN,
-      },
-      include: {
-        game: true,
-        requests: {
-          include: { team: true }
-        },
-        allocations: {
-          include: {
-            aircraftInstance: true,
-            allocatedToTeam: true,
-            aircraftRequest: true
-          }
+  async getAllocationTable(gameId: number): Promise<{
+    c130Arrow: AllocationTableRow[];
+    c17Moose: AllocationTableRow[];
+    c5Bosco: AllocationTableRow[];
+  }> {
+    // Get all mobility aircraft for this game
+    const aircraft = await this.prisma.aircraftInstance.findMany({
+      where: {
+        team: { gameId },
+        type: {
+          in: [AircraftType.C130, AircraftType.C17, AircraftType.C5]
         }
       },
-    });
-
-    // Broadcast cycle created event
-    this.gameGateway.broadcastAllocationCycleCreated(gameId.toString(), cycle);
-
-    return cycle;
-  }
-
-  /**
-   * Get the latest allocation cycle for a game
-   */
-  async getLatestAllocationCycle(gameId: number): Promise<AllocationCycle | null> {
-    return this.prisma.allocationCycle.findFirst({
-      where: { gameId },
-      orderBy: { turn: 'desc' },
       include: {
-        game: true,
-        requests: {
-          include: { team: true }
-        },
-        allocations: {
-          include: {
-            aircraftInstance: true,
-            allocatedToTeam: true,
-            aircraftRequest: true
-          }
-        }
+        allocatedToTeam: true,
       },
-    });
-  }
-
-  /**
-   * Update allocation cycle status
-   */
-  async updateAllocationCycleStatus(
-    cycleId: number,
-    status: AllocationCycleStatus,
-    user: any
-  ): Promise<AllocationCycle> {
-    // Verify user has authority (CFACC or GM)
-    const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sessionId },
-      include: { team: true },
-    });
-
-    if (!player) {
-      throw new NotFoundException('Player not found');
-    }
-
-    if (player.role !== PlayerRole.GM && player.team?.type !== TeamType.CAOC) {
-      throw new ForbiddenException('Only CFACC and GM can update allocation cycle status');
-    }
-
-    const cycle = await this.prisma.allocationCycle.update({
-      where: { id: cycleId },
-      data: { status },
-      include: {
-        game: true,
-        requests: {
-          include: { team: true }
-        },
-        allocations: {
-          include: {
-            aircraftInstance: true,
-            allocatedToTeam: true,
-            aircraftRequest: true
-          }
-        }
-      },
-    });
-
-    // Broadcast status change
-    this.gameGateway.broadcastAllocationCycleStatusChanged(cycle.gameId.toString(), cycle);
-
-    // Send targeted notifications about status change
-    await this.allocationNotificationService.notifyAllocationCycleStatusChanged(cycle);
-
-    return cycle;
-  }
-
-  // =============================================
-  //            AIRCRAFT POOL MANAGEMENT
-  // =============================================
-
-  /**
-   * Get unallocated aircraft pool for a game/turn
-   */
-  async getUnallocatedAircraftPool(gameId: number, _turn?: number): Promise<AircraftInstance[]> {
-    const whereClause: any = {
-      team: { gameId },
-      allocationStatus: AircraftAllocationStatus.AVAILABLE,
-    };
-
-    // For mobility aircraft only (C-17, C-130, C-5)
-    whereClause.type = {
-      in: [AircraftType.C17, AircraftType.C130, AircraftType.C5]
-    };
-
-    return this.prisma.aircraftInstance.findMany({
-      where: whereClause,
-      include: { team: true },
       orderBy: [
         { type: 'asc' },
         { callSign: 'asc' },
       ],
     });
+
+    // Transform to table row format
+    const rows: AllocationTableRow[] = aircraft.map(ac => ({
+      id: ac.id,
+      callSign: ac.callSign,
+      aircraftType: ac.type,
+      isAllocated: ac.allocatedToTeamId !== null,
+      allocatedToTeamName: ac.allocatedToTeam?.name || null,
+      status: ac.status as 'FMC' | 'DESTROYED',
+    }));
+
+    // Group by aircraft type
+    return {
+      c130Arrow: rows.filter(r => r.aircraftType === AircraftType.C130),
+      c17Moose: rows.filter(r => r.aircraftType === AircraftType.C17),
+      c5Bosco: rows.filter(r => r.aircraftType === AircraftType.C5),
+    };
   }
 
-  // =============================================
-  //            AIRCRAFT REQUEST MANAGEMENT
-  // =============================================
-
   /**
-   * Submit a new aircraft request from a MOB
+   * Directly allocate an aircraft to a team (simplified workflow)
+   * CAOC/GM only - bypasses request/approval cycle
    */
-  async createAircraftRequest(
-    allocationCycleId: number,
-    requestData: {
-      teamId: number;
-      aircraftType: AircraftType;
-      quantityRequested: number;
-      missionJustification: string;
-      priority: number;
-      rationale: string;
-    },
+  async allocateAircraft(
+    aircraftId: number,
+    teamId: number,
     user: any
-  ): Promise<AircraftRequest> {
-    // Verify the cycle exists and is accepting requests
-    const cycle = await this.prisma.allocationCycle.findUnique({
-      where: { id: allocationCycleId },
-    });
-
-    if (!cycle) {
-      throw new NotFoundException('Allocation cycle not found');
-    }
-
-    if (cycle.status !== AllocationCycleStatus.REQUESTS_OPEN) {
-      throw new BadRequestException('Allocation cycle is not accepting requests');
-    }
-
-    // Verify user has authority for this team
-    await this.validateTeamAccess(requestData.teamId, user);
-
-    // Validate request data
-    if (requestData.quantityRequested <= 0) {
-      throw new BadRequestException('Quantity requested must be greater than 0');
-    }
-
-    if (requestData.priority < 1 || requestData.priority > 5) {
-      throw new BadRequestException('Priority must be between 1 and 5');
-    }
-
-    const request = await this.prisma.aircraftRequest.create({
-      data: {
-        allocationCycleId,
-        teamId: requestData.teamId,
-        aircraftType: requestData.aircraftType,
-        quantityRequested: requestData.quantityRequested,
-        missionJustification: requestData.missionJustification,
-        priority: requestData.priority,
-        rationale: requestData.rationale,
-      },
-      include: {
-        team: true,
-        allocationCycle: true,
-      },
-    });
-
-    // Broadcast request created
-    this.gameGateway.broadcastAircraftRequestCreated(cycle.gameId.toString(), request);
-
-    // Send notification to CFACC about new request
-    await this.allocationNotificationService.notifyRequestSubmitted(request);
-
-    return request;
-  }
-
-  /**
-   * Get all aircraft requests for a specific allocation cycle
-   */
-  async getRequestsForCycle(cycleId: number, user: any): Promise<AircraftRequest[]> {
-    // Verify user has authority (CFACC or GM)
-    const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sessionId },
-      include: { team: true },
-    });
-
-    if (!player) {
-      throw new NotFoundException('Player not found');
-    }
-
-    if (player.role !== PlayerRole.GM && player.team?.type !== TeamType.CAOC) {
-      throw new ForbiddenException('Only CFACC and GM can view all requests');
-    }
-
-    return this.prisma.aircraftRequest.findMany({
-      where: { allocationCycleId: cycleId },
-      include: {
-        team: true,
-        allocationCycle: true,
-        allocations: {
-          include: { aircraftInstance: true }
-        }
-      },
-      orderBy: [
-        { priority: 'asc' },
-        { createdAt: 'asc' },
-      ],
-    });
-  }
-
-  /**
-   * Get aircraft requests for a specific team
-   */
-  async getRequestsForTeam(teamId: number, user: any): Promise<AircraftRequest[]> {
-    // Verify user has access to this team
-    await this.validateTeamAccess(teamId, user);
-
-    return this.prisma.aircraftRequest.findMany({
-      where: { teamId },
-      include: {
-        team: true,
-        allocationCycle: true,
-        allocations: {
-          include: { aircraftInstance: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  /**
-   * Update an aircraft request (MOB can update their own pending requests)
-   */
-  async updateAircraftRequest(
-    requestId: number,
-    updateData: {
-      quantityRequested?: number;
-      missionJustification?: string;
-      priority?: number;
-      rationale?: string;
-    },
-    user: any
-  ): Promise<AircraftRequest> {
-    const existingRequest = await this.prisma.aircraftRequest.findUnique({
-      where: { id: requestId },
-      include: { allocationCycle: true },
-    });
-
-    if (!existingRequest) {
-      throw new NotFoundException('Aircraft request not found');
-    }
-
-    // Only allow updates to pending requests
-    if (existingRequest.status !== AllocationRequestStatus.PENDING) {
-      throw new BadRequestException('Cannot update request after CFACC review');
-    }
-
-    // Verify user has access to this team
-    await this.validateTeamAccess(existingRequest.teamId, user);
-
-    const updatedRequest = await this.prisma.aircraftRequest.update({
-      where: { id: requestId },
-      data: updateData,
-      include: {
-        team: true,
-        allocationCycle: true,
-        allocations: {
-          include: { aircraftInstance: true }
-        }
-      },
-    });
-
-    // Broadcast update
-    this.gameGateway.broadcastAircraftRequestUpdated(
-      existingRequest.allocationCycle.gameId.toString(),
-      updatedRequest
-    );
-
-    return updatedRequest;
-  }
-
-  /**
-   * Delete an aircraft request (withdraw)
-   */
-  async deleteAircraftRequest(requestId: number, user: any): Promise<void> {
-    const existingRequest = await this.prisma.aircraftRequest.findUnique({
-      where: { id: requestId },
-      include: { allocationCycle: true },
-    });
-
-    if (!existingRequest) {
-      throw new NotFoundException('Aircraft request not found');
-    }
-
-    // Only allow deletion of pending requests
-    if (existingRequest.status !== AllocationRequestStatus.PENDING) {
-      throw new BadRequestException('Cannot delete request after CFACC review');
-    }
-
-    // Verify user has access to this team
-    await this.validateTeamAccess(existingRequest.teamId, user);
-
-    await this.prisma.aircraftRequest.delete({
-      where: { id: requestId },
-    });
-
-    // Broadcast deletion
-    this.gameGateway.broadcastAircraftRequestDeleted(
-      existingRequest.allocationCycle.gameId.toString(),
-      requestId
-    );
-  }
-
-  // =============================================
-  //            CFACC ALLOCATION WORKFLOW
-  // =============================================
-
-  /**
-   * CFACC reviews and updates a request status
-   */
-  async reviewAircraftRequest(
-    requestId: number,
-    reviewData: {
-      status: AllocationRequestStatus;
-      quantityAllocated?: number;
-      cfaccNotes?: string;
-    },
-    user: any
-  ): Promise<AircraftRequest> {
-    // Verify user has authority (CFACC or GM)
-    const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sessionId },
-      include: { team: true },
-    });
-
-    if (!player) {
-      throw new NotFoundException('Player not found');
-    }
-
-    if (player.role !== PlayerRole.GM && player.team?.type !== TeamType.CAOC) {
-      throw new ForbiddenException('Only CFACC and GM can review requests');
-    }
-
-    const request = await this.prisma.aircraftRequest.update({
-      where: { id: requestId },
-      data: {
-        status: reviewData.status,
-        quantityAllocated: reviewData.quantityAllocated || 0,
-        cfaccNotes: reviewData.cfaccNotes,
-      },
-      include: {
-        team: true,
-        allocationCycle: true,
-        allocations: {
-          include: { aircraftInstance: true }
-        }
-      },
-    });
-
-    // Broadcast review
-    this.gameGateway.broadcastAircraftRequestReviewed(
-      request.allocationCycle.gameId.toString(),
-      request
-    );
-
-    // Send targeted notification to requesting team about review decision
-    await this.allocationNotificationService.notifyRequestReviewed(request);
-
-    return request;
-  }
-
-  /**
-   * Create an aircraft allocation (assign aircraft to team)
-   */
-  async createAircraftAllocation(
-    allocationData: {
-      allocationCycleId: number;
-      aircraftRequestId: number;
-      aircraftInstanceId: number;
-      allocatedToTeamId: number;
-    },
-    user: any
-  ): Promise<AircraftAllocation> {
-    // Verify user has authority (CFACC or GM)
+  ): Promise<AircraftInstance> {
+    // Verify CFACC/GM permissions
     const player = await this.prisma.player.findUnique({
       where: { sessionId: user.sessionId },
       include: { team: true },
@@ -476,77 +98,62 @@ export class AllocationService {
       throw new ForbiddenException('Only CFACC and GM can allocate aircraft');
     }
 
-    // Get allocation cycle and game info
-    const cycle = await this.prisma.allocationCycle.findUnique({
-      where: { id: allocationData.allocationCycleId },
-      include: { game: true },
-    });
-
-    if (!cycle) {
-      throw new NotFoundException('Allocation cycle not found');
-    }
-
-    // Verify aircraft is available
+    // Verify aircraft exists
     const aircraft = await this.prisma.aircraftInstance.findUnique({
-      where: { id: allocationData.aircraftInstanceId },
+      where: { id: aircraftId },
+      include: { team: true },
     });
 
     if (!aircraft) {
       throw new NotFoundException('Aircraft not found');
     }
 
-    if (aircraft.allocationStatus !== AircraftAllocationStatus.AVAILABLE) {
-      throw new BadRequestException('Aircraft is not available for allocation');
+    // Check if already allocated
+    if (aircraft.allocatedToTeamId !== null) {
+      throw new BadRequestException('Aircraft is already allocated to a team');
     }
 
-    // Update aircraft pool and create allocation
-    const allocation = await this.prisma.$transaction(async (tx) => {
-      // Update aircraft status
-      await tx.aircraftInstance.update({
-        where: { id: allocationData.aircraftInstanceId },
-        data: { allocationStatus: AircraftAllocationStatus.ALLOCATED },
-      });
-
-      // Create allocation
-      const newAllocation = await tx.aircraftAllocation.create({
-        data: allocationData,
-        include: {
-          allocationCycle: true,
-          aircraftRequest: { include: { team: true } },
-          aircraftInstance: true,
-          allocatedToTeam: true,
-        },
-      });
-
-      // Update aircraft pool counts (outside transaction to avoid deadlock)
-      await this.aircraftPoolService.allocateAircraft(
-        cycle.gameId,
-        cycle.turn,
-        cycle.game.executionBlock,
-        aircraft.type,
-        1
-      );
-
-      return newAllocation;
+    // Verify team exists
+    const team = await this.prisma.team.findUnique({
+      where: { id: teamId },
     });
 
-    // Broadcast allocation
-    this.gameGateway.broadcastAircraftAllocated(
-      allocation.allocationCycle.gameId.toString(),
-      allocation
-    );
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
 
-    // Send targeted notification to allocated team
-    await this.allocationNotificationService.notifyAircraftAllocated(allocation);
+    // Update aircraft with allocation
+    const updatedAircraft = await this.prisma.aircraftInstance.update({
+      where: { id: aircraftId },
+      data: {
+        allocatedToTeamId: teamId,
+        allocatedAt: new Date(),
+      },
+      include: {
+        team: true,
+        allocatedToTeam: true,
+      },
+    });
 
-    return allocation;
+    this.logger.log(`Aircraft ${aircraft.callSign} allocated to team ${team.name} by ${player.name}`);
+
+    // Broadcast allocation table update via WebSocket
+    const gameId = aircraft.team.gameId;
+    const table = await this.getAllocationTable(gameId);
+    this.gameGateway.broadcastAllocationTableUpdated(gameId.toString(), table);
+
+    return updatedAircraft;
   }
 
   /**
-   * Delete an aircraft allocation (return to pool)
+   * Remove allocation from an aircraft (simplified workflow)
+   * CAOC/GM only - returns aircraft to unallocated pool
    */
-  async deleteAircraftAllocation(allocationId: number, user: any): Promise<void> {
-    // Verify user has authority (CFACC or GM)
+  async deallocateAircraft(
+    aircraftId: number,
+    user: any
+  ): Promise<AircraftInstance> {
+    // Verify CFACC/GM permissions
     const player = await this.prisma.player.findUnique({
       where: { sessionId: user.sessionId },
       include: { team: true },
@@ -560,101 +167,47 @@ export class AllocationService {
       throw new ForbiddenException('Only CFACC and GM can deallocate aircraft');
     }
 
-    const allocation = await this.prisma.aircraftAllocation.findUnique({
-      where: { id: allocationId },
+    // Verify aircraft exists
+    const aircraft = await this.prisma.aircraftInstance.findUnique({
+      where: { id: aircraftId },
       include: {
-        allocationCycle: { include: { game: true } },
-        aircraftInstance: true,
-        allocatedToTeam: true
-      },
-    });
-
-    if (!allocation) {
-      throw new NotFoundException('Aircraft allocation not found');
-    }
-
-    // Remove allocation and update aircraft status
-    await this.prisma.$transaction(async (tx) => {
-      // Update aircraft status back to available
-      await tx.aircraftInstance.update({
-        where: { id: allocation.aircraftInstanceId },
-        data: { allocationStatus: AircraftAllocationStatus.AVAILABLE },
-      });
-
-      // Delete allocation
-      await tx.aircraftAllocation.delete({
-        where: { id: allocationId },
-      });
-    });
-
-    // Update aircraft pool counts
-    await this.aircraftPoolService.deallocateAircraft(
-      allocation.allocationCycle.gameId,
-      allocation.allocationCycle.turn,
-      allocation.allocationCycle.game.executionBlock,
-      allocation.aircraftInstance.type,
-      1
-    );
-
-    // Broadcast deallocation
-    this.gameGateway.broadcastAircraftDeallocated(
-      allocation.allocationCycle.gameId.toString(),
-      allocationId,
-      allocation.aircraftInstance.callSign
-    );
-
-    // Send targeted notification to affected team
-    await this.allocationNotificationService.notifyAircraftDeallocated(
-      allocation.allocationCycle.gameId,
-      allocationId,
-      allocation.aircraftInstance.callSign,
-      allocation.allocatedToTeamId,
-      allocation.allocatedToTeam?.name || 'Unknown Team'
-    );
-  }
-
-  /**
-   * Get all allocations for a cycle
-   */
-  async getAllocationsForCycle(cycleId: number): Promise<AircraftAllocation[]> {
-    return this.prisma.aircraftAllocation.findMany({
-      where: { allocationCycleId: cycleId },
-      include: {
-        allocationCycle: true,
-        aircraftRequest: { include: { team: true } },
-        aircraftInstance: true,
+        team: true,
         allocatedToTeam: true,
       },
-      orderBy: { createdAt: 'asc' },
-    });
-  }
-
-  // =============================================
-  //            HELPER METHODS
-  // =============================================
-
-  /**
-   * Validate that a user has access to a team
-   */
-  private async validateTeamAccess(teamId: number, user: any): Promise<void> {
-    const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sessionId },
-      include: { team: true },
     });
 
-    if (!player) {
-      throw new NotFoundException('Player not found');
+    if (!aircraft) {
+      throw new NotFoundException('Aircraft not found');
     }
 
-    // GMs can access any team
-    if (player.role === PlayerRole.GM) {
-      return;
+    // Check if allocated
+    if (aircraft.allocatedToTeamId === null) {
+      throw new BadRequestException('Aircraft is not currently allocated');
     }
 
-    // Players can only access their own team
-    if (player.teamId !== teamId) {
-      throw new ForbiddenException('Access denied to this team');
-    }
+    const previousTeamName = aircraft.allocatedToTeam?.name || 'Unknown';
+
+    // Remove allocation
+    const updatedAircraft = await this.prisma.aircraftInstance.update({
+      where: { id: aircraftId },
+      data: {
+        allocatedToTeamId: null,
+        allocatedAt: null,
+      },
+      include: {
+        team: true,
+        allocatedToTeam: true,
+      },
+    });
+
+    this.logger.log(`Aircraft ${aircraft.callSign} deallocated from team ${previousTeamName} by ${player.name}`);
+
+    // Broadcast allocation table update via WebSocket
+    const gameId = aircraft.team.gameId;
+    const table = await this.getAllocationTable(gameId);
+    this.gameGateway.broadcastAllocationTableUpdated(gameId.toString(), table);
+
+    return updatedAircraft;
   }
 
   // =============================================
@@ -745,7 +298,6 @@ export class AllocationService {
         locationFosId,
         locationHex,
         teamId,
-        allocationStatus: AircraftAllocationStatus.AVAILABLE,
         payloadPersonnelCount: 0,
       },
       include: {
@@ -788,7 +340,7 @@ export class AllocationService {
       throw new NotFoundException('Aircraft not found');
     }
 
-    if (aircraft.allocationStatus === AircraftAllocationStatus.ALLOCATED) {
+    if (aircraft.allocatedToTeamId !== null) {
       throw new BadRequestException('Cannot delete allocated aircraft. Deallocate it first.');
     }
 
@@ -814,11 +366,7 @@ export class AllocationService {
       },
       include: {
         team: true,
-        allocation: {
-          include: {
-            allocatedToTeam: true,
-          },
-        },
+        allocatedToTeam: true,
       },
       orderBy: [
         { type: 'asc' },
@@ -826,113 +374,16 @@ export class AllocationService {
       ],
     });
   }
+}
 
-  // =============================================
-  //            DIRECT ALLOCATION
-  // =============================================
-
-  /**
-   * Directly allocate an aircraft to a team (CFACC/GM only)
-   * Bypasses the request workflow
-   */
-  async directAllocateAircraft(
-    aircraftInstanceId: number,
-    allocatedToTeamId: number,
-    allocationCycleId: number,
-    user: any
-  ): Promise<AircraftAllocation> {
-    // Verify CFACC/GM permissions
-    const player = await this.prisma.player.findUnique({
-      where: { sessionId: user.sessionId },
-      include: { team: true },
-    });
-
-    if (!player) {
-      throw new NotFoundException('Player not found');
-    }
-
-    if (player.role !== PlayerRole.GM && player.team?.type !== TeamType.CAOC) {
-      throw new ForbiddenException('Only CFACC and GM can allocate aircraft');
-    }
-
-    // Verify aircraft exists and is available
-    const aircraft = await this.prisma.aircraftInstance.findUnique({
-      where: { id: aircraftInstanceId },
-    });
-
-    if (!aircraft) {
-      throw new NotFoundException('Aircraft not found');
-    }
-
-    if (aircraft.allocationStatus === AircraftAllocationStatus.ALLOCATED) {
-      throw new BadRequestException('Aircraft is already allocated');
-    }
-
-    // Verify allocation cycle exists
-    const cycle = await this.prisma.allocationCycle.findUnique({
-      where: { id: allocationCycleId },
-    });
-
-    if (!cycle) {
-      throw new NotFoundException('Allocation cycle not found');
-    }
-
-    // Verify team exists
-    const team = await this.prisma.team.findUnique({
-      where: { id: allocatedToTeamId },
-    });
-
-    if (!team) {
-      throw new NotFoundException('Team not found');
-    }
-
-    // Create a dummy request for the allocation (or make aircraftRequestId optional)
-    // For simplicity, we'll create a minimal request
-    const dummyRequest = await this.prisma.aircraftRequest.create({
-      data: {
-        allocationCycleId,
-        teamId: allocatedToTeamId,
-        aircraftType: aircraft.type,
-        quantityRequested: 1,
-        missionJustification: 'Direct allocation by CFACC',
-        priority: 3,
-        rationale: 'Direct allocation',
-        status: AllocationRequestStatus.APPROVED,
-        quantityAllocated: 1,
-      },
-    });
-
-    // Create allocation
-    const allocation = await this.prisma.aircraftAllocation.create({
-      data: {
-        allocationCycleId,
-        aircraftRequestId: dummyRequest.id,
-        aircraftInstanceId,
-        allocatedToTeamId,
-      },
-      include: {
-        aircraftInstance: true,
-        allocatedToTeam: true,
-        aircraftRequest: true,
-        allocationCycle: true,
-      },
-    });
-
-    // Update aircraft allocation status
-    await this.prisma.aircraftInstance.update({
-      where: { id: aircraftInstanceId },
-      data: { allocationStatus: AircraftAllocationStatus.ALLOCATED },
-    });
-
-    // Broadcast allocation event
-    this.gameGateway.broadcastAircraftAllocated(cycle.gameId.toString(), allocation);
-
-    // Send notification to allocated team
-    await this.allocationNotificationService.notifyAircraftAllocated(allocation);
-
-    // Update aircraft pool counts
-    await this.aircraftPoolService.refreshAircraftPool(cycle.gameId);
-
-    return allocation;
-  }
+/**
+ * Interface for allocation table row data
+ */
+interface AllocationTableRow {
+  id: number;
+  callSign: string;
+  aircraftType: string;
+  isAllocated: boolean;
+  allocatedToTeamName: string | null;
+  status: 'FMC' | 'DESTROYED';
 }

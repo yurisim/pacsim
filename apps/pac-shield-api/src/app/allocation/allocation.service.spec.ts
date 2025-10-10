@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AllocationService } from './allocation.service';
 import { AircraftPoolService } from './aircraft-pool.service';
-import { AllocationNotificationService } from './allocation-notification.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GameGateway } from '../../game/game.gateway';
 
@@ -63,21 +62,11 @@ const mockAircraftPoolService = {
   refreshAircraftPool: jest.fn(),
 };
 
-const mockAllocationNotificationService = {
-  notifyAllocationCycleCreated: jest.fn(),
-  notifyAllocationCycleStatusChanged: jest.fn(),
-  notifyAircraftRequestCreated: jest.fn(),
-  notifyAircraftRequestUpdated: jest.fn(),
-  notifyAircraftAllocated: jest.fn(),
-  notifyAircraftPoolUpdated: jest.fn(),
-};
-
 describe('AllocationService', () => {
   let service: AllocationService;
   let prismaService: any;
   let gameGateway: any;
   let aircraftPoolService: any;
-  let allocationNotificationService: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -95,10 +84,6 @@ describe('AllocationService', () => {
           provide: AircraftPoolService,
           useValue: mockAircraftPoolService,
         },
-        {
-          provide: AllocationNotificationService,
-          useValue: mockAllocationNotificationService,
-        },
       ],
     }).compile();
 
@@ -106,7 +91,6 @@ describe('AllocationService', () => {
     prismaService = module.get(PrismaService);
     gameGateway = module.get(GameGateway);
     aircraftPoolService = module.get(AircraftPoolService);
-    allocationNotificationService = module.get(AllocationNotificationService);
   });
 
   afterEach(() => {
@@ -117,89 +101,6 @@ describe('AllocationService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('createAllocationCycle', () => {
-    it('should create a new allocation cycle successfully', async () => {
-      const gameId = 1;
-      const turn = 1;
-      const mockGame = { id: gameId, turn: 1 };
-      const mockCycle = {
-        id: 1,
-        gameId,
-        turn,
-        status: 'REQUESTS_OPEN',
-        game: mockGame,
-        requests: [],
-        allocations: [],
-      };
-
-      prismaService.game.findUnique.mockResolvedValue(mockGame as any);
-      prismaService.allocationCycle.findUnique.mockResolvedValue(null);
-      prismaService.allocationCycle.create.mockResolvedValue(mockCycle as any);
-
-      const result = await service.createAllocationCycle(gameId, turn);
-
-      expect(result).toEqual(mockCycle);
-      expect(prismaService.game.findUnique).toHaveBeenCalledWith({
-        where: { id: gameId },
-      });
-      expect(prismaService.allocationCycle.create).toHaveBeenCalledWith({
-        data: {
-          gameId,
-          turn,
-          status: 'REQUESTS_OPEN',
-        },
-        include: expect.any(Object),
-      });
-    });
-
-    it('should throw NotFoundException if game does not exist', async () => {
-      const gameId = 999;
-      const turn = 1;
-
-      prismaService.game.findUnique.mockResolvedValue(null);
-
-      await expect(service.createAllocationCycle(gameId, turn)).rejects.toThrow(
-        'Game not found'
-      );
-    });
-
-    it('should throw BadRequestException if cycle already exists', async () => {
-      const gameId = 1;
-      const turn = 1;
-      const mockGame = { id: gameId, turn: 1 };
-      const existingCycle = { id: 1, gameId, turn };
-
-      prismaService.game.findUnique.mockResolvedValue(mockGame as any);
-      prismaService.allocationCycle.findUnique.mockResolvedValue(existingCycle as any);
-
-      await expect(service.createAllocationCycle(gameId, turn)).rejects.toThrow(
-        `Allocation cycle already exists for game ${gameId}, turn ${turn}`
-      );
-    });
-  });
-
-  describe('getUnallocatedAircraftPool', () => {
-    it('should return unallocated mobility aircraft', async () => {
-      const gameId = 1;
-      const mockAircraft = [
-        { id: 1, type: 'C17', callSign: 'TRANSPORT-01', allocationStatus: 'AVAILABLE' },
-        { id: 2, type: 'C130', callSign: 'TRANSPORT-02', allocationStatus: 'AVAILABLE' },
-      ];
-
-      prismaService.aircraftInstance.findMany.mockResolvedValue(mockAircraft as any);
-
-      const result = await service.getUnallocatedAircraftPool(gameId);
-
-      expect(result).toEqual(mockAircraft);
-      expect(prismaService.aircraftInstance.findMany).toHaveBeenCalledWith({
-        where: {
-          team: { gameId },
-          allocationStatus: 'AVAILABLE',
-          type: { in: ['C17', 'C130', 'C5'] },
-        },
-        include: { team: true },
-        orderBy: [{ type: 'asc' }, { callSign: 'asc' }],
-      });
-    });
-  });
+  // Tests for simplified allocation methods (getAllocationTable, allocateAircraft, etc.)
+  // can be added here as needed. The old cycle-based workflow has been removed.
 });

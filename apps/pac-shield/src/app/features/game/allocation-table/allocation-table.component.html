@@ -1,0 +1,253 @@
+<!-- Loading State -->
+@if (loading()) {
+  <div class="flex items-center justify-center p-8">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span class="ml-4 md-typescale-body-medium">Loading allocation table...</span>
+  </div>
+}
+
+<!-- Error State -->
+@if (error()) {
+  <div class="p-4 md-sys-bg-error-container md-sys-color-on-error-container md-shape-corner-md">
+    <div class="flex items-center gap-2">
+      <mat-icon>error</mat-icon>
+      <span class="md-typescale-body-medium">{{ error() }}</span>
+    </div>
+  </div>
+}
+
+<!-- Main Content -->
+@if (!loading() && !error()) {
+  <div class="allocation-table-container">
+
+    <!-- C-130 ARROW Group -->
+    @if (c130Aircraft().length > 0) {
+      <div class="aircraft-group mb-6">
+        <!-- Group Header -->
+        <div class="group-header flex items-center gap-3 p-3 md-sys-bg-surface-variant md-shape-corner-md mb-2">
+          <mat-icon class="md-sys-color-primary">flight</mat-icon>
+          <span class="md-typescale-title-medium md-sys-color-on-surface">C-130 ARROW</span>
+          <span class="md-typescale-label-small md-sys-color-on-surface-variant">({{ c130Aircraft().length }} aircraft)</span>
+        </div>
+
+        <!-- Aircraft Table -->
+        <table mat-table [dataSource]="c130Aircraft()" class="w-full md-elevation-1">
+
+          <!-- Call Sign Column -->
+          <ng-container matColumnDef="callSign">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Call Sign</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="font-medium">{{ row.callSign }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Apportioned Column -->
+          <ng-container matColumnDef="apportioned">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Apportioned</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.isAllocated) {
+                <mat-chip class="md-sys-bg-primary md-sys-color-on-primary">Apportioned</mat-chip>
+              } @else {
+                <span class="md-typescale-body-small md-sys-color-on-surface-variant">Available</span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Allocated Column -->
+          <ng-container matColumnDef="allocated">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Allocated</th>
+            <td mat-cell *matCellDef="let row">
+              @if (canEdit) {
+                <mat-select
+                  [value]="getSelectedTeamId(row)"
+                  (selectionChange)="onAllocationChange(row.id, $event.value)"
+                  placeholder="Unallocated"
+                  class="w-full">
+                  <mat-option [value]="null">Unallocated</mat-option>
+                  @for (team of availableTeams; track team.id) {
+                    <mat-option [value]="team.id">{{ team.name }}</mat-option>
+                  }
+                </mat-select>
+              } @else {
+                <span class="md-typescale-body-medium">
+                  {{ row.allocatedToTeamName || 'Unallocated' }}
+                </span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span [class]="getStatusColorClass(row.status)" class="font-medium">
+                {{ row.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.md-sys-bg-surface-container-low]="row.status === 'DESTROYED'">
+          </tr>
+        </table>
+      </div>
+    }
+
+    <!-- C-17 MOOSE Group -->
+    @if (c17Aircraft().length > 0) {
+      <div class="aircraft-group mb-6">
+        <!-- Group Header -->
+        <div class="group-header flex items-center gap-3 p-3 md-sys-bg-surface-variant md-shape-corner-md mb-2">
+          <mat-icon class="md-sys-color-secondary">flight_takeoff</mat-icon>
+          <span class="md-typescale-title-medium md-sys-color-on-surface">C-17 MOOSE</span>
+          <span class="md-typescale-label-small md-sys-color-on-surface-variant">({{ c17Aircraft().length }} aircraft)</span>
+        </div>
+
+        <!-- Aircraft Table -->
+        <table mat-table [dataSource]="c17Aircraft()" class="w-full md-elevation-1">
+
+          <!-- Call Sign Column -->
+          <ng-container matColumnDef="callSign">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Call Sign</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="font-medium">{{ row.callSign }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Apportioned Column -->
+          <ng-container matColumnDef="apportioned">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Apportioned</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.isAllocated) {
+                <mat-chip class="md-sys-bg-primary md-sys-color-on-primary">Apportioned</mat-chip>
+              } @else {
+                <span class="md-typescale-body-small md-sys-color-on-surface-variant">Available</span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Allocated Column -->
+          <ng-container matColumnDef="allocated">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Allocated</th>
+            <td mat-cell *matCellDef="let row">
+              @if (canEdit) {
+                <mat-select
+                  [value]="getSelectedTeamId(row)"
+                  (selectionChange)="onAllocationChange(row.id, $event.value)"
+                  placeholder="Unallocated"
+                  class="w-full">
+                  <mat-option [value]="null">Unallocated</mat-option>
+                  @for (team of availableTeams; track team.id) {
+                    <mat-option [value]="team.id">{{ team.name }}</mat-option>
+                  }
+                </mat-select>
+              } @else {
+                <span class="md-typescale-body-medium">
+                  {{ row.allocatedToTeamName || 'Unallocated' }}
+                </span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span [class]="getStatusColorClass(row.status)" class="font-medium">
+                {{ row.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.md-sys-bg-surface-container-low]="row.status === 'DESTROYED'">
+          </tr>
+        </table>
+      </div>
+    }
+
+    <!-- C-5 BOSCO Group -->
+    @if (c5Aircraft().length > 0) {
+      <div class="aircraft-group mb-6">
+        <!-- Group Header -->
+        <div class="group-header flex items-center gap-3 p-3 md-sys-bg-surface-variant md-shape-corner-md mb-2">
+          <mat-icon class="md-sys-color-tertiary">local_shipping</mat-icon>
+          <span class="md-typescale-title-medium md-sys-color-on-surface">C-5 BOSCO</span>
+          <span class="md-typescale-label-small md-sys-color-on-surface-variant">({{ c5Aircraft().length }} aircraft)</span>
+        </div>
+
+        <!-- Aircraft Table -->
+        <table mat-table [dataSource]="c5Aircraft()" class="w-full md-elevation-1">
+
+          <!-- Call Sign Column -->
+          <ng-container matColumnDef="callSign">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Call Sign</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="font-medium">{{ row.callSign }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Apportioned Column -->
+          <ng-container matColumnDef="apportioned">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Apportioned</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.isAllocated) {
+                <mat-chip class="md-sys-bg-primary md-sys-color-on-primary">Apportioned</mat-chip>
+              } @else {
+                <span class="md-typescale-body-small md-sys-color-on-surface-variant">Available</span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Allocated Column -->
+          <ng-container matColumnDef="allocated">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Allocated</th>
+            <td mat-cell *matCellDef="let row">
+              @if (canEdit) {
+                <mat-select
+                  [value]="getSelectedTeamId(row)"
+                  (selectionChange)="onAllocationChange(row.id, $event.value)"
+                  placeholder="Unallocated"
+                  class="w-full">
+                  <mat-option [value]="null">Unallocated</mat-option>
+                  @for (team of availableTeams; track team.id) {
+                    <mat-option [value]="team.id">{{ team.name }}</mat-option>
+                  }
+                </mat-select>
+              } @else {
+                <span class="md-typescale-body-medium">
+                  {{ row.allocatedToTeamName || 'Unallocated' }}
+                </span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="font-medium">Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span [class]="getStatusColorClass(row.status)" class="font-medium">
+                {{ row.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.md-sys-bg-surface-container-low]="row.status === 'DESTROYED'">
+          </tr>
+        </table>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (c130Aircraft().length === 0 && c17Aircraft().length === 0 && c5Aircraft().length === 0) {
+      <div class="flex flex-col items-center justify-center p-8 md-sys-bg-surface-variant md-shape-corner-md">
+        <mat-icon class="md-sys-color-on-surface-variant mb-2">inbox</mat-icon>
+        <span class="md-typescale-body-medium md-sys-color-on-surface-variant">No aircraft available</span>
+      </div>
+    }
+  </div>
+}

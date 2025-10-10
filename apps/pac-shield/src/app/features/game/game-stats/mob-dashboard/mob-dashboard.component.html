@@ -1,81 +1,74 @@
-<mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container">
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 gap-4 sm:gap-2 pb-2">
-    <div class="flex items-center gap-3">
-      <mat-icon class="md-sys-color-primary">domain</mat-icon>
-      <div class="md-typescale-title-medium">MOB Dashboard</div>
-    </div>
-    <div class="flex items-center gap-3">
-      <!-- Notification Badge with better touch targets -->
-      <div class="p-2 -m-2">
-        <app-allocation-notification-badge
-          [unreadCount]="(unreadNotificationCount$ | async) || 0"
-          [hasUrgentNotifications]="(hasUrgentNotifications$ | async) || false"
-          [hasUnacknowledgedNotifications]="((unacknowledgedNotifications$ | async)?.length ?? 0) > 0"
-          (click)="onNotificationBadgeClick()"
-          size="medium"
-          tooltipPosition="below"
-        ></app-allocation-notification-badge>
+<div class="mob-dashboard-container space-y-6">
+  <!-- MOB Overview Card -->
+  <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 gap-4 sm:gap-2 pb-2">
+      <div class="flex items-center gap-3">
+        <mat-icon class="md-sys-color-primary">domain</mat-icon>
+        <div class="md-typescale-title-medium">MOB Dashboard</div>
       </div>
     </div>
-  </div>
 
-  <!-- Inventory Content -->
-  <div class="p-4 md:p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-      <!-- On-Station Personnel -->
-      <div class="space-y-3">
-        <div class="md-typescale-label-medium md-sys-color-on-surface">On-Station Personnel</div>
-        <div class="flex flex-wrap gap-2">
-          <mat-chip class="min-h-[32px]">Refueling</mat-chip>
-          <mat-chip class="min-h-[32px]">Airfield Ops</mat-chip>
-          <mat-chip class="min-h-[32px]">Security Forces</mat-chip>
+    <!-- Inventory Content -->
+    <div class="p-4 md:p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <!-- On-Station Personnel -->
+        <div class="space-y-3">
+          <div class="md-typescale-label-medium md-sys-color-on-surface">On-Station Personnel</div>
+          <div class="flex flex-wrap gap-2">
+            <mat-chip class="min-h-[32px]">Refueling</mat-chip>
+            <mat-chip class="min-h-[32px]">Airfield Ops</mat-chip>
+            <mat-chip class="min-h-[32px]">Security Forces</mat-chip>
+          </div>
         </div>
-      </div>
 
-      <!-- Commodities -->
-      <div class="space-y-3">
-        <div class="md-typescale-label-medium md-sys-color-on-surface">Commodities</div>
-        <div class="flex flex-wrap gap-2">
-          <mat-chip class="md-sys-bg-primary-container md-sys-color-on-primary-container min-h-[32px]">Fuel</mat-chip>
-          <mat-chip class="min-h-[32px]">Bomb</mat-chip>
-          <mat-chip class="min-h-[32px]">Missile</mat-chip>
-          <mat-chip class="min-h-[32px]">Food</mat-chip>
-          <mat-chip class="min-h-[32px]">Water</mat-chip>
+        <!-- Commodities -->
+        <div class="space-y-3">
+          <div class="md-typescale-label-medium md-sys-color-on-surface">Commodities</div>
+          <div class="flex flex-wrap gap-2">
+            <mat-chip class="md-sys-bg-primary-container md-sys-color-on-primary-container min-h-[32px]">Fuel</mat-chip>
+            <mat-chip class="min-h-[32px]">Bomb</mat-chip>
+            <mat-chip class="min-h-[32px]">Missile</mat-chip>
+            <mat-chip class="min-h-[32px]">Food</mat-chip>
+            <mat-chip class="min-h-[32px]">Water</mat-chip>
+          </div>
         </div>
-      </div>
 
-      <!-- Aircraft Inventory -->
-      <div class="space-y-3">
-        <div class="md-typescale-label-medium md-sys-color-on-surface">Aircraft Inventory</div>
-        <div class="flex flex-wrap gap-2">
-          <mat-chip class="min-h-[32px]">F-16 x16</mat-chip>
-          <mat-chip class="min-h-[32px]">F-22 x16</mat-chip>
-          <mat-chip class="min-h-[32px]">C-17 x2</mat-chip>
+        <!-- Aircraft Inventory -->
+        <div class="space-y-3">
+          <div class="md-typescale-label-medium md-sys-color-on-surface">Aircraft Inventory</div>
+          <div class="flex flex-wrap gap-2">
+            <mat-chip class="min-h-[32px]">F-16 x16</mat-chip>
+            <mat-chip class="min-h-[32px]">F-22 x16</mat-chip>
+            <mat-chip class="min-h-[32px]">C-17 x2</mat-chip>
+          </div>
         </div>
-      </div>
 
-      <!-- Load Plans -->
-      <div class="space-y-3">
-        <div class="md-typescale-label-medium md-sys-color-on-surface">Load Plans</div>
-        <div class="md-typescale-body-small md-sys-color-on-surface-variant leading-relaxed">
-          Placeholder for aircraft load planner summaries.
+        <!-- Load Plans -->
+        <div class="space-y-3">
+          <div class="md-typescale-label-medium md-sys-color-on-surface">Load Plans</div>
+          <div class="md-typescale-body-small md-sys-color-on-surface-variant leading-relaxed">
+            Placeholder for aircraft load planner summaries.
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</mat-card>
+  </mat-card>
 
-<!-- Toast Notification Container -->
-@if (currentToastNotification) {
-  <div class="fixed top-4 right-4 z-50 max-w-sm">
-    <app-allocation-notification-toast
-      [notification]="currentToastNotification"
-      [acknowledging]="false"
-      (dismiss)="onToastDismissed($event)"
-      (acknowledge)="onToastAcknowledged($event)"
-      (markRead)="onToastRead($event)"
-    ></app-allocation-notification-toast>
-  </div>
-}
+  <!-- Allocation Table Card -->
+  <mat-card class="md-elevation-1 md-shape-corner-md md-sys-bg-surface-container">
+    <div class="flex items-center gap-3 p-4 pb-2">
+      <mat-icon class="md-sys-color-secondary">flight</mat-icon>
+      <div class="md-typescale-title-medium">Aircraft Allocation</div>
+    </div>
+
+    <div class="p-4">
+      <app-allocation-table
+        [gameId]="currentGameId"
+        [canEdit]="false"
+        [availableTeams]="[]">
+      </app-allocation-table>
+    </div>
+  </mat-card>
+</div>
 
