@@ -301,17 +301,20 @@ describe('Allocation Table E2E', () => {
       }
     });
 
-    it('should be idempotent - deallocating already deallocated aircraft succeeds', async () => {
+    it('should return 400 when deallocating already deallocated aircraft', async () => {
       const cfaccApi = clientFor(cfaccCommander.token);
 
       // Deallocate once
       await cfaccApi.put(`/api/allocation/aircraft/${c5Aircraft}/deallocate`);
 
-      // Deallocate again
-      const res = await cfaccApi.put(`/api/allocation/aircraft/${c5Aircraft}/deallocate`);
-
-      expect(res.status).toBe(200);
-      expect(res.data.allocatedToTeamId).toBeNull();
+      // Try to deallocate again - should fail
+      try {
+        await cfaccApi.put(`/api/allocation/aircraft/${c5Aircraft}/deallocate`);
+        fail('Should have thrown an error');
+      } catch (error: any) {
+        expect(error.response?.status).toBe(400);
+        expect(error.response?.data?.message).toContain('not currently allocated');
+      }
     });
   });
 
