@@ -1,14 +1,12 @@
 /**
  * Location Panel Component Styles
- * 
+ *
  * Provides tabbed interface with action buttons for selected tile assets
+ * Width/flex/transition now handled by Tailwind classes in template
  */
 
 .location-panel {
   max-height: 500px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease-in-out;
 
   // Panel header styling
   .panel-header {
@@ -147,12 +145,9 @@
   }
 }
 
-// Responsive adjustments for action grid only (width now handled by Tailwind)
+// Responsive adjustments for action grid only (width now handled by Tailwind in template)
 @media (max-width: 768px) {
   .location-panel {
-    // Removed max-width constraint - width is now fully controlled by Tailwind classes
-    // This allows true full-width expansion on small screens
-
     .tab-content {
       .asset-section {
         .action-grid {

@@ -82,9 +82,9 @@ export class LocationPanelComponent implements OnChanges {
   @Input() fosMobAssignments: Record<string, string> = {}; // Maps FOS ID to MOB ID
   @Input() currentPlayerMob: string | null = null; // Current player's MOB
   @Input() isGameMaster = false; // Whether current player is GM
-  @Input() collapsed = true;
+  @Input() panelState: 'minimized' | 'narrow' | 'full' = 'minimized';
   @Output() actionClicked = new EventEmitter<{ action: AssetAction, asset: TileAsset }>();
-  @Output() collapsedChange = new EventEmitter<boolean>();
+  @Output() panelStateChange = new EventEmitter<'minimized' | 'narrow' | 'full'>();
   @Input() initialSubview: 'none' | 'rfi' | 'tasks' = 'none'; // Deep-link support from GameBoardComponent; no-op here
   @Output() fosStatusChanged = new EventEmitter<{ fosId: string, isActive: boolean, teamId?: number }>();
 
@@ -104,6 +104,8 @@ export class LocationPanelComponent implements OnChanges {
     this.breakpointObserver.observe(Breakpoints.Handset).pipe(map(result => result.matches)),
     { initialValue: false }
   );
+
+  isMobile = toSignal(this.breakpointObserver.observe('(max-width: 767px)'), { initialValue: { matches: false, breakpoints: {} } });
 
   // Selected asset for each type (using signals for reactivity)
   selectedMobAsset = signal<TileAsset | null>(null);
@@ -646,11 +648,58 @@ export class LocationPanelComponent implements OnChanges {
   }
 
   /**
-   * Toggle collapsed state
+   * Toggle panel state (minimized → narrow → full → minimized on desktop, minimized ↔ full on mobile)
    */
-  toggleCollapsed(): void {
-    this.collapsed = !this.collapsed;
-    this.collapsedChange.emit(this.collapsed);
+  togglePanelState(): void {
+    const isMobileDevice = this.isMobile().matches;
+
+    if (isMobileDevice) {
+      // Mobile: Toggle between minimized and full
+      this.panelState = this.panelState === 'minimized' ? 'full' : 'minimized';
+    } else {
+      // Desktop: Cycle through minimized → narrow → full → minimized
+      if (this.panelState === 'minimized') {
+        this.panelState = 'narrow';
+      } else if (this.panelState === 'narrow') {
+        this.panelState = 'full';
+      } else {
+        this.panelState = 'minimized';
+      }
+    }
+
+    this.panelStateChange.emit(this.panelState);
+  }
+
+  /**
+   * Get the appropriate icon for the current panel state
+   */
+  getPanelIcon(): string {
+    if (this.panelState === 'minimized') {
+      return 'unfold_more';
+    } else if (this.panelState === 'narrow') {
+      return 'fullscreen';
+    } else {
+      return 'fullscreen_exit';
+    }
+  }
+
+  /**
+   * Get the appropriate tooltip for the current panel state
+   */
+  getPanelTooltip(): string {
+    const isMobileDevice = this.isMobile().matches;
+
+    if (isMobileDevice) {
+      return this.panelState === 'minimized' ? 'Expand' : 'Minimize';
+    } else {
+      if (this.panelState === 'minimized') {
+        return 'Show narrow panel';
+      } else if (this.panelState === 'narrow') {
+        return 'Expand to full width';
+      } else {
+        return 'Minimize';
+      }
+    }
   }
 
   /**
