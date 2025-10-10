@@ -20,6 +20,7 @@ import {
 } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SpawnAircraftDto } from './dto/spawn-aircraft.dto';
+import { AllocateAircraftDto } from './dto/allocate-aircraft.dto';
 
 /**
  * Controller for aircraft allocation operations (simplified workflow).
@@ -216,10 +217,10 @@ export class AllocationController {
   @Put('aircraft/:id/allocate')
   async allocateAircraft(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { teamId: number },
+    @Body() dto: AllocateAircraftDto,
     @Request() req: any
   ): Promise<AircraftInstance> {
-    return this.allocationService.allocateAircraft(id, body.teamId, req.user);
+    return this.allocationService.allocateAircraft(id, dto.teamId, req.user);
   }
 
   /**
