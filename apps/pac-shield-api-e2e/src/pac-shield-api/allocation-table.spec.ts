@@ -242,13 +242,50 @@ describe('Allocation Table E2E', () => {
         expect(error.response?.status).toBe(400);
       }
     });
+
+    afterEach(async () => {
+      // Clean up allocations to ensure test isolation
+      const cfaccApi = clientFor(cfaccCommander.token);
+      try {
+        await cfaccApi.put(`/api/allocation/aircraft/${c130Aircraft}/deallocate`);
+      } catch {
+        // Ignore if not allocated
+      }
+      try {
+        await cfaccApi.put(`/api/allocation/aircraft/${c17Aircraft}/deallocate`);
+      } catch {
+        // Ignore if not allocated
+      }
+      try {
+        await cfaccApi.put(`/api/allocation/aircraft/${c5Aircraft}/deallocate`);
+      } catch {
+        // Ignore if not allocated
+      }
+    });
   });
 
   describe('PUT /allocation/aircraft/:id/deallocate', () => {
     beforeEach(async () => {
-      // Ensure c5Aircraft is allocated before deallocating
+      // Ensure test aircraft are allocated before deallocating
       const cfaccApi = clientFor(cfaccCommander.token);
+
+      // First deallocate to ensure clean state (in case previous tests left them allocated)
+      try {
+        await cfaccApi.put(`/api/allocation/aircraft/${c5Aircraft}/deallocate`);
+      } catch {
+        // Ignore if not allocated
+      }
+      try {
+        await cfaccApi.put(`/api/allocation/aircraft/${c17Aircraft}/deallocate`);
+      } catch {
+        // Ignore if not allocated
+      }
+
+      // Now allocate them
       await cfaccApi.put(`/api/allocation/aircraft/${c5Aircraft}/allocate`, {
+        teamId: teamsByType.MOB_KADENA,
+      });
+      await cfaccApi.put(`/api/allocation/aircraft/${c17Aircraft}/allocate`, {
         teamId: teamsByType.MOB_KADENA,
       });
     });
