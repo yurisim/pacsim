@@ -72,9 +72,10 @@
         [fosMobAssignments]="fosMobAssignments"
         [currentPlayerMob]="currentPlayerMob"
         [isGameMaster]="(isGameMaster$ | async) ?? false"
-        [collapsed]="panelCollapsed"
+        [panelState]="locationPanelState"
         [initialSubview]="initialSubview"
         (actionClicked)="onLocationAction($event)"
+        (panelStateChange)="locationPanelState = $event"
         (fosStatusChanged)="onFosStatusChanged($event)"
       >
       </app-location-panel>

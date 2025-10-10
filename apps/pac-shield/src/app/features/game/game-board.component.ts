@@ -269,7 +269,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Controls whether the location panel starts collapsed.
    */
-  panelCollapsed = true;
+  locationPanelState: 'minimized' | 'narrow' | 'full' = 'minimized';
   /**
    * Which subview of the location panel should be opened initially (when deep-linked).
    * - 'none' leaves the default view
@@ -728,8 +728,8 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Set initial collapsed state based on screen size (desktop starts expanded)
     this.breakpointObserver.observe('(min-width: 768px)').subscribe(result => {
       // Only set initial state if panel hasn't been manually changed or deep-linked
-      if (this.panelCollapsed === true && !this.route.snapshot.queryParamMap.get('panel')) {
-        this.panelCollapsed = !result.matches; // Desktop (≥768px) = false (expanded), Mobile (<768px) = true (collapsed)
+      if (this.locationPanelState === 'minimized' && !this.route.snapshot.queryParamMap.get('panel')) {
+        this.locationPanelState = result.matches ? 'narrow' : 'minimized'; // Desktop (≥768px) = narrow, Mobile (<768px) = minimized
       }
     });
 
@@ -753,7 +753,7 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     const view = qp.get('view') as ('rfi' | 'tasks' | null);
 
     if (panel === 'fos') {
-      this.panelCollapsed = false; // open panel
+      this.locationPanelState = 'narrow'; // open panel to narrow state
     }
     if (view === 'rfi' || view === 'tasks') {
       this.initialSubview = view;
