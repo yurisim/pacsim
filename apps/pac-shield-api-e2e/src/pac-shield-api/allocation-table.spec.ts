@@ -79,50 +79,50 @@ describe('Allocation Table E2E', () => {
     gmPlayer = await joinSetRoleAndTeam({
       playerName: 'GM-Player',
       role: 'GM',
-      teamType: 'CAOC',
+      teamType: 'GM',
     });
 
-    // Spawn test aircraft instances
-    const cfaccApi = clientFor(cfaccCommander.token);
+    // Spawn test aircraft instances (GM only)
+    const gmApi = clientFor(gmPlayer.token);
 
     // Spawn C-130 ARROW
-    const c130Res = await cfaccApi.post(`/api/allocation/spawn-aircraft`, {
+    const c130Res = await gmApi.post(`/api/allocation/spawn-aircraft`, {
       gameId,
-      type: 'STRATEGIC_AIRLIFT',
-      subtype: 'C130_ARROW',
-      teamId: null,
-      rangeHexes: 100,
+      type: 'C130',
+      subtype: null,
+      teamId: teamsByType.CAOC,
+      rangeHexes: 3,
       locationFosId: null,
       locationHex: '0,0',
-      locationType: 'HEX',
+      locationType: 'MOB',
     });
     expect([200, 201]).toContain(c130Res.status);
     c130Aircraft = c130Res.data.id;
 
     // Spawn C-17 MOOSE
-    const c17Res = await cfaccApi.post(`/api/allocation/spawn-aircraft`, {
+    const c17Res = await gmApi.post(`/api/allocation/spawn-aircraft`, {
       gameId,
-      type: 'STRATEGIC_AIRLIFT',
-      subtype: 'C17_MOOSE',
-      teamId: null,
-      rangeHexes: 120,
+      type: 'C17',
+      subtype: null,
+      teamId: teamsByType.CAOC,
+      rangeHexes: 4,
       locationFosId: null,
       locationHex: '1,1',
-      locationType: 'HEX',
+      locationType: 'MOB',
     });
     expect([200, 201]).toContain(c17Res.status);
     c17Aircraft = c17Res.data.id;
 
     // Spawn C-5 BOSCO
-    const c5Res = await cfaccApi.post(`/api/allocation/spawn-aircraft`, {
+    const c5Res = await gmApi.post(`/api/allocation/spawn-aircraft`, {
       gameId,
-      type: 'STRATEGIC_AIRLIFT',
-      subtype: 'C5_BOSCO',
-      teamId: null,
-      rangeHexes: 110,
+      type: 'C5',
+      subtype: 'BOBCAT',
+      teamId: teamsByType.CAOC,
+      rangeHexes: 4,
       locationFosId: null,
       locationHex: '2,2',
-      locationType: 'HEX',
+      locationType: 'MOB',
     });
     expect([200, 201]).toContain(c5Res.status);
     c5Aircraft = c5Res.data.id;
