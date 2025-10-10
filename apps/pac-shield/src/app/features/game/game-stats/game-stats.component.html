@@ -1,5 +1,10 @@
 <!-- Game Stats Panel (mirrors Location Panel structure) -->
-<div class="game-stats-panel md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2">
+<div class="game-stats-panel md-sys-bg-surface-container md-sys-color-on-surface md-shape-corner-md md-elevation-2 flex flex-col transition-all duration-300 ease-in-out"
+     [ngClass]="{
+       'w-auto': panelState === 'minimized',
+       'w-[calc(100vw-16px)] md:w-[clamp(400px,25vw,600px)]': panelState === 'narrow',
+       'w-[calc(100vw-16px)] h-[calc(100vh-16px-60px)]': panelState === 'full'
+     }">
   <!-- Header -->
   <div class="panel-header flex items-center justify-between p-3 pb-2 shrink-0">
     <div class="flex items-center gap-2">
@@ -13,18 +18,18 @@
     </div>
     <button
       mat-icon-button
-      (click)="toggleCollapsed()"
-      [matTooltip]="collapsed ? 'Expand' : 'Collapse'"
+      (click)="togglePanelState()"
+      [matTooltip]="getPanelTooltip()"
       class="collapse-toggle w-8 h-8"
-      [attr.aria-expanded]="!collapsed"
+      [attr.aria-expanded]="panelState !== 'minimized'"
       aria-controls="game-stats-content"
-      [attr.title]="collapsed ? 'Expand' : 'Collapse'"
+      [attr.title]="getPanelTooltip()"
     >
-      <mat-icon>{{ collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+      <mat-icon>{{ getPanelIcon() }}</mat-icon>
     </button>
   </div>
 
-  @if (!collapsed) {
+  @if (panelState !== 'minimized') {
     <mat-divider></mat-divider>
 
     <!-- Responsive Navigation -->

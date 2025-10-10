@@ -3,13 +3,9 @@
   width: 100%;
 }
 
-/* Game Stats Panel - mirrors Location Panel sizing/behavior */
+/* Game Stats Panel - width now handled by Tailwind classes in template */
 .game-stats-panel {
-  width: 580px;
-  /* Removed fixed max-height to allow tab content to control its own height */
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease-in-out;
+  /* Panel-specific styles (width/flex/transition now in Tailwind) */
 
   .panel-header {
     .collapse-toggle {
@@ -24,21 +20,23 @@
   .game-stats-content {
     flex: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     /* Standardized tab content container ensures consistent height and internal scrolling */
     .stats-tab-content {
-      max-height: 50vh;
+      flex: 1;
       overflow-y: auto;
-      min-height: auto;
-      height: auto;
+      min-height: 0; /* Allow flex item to shrink below content size */
     }
 
     /* Backward compatibility for existing padded wrappers if class isn't present */
     > .p-2,
     > .p-3,
     > .p-4 {
-      max-height: 50vh;
+      flex: 1;
       overflow-y: auto;
+      min-height: 0;
     }
   }
 }
@@ -50,16 +48,5 @@
   }
 }
 
-/* Responsive adjustments matching Location Panel breakpoints */
-@media (max-width: 768px) {
-  .game-stats-panel {
-    width: 100%;
-    max-width: calc(100vw - 16px);
-  }
-}
-
-@media (max-width: 600px) {
-  .game-stats-panel {
-    /* No special grid changes required for Game Stats content */
-  }
-}
+/* Mobile responsive adjustments - width now handled by Tailwind in template */
+/* No additional mobile-specific styles needed for Game Stats panel */

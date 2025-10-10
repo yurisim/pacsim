@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BreakpointObserver } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -62,13 +63,15 @@ export class GameStatsComponent implements OnInit, OnChanges {
   @Input() currentGameId: number | null = null;
   @Input() currentUserTeam: TeamType | null = null;
   @Input() currentUserRole: PlayerRole | null = null;
-  @Input() collapsed = true;
-  @Output() collapsedChange = new EventEmitter<boolean>();
+  @Input() panelState: 'minimized' | 'narrow' | 'full' = 'minimized';
+  @Output() panelStateChange = new EventEmitter<'minimized' | 'narrow' | 'full'>();
 
   navService = inject(ResponsiveNavService);
   gameStatsService = inject(GameStatsService);
   allocationSignalService = inject(AllocationSignalService);
   private breakpointObserver = inject(BreakpointObserver);
+
+  isMobile = toSignal(this.breakpointObserver.observe('(max-width: 767px)'), { initialValue: { matches: false, breakpoints: {} } });
 
   activeTab$ = this.navService.activeTab$;
 
@@ -95,11 +98,12 @@ export class GameStatsComponent implements OnInit, OnChanges {
   readonly currentTurnLabel = this.gameStatsService.currentTurnLabel;
 
   ngOnInit(): void {
-    // Set initial collapsed state based on screen size (desktop starts expanded)
+    // Set initial panel state based on screen size
+    // Desktop: narrow by default, Mobile: minimized by default
     this.breakpointObserver.observe('(min-width: 768px)').subscribe(result => {
-      // Only set initial state if collapsed hasn't been manually changed
-      if (this.collapsed === true) {
-        this.collapsed = !result.matches; // Desktop (≥768px) = false (expanded), Mobile (<768px) = true (collapsed)
+      // Only set initial state if panel hasn't been manually changed
+      if (this.panelState === 'minimized') {
+        this.panelState = result.matches ? 'narrow' : 'minimized'; // Desktop = narrow, Mobile = minimized
       }
     });
 
@@ -145,9 +149,56 @@ export class GameStatsComponent implements OnInit, OnChanges {
     this.navService.setActiveTab(tabId);
   }
 
-  toggleCollapsed(): void {
-    this.collapsed = !this.collapsed;
-    this.collapsedChange.emit(this.collapsed);
+  togglePanelState(): void {
+    const isMobileDevice = this.isMobile().matches;
+
+    if (isMobileDevice) {
+      // Mobile: Toggle between minimized and full
+      this.panelState = this.panelState === 'minimized' ? 'full' : 'minimized';
+    } else {
+      // Desktop: Cycle through minimized → narrow → full → minimized
+      if (this.panelState === 'minimized') {
+        this.panelState = 'narrow';
+      } else if (this.panelState === 'narrow') {
+        this.panelState = 'full';
+      } else {
+        this.panelState = 'minimized';
+      }
+    }
+
+    this.panelStateChange.emit(this.panelState);
+  }
+
+  /**
+   * Get the appropriate icon for the current panel state
+   */
+  getPanelIcon(): string {
+    if (this.panelState === 'minimized') {
+      return 'unfold_more';
+    } else if (this.panelState === 'narrow') {
+      return 'fullscreen';
+    } else {
+      return 'fullscreen_exit';
+    }
+  }
+
+  /**
+   * Get the appropriate tooltip for the current panel state
+   */
+  getPanelTooltip(): string {
+    const isMobileDevice = this.isMobile().matches;
+
+    if (isMobileDevice) {
+      return this.panelState === 'minimized' ? 'Expand' : 'Minimize';
+    } else {
+      if (this.panelState === 'minimized') {
+        return 'Show narrow panel';
+      } else if (this.panelState === 'narrow') {
+        return 'Expand to full width';
+      } else {
+        return 'Minimize';
+      }
+    }
   }
 
   /**
