@@ -89,21 +89,12 @@
     "prisma-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "if exist src\\app\\generated rmdir /s /q src\\app\\generated",
-          "if exist ..\\pac-shield\\src\\app\\generated rmdir /s /q ..\\pac-shield\\src\\app\\generated",
-          "npx prisma generate --schema src/prisma/schema.prisma"
-        ],
-        "cwd": "apps/pac-shield-api",
-        "parallel": false
+        "command": "npx prisma generate --schema src/prisma/schema.prisma",
+        "cwd": "apps/pac-shield-api"
       },
       "configurations": {
         "production": {
-          "commands": [
-            "if exist src\\app\\generated rmdir /s /q src\\app\\generated",
-            "if exist ..\\pac-shield\\src\\app\\generated rmdir /s /q ..\\pac-shield\\src\\app\\generated",
-            "npx prisma generate --schema src/prisma/schema.prisma"
-          ]
+          "command": "npx prisma generate --schema src/prisma/schema.prisma"
         }
       }
     },
@@ -156,15 +147,8 @@
     "prisma-all": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "npx prisma format --schema src/prisma/schema.prisma",
-          "npx prisma validate --schema src/prisma/schema.prisma",
-          "if exist src\\app\\generated rmdir /s /q src\\app\\generated",
-          "if exist ..\\pac-shield\\src\\app\\generated rmdir /s /q ..\\pac-shield\\src\\app\\generated",
-          "npx prisma generate --schema src/prisma/schema.prisma"
-        ],
-        "cwd": "apps/pac-shield-api",
-        "parallel": false
+        "command": "npx prisma format --schema src/prisma/schema.prisma && npx prisma validate --schema src/prisma/schema.prisma && npx prisma generate --schema src/prisma/schema.prisma",
+        "cwd": "apps/pac-shield-api"
       }
     }
   }
