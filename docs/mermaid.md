@@ -50,6 +50,19 @@ flowchart TB
         M13["Execute Turn 2<br>25 min<br>[cite: 5.2.11.4]"]
         M14["Hotwash 10 min<br>Debrief to Instructor 10 min<br>Instructor Feedback 10 min<br>[cite: 5.2.11.5]"]
   end
+ subgraph MEDCOM["MEDCOM Swimlane"]
+    direction LR
+        MC1["Identify Hospital<br>Setup Requirements<br>[cite: 9.3.1]"]
+        MC2["Request Aircraft<br>from CFACC<br>[cite: 9.3.4]"]
+        MC3["Develop Load Plans<br>(Cargo or MEDEVAC)<br>[cite: 9.3.4]"]
+        MC4["Complete MEDCOM ATO<br>[cite: 9.3.5]"]
+        MC5["Coordinate with<br>MOBs/FOSs<br>[cite: 9.3.7]"]
+        MC6["Mission Pre-brief<br>15 min"]
+        MC7["Turn 1 Execution:<br>Declare MEDEVAC &amp;<br>Provide Tokens<br>25 min<br>[cite: 9.3.6]"]
+        MC8["Plan Turn 2<br>40 min"]
+        MC9["Execute Turn 2<br>25 min"]
+        MC10["Hotwash 10 min<br>Debrief to Instructor 10 min<br>Instructor Feedback 10 min"]
+  end
  subgraph CSpOC["CSpOC Swimlane"]
     direction LR
         S2["Coordinate with CFACC<br>for Collection Priorities<br>Assign LNOs to<br>CAOC and MOBs<br>[cite: 5.3.2]"]
@@ -143,6 +156,16 @@ flowchart TB
      M12:::mobBox
      M13:::mobBox
      M14:::mobBox
+     MC1:::medcomBox
+     MC2:::medcomBox
+     MC3:::medcomBox
+     MC4:::medcomBox
+     MC5:::medcomBox
+     MC6:::medcomBox
+     MC7:::medcomBox
+     MC8:::medcomBox
+     MC9:::medcomBox
+     MC10:::medcomBox
      S2:::cspocBox
      S3:::cspocBox
      S4:::cspocBox
@@ -156,20 +179,14 @@ flowchart TB
     classDef cfaccBox fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     classDef mobBox fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
     classDef cspocBox fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef medcomBox fill:#e3f2fd,stroke:#0d47a1,stroke-width:2px
     classDef supportBox fill:#f5f5f5,stroke:#424242,stroke-width:2px
     classDef timeBox fill:#fff9c4,stroke:#f57f17,stroke-width:3px,font-weight:bold
     L_T1_C2_0@{ animation: slow } 
-    L_T1_M2_0@{ animation: slow } 
+    L_T1_MC1_0@{ animation: slow } 
     L_T1_S2_0@{ animation: slow } 
     L_T2_S7_0@{ animation: slow } 
     L_T3_Exec_C8_0@{ animation: slow } 
-    L_T3_Exec_M11_0@{ animation: slow } 
     L_T4_C9_0@{ animation: slow } 
-    L_T4_M12_0@{ animation: slow } 
     L_T5_C10_0@{ animation: slow } 
-    L_T5_M13_0@{ animation: slow } 
-    L_T6_C11_0@{ animation: slow } 
-    L_T6_M14_0@{ animation: slow } 
-    L_T6_S10_0@{ animation: slow }
-
-```
+    L_T6_C11_0@{ animation: slow }
