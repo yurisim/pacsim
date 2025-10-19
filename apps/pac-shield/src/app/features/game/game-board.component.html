@@ -38,10 +38,13 @@
   <!-- Game info overlay (Civ-style HUD) -->
   @if (game$ | async; as game) {
 
-  <!-- Right side panel with stubbed dashboards -->
-  <div class="absolute top-2 right-2 z-[90] pointer-events-none">
+  <!-- Right side unified control panel - game stats + location controls -->
+  <div class="absolute top-2 right-2 bottom-2 z-[90] pointer-events-none flex flex-col gap-2 items-end">
+    <!-- Game Stats Panel -->
     <div class="pointer-events-auto">
       <app-game-stats
+        [panelState]="gameStatsPanelState"
+        (panelStateChange)="onGameStatsPanelStateChange($event)"
         [currentGameId]="gameId$ | async"
         [currentUserTeam]="currentUserTeam$ | async"
         [currentUserRole]="currentUserRole$ | async"
@@ -49,13 +52,12 @@
       >
       </app-game-stats>
     </div>
-  </div>
-  }
 
+    <!-- Spacer to push location controls to bottom -->
+    <div class="flex-1 pointer-events-none"></div>
 
-  <!-- Bottom left control panel - flex row layout -->
-  <div class="absolute left-0 sm:left-2 bottom-2 z-[95] pointer-events-auto w-full sm:w-auto right-0 sm:right-auto">
-    <div class="flex flex-col items-start sm:items-start gap-2 w-full">
+    <!-- Location Controls (Country Access + Location Panel) -->
+    <div class="pointer-events-auto flex flex-col gap-2 items-end shrink-0">
       <!-- Country Access Toggle -->
       <app-country-access-toggle
         (toggleVisibility)="onCountryAccessToggle($event)"
@@ -75,12 +77,13 @@
         [panelState]="locationPanelState"
         [initialSubview]="initialSubview"
         (actionClicked)="onLocationAction($event)"
-        (panelStateChange)="locationPanelState = $event"
+        (panelStateChange)="onLocationPanelStateChange($event)"
         (fosStatusChanged)="onFosStatusChanged($event)"
       >
       </app-location-panel>
     </div>
   </div>
+  }
 
   <!-- Jamming Debug Panel (top right corner) - DISABLED -->
   <!-- <div class="absolute right-2 top-2 z-[95] pointer-events-auto">
