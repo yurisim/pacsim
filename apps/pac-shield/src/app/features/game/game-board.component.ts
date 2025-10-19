@@ -577,29 +577,19 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Handle location panel state changes with auto-minimize logic
-   * When location panel goes full, automatically minimize game stats panel to prevent overlap
+   * Handle location panel state changes
+   * Panels on opposite sides, no auto-minimize needed
    */
   onLocationPanelStateChange(newState: 'minimized' | 'narrow' | 'full'): void {
     this.locationPanelState = newState;
-
-    // Auto-minimize game stats when location goes full
-    if (newState === 'full' && this.gameStatsPanelState === 'full') {
-      this.gameStatsPanelState = 'minimized';
-    }
   }
 
   /**
-   * Handle game stats panel state changes with auto-minimize logic
-   * When game stats panel goes full, automatically minimize location panel to prevent overlap
+   * Handle game stats panel state changes
+   * Panels on opposite sides, no auto-minimize needed
    */
   onGameStatsPanelStateChange(newState: 'minimized' | 'narrow' | 'full'): void {
     this.gameStatsPanelState = newState;
-
-    // Auto-minimize location when game stats goes full
-    if (newState === 'full' && this.locationPanelState === 'full') {
-      this.locationPanelState = 'minimized';
-    }
   }
 
   /**
