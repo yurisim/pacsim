@@ -1,17 +1,15 @@
-```mermaid  
 ---
 config:
   layout: dagre
   look: neo
 ---
 flowchart TB
- subgraph Version["Version 30.SEP.25"]
+ subgraph Version["Version 12.OCT.25"]
     direction LR
-        V[" "]
   end
  subgraph Timeline["Timeline"]
     direction LR
-        T0_Review["00:00<br><b>Review All Documents</b><br>CFACC [cite: 5.1.1]<br>MOB [cite: 5.2.1]<br>CSpOC [cite: 5.3.1]"]
+        T0_Review["00:00<br><b>Review All Documents</b><br>CFACC [cite: 5.1.1]<br>MOB [cite: 5.2.1]<br>CSpOC [cite: 5.3.1]<br>MEDCOM [cite: 9.3]"]
         T1["00:00<br><b>Start<br>Turn 1 Planning</b><br>45 min Planning<br>15 min Pre-brief<br>[cite: 5.1.8.1]"]
         T2["00:45<br><b>CSpOC Pre-brief<br>Complete</b><br>CSpOC starts Looks<br>[cite: 5.3.8.1]"]
         T3_Exec["01:00<br><b>All Teams Report<br>to CAOC for<br>Turn 1 Execution</b><br>[cite: 5.1.8.2, 5.1.8.2.1]"]
@@ -23,13 +21,13 @@ flowchart TB
  subgraph CFACC["CFACC/CAOC Swimlane"]
     direction LR
         C2["View Political Assessment<br>[cite: 5.1.2]"]
-        C3["Analyze AEW/CC Requests &amp;<br>Prioritize Airlift<br>[cite: 5.1.3]"]
-        C4["Allocate Aircraft to MOBs<br>Give Physical Tubes<br>[cite: 5.1.3]"]
+        C3["Analyze AEW/CC &amp; MEDCOM<br>Requests &amp; Prioritize Airlift<br>[cite: 5.1.3, 9.3.4]"]
+        C4["Allocate Aircraft<br>Give Physical Tubes<br>[cite: 5.1.3]"]
         C5["USTRANSCOM:<br>Designate Personnel<br>Load Out Aircraft<br>[cite: 5.1.5]"]
         C5b["Distribute Sealift<br>Requests<br>[cite: 5.1.6]"]
-        C7["Verify ATO Lines:<br>Flight Plans, Workload,<br>MOG &amp; Issue PPRs<br>[cite: 5.1.4]"]
+        C7["Verify All ATOs:<br>Flight Plans, Workload,<br>MOG &amp; Issue PPRs<br>[cite: 5.1.4]"]
         C6["Mission Pre-brief<br>15 min<br>[cite: 5.1.8.1, 5.1.8.1.1]"]
-        C8["Turn 1 Execution<br>Receive MOB Reports<br>25 min<br>[cite: 5.1.8.2, 5.1.8.2.1]"]
+        C8["Turn 1 Execution<br>Receive MOB &amp; MEDCOM<br>Reports/Tokens<br>25 min<br>[cite: 5.1.8.2, 9.3.6]"]
         C9["Plan Turn 2<br>40 min<br>[cite: 5.1.8.3]"]
         C10["Execute Turn 2<br>25 min<br>[cite: 5.1.8.4]"]
         C11["Hotwash 10 min<br>Debrief to Instructor 10 min<br>Instructor Feedback 10 min<br>[cite: 5.1.8.5]"]
