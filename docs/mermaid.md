@@ -78,7 +78,7 @@ flowchart TB
         G2["GM Provides<br>RFI Results<br>[cite: 5.2.4]"]
   end
     T0_Review --> T1
-    T1 L_T1_C2_0@-.-> C2 & M2
+    T1 L_T1_C2_0@-.-> C2 & M2 & MC1
     T1 L_T1_S2_0@--> S2
     C2 --> C3
     C3 --> C4
@@ -86,12 +86,6 @@ flowchart TB
     C5 --> C5b
     C5b --> C7
     C7 --> C6
-    S2 --> S3
-    S3 --> S4
-    S4 --> S5
-    S5 --> S6
-    S6 --> T2
-    T2 L_T2_S7_0@--> S7
     M2 --> M3
     M3 --> M4
     M4 --> G2
@@ -101,27 +95,45 @@ flowchart TB
     M7 --> M8
     M8 --> M9
     M9 --> M10
+    MC1 --> MC2
+    MC2 --> MC3
+    MC3 --> MC4
+    MC4 --> MC5
+    MC5 --> MC6
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
+    S6 --> T2
+    T2 L_T2_S7_0@--> S7
     M6 -. Request .-> C3
+    MC2 -. Request .-> C3
     S2 <-. Coordinate .-> C3
-    S7 -. Intel .-> C6 & M10
+    MC5 -. Coordinate .-> M8
+    S7 -. Intel .-> C6 & M10 & MC6
     C6 --> T3_Exec
     M10 --> T3_Exec
-    T3_Exec L_T3_Exec_C8_0@--> C8 & M11
+    MC6 --> T3_Exec
+    T3_Exec L_T3_Exec_C8_0@--> C8 & M11 & MC7
     C8 --> T4
     M11 --> T4
+    MC7 --> T4
     S7 --> S8
     S8 -. Intel .-> T4
-    T4 L_T4_C9_0@--> C9 & M12
+    T4 L_T4_C9_0@--> C9 & M12 & MC8
     C9 --> T5
     M12 --> T5
-    T5 L_T5_C10_0@--> C10 & M13
+    MC8 --> T5
+    T5 L_T5_C10_0@--> C10 & M13 & MC9
     S8 --> T6
     C10 --> T6
     M13 --> T6
-    T6 L_T6_C11_0@--> C11 & M14 & S10
+    MC9 --> T6
+    T6 L_T6_C11_0@--> C11 & M14 & S10 & MC10
     C11 --> T7
     M14 --> T7
     S10 --> T7
+    MC10 --> T7
      T0_Review:::timeBox
      T1:::timeBox
      T2:::timeBox
