@@ -265,11 +265,19 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   isGameMaster = false;
 
-  // Location panel deep-link control
+  // Panel state management
   /**
-   * Controls whether the location panel starts collapsed.
+   * Controls whether the location panel is minimized, narrow, or full.
+   * Auto-minimizes when game stats panel goes full to prevent overlap.
    */
   locationPanelState: 'minimized' | 'narrow' | 'full' = 'minimized';
+
+  /**
+   * Controls whether the game stats panel is minimized, narrow, or full.
+   * Auto-minimizes when location panel goes full to prevent overlap.
+   */
+  gameStatsPanelState: 'minimized' | 'narrow' | 'full' = 'narrow';
+
   /**
    * Which subview of the location panel should be opened initially (when deep-linked).
    * - 'none' leaves the default view
@@ -566,6 +574,22 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       // For now, just logging the change
       console.log(`FOS ${event.fosId} assigned to team ${event.teamId}`);
     }
+  }
+
+  /**
+   * Handle location panel state changes
+   * Panels on opposite sides, no auto-minimize needed
+   */
+  onLocationPanelStateChange(newState: 'minimized' | 'narrow' | 'full'): void {
+    this.locationPanelState = newState;
+  }
+
+  /**
+   * Handle game stats panel state changes
+   * Panels on opposite sides, no auto-minimize needed
+   */
+  onGameStatsPanelStateChange(newState: 'minimized' | 'narrow' | 'full'): void {
+    this.gameStatsPanelState = newState;
   }
 
   /**

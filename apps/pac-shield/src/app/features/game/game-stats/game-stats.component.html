@@ -3,7 +3,7 @@
      [ngClass]="{
        'w-auto': panelState === 'minimized',
        'w-[calc(100vw-16px)] md:w-[clamp(400px,25vw,600px)]': panelState === 'narrow',
-       'w-[calc(100vw-16px)] h-[calc(100vh-16px-60px)]': panelState === 'full'
+       'w-[calc(100vw-16px)] h-full': panelState === 'full'
      }">
   <!-- Header -->
   <div class="panel-header flex items-center justify-between p-3 pb-2 shrink-0">
