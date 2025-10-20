@@ -6,6 +6,7 @@
 /* Game Stats Panel - width now handled by Tailwind classes in template */
 .game-stats-panel {
   /* Panel-specific styles (width/flex/transition now in Tailwind) */
+  max-height: 50vh;
 
   .panel-header {
     .collapse-toggle {
